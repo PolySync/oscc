@@ -30,25 +30,16 @@ typedef struct
 {
     //
     //
-    ps_ctrl_brake_command_msg *brake_cmd; /*!< Platform brake command message. */
+    ps_ctrl_brake_command_msg brake_cmd; /*!< Platform brake command message. */
     //
     //
-    ps_ctrl_throttle_command_msg *throttle_cmd; /*!< Platform throttle command message. */
+    ps_ctrl_throttle_command_msg throttle_cmd; /*!< Platform throttle command message. */
     //
     //
-    ps_ctrl_steering_command_msg *steering_cmd; /*!< Platform steering wheel command message. */
+    ps_ctrl_steering_command_msg steering_cmd; /*!< Platform steering wheel command message. */
 } messages_s;
 
 
-
-//
-int messages_alloc(
-        messages_s * const messages );
-
-
-//
-int messages_free(
-        messages_s * const messages );
 
 
 //

@@ -1,0 +1,11 @@
+mkdir -p bin
+mkdir -p doc/html
+gcc `pkg-config --cflags sdl2` -Iinclude -I../../arduino_libraries/control_protocol_can -MM src/joystick.c > src/joystick.dep
+gcc `pkg-config --cflags sdl2` -Iinclude -I../../arduino_libraries/control_protocol_can -o src/joystick.o -c src/joystick.c
+gcc `pkg-config --cflags sdl2` -Iinclude -I../../arduino_libraries/control_protocol_can -MM src/messages.c > src/messages.dep
+In file included from src/messages.c:15:0:
+include/messages.h:10:34: fatal error: control_protocol_can.h: No such file or directory
+ #include "control_protocol_can.h"
+                                  ^
+compilation terminated.
+make: *** [src/messages.dep] Error 1

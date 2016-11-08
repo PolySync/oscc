@@ -201,9 +201,8 @@ static int init_messages(
     }
 
     if( ret == NOERR )
-    {
-        // allocate messages
-        ret = messages_alloc( &commander->messages );
+    {   
+        ret = messages_set_default_values( &commander->messages );
     }
     
     if( ret == NOERR )
@@ -463,9 +462,6 @@ int main( int argc, char **argv )
 
         // close device if needed
         jstick_close( &commander->joystick );
-
-        // free messages
-        (void) messages_free( &commander->messages );
 
         free( commander );
     }
