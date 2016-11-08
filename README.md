@@ -1,7 +1,7 @@
 <img src="https://github.com/PolySync/OSCC/blob/master/assets/oscc_logo_title.png">
 
 
-The Open Source Car Control Project is a hardware and software project for converting a late model vehicle into an autonomous driving research and development vehicle.
+The Open Source Car Control Project is a hardware and software project detailing the conversion of a late model vehicle into an autonomous driving research and development vehicle.
 
 See the [Wiki](https://github.com/PolySync/OSCC/wiki) for full documentation, details and other information.
 
@@ -18,17 +18,17 @@ Repository Contents
 Building Arduino Code
 ------------
 
-OSCC used Arduino makefiles to avoid some of the limitations of the Arduino IDE. Using this method you can build, upload and monitor the code.
+OSCC used Arduino makefiles to avoid some of the limitations of the Arduino IDE. Using this method you can build, upload, and monitor the code.
 Check out [Arduino-Makefile](https://github.com/sudar/Arduino-Makefile) to get started.
 
 Once the prerequisites are installed, connect the Arduino you want to program to your machine via USB.
 
 
-navigate to the directory for the firmware you want to build
+Navigate to the directory for the firmware you want to build.
 
 `cd firmware/steering/kia_soul_ps/`
 
-And then build, upload and monitor the serial output
+And then build, upload, and monitor the serial output.
 
 `make && make upload && make monitor`
 
@@ -38,7 +38,7 @@ The GNU utility `screen` is used to monitor the serial output from the Arduino. 
 Additional Vehicles & Contributing
 ------------
 
-OSCC currently has information regarding the Kia Soul PS (2014-2016) but we want to grow! The repository is structured to facilitate including more vehicles as more is learned about them.
+OSCC currently has information regarding the Kia Soul PS (2014-2016), but we want to grow! The repository is structured to facilitate including more vehicles as more is learned about them.
 
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md).
