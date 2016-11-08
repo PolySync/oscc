@@ -1,0 +1,18 @@
+FiniteStateMachine	KEYWORD1
+FSM	KEYWORD1
+State	KEYWORD1
+
+transitionTo	KEYWORD2
+immediateTransitionTo	KEYWORD2
+getCurrentState	KEYWORD2
+isInState	KEYWORD2
+timeInCurrentState	KEYWORD2
+enter	KEYWORD2
+update	KEYWORD2
+exit	KEYWORD2
+
+NO_ENTER	LITERAL1
+NO_UPDATE	LITERAL1
+NO_EXIT	LITERAL1
+
+

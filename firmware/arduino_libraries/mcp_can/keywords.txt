@@ -1,0 +1,47 @@
+#######################################
+# Syntax Coloring Map For debug_lvc
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+MCP_CAN	KEYWORD1
+mcp_can_dfs	KEYWORD1
+mcp_can	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+begin	KEYWORD2
+init_Mask	KEYWORD2
+init_Filt	KEYWORD2
+sendMsgBuf	KEYWORD2
+readMsgBuf	KEYWORD2
+checkReceive	KEYWORD2
+checkError	KEYWORD2
+getCanId	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+CAN_5KBPS	LITERAL1
+CAN_10KBPS	LITERAL1
+CAN_20KBPS	LITERAL1
+CAN_40KBPS	LITERAL1
+CAN_50KBPS	LITERAL1
+CAN_80KBPS	LITERAL1
+CAN_100KBPS	LITERAL1
+CAN_125KBPS	LITERAL1
+CAN_200KBPS	LITERAL1
+CAN_250KBPS	LITERAL1
+CAN_500KBPS	LITERAL1
+CAN_1000KBPS	LITERAL1
+CAN_OK	LITERAL1
+CAN_FAILINIT	LITERAL1
+CAN_FAILTX	LITERAL1
+CAN_MSGAVAIL	LITERAL1
+CAN_NOMSG	LITERAL1
+CAN_CTRLERROR	LITERAL1
+CAN_GETTXBFTIMEOUT	LITERAL1
+CAN_SENDMSGTIMEOUT	LITERAL1
+CAN_FAIL	LITERAL1
