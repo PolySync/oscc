@@ -4,7 +4,9 @@ There are many ways to contribute to the OSCC project; support for additional ve
 CAN frames can be better detailed, PCBs can be optimized
 or code could be refactored and improved.
 
-The directory structure of the project is created in such a way that adding support for additional vehicles should be simple and intuitive. All vehicle specific directories should be reacreated for each additional vehicle. Below is a sample of how additional vehicle directories should be created.
+The directory structure of the project is created in such a way that adding support for additional vehicles should be simple and intuitive. 
+All vehicle specific directories should be recreated for each additional vehicle. The naming convention for is <make>_<model>_<generational identifier>
+Below is a sample of how additional vehicle directories should be created.
 
 
     .
