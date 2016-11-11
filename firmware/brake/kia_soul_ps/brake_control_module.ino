@@ -56,6 +56,10 @@
 #endif
 
 
+// ms
+#define PS_CTRL_RX_WARN_TIMEOUT (150)
+
+
 //
 #define GET_TIMESTAMP_MS() ((uint32_t) millis())
 
@@ -95,8 +99,31 @@ static can_frame_s tx_frame_ps_ctrl_brake_report;
 // *
 
 
-// uses last_update_ms, corrects for overflow condition
+// corrects for overflow condition
 static void get_update_time_delta_ms(
+		const uint32_t time_in,
+		const uint32_t last_update_time_ms,
+		uint32_t * const delta_out )
+{
+    // check for overflow
+    if( last_update_time_ms < time_in )
+    {   
+		// time remainder, prior to the overflow
+		(*delta_out) = (UINT32_MAX - time_in);
+        
+        // add time since zero
+        (*delta_out) += last_update_time_ms;
+    }   
+    else
+    {   
+        // normal delta
+        (*delta_out) = ( last_update_time_ms - time_in );
+    }   
+}
+
+
+// uses last_update_ms, corrects for overflow condition
+static void get_update_time_ms(
                 const uint32_t * const time_in,
                         uint32_t * const delta_out )
 {
@@ -115,6 +142,7 @@ static void get_update_time_delta_ms(
             (*delta_out) = (last_update_ms - (*time_in));
         }
 }
+
 
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids ) 
 // pins are not perfectly sequential because the clock frequency of certain pins is different.
@@ -534,7 +562,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    get_update_time_delta_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
+    get_update_time_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
 
     // check publish interval
     if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
@@ -570,6 +598,8 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
         controlEnabled = false;
         brakeStateMachine.transitionTo(Wait);
     }
+
+    rx_frame_ps_ctrl_brake_command.timestamp = GET_TIMESTAMP_MS();
 
     unsigned int pedal_command = control_data->pedal_command;
     pressure_req = map(pedal_command, 0, 65535, 48, 230); // map to voltage range 
@@ -657,7 +687,7 @@ void waitUpdate()
     accumulator.maintainPressure();
 
     // TODO: Is this check needed? Don't we force transition elsewhere?
-    if( pressure_req > ZERO_PRESSURE + .01 ) 
+    if( pressure_req > ZERO_PRESSURE + .01 && controlEnabled ) 
     {
         brakeStateMachine.transitionTo(Brake);
     }
@@ -773,6 +803,30 @@ void brakeExit()
 }
 
 
+//
+static void check_rx_timeouts( void )
+{
+    // local vars
+    uint32_t delta = 0;
+
+    // get time since last receive
+    get_update_time_delta_ms( 
+			rx_frame_ps_ctrl_brake_command.timestamp, 
+			GET_TIMESTAMP_MS(), 
+			&delta );
+
+    // check rx timeout
+    if( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
+    {
+        // disable control from the PolySync interface
+        if( controlEnabled ) 
+        {
+            Serial.println("control disabled: timeout");
+            controlEnabled = false;
+        }
+    }
+}
+
 
 // the setup routine runs once when you press reset:
 void setup( void ) 
@@ -854,6 +908,8 @@ void loop()
     handle_ready_rx_frames();
 
     publish_timed_tx_frames();
+
+    check_rx_timeouts();
         
     // check pressures on master cylinder (pressure from pedal)
     smc.checkPedal();
