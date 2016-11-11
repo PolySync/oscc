@@ -709,21 +709,21 @@ int commander_disable_controls(
         {
             ret = publish_disable_brake_command(
                     commander->canhandle,
-                    commander->messages.brake_cmd );
+                    &commander->messages.brake_cmd );
         }
 
         if( ret == NOERR )
         {
             ret = publish_disable_throttle_command(
                     commander->canhandle,
-                    commander->messages.throttle_cmd );
+                    &commander->messages.throttle_cmd );
         }
 
         if( ret == NOERR )
         {
             ret = publish_disable_steering_command(
                     commander->canhandle,
-                    commander->messages.steering_cmd );
+                    &commander->messages.steering_cmd );
         }
     }
 
@@ -752,11 +752,11 @@ int commander_enable_controls(
 
         if( ret == NOERR )
         {
-            commander->messages.brake_cmd->enabled = 1;
+            commander->messages.brake_cmd.enabled = 1;
             
-            commander->messages.steering_cmd->enabled = 1;
+            commander->messages.steering_cmd.enabled = 1;
             
-            commander->messages.throttle_cmd->enabled = 1;
+            commander->messages.throttle_cmd.enabled = 1;
         }
     }
 
@@ -833,7 +833,7 @@ int commander_update(
             ret = publish_brake_command(
                     commander->canhandle,
                     &commander->joystick,
-                    commander->messages.brake_cmd );
+                    &commander->messages.brake_cmd );
         }
 
         // publish throttle command continously
@@ -842,7 +842,7 @@ int commander_update(
             ret = publish_throttle_command(
                     commander->canhandle,
                     &commander->joystick,
-                    commander->messages.throttle_cmd );
+                    &commander->messages.throttle_cmd );
         }
 
         // publish steering command continously
@@ -851,7 +851,7 @@ int commander_update(
             ret = publish_steering_command(
                     commander->canhandle,
                     &commander->joystick,
-                    commander->messages.steering_cmd );
+                    &commander->messages.steering_cmd );
         }
     }
 
