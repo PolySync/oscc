@@ -609,8 +609,8 @@ void loop()
         current_ctrl_state.lastMicros = currMicros;        
 
         // Now that we've set control status, do steering if we are in control
-        if ( current_ctrl_state.control_enabled ) 
-	    {
+        if( current_ctrl_state.control_enabled ) 
+	{
             // Calculate steering angle rates
             double steeringAngleRate = ( current_ctrl_state.current_steering_angle - current_ctrl_state.steering_angle_last )/0.05;  //  degree/microsecond
             double steeringAngleRateTarget = ( current_ctrl_state.commanded_steering_angle - current_ctrl_state.current_steering_angle )/0.05; //  degree/microsecond
@@ -621,22 +621,24 @@ void loop()
             readings[readIndex] = steeringAngleRate;
             total = total + readings[readIndex];
             readIndex = readIndex + 1;
-            if (readIndex >= numReadings) {
+            if(readIndex >= numReadings) 
+	    {
                 readIndex = 0;
             }
-            // calculate the average:
+            
+	    // calculate the average:
             double average = total / numReadings;
 
 
             current_ctrl_state.steering_angle_last = current_ctrl_state.current_steering_angle;   // Remember for next time
 
             // Set saturation limits for steering wheel rotation speed
-            if ( steeringAngleRateTarget >= current_ctrl_state.steering_angle_rate_max )
+            if( steeringAngleRateTarget >= current_ctrl_state.steering_angle_rate_max )
             {
                 steeringAngleRateTarget = current_ctrl_state.steering_angle_rate_max;
             }
 
-            if ( steeringAngleRateTarget <= -current_ctrl_state.steering_angle_rate_max ) 
+            if( steeringAngleRateTarget <= -current_ctrl_state.steering_angle_rate_max ) 
             {
                 steeringAngleRateTarget = -current_ctrl_state.steering_angle_rate_max;
             }
@@ -676,7 +678,7 @@ void loop()
             readings[readIndex] = 0;
             total = total + readings[readIndex];
             readIndex = readIndex + 1;
-            if (readIndex >= numReadings) 
+            if ( readIndex >= numReadings ) 
             {
                 readIndex = 0;
             }
