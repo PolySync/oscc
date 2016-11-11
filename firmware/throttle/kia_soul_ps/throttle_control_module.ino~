@@ -531,8 +531,6 @@ void loop()
 
     publish_timed_tx_frames();
 
-    check_rx_timeouts();
-
     // update state variables
     PSensL_current = analogRead(PSENS_LOW) << 2;  //10 bit to 12 bit
     PSensH_current = analogRead(PSENS_HIGH) << 2;
