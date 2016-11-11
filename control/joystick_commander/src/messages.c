@@ -133,75 +133,6 @@ static int set_default_steering_command(
 // public definitions
 // *****************************************************
 
-//
-int messages_alloc(
-        messages_s * const messages )
-{
-    int ret = NOERR;
-
-
-    if( messages == NULL )
-    {
-        ret = ERROR;
-    }
-    else
-    {
-        // get brake command message
-        if( ret )
-        {
-            messages->brake_cmd = ( ps_ctrl_brake_command_msg* ) malloc( sizeof( ps_ctrl_brake_command_msg ) );
-        }
-
-        // get throttle command message
-        if( ret )
-        {
-            messages->throttle_cmd = ( ps_ctrl_throttle_command_msg* ) malloc( sizeof( ps_ctrl_throttle_command_msg ) );
-        }
-
-        // get steering command message
-        if( ret )
-        {
-            messages->steering_cmd = ( ps_ctrl_steering_command_msg* ) malloc( sizeof( ps_ctrl_steering_command_msg ) );
-        }
-
-        // default values
-        if( ret )
-        {
-            ret = messages_set_default_values(
-                    messages );
-        }
-    }
-
-
-    return ret;
-}
-
-
-//
-int messages_free(
-        messages_s * const messages )
-{
-    int ret = NOERR;
-
-
-    if( messages == NULL )
-    {
-        ret = ERROR;
-    }
-    else
-    {
-        free( messages->brake_cmd );
-
-        free( messages->throttle_cmd );
-
-        free( messages->steering_cmd );
-        
-    }
-
-
-    return ret;
-}
-
 
 //
 int messages_is_valid(
@@ -213,23 +144,6 @@ int messages_is_valid(
     if( messages == NULL )
     {
         ret = ERROR;
-    }
-    else
-    {
-        if( messages->brake_cmd == NULL )
-        {
-            ret = ERROR;
-        }
-
-        if( messages->throttle_cmd == NULL )
-        {
-            ret = ERROR;
-        }
-
-        if( messages->steering_cmd == NULL )
-        {
-            ret = ERROR;
-        }
     }
 
 
@@ -252,15 +166,15 @@ int messages_set_default_values(
     {
         // default brake command values
         ret |= set_default_brake_command(
-                messages->brake_cmd );
+                &messages->brake_cmd );
 
         // default throttle command values
         ret |= set_default_throttle_command(
-                messages->throttle_cmd );
+                &messages->throttle_cmd );
 
         // default steering command values
         ret |= set_default_steering_command(
-                messages->steering_cmd );
+                &messages->steering_cmd );
     }
 
 

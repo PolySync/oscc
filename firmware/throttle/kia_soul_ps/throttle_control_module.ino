@@ -45,9 +45,16 @@
 #endif
 
 
+// ms
+#define PS_CTRL_RX_WARN_TIMEOUT (150)
+
+
 //
 #define GET_TIMESTAMP_MS() ((uint32_t) millis())
 
+
+// Threshhold to detect when a person is pressing accelerator
+#define PEDAL_THRESH 1000
 
 
 
@@ -80,8 +87,31 @@ static can_frame_s tx_frame_ps_ctrl_throttle_report;
 // *
 
 
-// uses last_update_ms, corrects for overflow condition
+// corrects for overflow condition
 static void get_update_time_delta_ms(
+		const uint32_t time_in,
+		const uint32_t last_update_time_ms,
+		uint32_t * const delta_out )
+{
+    // check for overflow
+    if( last_update_time_ms < time_in )
+    {   
+		// time remainder, prior to the overflow
+		(*delta_out) = (UINT32_MAX - time_in);
+        
+        // add time since zero
+        (*delta_out) += last_update_time_ms;
+    }   
+    else
+    {   
+        // normal delta
+        (*delta_out) = ( last_update_time_ms - time_in );
+    }   
+}
+
+
+// uses last_update_ms, corrects for overflow condition
+static void get_update_time_ms(
                 const uint32_t * const time_in,
                         uint32_t * const delta_out )
 {
@@ -138,8 +168,7 @@ static void init_can ( void )
 uint16_t PSensL_current,        // Current measured accel sensor values
          PSensH_current,
          PSpoofH,               // Current spoofing values
-         PSpoofL, 
-         PEDAL_THRESH;          // Threshhold to detect when a person is pressing accelerator
+         PSpoofL;
 
 can_frame_s can_frame;          // CAN message structs
 
@@ -340,7 +369,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    get_update_time_delta_ms( &tx_frame_ps_ctrl_throttle_report.timestamp, &delta );
+    get_update_time_ms( &tx_frame_ps_ctrl_throttle_report.timestamp, &delta );
 
     // check publish interval
     if( delta >= PS_CTRL_THROTTLE_REPORT_PUBLISH_INTERVAL )
@@ -376,6 +405,8 @@ static void process_ps_ctrl_throttle_command( const uint8_t * const rx_frame_buf
         disableControl();
     }   
 
+    rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS();
+
     pedalPosition_target = control_data->pedal_command / 24 ;
     DEBUG_PRINT(pedalPosition_target);
 
@@ -408,6 +439,31 @@ void handle_ready_rx_frames(void) {
         }
     }
 
+}
+
+
+//
+static void check_rx_timeouts( void )
+{
+    // local vars
+    uint32_t delta = 0;
+
+    // get time since last receive
+    get_update_time_delta_ms( 
+			rx_frame_ps_ctrl_throttle_command.timestamp, 
+			GET_TIMESTAMP_MS(), 
+			&delta );
+
+    // check rx timeout
+    if( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
+    {
+        // disable control from the PolySync interface
+        if( controlEnabled ) 
+        {
+            Serial.println("control disabled: timeout");
+            disableControl();
+        }
+    }
 }
 
 
@@ -477,12 +533,14 @@ void loop()
 
     publish_timed_tx_frames();
 
+    check_rx_timeouts();
+
     // update state variables
     PSensL_current = analogRead(PSENS_LOW) << 2;  //10 bit to 12 bit
     PSensH_current = analogRead(PSENS_HIGH) << 2;
     
     // if someone is pressing the throttle pedal disable control
-    if ((PSensL_current + PSensH_current) / 2 > PEDAL_THRESH) {
+    if ( ( PSensL_current + PSensH_current) / 2 > PEDAL_THRESH ) {
         disableControl();
     }
 

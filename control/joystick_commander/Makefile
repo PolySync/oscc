@@ -4,7 +4,7 @@
 
 
 
-LIB_HOME = ../../arduino_libraries/control_protocol_can
+LIB_HOME = ../../firmware/arduino_libraries/control_protocol_can
 
 # target
 TARGET  := bin/joystick-commander
