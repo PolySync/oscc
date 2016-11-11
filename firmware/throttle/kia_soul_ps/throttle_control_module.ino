@@ -53,6 +53,9 @@
 #define GET_TIMESTAMP_MS() ((uint32_t) millis())
 
 
+// Threshhold to detect when a person is pressing accelerator
+#define PEDAL_THRESH 1000
+
 
 
 // *****************************************************
@@ -165,8 +168,7 @@ static void init_can ( void )
 uint16_t PSensL_current,        // Current measured accel sensor values
          PSensH_current,
          PSpoofH,               // Current spoofing values
-         PSpoofL, 
-         PEDAL_THRESH;          // Threshhold to detect when a person is pressing accelerator
+         PSpoofL;
 
 can_frame_s can_frame;          // CAN message structs
 
@@ -538,7 +540,7 @@ void loop()
     PSensH_current = analogRead(PSENS_HIGH) << 2;
     
     // if someone is pressing the throttle pedal disable control
-    if ((PSensL_current + PSensH_current) / 2 > PEDAL_THRESH) {
+    if ( ( PSensL_current + PSensH_current) / 2 > PEDAL_THRESH ) {
         disableControl();
     }
 
