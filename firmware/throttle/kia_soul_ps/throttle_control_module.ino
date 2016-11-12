@@ -46,7 +46,7 @@
 
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT (150)
+#define PS_CTRL_RX_WARN_TIMEOUT (250)
 
 
 //
@@ -174,6 +174,8 @@ can_frame_s can_frame;          // CAN message structs
 
 bool controlEnable_req,
      controlEnabled;
+
+int local_override = 0;
          
 double pedalPosition_target,
        pedalPosition;
@@ -297,10 +299,10 @@ void calculatePedalSpoof(float pedalPosition) {
   PSpoofL = constrain(PSpoofL, 0, 1800); // range = 300 - ~1750
   PSpoofH = constrain(PSpoofH, 0, 3500); // range = 600 - ~3500
 
-    Serial.print("PSPOOF_LOW:");
-    Serial.print(PSpoofL);
-    Serial.print("PSPOOF_LOW");
-    Serial.println(PSpoofH);
+    //Serial.print("PSPOOF_LOW:");
+    //Serial.print(PSpoofL);
+    //Serial.print("PSPOOF_LOW");
+    //Serial.println(PSpoofH);
   
 }
 
@@ -340,8 +342,8 @@ static void publish_ps_ctrl_throttle_report( void )
     // set DLC
     tx_frame_ps_ctrl_throttle_report.dlc = 8; //TODO
 
-    //// Set Pedal Input (PI)
-    //data->pedal_input = 
+    // set override flag
+    data->override = local_override;
 
     //// Set Pedal Command (PC)
     //data->pedal_command = 
@@ -542,6 +544,12 @@ void loop()
     // if someone is pressing the throttle pedal disable control
     if ( ( PSensL_current + PSensH_current) / 2 > PEDAL_THRESH ) {
         disableControl();
+        local_override = 1;
+
+    } 
+    else 
+    {
+        local_override = 0;
     }
 
     // read and parse incoming serial commands
