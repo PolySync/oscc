@@ -50,7 +50,9 @@ License Information
 
 Hardware source materials (e.g. schematics, board layouts, wiring diagrams, data sheets, physical installation documentation, 3D models, etc.) for the OSCC (Open Source Car Control) Project are licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
 
-Software source for the OSCC (Open Source Car Control) Project is licensed under GNU General Public License (GPLv3) unless otherwise noted (e.g. 3rd party dependencies, etc.).
+Firmware source for the OSCC (Open Source Car Control) Project is licensed under GNU General Public License (GPLv3) unless otherwise noted (e.g. 3rd party or permissive dependencies, etc.).
+
+Software source for the OSCC (Open Source Car Control) Project is licensed under the MIT License (MIT) unless otherwise noted (e.g. 3rd party dependencies, etc.).
 
 Please see [LICENSE.md](LICENSE.md) for more details.
 
