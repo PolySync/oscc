@@ -194,7 +194,6 @@ void setDAC(uint16_t data, char channel)
 		// Relinquish SPI control
 		digitalWrite(DAC_CS, HIGH);
   	}
-  
   	else if (channel == 'B') 
 	{
 		data |= 0x9000;  // Set DAC B enable
@@ -216,7 +215,8 @@ void setDAC(uint16_t data, char channel)
 
 
 // A function to set the DAC output
-void latchDAC() {
+void latchDAC() 
+{
   
   // Pulse the LDAC line to send registers to DAC out. Must have set DAC registers with setDAC() first for this to do anything.
   digitalWrite( LDAC, LOW );
@@ -262,8 +262,8 @@ void enableControl()
 
 
 // A function to disable SCM control
-void disableControl() {
-  
+void disableControl() 
+{
 	// Do a quick average to smooth out the noisy data
 	static int AVG_max = 20;  // Total number of samples to average over
 	long readingsL = 0;
@@ -610,7 +610,7 @@ void loop()
 
         // Now that we've set control status, do steering if we are in control
         if( current_ctrl_state.control_enabled ) 
-	{
+	    {
             // Calculate steering angle rates
             double steeringAngleRate = ( current_ctrl_state.current_steering_angle - current_ctrl_state.steering_angle_last )/0.05;  //  degree/microsecond
             double steeringAngleRateTarget = ( current_ctrl_state.commanded_steering_angle - current_ctrl_state.current_steering_angle )/0.05; //  degree/microsecond
@@ -622,11 +622,11 @@ void loop()
             total = total + readings[readIndex];
             readIndex = readIndex + 1;
             if(readIndex >= numReadings) 
-	    {
+	        {
                 readIndex = 0;
             }
             
-	    // calculate the average:
+	        // calculate the average:
             double average = total / numReadings;
 
 
@@ -668,7 +668,6 @@ void loop()
             setDAC( TSpoofH, 'A' );
             setDAC( TSpoofL, 'B' );
             latchDAC();
-
         }
         else
         {
@@ -678,6 +677,7 @@ void loop()
             readings[readIndex] = 0;
             total = total + readings[readIndex];
             readIndex = readIndex + 1;
+            
             if ( readIndex >= numReadings ) 
             {
                 readIndex = 0;
