@@ -429,6 +429,8 @@ static void process_ps_ctrl_steering_command( const uint8_t * const rx_frame_buf
 
     current_ctrl_state.commanded_steering_angle = control_data->steering_wheel_angle_command / 9.0 ;
 
+    current_ctrl_state.steering_angle_rate_max = control_data->steering_wheel_max_velocity * 9.0;
+
     bool enabled = control_data->enabled == 1;
 
     // Enable control from the PolSync interface
