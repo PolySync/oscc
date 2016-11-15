@@ -48,14 +48,20 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 License Information
 -------------------
 
-Please see [LICENSE.md](LICENSE.md).
+Hardware source materials (e.g. schematics, board layouts, wiring diagrams, data sheets, physical installation documentation, 3D models, etc.) for the OSCC (Open Source Car Control) Project are licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
 
-This product is _**open source**_!
+Firmware source for the OSCC (Open Source Car Control) Project is licensed under GNU General Public License (GPLv3) unless otherwise noted (e.g. 3rd party or permissive dependencies, etc.).
 
-Please review the LICENSE.md file for license information.
+Software source for the OSCC (Open Source Car Control) Project is licensed under the MIT License (MIT) unless otherwise noted (e.g. 3rd party dependencies, etc.).
 
-If you have any questions or concerns on licensing, please contact help@polysync.io.
+Please see [LICENSE.md](LICENSE.md) for more details.
 
-Distributed as-is; no warranty is given.
 
-- PolySync
+Contact Information
+-------------------
+
+Please direct questions regarding OSCC and/or licensing to help@polysync.io
+
+*Distributed as-is; no warranty is given.*
+
+Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved.
