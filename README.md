@@ -22,7 +22,7 @@ The OSCC project is built around a number of individual modules that interoperat
 
 **Pre-requisites:** You must already have arduino core installed on your machine.
 
-	$ sudo apt-get install arduino-core
+`sudo apt-get install arduino-core`
 
 OSCC uses Arduino makefiles to avoid some of the limitations of the Arduino IDE. Using this method you can build, upload, and monitor the code.
 Check out [Arduino-Makefile](https://github.com/sudar/Arduino-Makefile) for more information.
@@ -106,7 +106,7 @@ Now that all your Arduino modules are properly installed it is time to start sen
 
 Install the SDL2 library with the below command.
 
-	$ sudo apt-get install libsdl2-dev
+`sudo apt-get install libsdl2-dev`
 
 Install the CANlib SDK via the following procedure.
 
