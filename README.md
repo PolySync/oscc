@@ -134,13 +134,13 @@ Then navigate to the examples directory of the CANlib install.
 
 `cd /usr/src/linuxcan/canlib/examples/`
 
+You can use the "listChannels" and "canmonitor" examples to determine which CAN channel your control bus is connected to. Can monitor will dump any data on a selected channel and list channels will tell you what channels are avaliable. You can use both to determine which channel you will need to use. Once you know the correct chanel number you can run the joystick example with the below command.
 
-
- 
+`./joystick-commander <channel-number>`
 
 **Controlling the Vehicle with the Joystick Gamepad**
 
---- diagram of joystick controller use
+Once the joystick commander is up and running you can use it to send commands to the Arduino modules. The diagram below shows how this works. 
 
 Additional Vehicles & Contributing
 ------------
