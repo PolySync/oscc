@@ -24,7 +24,7 @@ Once we have validated the boards we will be shipping the boards as a kit.
 Thanks to [Trey German](https://www.PolymorphicLabs.com) and [Macrofab](https://macrofab.com/) for help desiging the boards and getting them made.
 
 
-Click [Here](http://www.oscc.io) to pre-order your autonomy kit now.
+Click [Here](http://oscc.io) to pre-order your autonomy kit now.
 
 Building and Installing Arduino Firmware
 ------------
