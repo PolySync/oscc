@@ -152,9 +152,9 @@ You can use the "listChannels" and "canmonitor" examples to determine which CAN 
 
 **Controlling the Vehicle with the Joystick Gamepad**
 
-Once the joystick commander is up and running you can use it to send commands to the Arduino modules. The diagram below shows how this works. 
+Once the joystick commander is up and running you can use it to send commands to the Arduino modules. The controls are listed when the programs starts up. Be sure the switch on the back of the controller is 
+switched to the 'X' position, not 'D'. The vehicle will only response to commands if control is enabled with the start button. The back button disables control.
 
-<img src="https://github.com/PolySync/OSCC/blob/master/assets/game-controller.png">
 
 Additional Vehicles & Contributing
 ------------
