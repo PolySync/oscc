@@ -15,6 +15,16 @@ Repository Contents
 * **/firmware** - Arduino code for the various modules.
 * **/vehicle_info** - Information on specific vehicles such as sensor outputs and wiring diagrams.
 
+
+Boards
+-----
+
+Once we finish testing and validating the board designs we will be releasing the schematics and design files along with the board test plans and testing firmware. Check back soon for complete designs.
+Once we have validated the boards we will be shipping the boards as a kit.
+Thanks to [Trey German](www.PolymorphicLabs.com) and [Macrofab](https://macrofab.com/) for help desiging the boards and getting them made.
+
+Preoder your autonomy kit at [oscc.io](http://www.oscc.io).
+
 Building and Installing Arduino Firmware
 ------------
 
@@ -79,13 +89,13 @@ Once you are in the home directory of the CAN gateway code, build it using the c
 
 `make`
 
-Once it is successfully built you can upload it to the corresponding Arduino module. Connect to the Arduino with a USB cable and then run the below command. Sometimes it takes a little while for the Arduino to initialize once connected, so if there is an error thrown initially, try waiting a little bit and then retrying the command. 
+Once it is successfully built you can upload it to the corresponding Arduino module. Connect to the Arduino with a USB cable and then run the command below. Sometimes it takes a little while for the Arduino to initialize once connected, so if there is an error thrown initially, try waiting a little bit and then retrying the command. 
 
 `make upload`
 
 **Monitoring Arduino modules**
 
-It is sometimes useful to monitor individual Arduino modules, to check for proper operation, and debug. To do this simply run the command beloew (when connected via USB).
+It is sometimes useful to monitor individual Arduino modules, to check for proper operation, and debug. To do this simply run the command below (when connected via USB).
 
 `make monitor`
 
@@ -135,12 +145,15 @@ Then navigate to the examples directory of the CANlib install.
 
 `cd /usr/src/linuxcan/canlib/examples/`
 
+You can use the "listChannels" and "canmonitor" examples to determine which CAN channel your control bus is connected to. Can monitor will dump any data on a selected channel and list channels will tell you what channels are avaliable. You can use both to determine which channel you will need to use. Once you know the correct chanel number you can run the joystick example with the command below.
 
-
+`./joystick-commander <channel-number>`
 
 **Controlling the Vehicle with the Joystick Gamepad**
 
---- diagram of joystick controller use
+Once the joystick commander is up and running you can use it to send commands to the Arduino modules. The diagram below shows how this works. 
+
+<img src="https://github.com/PolySync/OSCC/blob/master/assets/game-controller.png">
 
 Additional Vehicles & Contributing
 ------------
