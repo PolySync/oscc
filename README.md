@@ -21,9 +21,10 @@ Boards
 
 Once we finish testing and validating the board designs we will be releasing the schematics and design files along with the board test plans and testing firmware. Check back soon for complete designs.
 Once we have validated the boards we will be shipping the boards as a kit.
-Thanks to [Trey German](www.PolymorphicLabs.com) and [Macrofab](https://macrofab.com/) for help desiging the boards and getting them made.
+Thanks to [Trey German](https://www.PolymorphicLabs.com) and [Macrofab](https://macrofab.com/) for help desiging the boards and getting them made.
 
-Preoder your autonomy kit at [oscc.io](http://www.oscc.io).
+
+Click [Here](https://www.oscc.io) to pre-order your autonomy kit now.
 
 Building and Installing Arduino Firmware
 ------------
