@@ -211,23 +211,29 @@ void test_CAN_recieve() {
 
 //INSTALLATION TESTS
 
+
 void test_torque_signal_sense() {
   // turn steering wheel while the car is on and check that the readings from
   // the torque sensors are as expected.
 }
 
+
 void test_torque_spoof() {
   // send spoofed torque, slowly sweep stering back and forth.
 }
+
 
 void test_hard_power_off() {
   // while sweeping the steering wheel, cut power and test that shutdown is
   // handled gracefully or throws the expected fault.
 }
 
-void setup() {
 
+void setup() {
+    init_serial();
+    init_can();
 }
+
 
 void loop() {
 
