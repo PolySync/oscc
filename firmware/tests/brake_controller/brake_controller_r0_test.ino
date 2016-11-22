@@ -1,20 +1,10 @@
-// *****************************************************
-// static global data
-// *****************************************************
 
-// chip select pin for CAN Shield
-#define CAN_CS 10
+#define CAN_CS 10                          // chip select pin for CAN Shield
 
-
-//
 #define CAN_CONTROL_BAUD (CAN_500KBPS)
 
-
-//
 #define SERIAL_DEBUG_BAUD (115200)
 
-
-//
 #define CAN_INIT_RETRY_DELAY (50)
 
 
@@ -75,8 +65,9 @@ void test_power_drivers() {
 
     for (int thisPin = 0; thisPin < (sizeof(powerDriverPins) / sizeof(int)); thisPin++) {
 
-        //flush all previous received and transmitted data
+        // flush all previous received and transmitted data
         Serial.flush(); 
+
         // while no serial input
         while(!Serial.available()) {
             for (int fadeValue = 0 ; fadeValue <= 255; fadeValue += 5) {
@@ -103,6 +94,9 @@ void test_power_drivers() {
 // the pump relay.
 void test_pump_relay() {
 
+    // flush all previous received and transmitted data
+    Serial.flush(); 
+
     while(!Serial.available()) {
         digitalWrite(PIN_PUMP, HIGH);   
         delay(1000);                   
@@ -115,6 +109,9 @@ void test_pump_relay() {
 // to test that the brake light switch spoofing relay functions we can blink two
 // LEDS in an alternating pattering using the the switch relay.
 void test_switch_relay() {
+
+    // flush all previous received and transmitted data
+    Serial.flush(); 
 
     while(!Serial.available()) {
         digitalWrite(PIN_BREAK_SWITCH, HIGH);   

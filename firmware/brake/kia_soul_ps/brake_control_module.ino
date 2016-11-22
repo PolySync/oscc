@@ -34,10 +34,6 @@
 
 
 //
-#define PIN_BRAKE_CAN_CS (10)
-
-
-//
 #define CAN_CONTROL_BAUD (CAN_500KBPS)
 
 
