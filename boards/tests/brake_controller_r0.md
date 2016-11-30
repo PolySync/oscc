@@ -38,12 +38,12 @@ so that the wheels can turn freely.
  - Brake pressure control
  - Brake pedal input sensing
 
-4. Upload the Brake control firmware.
+3. Upload the Brake control firmware.
 
-5. Using a laptop, command the vehicle to brake. Press on the brake pedal and ensure
+4. Using a laptop, command the vehicle to brake. Press on the brake pedal and ensure
 that the brake module disables control.
 
-6. While the control modules is braking the vehicle, press the emergency stop button and
+5. While the control modules is braking the vehicle, press the emergency stop button and
 check that normal braking is possible.
 
 ## Integration Testing
