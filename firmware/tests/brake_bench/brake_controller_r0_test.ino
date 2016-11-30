@@ -1,11 +1,12 @@
 #include "SPI.h"
 #include "mcp_can.h"
+#include "can_frame.h"
 
-#define CAN_CS 10                          // chip select pin for CAN Shield
+#define CAN_CS 53                          // chip select pin for CAN Shield
 
-#define CAN_CONTROL_BAUD (CAN_500KBPS)
+#define CAN_BAUD (CAN_500KBPS)
 
-#define SERIAL_DEBUG_BAUD (115200)
+#define SERIAL_BAUD (115200)
 
 #define CAN_INIT_RETRY_DELAY (50)
 
@@ -53,57 +54,74 @@ int SLADutyMax,
     SLRDutyMin;
 
 
+static void init_serial( void ) 
+{
+    Serial.begin( SERIAL_BAUD );
+}
+
+
+
+static void init_can ( void ) 
+{
+    // wait until we have initialized
+    while( CAN.begin(CAN_BAUD) != CAN_OK )
+    {   
+        // wait a little
+        delay( CAN_INIT_RETRY_DELAY );
+        Serial.println( "init_can: retrying" );
+    }   
+
+    // debug log
+    Serial.println( "init_can: pass" );
+}
 
 // BENCH TESTS
 
 
 // Test that the Arduino powers up
 void test_power() {
-    Serial.println('test_power: passed');
+    Serial.println( "test_power: passed" );
 }
 
 
 // in order to test that each PWM driving circuit functions correctly, we can
 // drive LEDS, one by one, in a breathing patter (increasing and decreasing PWM).
 void test_power_drivers() {
-    Serial.println('Starting power driver test');
-
-    for (int thisPin = 0; thisPin < (sizeof(powerDriverPins) / sizeof(int)); thisPin++) {
-        Serial.print("driving pin: ");
-        Serial.println("3");
+    Serial.println( "Starting power driver test" );
 
 
-        // while no serial input
-        for (int fadeValue = 0 ; fadeValue <= 100; fadeValue += 5) {
-            // sets the value (range from 0 to 255):
-            analogWrite(2, fadeValue);
-            analogWrite(3, fadeValue);
-            analogWrite(4, fadeValue);
-            analogWrite(5, fadeValue);
-            analogWrite(6, fadeValue);
-            analogWrite(7, fadeValue);
-            // wait for 30 milliseconds to see the dimming effect
-            delay(100);
-            val = analogRead(A3);    // read the input pin
-            Serial.println(val);  
-        }
-
-        // fade out from max to min in increments of 5 points:
-        for (int fadeValue = 100 ; fadeValue >= 0; fadeValue -= 5) {
-            // sets the value (range from 0 to 255):
-            analogWrite(2, fadeValue);
-            analogWrite(3, fadeValue);
-            analogWrite(4, fadeValue);
-            analogWrite(5, fadeValue);
-            analogWrite(6, fadeValue);
-            analogWrite(7, fadeValue);
-            // wait for 30 milliseconds to see the dimming effect
-            delay(100);
-            val = analogRead(A3);    // read the input pin
-            Serial.println(val);  
-        }
-
+    // while no serial input
+    for (int fadeValue = 0 ; fadeValue <= 100; fadeValue += 5) {
+        // sets the value (range from 0 to 255):
+        analogWrite(0, fadeValue);
+        analogWrite(1, fadeValue);
+        analogWrite(2, fadeValue);
+        analogWrite(3, fadeValue);
+        analogWrite(4, fadeValue);
+        analogWrite(5, fadeValue);
+        analogWrite(6, fadeValue);
+        analogWrite(7, fadeValue);
+        // wait for 30 milliseconds to see the dimming effect
+        delay(100);
+        val = analogRead(A3);    // read the input pin
+        Serial.println(val);  
     }
+
+    // fade out from max to min in increments of 5 points:
+    for (int fadeValue = 100 ; fadeValue >= 0; fadeValue -= 5) {
+        // sets the value (range from 0 to 255):
+        analogWrite(0, fadeValue);
+        analogWrite(1, fadeValue);
+        analogWrite(2, fadeValue);
+        analogWrite(3, fadeValue);
+        analogWrite(4, fadeValue);
+        analogWrite(5, fadeValue);
+        analogWrite(6, fadeValue);
+        analogWrite(7, fadeValue);
+        // wait for 30 milliseconds to see the dimming effect
+        delay(100);
+    }
+
 }
 
 
@@ -138,39 +156,70 @@ void test_switch_relay() {
     }
 }
 
+// send a CAN frame, to be recieved by some module on a CAN bus.
 void test_CAN_send() {
-  // send a CAN frame, to be recieved by some module on a CAN bus.
+
+    int cantxValue = 60;
+
+    Serial.print("cantxValue: ");
+    Serial.println(cantxValue);
+    //Create data packet for CAN message
+    unsigned char canMsg[8] = {cantxValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    // send data:  id = 0x123, standrad frame, data len = 8, stmp: data buf
+    CAN.sendMsgBuf(0x07B, 0, 8, canMsg); 
+    delay(250);
 }
 
-void test_can_recieve() {
-  // recieve a CAN frame sent from some module on a CAN bus.
+
+// recieve a CAN frame sent from some module on a CAN bus.
+void test_CAN_recieve() {
+
+    // local vars
+    can_frame_s rx_frame;
+
+    if( CAN.checkReceive() == CAN_MSGAVAIL )
+    {
+        memset( &rx_frame, 0, sizeof(rx_frame) );
+
+        // read frame
+        CAN.readMsgBufID(
+                (INT32U*) &rx_frame.id,
+                (INT8U*) &rx_frame.dlc,
+                (INT8U*) rx_frame.data );
+        Serial.print("canRxValue:");
+        Serial.println(rx_frame.id);
+        delay(250);
+    }
 
 }
 
 // INSTALLATION TESTS
 
 void test_pressure_response_matches_request() {
-  // slowly build pressure at the brakes and check that the pressure at the brakes
-  // matches the commanded pressure. This test confirms all solenoids including
-  // master cylinder solenoids function as expected.
+    // slowly build pressure at the brakes and check that the pressure at the brakes
+    // matches the commanded pressure. This test confirms all solenoids including
+    // master cylinder solenoids function as expected.
 }
 
 void test_brake_pedal_input() {
-  // put the system into a braking state, press the pedal. The module should
-  // exit the braking state and allow the user to brake
+    // put the system into a braking state, press the pedal. The module should
+    // exit the braking state and allow the user to brake
 }
 
 void test_brake_pedal_spoof() {
-  // to test that the brake light switch spoofing relay functions we blink the
- // the brake lights.
+    // to test that the brake light switch spoofing relay functions we blink the
+    // the brake lights.
 }
 
 void setup() {
-    Serial.begin(115200);      // open the serial port at 9600 bps:    
+    init_serial();
+    init_can();
 }
 
 void loop() {
     // interactively run tests
-    test_power_drivers();
+    //test_power_drivers();
+    test_CAN_send();
+    test_CAN_recieve();
 
 }

@@ -36,10 +36,11 @@ static void init_CAN_1( void )
 {
     // wait until we have initialized
     // watchdog will reset if we take too long
-    while( CAN_1.begin(CAN_OBD_BAUD) != CAN_OK )
+    while( CAN_1.begin(CAN_BAUD) != CAN_OK )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
+        Serial.println( "init_CAN_1: retrying" );
     }
 
     // debug log
@@ -52,10 +53,12 @@ static void init_CAN_2( void )
 {
     // wait until we have initialized
     // watchdog will reset if we take too long
-    while( CAN_2.begin(CAN_CONTROL_BAUD) != CAN_OK )
+    while( CAN_2.begin(CAN_BAUD) != CAN_OK )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
+        Serial.println( "init_CAN_2: retrying" );
+
     }
 
     // debug log
@@ -67,26 +70,21 @@ static void init_CAN_2( void )
 void test_CAN_1_recieve() {
 
     // local vars
-    CAN_frame_s rx_frame;
+    can_frame_s rx_frame;
 
-    Serial.flush(); 
 
-    while( !Serial.available() )
+    if( CAN_1.checkReceive() == CAN_MSGAVAIL )
     {
+        memset( &rx_frame, 0, sizeof(rx_frame) );
 
-        if( CAN_1.checkReceive() == CAN_MSGAVAIL )
-        {
-            memset( &rx_frame, 0, sizeof(rx_frame) );
-
-            // read frame
-            CAN_1.readMsgBufID(
-                    (INT32U*) &rx_frame.id,
-                    (INT8U*) &rx_frame.dlc,
-                    (INT8U*) rx_frame.data );
-            Serial.println(rx_frame.id);
-            Serial.println(rx_frame.data[0]);
-            delay(250);
-        }
+        // read frame
+        CAN_1.readMsgBufID(
+                (INT32U*) &rx_frame.id,
+                (INT8U*) &rx_frame.dlc,
+                (INT8U*) rx_frame.data );
+        Serial.println(rx_frame.id);
+        Serial.println(rx_frame.data[0]);
+        delay(250);
     }
 
 }
@@ -97,7 +95,7 @@ void test_CAN_1_recieve() {
 void test_CAN_2_recieve() {
 
     // local vars
-    CAN_frame_s rx_frame;
+    can_frame_s rx_frame;
 
     Serial.flush(); 
 
@@ -127,18 +125,13 @@ void test_CAN_1_send() {
 
     int cantxValue = 66;
 
-    Serial.flush(); 
-
-    while( !Serial.available() )
-    {
-        Serial.print("cantxValue: ");
-        Serial.println(cantxValue);
-        //Create data packet for CAN message
-        unsigned char canMsg[8] = {cantxValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        // send data:  id = 0x123, standrad frame, data len = 8, stmp: data buf
-        CAN_1.sendMsgBuf(0x07B, 0, 8, canMsg); 
-        delay(250);
-    }
+    Serial.print("cantxValue: ");
+    Serial.println(cantxValue);
+    //Create data packet for CAN message
+    unsigned char canMsg[8] = {cantxValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    // send data:  id = 0x123, standrad frame, data len = 8, stmp: data buf
+    CAN_1.sendMsgBuf(0x07B, 0, 8, canMsg); 
+    delay(250);
 }
 
 
@@ -165,15 +158,15 @@ void setup() {
 
     init_serial();
     init_CAN_1();
-    init_CAN_2();
+    //init_CAN_2();
 
 }
 
 void loop() {
 
     test_CAN_1_send();
-    test_CAN_2_send();
+    //test_CAN_2_send();
     test_CAN_1_recieve();
-    test_CAN_2_recieve();
+    //test_CAN_2_recieve();
 
 }
