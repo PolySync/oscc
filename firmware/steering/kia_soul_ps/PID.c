@@ -26,52 +26,55 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/**
- * @brief Current control state.
- *
- * Keeps track of what state the arduino controller is currently in.
- *
- */
+#include "PID.h"
 
-typedef struct
+
+
+
+void pid_zeroize( PID* pid ) 
 {
-    //
-    //
-    bool control_enabled; /* Is control currently enabled flag */
-	//
-	//
-	bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
-	//
-	//
-	double current_steering_angle; /* Current steering angle as reported by car */
-	//
-	//
-	double commanded_steering_angle; /* Commanded steering angle as specified by higher level controller */
-    //
-    //
-    double PID_input; /* Input to PID controller */
-    //
-    //
-    double PID_output; /* Output from PID controller */
-    //
-    //
-    double PID_setpoint; /* Setpoint for PID controller */
-    //
-    //
-    double SA_Kp = 0.32; /* Proportional gain for PID controller */
-    //
-    //
-    double SA_Ki = 2.0; /* Integral gain for PID controller */
-    //
-    //    
-    double SA_Kd = 0.03; /* Derivative gain for PID controller */
-    //
-    //
-    double steering_angle_rate_max = 1000; /* Maximum rate of change of steering wheel angle */
-    //
-    //    
-    double steering_angle_last; /* Last steering angle recorded */
-    //
-    //
-    long unsigned int lastMicros; /* Keeps track of last control loop time */
-} current_control_state;
+    // set prev and integrated error to zero
+    pid->prev_error = 0;
+    pid->int_error = 0;
+    pid->prev_steering_angle = 0;
+    pid->windup_guard = 500;
+}
+ 
+
+void pid_update( PID* pid, double curr_error, double dt ) 
+{
+    double diff;
+    double p_term;
+    double i_term;
+    double d_term;
+    
+    static int count = 0;
+ 
+    // integration with windup guarding
+    pid->int_error += (curr_error * dt);
+    
+    count++;
+    
+    if (pid->int_error < -(pid->windup_guard))
+    {
+        pid->int_error = -(pid->windup_guard);
+    }
+    else if (pid->int_error > pid->windup_guard)
+    {
+        pid->int_error = pid->windup_guard;
+    }
+ 
+    // differentiation
+    diff = ((curr_error - pid->prev_error) / dt);
+ 
+    // scaling
+    p_term = (pid->proportional_gain * curr_error);
+    i_term = (pid->integral_gain     * pid->int_error);
+    d_term = (pid->derivative_gain   * diff);
+    
+    // summation of terms
+    pid->control = p_term + i_term + d_term;
+ 
+    // save current error as previous error for next iteration
+    pid->prev_error = curr_error;
+}
