@@ -37,12 +37,12 @@ the ground so that the wheels can turn freely.
  - Steering spoofing
  - Steering sensing
 
-4. Upload the Steering Control firmware.
+3. Upload the Steering Control firmware.
 
-5. Using a laptop, command the vehicle to steer. Turn the steering wheel and ensure
+4. Using a laptop, command the vehicle to steer. Turn the steering wheel and ensure
 that the steering module disables control.
 
-6. While the control modules is steering the vehicle, press the emergency stop button and
+5. While the control modules is steering the vehicle, press the emergency stop button and
 check that normal steering is possible.
 
 ## Integration Testing
