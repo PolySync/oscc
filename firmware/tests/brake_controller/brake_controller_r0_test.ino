@@ -1,22 +1,3 @@
-/************************************************************************/
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
-/*                                                                      */
-/* This file is part of Open Source Car Control (OSCC).                 */
-/*                                                                      */
-/* OSCC is free software: you can redistribute it and/or modify         */
-/* it under the terms of the GNU General Public License as published by */
-/* the Free Software Foundation, either version 3 of the License, or    */
-/* (at your option) any later version.                                  */
-/*                                                                      */
-/* OSCC is distributed in the hope that it will be useful,              */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
-/* GNU General Public License for more details.                         */
-/*                                                                      */
-/* You should have received a copy of the GNU General Public License    */
-/* along with OSCC.  If not, see <http://www.gnu.org/licenses/>.        */
-/************************************************************************/
-
 // Throttle control ECU firmware
 // Firmware for control of 2014 Kia Soul throttle system
 // Component
@@ -49,7 +30,7 @@
 // *****************************************************
 
 // chip select pin for CAN Shield
-#define CAN_CS 10
+#define CAN_CS 53
 
 
 //
@@ -69,10 +50,6 @@
 #else
     #define DEBUG_PRINT(x)
 #endif
-
-
-// ms
-#define PS_CTRL_RX_WARN_TIMEOUT (150)
 
 
 //
@@ -114,31 +91,8 @@ static can_frame_s tx_frame_ps_ctrl_brake_report;
 // *
 
 
-// corrects for overflow condition
-static void get_update_time_delta_ms(
-		const uint32_t time_in,
-		const uint32_t last_update_time_ms,
-		uint32_t * const delta_out )
-{
-    // check for overflow
-    if( last_update_time_ms < time_in )
-    {   
-		// time remainder, prior to the overflow
-		(*delta_out) = (UINT32_MAX - time_in);
-        
-        // add time since zero
-        (*delta_out) += last_update_time_ms;
-    }   
-    else
-    {   
-        // normal delta
-        (*delta_out) = ( last_update_time_ms - time_in );
-    }   
-}
-
-
 // uses last_update_ms, corrects for overflow condition
-static void get_update_time_ms(
+static void get_update_time_delta_ms(
                 const uint32_t * const time_in,
                         uint32_t * const delta_out )
 {
@@ -158,20 +112,18 @@ static void get_update_time_ms(
         }
 }
 
-
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids ) 
 // pins are not perfectly sequential because the clock frequency of certain pins is different.
-const byte PIN_SLAFL = 3;      // front left actuation
-const byte PIN_SLAFR = 5;      // front right actuation
-const byte PIN_SLRFL = 6;      // front left return
-const byte PIN_SLRFR = 7;      // front right return
-const byte PIN_SMC = 8;      // master cylinder solenoids (two of them)
-const byte PIN_PUMP = 9;     // accumulator pump motor
+const byte PIN_SLAFL = 4;      // front left actuation
+const byte PIN_SLAFR = 2;      // front right actuation
+const byte PIN_SLRFL = 3;      // front left return
+const byte PIN_SLRFR = 3;      // front right return
+const byte PIN_SMC = 6;        // master cylinder solenoids (two of them)
+const byte PIN_PUMP = 49;     // accumulator pump motor
 
 
 // brake spoofer relay pin definitions
 const byte PIN_BREAK_SWITCH_1 = 48;
-const byte PIN_BREAK_SWITCH_2 = 49;
 
 
 // sensor pin (analog) definitions
@@ -301,6 +253,7 @@ struct Accumulator {
     void maintainPressure() 
     {
       _pressure = convertToVoltage(analogRead(_sensorPin));
+      //Serial.println(_pressure);
 
 
       if( _pressure < MIN_PACC ) 
@@ -355,6 +308,7 @@ struct SMC {
         if (_pressure1 > PEDAL_THRESH || _pressure2 > PEDAL_THRESH ) 
         {
             DEBUG_PRINT("Brake Pedal Detected");
+            DEBUG_PRINT(_pressure1);
             pressure_req = .48; 
             local_override = 1;
             brakeStateMachine.transitionTo(Wait);
@@ -439,8 +393,10 @@ struct Brakes {
     // spill pressure
     void powerSLR(int scaler) 
     {
+        Serial.println(scaler);
         analogWrite( _solenoidPinLeftR, scaler );
         analogWrite( _solenoidPinRightR, scaler );
+        analogWrite( 5, scaler );
     }
 
     
@@ -526,16 +482,51 @@ static void init_can( void )
 // A function to parse incoming serial bytes
 void processSerialByte() {
   
-  if (incomingSerialByte == 'a') {                  // increase pressure
-      pressure_req += 0.2; 
+    if (incomingSerialByte == 'a') {                  // increase pressure
+        pressure_req += 0.2; 
     }
-  if (incomingSerialByte == 'd') {                  // decrease pressure
-      pressure_req -= .2; 
+    if (incomingSerialByte == 'd') {                  // decrease pressure
+        pressure_req -= 0.2; 
     }
 
-  if (incomingSerialByte == 'p') {                  // reset
-      pressure_req = .48; 
-      DEBUG_PRINT("reset pressure request");    
+    if (incomingSerialByte == 'p') {                  // reset
+        pressure_req = .48; 
+        DEBUG_PRINT("reset pressure request");    
+    }
+    if (incomingSerialByte == 'q') {                  // reset
+        smc.solenoidsOpen(); 
+        DEBUG_PRINT("opened SMCs");    
+    }
+    if (incomingSerialByte == 'e') {                  // reset
+        smc.solenoidsClose(); 
+        DEBUG_PRINT("closed SMCs");    
+    }
+    if (incomingSerialByte == 'z') {                  // reset
+        brakes.depowerSLR(); 
+        DEBUG_PRINT("depower SLRs");    
+    }
+    if (incomingSerialByte == 'c') {                  // reset
+        brakes.powerSLR(255); 
+        DEBUG_PRINT("power SLRs");    
+    }
+    if (incomingSerialByte == 'n') {                  // reset
+        brakes.powerSLA(255); 
+        DEBUG_PRINT("power SLAs");    
+    }
+    if (incomingSerialByte == 'm') {                  // reset
+        brakes.depowerSLA(); 
+        DEBUG_PRINT("depower SLAs");    
+    }
+    if (incomingSerialByte == 'u') {                  // reset
+        Serial.println(accumulator._pressure);
+    }
+    if (incomingSerialByte == 't') {                  // reset
+        Serial.println("pump on");
+        accumulator.pumpOn();
+    }
+    if (incomingSerialByte == 'y') {                  // reset
+        Serial.println("pump off");
+        accumulator.pumpOff();
     }
 }
 
@@ -577,7 +568,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    get_update_time_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
+    get_update_time_delta_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
 
     // check publish interval
     if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
@@ -613,8 +604,6 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
         controlEnabled = false;
         brakeStateMachine.transitionTo(Wait);
     }
-
-    rx_frame_ps_ctrl_brake_command.timestamp = GET_TIMESTAMP_MS();
 
     unsigned int pedal_command = control_data->pedal_command;
     pressure_req = map(pedal_command, 0, 65535, 48, 230); // map to voltage range 
@@ -702,7 +691,7 @@ void waitUpdate()
     accumulator.maintainPressure();
 
     // TODO: Is this check needed? Don't we force transition elsewhere?
-    if( pressure_req > ZERO_PRESSURE + .01 && controlEnabled ) 
+    if( pressure_req > ZERO_PRESSURE + .01 ) 
     {
         brakeStateMachine.transitionTo(Brake);
     }
@@ -718,7 +707,6 @@ void brakeEnter()
     smc.solenoidsClose(); 
 
     digitalWrite( PIN_BREAK_SWITCH_1, LOW );
-    digitalWrite( PIN_BREAK_SWITCH_2, LOW );
 
     // close SLRRs, they are normally open for failsafe conditions
     brakes.depowerSLR(); 
@@ -762,14 +750,16 @@ void brakeUpdate()
     //Serial.print(pressurePID.GetKi()); 
     //Serial.print(" Kd = ");
     //Serial.print(pressurePID.GetKd()); 
-    //Serial.print(" SR error = ");
-    //Serial.print(pressureRate_target - pressureRate); // Rate error
-    //Serial.print(" Commanded rate = ");
-    //Serial.print(pressurePID_output);
+    Serial.print(" request = ");
+    Serial.print(pressure_req); // Rate error
+    Serial.print(" SR error = ");
+    Serial.print(pressureRate_target - pressureRate); // Rate error
+    Serial.print(" Commanded rate = ");
+    Serial.print(pressurePID_output);
     ////Serial.print( "deltaT = ");
     ////Serial.println(deltaT);
-    //Serial.print( " pressure = ");
-    //Serial.println(pressure);
+    Serial.print( " pressure = ");
+    Serial.println(pressure);
 
 
 
@@ -814,33 +804,8 @@ void brakeExit()
 
     // unswitch brake switch
     digitalWrite( PIN_BREAK_SWITCH_1, HIGH );
-    digitalWrite( PIN_BREAK_SWITCH_2, HIGH );
 }
 
-
-//
-static void check_rx_timeouts( void )
-{
-    // local vars
-    uint32_t delta = 0;
-
-    // get time since last receive
-    get_update_time_delta_ms( 
-			rx_frame_ps_ctrl_brake_command.timestamp, 
-			GET_TIMESTAMP_MS(), 
-			&delta );
-
-    // check rx timeout
-    if( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
-    {
-        // disable control from the PolySync interface
-        if( controlEnabled ) 
-        {
-            Serial.println("control disabled: timeout");
-            controlEnabled = false;
-        }
-    }
-}
 
 
 // the setup routine runs once when you press reset:
@@ -855,10 +820,16 @@ void setup( void )
 
 
     // duty Scalers good for 0x02
-    SLADutyMax = 225;
-    SLADutyMin = 100;
-    SLRDutyMax = 225;
-    SLRDutyMin = 100;
+    //SLADutyMax = 225;
+    //SLADutyMin = 100;
+    //SLRDutyMax = 225;
+    //SLRDutyMin = 100;
+
+    // test duty Scalers 
+    SLADutyMax = 100;
+    SLADutyMin = 0;
+    SLRDutyMax = 100;
+    SLRDutyMin = 0;
 
     // set the PWM timers, above the acoustic range
     TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
@@ -881,9 +852,7 @@ void setup( void )
 
     // relay boards are active low, set to high before setting output to avoid unintended energisation of relay
     digitalWrite( PIN_BREAK_SWITCH_1, HIGH );
-    digitalWrite( PIN_BREAK_SWITCH_2, HIGH );
     pinMode( PIN_BREAK_SWITCH_1, OUTPUT );
-    pinMode( PIN_BREAK_SWITCH_2, OUTPUT );
 
     // depower all the things
     accumulator.pumpOff();
@@ -895,15 +864,15 @@ void setup( void )
 
     init_serial();
 
-    init_can();
+    //init_can();
 
-    publish_ps_ctrl_brake_report();
+    //publish_ps_ctrl_brake_report();
 
     // update last Rx timestamps so we don't set timeout warnings on start up
-    rx_frame_ps_ctrl_brake_command.timestamp = GET_TIMESTAMP_MS();
+    //rx_frame_ps_ctrl_brake_command.timestamp = GET_TIMESTAMP_MS();
 
     // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS();
+    //last_update_ms = GET_TIMESTAMP_MS();
 
     pressurePID.SetMode(AUTOMATIC);
     pressurePID.SetOutputLimits(-2, 2);
@@ -918,16 +887,14 @@ void loop()
 {
 
     // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS();
+    //last_update_ms = GET_TIMESTAMP_MS();
 
-    handle_ready_rx_frames();
+    //handle_ready_rx_frames();
 
-    publish_timed_tx_frames();
-
-    check_rx_timeouts();
+    //publish_timed_tx_frames();
         
     // check pressures on master cylinder (pressure from pedal)
-    smc.checkPedal();
+    //smc.checkPedal();
 
     // read and parse incoming serial commands
     if( Serial.available() > 0 ) 
@@ -936,6 +903,5 @@ void loop()
         processSerialByte();
     }
       
-
     brakeStateMachine.update();
 } 
