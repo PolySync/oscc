@@ -85,13 +85,13 @@ void test_power() {
 
 
 // in order to test that each PWM driving circuit functions correctly, we can
-// drive LEDS, one by one, in a breathing patter (increasing and decreasing PWM).
+// drive LEDS, one by one, in a breathing patter (increasing and decreasing PWM duty cycle).
 void test_power_drivers() {
     Serial.println( "Starting power driver test" );
 
 
-    // while no serial input
-    for (int fadeValue = 0 ; fadeValue <= 100; fadeValue += 5) {
+    // starting at 0% duty cycle, step up to 100% duty cycle (255)
+    for (int fadeValue = 0 ; fadeValue <= 255; fadeValue += 5) {
         // sets the value (range from 0 to 255):
         analogWrite(0, fadeValue);
         analogWrite(1, fadeValue);
@@ -107,8 +107,8 @@ void test_power_drivers() {
         Serial.println(val);  
     }
 
-    // fade out from max to min in increments of 5 points:
-    for (int fadeValue = 100 ; fadeValue >= 0; fadeValue -= 5) {
+    // fade from 100% duty cycle back to 0% duty cycle
+    for (int fadeValue = 255 ; fadeValue >= 0; fadeValue -= 5) {
         // sets the value (range from 0 to 255):
         analogWrite(0, fadeValue);
         analogWrite(1, fadeValue);
