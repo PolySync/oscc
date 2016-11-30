@@ -37,12 +37,12 @@ computer via a USB cable. These tests are to be run with the vehicle in park.
  - Throttle spoofing
  - Throttle sensing
 
-4. Upload the Steering Control firmware.
+3. Upload the Steering Control firmware.
 
-5. Using a laptop, command the vehicle to accelerate. Pressed the
+4. Using a laptop, command the vehicle to accelerate. Pressed the
 accelerator pedal and ensure that the throttle module disables control.
 
-6. While the control modules is accelerating the vehicle,
+5. While the control modules is accelerating the vehicle,
 press the emergency stop button and check that normal throttle function is restored.
 
 ## Integration Testing
