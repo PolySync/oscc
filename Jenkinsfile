@@ -1,5 +1,5 @@
 #!groovy
-node('worker') {
+node('arduino') {
   stage('Checkout') {
     checkout([
       $class: 'GitSCM',
@@ -12,11 +12,11 @@ node('worker') {
     parallel 'steering firmware': {
       sh 'cd firmware/steering/kia_soul_ps && make'
     }, 'throttle firmware': {
-
+      sh 'cd firmware/throttle/kia_soul_ps && make'
     }, 'brake firmware': {
-
+      sh 'cd firmware/brake/kia_soul_ps && make'
     }, 'CAN gateway firmware': {
-
+      sh 'cd firmware/can_gateway/kia_soul_ps && make'
     }
     echo 'Build Complete!'
   }
