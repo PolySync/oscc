@@ -221,11 +221,10 @@ void setup( )
 
 void loop() 
 {
-    //test_DACS();
+    test_DACS();
     //test_interrupt_relay();
     //test_CAN_send();
     //test_CAN_recieve();
-    test_signal_sense();
+    //test_signal_sense();
 
 }
-
