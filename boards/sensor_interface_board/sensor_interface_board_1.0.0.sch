@@ -1761,6 +1761,27 @@ Source: 008-0260-0_E.pdf</description>
 <pad name="P$3" x="7" y="0" drill="1.4"/>
 <pad name="P$4" x="10.5" y="0" drill="1.4"/>
 </package>
+<package name="PHOENIX_2_10.16MM">
+<pad name="P$1" x="0" y="0" drill="1.5"/>
+<pad name="P$2" x="0" y="-10.16" drill="1.5"/>
+<pad name="P$3" x="10.16" y="0" drill="1.5"/>
+<pad name="P$4" x="10.16" y="-10.16" drill="1.5"/>
+<wire x1="-5" y1="3" x2="15" y2="3" width="0.127" layer="21"/>
+<wire x1="-5" y1="3" x2="-5" y2="-15" width="0.127" layer="21"/>
+<wire x1="-5" y1="-15" x2="-2" y2="-15" width="0.127" layer="21"/>
+<wire x1="-2" y1="-15" x2="2" y2="-15" width="0.127" layer="21"/>
+<wire x1="2" y1="-15" x2="8" y2="-15" width="0.127" layer="21"/>
+<wire x1="8" y1="-15" x2="12" y2="-15" width="0.127" layer="21"/>
+<wire x1="12" y1="-15" x2="15" y2="-15" width="0.127" layer="21"/>
+<wire x1="15" y1="-15" x2="15" y2="3" width="0.127" layer="21"/>
+<wire x1="-2" y1="-15" x2="-2" y2="-13" width="0.127" layer="21"/>
+<wire x1="-2" y1="-13" x2="2" y2="-13" width="0.127" layer="21"/>
+<wire x1="2" y1="-13" x2="2" y2="-15" width="0.127" layer="21"/>
+<wire x1="8" y1="-13" x2="12" y2="-13" width="0.127" layer="21"/>
+<wire x1="12" y1="-13" x2="12" y2="-15" width="0.127" layer="21"/>
+<wire x1="8" y1="-13" x2="8" y2="-15" width="0.127" layer="21"/>
+<text x="-5" y="4" size="1.27" layer="25" font="vector">&gt;NAME</text>
+</package>
 </packages>
 <symbols>
 <symbol name="MCP4922">
@@ -5914,12 +5935,12 @@ Source: 008-0260-0_E.pdf</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="CON2">
+<deviceset name="CON2" prefix="CON">
 <gates>
 <gate name="G$1" symbol="CON2" x="7.62" y="0"/>
 </gates>
 <devices>
-<device name="" package="PHOENIX_2_45">
+<device name="3.5MM" package="PHOENIX_2_45">
 <connects>
 <connect gate="G$1" pin="P$1" pad="P$1"/>
 <connect gate="G$1" pin="P$2" pad="P$2"/>
@@ -5928,9 +5949,18 @@ Source: 008-0260-0_E.pdf</description>
 <technology name=""/>
 </technologies>
 </device>
+<device name="10.16MM" package="PHOENIX_2_10.16MM">
+<connects>
+<connect gate="G$1" pin="P$1" pad="P$1 P$2"/>
+<connect gate="G$1" pin="P$2" pad="P$3 P$4"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
 </devices>
 </deviceset>
-<deviceset name="CON4">
+<deviceset name="CON4" prefix="CON" uservalue="yes">
 <gates>
 <gate name="G$1" symbol="CON4" x="-10.16" y="7.62"/>
 </gates>
@@ -7388,10 +7418,10 @@ by exp-lbrs.ulp</description>
 <part name="GND10" library="supply1" deviceset="GND" device=""/>
 <part name="P+11" library="supply1" deviceset="+5V" device=""/>
 <part name="P+12" library="supply1" deviceset="+5V" device=""/>
-<part name="CON1" library="polysync" deviceset="CON2" device=""/>
+<part name="CON1" library="polysync" deviceset="CON2" device="3.5MM"/>
 <part name="P+14" library="supply1" deviceset="V+" device=""/>
 <part name="GND11" library="supply1" deviceset="GND" device=""/>
-<part name="CON2" library="polysync" deviceset="CON2" device=""/>
+<part name="CON2" library="polysync" deviceset="CON2" device="3.5MM"/>
 <part name="CON4" library="polysync" deviceset="CON4" device=""/>
 <part name="CON3" library="polysync" deviceset="CON4" device=""/>
 <part name="GND12" library="supply1" deviceset="GND" device=""/>
