@@ -1,4 +1,3 @@
-/************************************************************************/
 /* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* This file is part of Open Source Car Control (OSCC).                 */
@@ -21,16 +20,16 @@
 // Firmware for control of 2014 Kia Soul throttle system
 // Component
 //    Arduino Uno
-//    Seeed Studio CAN-BUS Shield, v1.2 (MCP2515)
-//    Sainsmart 4 relay module
-//    ETT ET-MINI SPI DAC (MCP4922)
+//    OSCC Sensor Interface Board V1
 // J Hartung, 2015
+
 
 #include <SPI.h>
 #include <PID_v1.h>
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "control_protocol_can.h"
+#include "DAC_MCP49xx.h"
 
 
 
@@ -40,21 +39,7 @@
 // static global types/macros
 // *****************************************************
 
-
-// set CAN_CS to pin 9 for CAN 
-#define CAN_CS 9
-
-
-#define CAN_BAUD (CAN_500KBPS)
-
-
-//
-#define SERIAL_DEBUG_BAUD (115200)
-
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
+#define PSYNC_DEBUG_FLAG
 
 //
 #ifdef PSYNC_DEBUG_FLAG
@@ -63,18 +48,40 @@
     #define DEBUG_PRINT(x)
 #endif
 
+// set CAN_CS to pin 9 for CAN 
+#define CAN_CS 9
+
+#define CAN_BAUD (CAN_500KBPS)
+
+//
+#define SERIAL_DEBUG_BAUD (115200)
+
+//
+#define CAN_INIT_RETRY_DELAY (50)
 
 // ms
 #define PS_CTRL_RX_WARN_TIMEOUT (250)
 
-
 //
 #define GET_TIMESTAMP_MS() ((uint32_t) millis())
+
+// set up pins for interface with DAC (MCP4922)
+
+#define DAC_CS                10  // Chip select pin
+
+#define SIGNAL_INPUT_A        A0  // Sensing input for the DAC output
+
+#define SIGNAL_INPUT_B        A1  // Green wire from the torque sensor, low values
+
+#define SPOOF_SIGNAL_A        A2  // Sensing input for the DAC output
+
+#define SPOOF_SIGNAL_B        A3  // Blue wire from the torque sensor, high values
+
+#define SPOOF_ENGAGE          6   // Signal interrupt (relay) for spoofed torque values
 
 
 // Threshhold to detect when a person is pressing accelerator
 #define PEDAL_THRESH 1000
-
 
 
 // *****************************************************
@@ -82,17 +89,16 @@
 // *****************************************************
 
 
+DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
+
+// construct the CAN shield object
+MCP_CAN CAN(CAN_CS);                            // Set CS pin for the CAN shield
+
 //
 static uint32_t last_update_ms;
 
-
-// construct the CAN shield object
-MCP_CAN CAN(CAN_CS);                                    // Set CS pin for the CAN shield
-
-
 //
 static can_frame_s rx_frame_ps_ctrl_throttle_command;
-
 
 //
 static can_frame_s tx_frame_ps_ctrl_throttle_report;
@@ -171,18 +177,6 @@ static void init_can ( void )
 }
 
 
-// set up pins for interface with the ET-MINI DAV (MCP4922)
-#define SHDN                12  // Shutdown
-#define LDAC                8   // Load data
-#define DAC_CS              10  // Chip select pin
-#define DAC_PWR             A5  // Power the DAC from the Arduino digital pins
-#define PSENS_LOW           A2  // Sensor wire from the accelerator sensor, low values
-#define PSENS_LOW_SPOOF     A0  // Sensing input for the DAC output
-#define PSENS_HIGH          A3  // Sensor wire from the accelerator sensor, high values
-#define PSENS_HIGH_SPOOF    A1  // Sensing input for the DAC output
-#define PSENS_LOW_SIGINT    6   // Signal interrupt (relay) for low accelerator values (XXX wire)
-#define PSENS_HIGH_SIGINT   7   // Signal interrupt (relay) for high accelerator values (XXX wire)
-
 // set up values for use in the steering control system
 uint16_t PSensL_current,        // Current measured accel sensor values
          PSensH_current,
@@ -209,104 +203,65 @@ uint8_t incomingSerialByte;
 /* ====================================== */
 
 
-// a function to set the DAC output registers
-void setDAC(uint16_t data, char channel) {
+// A function to enable SCM to take control
+void enableControl() 
+{
+	// Do a quick average to smooth out the noisy data
+	static int AVG_max = 20;  // Total number of samples to average over
+	long sum_sensA_samples = 0;
+	long sum_sensB_samples = 0;
 
-  uint8_t message[2];
-  
-  if (channel == 'A') {  // Set DAC A enable
-    data |= 0x3000; 
-  }  
-  else if (channel == 'B') {  // Set DAC B enable
-    data |= 0xB000;  
-  }
+	for (int i = 0; i < AVG_max; i++) 
+	{
+		sum_sensA_samples += analogRead(SIGNAL_INPUT_A);
+		sum_sensB_samples += analogRead(SIGNAL_INPUT_B);
+	}
 
-  // load data into 8 byte payloads
-  message[0] = (data >> 8) & 0xFF;
-  message[1] = data & 0xFF;
+	uint16_t avg_sensA_sample = (sum_sensA_samples / AVG_max) << 2;
+	uint16_t avg_sensB_sample = (sum_sensB_samples / AVG_max) << 2;
 
-  // select the DAC for SPI transfer
-  digitalWrite(DAC_CS, LOW);  
-  
-  // transfer the data payload over SPI
-  SPI.transfer(message[0]);
-  SPI.transfer(message[1]);
+	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM takes over
+     dac.outputA( avg_sensA_sample );
+     dac.outputB( avg_sensB_sample );
 
-  // relinquish SPI control
-  digitalWrite(DAC_CS, HIGH);
-  
-}
+	// TODO: check if the DAC value and the sensed values are the same. If not, return an error and do NOT enable the sigint relays.
 
-// a function to set the DAC output
-void latchDAC() {
-  
-  // pulse the LDAC line to send registers to DAC out. 
-  // must have set DAC registers with setDAC() first for this to do anything.
-  digitalWrite(LDAC, LOW);
-  delayMicroseconds(50);
-  digitalWrite(LDAC, HIGH);
-  
+	// Enable the signal interrupt relays
+	digitalWrite(SPOOF_ENGAGE, HIGH);
+
+	controlEnabled = true;
+
+	DEBUG_PRINT("Control enabled");
 }
 
 
-// a function to enable TCM to take control
-void enableControl() {
-  
-  // do a quick average to smooth out the noisy data
-  static int AVG_max = 20;  // Total number of samples to average over
-  long readingsL = 0;
-  long readingsH = 0;
- 
-  for (int i = 0; i < AVG_max; i++) {
-    readingsL += analogRead(PSENS_LOW) << 2;
-    readingsH += analogRead(PSENS_HIGH) << 2;
-  }
+// A function to disable SCM control
+void disableControl() 
+{
+	// Do a quick average to smooth out the noisy data
+	static int AVG_max = 20;  // Total number of samples to average over
+	long sum_sensA_samples = 0;
+	long sum_sensB_samples = 0;
 
-  PSensL_current = readingsL / AVG_max;
-  PSensH_current = readingsH / AVG_max;
+	for (int i = 0; i < AVG_max; i++) 
+	{
+		sum_sensA_samples += analogRead(SIGNAL_INPUT_A) << 2;
+		sum_sensB_samples += analogRead(SIGNAL_INPUT_B) << 2;
+	}
 
-  // write measured torque values to DAC to avoid a signal discontinuity
-  setDAC(PSensH_current, 'B');
-  setDAC(PSensL_current, 'A');
-  latchDAC();
+	uint16_t avg_sensA_sample = sum_sensA_samples / AVG_max;
+	uint16_t avg_sensB_sample = sum_sensB_samples / AVG_max;
 
-  // TODO: check if the DAC value and the sensed values are the same. If not, return an error and do NOT enable the sigint relays.
-    
-  // enable the signal interrupt relays
-  digitalWrite(PSENS_LOW_SIGINT, LOW);
-  digitalWrite(PSENS_HIGH_SIGINT, LOW);
-  
-  controlEnabled = true;
-  
-}
+	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM relinquishes control
+     dac.outputA( avg_sensA_sample );
+     dac.outputB( avg_sensB_sample );
 
-// a function to disable TCM control
-void disableControl() {
-  
-  // do a quick average to smooth out the noisy data
-  static int AVG_max = 20;  // Total number of samples to average over
-  uint16_t readingsL = 0;
-  uint16_t readingsH = 0;
- 
-  for (int i = 0; i < AVG_max; i++) {
-    readingsL += analogRead(PSENS_LOW) << 2;
-    readingsH += analogRead(PSENS_HIGH) << 2;
-  }
+	// Disable the signal interrupt relays
+	digitalWrite(SPOOF_ENGAGE, LOW);
 
-  PSensL_current = readingsL / AVG_max;
-  PSensH_current = readingsH / AVG_max;
+	controlEnabled = false;
 
-  // write measured torque values to DAC to avoid a signal discontinuity
-  setDAC(PSensH_current, 'B');
-  setDAC(PSensL_current, 'A');
-  latchDAC();
-  
-
-  // disable the signal interrupt relays
-  digitalWrite(PSENS_LOW_SIGINT, HIGH);
-  digitalWrite(PSENS_HIGH_SIGINT, HIGH);
-
-  controlEnabled = false;
+	DEBUG_PRINT("Control disabled");
 }
 
 void calculatePedalSpoof(float pedalPosition) {
@@ -499,26 +454,18 @@ void setup()
     memset( &rx_frame_ps_ctrl_throttle_command, 0, sizeof(rx_frame_ps_ctrl_throttle_command) );
 
     // set up pin modes
-    pinMode(SHDN, OUTPUT);
-    pinMode(LDAC, OUTPUT);
     pinMode(DAC_CS, OUTPUT);
-    pinMode(DAC_PWR, OUTPUT);
-    pinMode(PSENS_LOW, INPUT);
-    pinMode(PSENS_LOW_SPOOF, INPUT);
-    pinMode(PSENS_HIGH, INPUT);
-    pinMode(PSENS_HIGH_SPOOF, INPUT);
-    pinMode(PSENS_LOW_SIGINT, OUTPUT);
-    pinMode(PSENS_HIGH_SIGINT, OUTPUT);
+    pinMode(SIGNAL_INPUT_A, INPUT);
+    pinMode(SIGNAL_INPUT_B, INPUT);
+    pinMode(SPOOF_SIGNAL_A, INPUT);
+    pinMode(SPOOF_SIGNAL_B, INPUT);
+    pinMode(SPOOF_ENGAGE, OUTPUT);
 
     // initialize the DAC board
-    digitalWrite(DAC_PWR, HIGH);    // Supply power
     digitalWrite(DAC_CS, HIGH);     // Deselect DAC CS
-    digitalWrite(SHDN, HIGH);       // Turn on the DAC
-    digitalWrite(LDAC, HIGH);       // Reset data
 
-    // initialize relay board
-    digitalWrite(PSENS_LOW_SIGINT, HIGH);
-    digitalWrite(PSENS_HIGH_SIGINT, HIGH);
+    // Initialize relay board
+    digitalWrite(SPOOF_ENGAGE, LOW);
 
     init_serial();
 
@@ -557,8 +504,8 @@ void loop()
     check_rx_timeouts();
 
     // update state variables
-    PSensL_current = analogRead(PSENS_LOW) << 2;  //10 bit to 12 bit
-    PSensH_current = analogRead(PSENS_HIGH) << 2;
+    PSensL_current = analogRead(SIGNAL_INPUT_A) << 2;  //10 bit to 12 bit
+    PSensH_current = analogRead(SIGNAL_INPUT_B) << 2;
     
     // if someone is pressing the throttle pedal disable control
     if ( ( PSensL_current + PSensH_current) / 2 > PEDAL_THRESH ) {
@@ -592,9 +539,8 @@ void loop()
         //Serial.print(" Spoof error L = ");
         //Serial.println(PSpoofL - (analogRead(PSENS_LOW_SPOOF) << 2));    
 
-        setDAC(PSpoofH, 'B');
-        setDAC(PSpoofL, 'A');
-        latchDAC();
+        dac.outputA( PSpoofL );
+        dac.outputB( PSpoofH );
 
     }
 
