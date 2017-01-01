@@ -4,10 +4,10 @@
 
 
 
-#define CAN_1_CS 9              // chip select pin for DAC
+#define CAN_1_CS 9              // chip select pin for CAN1
 
 
-#define CAN_2_CS 10             // chip select pin for CAN
+#define CAN_2_CS 10             // chip select pin for CAN2
 
 
 #define CAN_BAUD ( CAN_500KBPS )

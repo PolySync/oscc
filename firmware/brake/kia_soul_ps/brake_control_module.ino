@@ -33,8 +33,7 @@
 #include "can_frame.h"
 #include "control_protocol_can.h"
 
-
-#define PSYNC_DEBUG_FLAG = true;
+#define PSYNC_DEBUG_FLAG
 
 // show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
@@ -161,11 +160,14 @@ static void get_update_time_ms(
 
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids ) 
 // pins are not perfectly sequential because the clock frequency of certain pins is different.
+// Duty cycles of pins 3 and 5 controlled by timer 3 (TCCR3B)
 const byte PIN_SLAFL = 3;      // front left actuation
 const byte PIN_SLAFR = 5;      // front right actuation
+// Duty cycles of pins 6, 7, and 8 controlled by timer 4 (TCCR4B)
 const byte PIN_SLRFL = 6;      // front left return
 const byte PIN_SLRFR = 7;      // front right return
 const byte PIN_SMC = 8;      // master cylinder solenoids (two of them)
+
 const byte PIN_PUMP = 9;     // accumulator pump motor
 
 
@@ -186,6 +188,8 @@ const byte PIN_PRR = 15;       // pressure rear right sensor
 
 // the following are guesses, these need to be debugged/researched
 const double ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
+const double PRESSURE_STEP = 0.2;         // The amount that the 'a' and 'd' commands change the
+                                          // voltage each time they are pressed.
 const double MIN_PACC = 2.3;              // minumum accumulator pressure to maintain 
 const double MAX_PACC = 2.4;              // max accumulator pressure to maintain
 const double PEDAL_THRESH = 0.5;          // Pressure for pedal interference
@@ -243,25 +247,23 @@ FSM brakeStateMachine = FSM(Wait);
 
 int calculateSLADutyCycle(float pre) {
   int scaled = abs(pre) * 512;
-  int scale =  map(scaled, 0, 1024, SLADutyMin, SLADutyMax ); // Works for 0x05
+  int scale =  map(scaled, 0, 1024, SLADutyMin, SLADutyMax);
   return scale;
 }
 
 
 int calculateSLRDutyCycle(float pre) {
   int scaled = abs(pre) * 512;
-  int scale =  map(scaled, 0, 1024, SLRDutyMin, SLRDutyMax); // works for 0x05
+  int scale =  map(scaled, 0, 1024, SLRDutyMin, SLRDutyMax);
   return scale;
 }
 
-// TODO: implement this
 float pressureToVoltage(int MPa) {
     return ( MPa + 217.1319446 ) / 505.5662053;
     // convert MPa pressure to equivalent voltage
     return MPa;
 }
 
-// TODO: implement this
 int voltageToPressure( float voltage) {
     // convert voltage reading from sensors to pressure in MPa
     return ( voltage * 505.5662053 ) - 217.1319446;
@@ -351,11 +353,12 @@ struct SMC {
         _pressure1 = convertToVoltage(analogRead(_sensor1Pin));
         _pressure2 = convertToVoltage(analogRead(_sensor2Pin));
 
-        // if current pedal pressure is greater than limit, disable
+        // if current pedal pressure is greater than limit (because of
+        // driver override by pressing the brake pedal), disable.
         if (_pressure1 > PEDAL_THRESH || _pressure2 > PEDAL_THRESH ) 
         {
             DEBUG_PRINT("Brake Pedal Detected");
-            pressure_req = .48; 
+            pressure_req = ZERO_PRESSURE;
             local_override = 1;
             brakeStateMachine.transitionTo(Wait);
         }
@@ -527,15 +530,15 @@ static void init_can( void )
 void processSerialByte() {
   
   if (incomingSerialByte == 'a') {                  // increase pressure
-      pressure_req += 0.2; 
+      pressure_req += PRESSURE_STEP;
     }
   if (incomingSerialByte == 'd') {                  // decrease pressure
-      pressure_req -= .2; 
+      pressure_req -= PRESSURE_STEP;
     }
 
   if (incomingSerialByte == 'p') {                  // reset
-      pressure_req = .48; 
-      DEBUG_PRINT("reset pressure request");    
+      pressure_req = ZERO_PRESSURE;
+      DEBUG_PRINT("reset pressure request");
     }
 }
 
