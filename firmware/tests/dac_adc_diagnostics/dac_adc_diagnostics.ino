@@ -146,7 +146,7 @@ void test_CAN_send( )
                                     0x00, 
                                     0x00 };
 
-    // send data:  id = 0x123, standrad frame, data len = 8, stmp: data buf
+    // send data:  id = 123, standard frame, data len = 8, stmp: data buf
     CAN.sendMsgBuf( 0x07B, 0, 8, canMsg ); 
     delay( 250 );
 }
