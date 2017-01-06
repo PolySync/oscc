@@ -48,8 +48,8 @@
     #define DEBUG_PRINT(x)
 #endif
 
-// set CAN_CS to pin 9 for CAN 
-#define CAN_CS 9
+// set CAN_CS to pin 10 for CAN 
+#define CAN_CS 10
 
 #define CAN_BAUD (CAN_500KBPS)
 
@@ -67,7 +67,7 @@
 
 // set up pins for interface with DAC (MCP4922)
 
-#define DAC_CS                10  // Chip select pin
+#define DAC_CS                9  // Chip select pin
 
 #define SIGNAL_INPUT_A        A0  // Sensing input for the DAC output
 
@@ -172,7 +172,7 @@ static void init_can ( void )
     }
 
     // debug log
-    DEBUG_PRINT( "init_obd_can: pass" );
+    DEBUG_PRINT( "init_can: pass" );
 
 }
 

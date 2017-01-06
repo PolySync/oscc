@@ -39,7 +39,7 @@
 // static global types/macros
 // *****************************************************
 
-#define PSYNC_DEBUG_FLAG
+#define PSYNC_DEBUG_FLAG true
 
 //
 #ifdef PSYNC_DEBUG_FLAG
@@ -48,8 +48,8 @@
     #define DEBUG_PRINT(x)
 #endif
 
-// Set CAN_CS to pin 9 for CAN
-#define CAN_CS 9
+// Set CAN_CS to pin 10 for CAN
+#define CAN_CS 10
 
 #define CAN_BAUD ( CAN_500KBPS )
 
@@ -67,7 +67,7 @@
 
 // Set up pins for interface with the DAC (MCP4922)
 
-#define DAC_CS                10  // Chip select pin
+#define DAC_CS                9  // Chip select pin
 
 #define SIGNAL_INPUT_A        A0  // Sensing input for the DAC output
 
@@ -156,6 +156,9 @@ static void get_update_time_delta_ms(
 static void init_serial( void ) 
 {
     Serial.begin( SERIAL_BAUD );
+
+    // debug log
+    DEBUG_PRINT( "init_serial: pass" );
 }
 
 
@@ -166,11 +169,12 @@ static void init_can ( void )
     while( CAN.begin(CAN_BAUD) != CAN_OK )
     {   
         // wait a little
+        DEBUG_PRINT( "init_can: retrying" );
         delay( CAN_INIT_RETRY_DELAY );
     }   
 
     // debug log
-    DEBUG_PRINT( "init_obd_can: pass" );
+    DEBUG_PRINT( "init_can: pass" );
 }
 
 
@@ -353,6 +357,7 @@ static void publish_ps_ctrl_steering_report( void )
 //  
 static void publish_timed_tx_frames( void )
 {
+
     // Local vars
     uint32_t delta = 0;
 
@@ -531,7 +536,7 @@ void setup()
 void loop()
 {
     handle_ready_rx_frames();
-
+      
     publish_timed_tx_frames();
 
     check_rx_timeouts();

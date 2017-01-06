@@ -552,13 +552,13 @@ static void process_kia_status4( const can_frame_s * const rx_frame )
     CLEAR_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_BRAKE_SIGNAL_ON );
 
     //
-    if( kia_data->turn_signal_flags == KIA_STATUS4_TURN_SIGNAL_LEFT )
+    if( kia_data->turn_signal_flags == KIA_CCAN_STATUS4_TURN_SIGNAL_LEFT )
     {
         SET_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_LEFT_TURN_SIGNAL_ON );
     }
 
     //
-    if( kia_data->turn_signal_flags == KIA_STATUS4_TURN_SIGNAL_RIGHT )
+    if( kia_data->turn_signal_flags == KIA_CCAN_STATUS4_TURN_SIGNAL_RIGHT )
     {
         SET_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_RIGHT_TURN_SIGNAL_ON );
     }
@@ -588,22 +588,22 @@ static void handle_ready_rx_frames( void )
                 (INT8U*) rx_frame.data );
 
         // check for a supported frame ID
-        if( rx_frame.id == KIA_STATUS1_MESSAGE_ID )
+        if( rx_frame.id == KIA_CCAN_STATUS1_MESSAGE_ID )
         {
             // process status1
             process_kia_status1( &rx_frame );
         }
-        else if( rx_frame.id == KIA_STATUS2_MESSAGE_ID )
+        else if( rx_frame.id == KIA_CCAN_STATUS2_MESSAGE_ID )
         {
             // process status2
             process_kia_status2( &rx_frame );
         }
-        else if( rx_frame.id == KIA_STATUS3_MESSAGE_ID )
+        else if( rx_frame.id == KIA_CCAN_STATUS3_MESSAGE_ID )
         {
             // process status3
             process_kia_status3( &rx_frame );
         }
-        else if( rx_frame.id == KIA_STATUS4_MESSAGE_ID )
+        else if( rx_frame.id == KIA_CCAN_STATUS4_MESSAGE_ID )
         {
             // process status4
             process_kia_status4( &rx_frame );
@@ -623,7 +623,7 @@ static void check_rx_timeouts( void )
     get_update_time_delta_ms( &rx_frame_kia_status1.timestamp, &delta );
 
     // check Rx timeout
-    if( delta >= KIA_STATUS1_RX_WARN_TIMEOUT )
+    if( delta >= KIA_CCAN_STATUS1_RX_WARN_TIMEOUT )
     {
         // set timeout warning
         SET_WARNING( PSVC_HEARTBEAT_WARN_KIA_STATUS1_TIMEOUT );
@@ -637,7 +637,7 @@ static void check_rx_timeouts( void )
     get_update_time_delta_ms( &rx_frame_kia_status2.timestamp, &delta );
 
     // check Rx timeout
-    if( delta >= KIA_STATUS2_RX_WARN_TIMEOUT )
+    if( delta >= KIA_CCAN_STATUS2_RX_WARN_TIMEOUT )
     {
         // set timeout warning
         SET_WARNING( PSVC_HEARTBEAT_WARN_KIA_STATUS2_TIMEOUT );
@@ -650,7 +650,7 @@ static void check_rx_timeouts( void )
     get_update_time_delta_ms( &rx_frame_kia_status3.timestamp, &delta );
 
     // check Rx timeout
-    if( delta >= KIA_STATUS3_RX_WARN_TIMEOUT )
+    if( delta >= KIA_CCAN_STATUS3_RX_WARN_TIMEOUT )
     {
         // set timeout warning
         SET_WARNING( PSVC_HEARTBEAT_WARN_KIA_STATUS3_TIMEOUT );
@@ -663,7 +663,7 @@ static void check_rx_timeouts( void )
     get_update_time_delta_ms( &rx_frame_kia_status4.timestamp, &delta );
 
     // check Rx timeout
-    if( delta >= KIA_STATUS4_RX_WARN_TIMEOUT )
+    if( delta >= KIA_CCAN_STATUS4_RX_WARN_TIMEOUT )
     {
         // set timeout warning
         SET_WARNING( PSVC_HEARTBEAT_WARN_KIA_STATUS4_TIMEOUT );
