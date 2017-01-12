@@ -1,4 +1,3 @@
-/************************************************************************/
 /* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* This file is part of Open Source Car Control (OSCC).                 */
@@ -21,21 +20,17 @@
 // Firmware for control of 2014 Kia Soul Motor Driven Power Steering (MDPS) system
 // Components:
 //    Arduino Uno
-//    Seeed Studio CAN-BUS Shield, v1.2 (MCP2515)
-//    Sainsmart 4 relay module
-//    ETT ET-MINI SPI DAC (MCP4922)
+//    OSCC Sensor Interface Board V1
 // J Hartung, 2015
 
 
-
-
 #include <SPI.h>
-
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "control_protocol_can.h"
 #include "current_control_state.h"
 #include "PID.h"
+#include "DAC_MCP49xx.h"
 
 
 
@@ -44,7 +39,7 @@
 // static global types/macros
 // *****************************************************
 
-#define PSYNC_DEBUG_FLAG
+#define PSYNC_DEBUG_FLAG true
 
 //
 #ifdef PSYNC_DEBUG_FLAG
@@ -53,8 +48,8 @@
     #define DEBUG_PRINT(x)
 #endif
 
-// Set CAN_CS to pin 9 for CAN
-#define CAN_CS 9
+// Set CAN_CS to pin 10 for CAN
+#define CAN_CS 10
 
 #define CAN_BAUD ( CAN_500KBPS )
 
@@ -70,27 +65,20 @@
 // ms
 #define PS_CTRL_RX_WARN_TIMEOUT (200) //(50)
 
+// Set up pins for interface with the DAC (MCP4922)
 
-// Set up pins for interface with the ET-MINI DAV (MCP4922)
-#define SHDN                12  // Shutdown
+#define DAC_CS                9  // Chip select pin
 
-#define LDAC                8   // Load data
+#define SIGNAL_INPUT_A        A0  // Sensing input for the DAC output
 
-#define DAC_CS              10  // Chip select pin
+#define SIGNAL_INPUT_B        A1  // Green wire from the torque sensor, low values
 
-#define DAC_PWR             A5  // Power the DAC from the Arduino digital pins
+#define SPOOF_SIGNAL_A        A2  // Sensing input for the DAC output
 
-#define TSENS_LOW           A1  // Green wire from the torque sensor, low values
+#define SPOOF_SIGNAL_B        A3  // Blue wire from the torque sensor, high values
 
-#define TSENS_LOW_SPOOF     A0  // Sensing input for the DAC output
+#define SPOOF_ENGAGE          6   // Signal interrupt (relay) for spoofed torque values
 
-#define TSENS_HIGH          A3  // Blue wire from the torque sensor, high values
-
-#define TSENS_HIGH_SPOOF    A2  // Sensing input for the DAC output
-
-#define TSENS_LOW_SIGINT    6   // Signal interrupt (relay) for low torque values (blue wire)
-
-#define TSENS_HIGH_SIGINT   7   // Signal interrupt (relay) for high torque values (green wire)
 
 #define STEERING_WHEEL_CUTOFF_THRESHOLD 3000
 
@@ -102,8 +90,10 @@
 // *****************************************************
 
 
+DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
+
 // Construct the CAN shield object
-MCP_CAN CAN(CAN_CS);                                    // Set CS pin for the CAN shield
+MCP_CAN CAN(CAN_CS);                            // Set CS pin for the CAN shield
 
 
 //
@@ -166,6 +156,9 @@ static void get_update_time_delta_ms(
 static void init_serial( void ) 
 {
     Serial.begin( SERIAL_BAUD );
+
+    // debug log
+    DEBUG_PRINT( "init_serial: pass" );
 }
 
 
@@ -176,11 +169,12 @@ static void init_can ( void )
     while( CAN.begin(CAN_BAUD) != CAN_OK )
     {   
         // wait a little
+        DEBUG_PRINT( "init_can: retrying" );
         delay( CAN_INIT_RETRY_DELAY );
     }   
 
     // debug log
-    DEBUG_PRINT( "init_obd_can: pass" );
+    DEBUG_PRINT( "init_can: pass" );
 }
 
 
@@ -191,88 +185,32 @@ static void init_can ( void )
 /* ====================================== */
 
 
-// A function to set the DAC output registers
-void setDAC(uint16_t data, char channel) 
-{
-	uint8_t message[2];
-
-	if (channel == 'A') 
-	{
-		data |= 0x1000; // Set DAC A enable
-
-		// Load data into 8 byte payloads
-		message[0] = (data >> 8) & 0xFF;
-		message[1] = data & 0xFF;
-		
-		digitalWrite(DAC_CS, LOW);  // Select the DAC for SPI transfer
-
-		// Transfer the data payload over SPI
-		SPI.transfer(message[0]);
-		SPI.transfer(message[1]);
-
-		// Relinquish SPI control
-		digitalWrite(DAC_CS, HIGH);
-  	}
-  	else if (channel == 'B') 
-	{
-		data |= 0x9000;  // Set DAC B enable
-		
-		// Load data into 8 byte payloads
-		message[0] = (data >> 8) & 0xFF;
-		message[1] = data & 0xFF;
-		
-		digitalWrite(DAC_CS, LOW);  // Select the DAC for SPI transfer
-
-		// Transfer the data payload over SPI
-		SPI.transfer(message[0]);
-		SPI.transfer(message[1]);
-
-		// Relinquish SPI control ASAP
-		digitalWrite(DAC_CS, HIGH);
-  	}
-}
-
-
-// A function to set the DAC output
-void latchDAC() 
-{
-  
-  // Pulse the LDAC line to send registers to DAC out. Must have set DAC registers with setDAC() first for this to do anything.
-  digitalWrite( LDAC, LOW );
-
-  delayMicroseconds( 50 );
-
-  digitalWrite( LDAC, HIGH );  
-}
-
 
 // A function to enable SCM to take control
 void enableControl() 
 {
 	// Do a quick average to smooth out the noisy data
 	static int AVG_max = 20;  // Total number of samples to average over
-	long readingsL = 0;
-	long readingsH = 0;
+	long sum_sensA_samples = 0;
+	long sum_sensB_samples = 0;
 
 	for (int i = 0; i < AVG_max; i++) 
 	{
-		readingsL += analogRead(TSENS_LOW);
-		readingsH += analogRead(TSENS_HIGH);
+		sum_sensA_samples += analogRead(SIGNAL_INPUT_A);
+		sum_sensB_samples += analogRead(SIGNAL_INPUT_B);
 	}
 
-	uint16_t TSensL_current = (readingsL / AVG_max) << 2;
-	uint16_t TSensH_current = (readingsH / AVG_max) << 2;
+	uint16_t avg_sensA_sample = (sum_sensA_samples / AVG_max) << 2;
+	uint16_t avg_sensB_sample = (sum_sensB_samples / AVG_max) << 2;
 
 	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM takes over
-	setDAC(TSensH_current, 'A');
-	setDAC(TSensL_current, 'B');
-	latchDAC();
+     dac.outputA( avg_sensA_sample );
+     dac.outputB( avg_sensB_sample );
 
 	// TODO: check if the DAC value and the sensed values are the same. If not, return an error and do NOT enable the sigint relays.
 
 	// Enable the signal interrupt relays
-	digitalWrite(TSENS_LOW_SIGINT, LOW);
-	digitalWrite(TSENS_HIGH_SIGINT, LOW);
+	digitalWrite(SPOOF_ENGAGE, HIGH);
 
 	current_ctrl_state.control_enabled = true;
 
@@ -285,26 +223,24 @@ void disableControl()
 {
 	// Do a quick average to smooth out the noisy data
 	static int AVG_max = 20;  // Total number of samples to average over
-	long readingsL = 0;
-	long readingsH = 0;
+	long sum_sensA_samples = 0;
+	long sum_sensB_samples = 0;
 
 	for (int i = 0; i < AVG_max; i++) 
 	{
-		readingsL += analogRead(TSENS_LOW) << 2;
-		readingsH += analogRead(TSENS_HIGH) << 2;
+		sum_sensA_samples += analogRead(SIGNAL_INPUT_A) << 2;
+		sum_sensB_samples += analogRead(SIGNAL_INPUT_B) << 2;
 	}
 
-	uint16_t TSensL_current = readingsL / AVG_max;
-	uint16_t TSensH_current = readingsH / AVG_max;
+	uint16_t avg_sensA_sample = sum_sensA_samples / AVG_max;
+	uint16_t avg_sensB_sample = sum_sensB_samples / AVG_max;
 
 	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM relinquishes control
-	setDAC(TSensH_current, 'A');
-	setDAC(TSensL_current, 'B');
-	latchDAC();
+     dac.outputA( avg_sensA_sample );
+     dac.outputB( avg_sensB_sample );
 
 	// Disable the signal interrupt relays
-	digitalWrite(TSENS_LOW_SIGINT, HIGH);
-	digitalWrite(TSENS_HIGH_SIGINT, HIGH);
+	digitalWrite(SPOOF_ENGAGE, LOW);
 
 	current_ctrl_state.control_enabled = false;
 
@@ -421,6 +357,7 @@ static void publish_ps_ctrl_steering_report( void )
 //  
 static void publish_timed_tx_frames( void )
 {
+
     // Local vars
     uint32_t delta = 0;
 
@@ -555,26 +492,18 @@ void setup()
     memset( &rx_frame_ps_ctrl_steering_command, 0, sizeof(rx_frame_ps_ctrl_steering_command) );
 
     // Set up pin modes
-    pinMode(SHDN, OUTPUT);
-    pinMode(LDAC, OUTPUT);
     pinMode(DAC_CS, OUTPUT);
-    pinMode(DAC_PWR, OUTPUT);
-    pinMode(TSENS_LOW, INPUT);
-    pinMode(TSENS_LOW_SPOOF, INPUT);
-    pinMode(TSENS_HIGH, INPUT);
-    pinMode(TSENS_HIGH_SPOOF, INPUT);
-    pinMode(TSENS_LOW_SIGINT, OUTPUT);
-    pinMode(TSENS_HIGH_SIGINT, OUTPUT);
+    pinMode(SIGNAL_INPUT_A, INPUT);
+    pinMode(SIGNAL_INPUT_B, INPUT);
+    pinMode(SPOOF_SIGNAL_A, INPUT);
+    pinMode(SPOOF_SIGNAL_B, INPUT);
+    pinMode(SPOOF_ENGAGE, OUTPUT);
 
     // Initialize the DAC board
-    digitalWrite(DAC_PWR, HIGH);    // Supply power
     digitalWrite(DAC_CS, HIGH);     // Deselect DAC CS
-    digitalWrite(SHDN, HIGH);       // Turn on the DAC
-    digitalWrite(LDAC, HIGH);       // Reset data
 
     // Initialize relay board
-    digitalWrite(TSENS_LOW_SIGINT, HIGH);
-    digitalWrite(TSENS_HIGH_SIGINT, HIGH);
+    digitalWrite(SPOOF_ENGAGE, LOW);
 
     init_serial();
 
@@ -582,13 +511,13 @@ void setup()
 
     publish_ps_ctrl_steering_report();
 
-	current_ctrl_state.control_enabled = false;
+    current_ctrl_state.control_enabled = false;
 
-	current_ctrl_state.emergency_stop = false;
+    current_ctrl_state.emergency_stop = false;
 
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_ps_ctrl_steering_command.timestamp = GET_TIMESTAMP_MS();
-    
+
     pid_zeroize( &pidParams );
 
     // debug log
@@ -607,7 +536,7 @@ void setup()
 void loop()
 {
     handle_ready_rx_frames();
-
+      
     publish_timed_tx_frames();
 
     check_rx_timeouts();
@@ -686,9 +615,8 @@ void loop()
 
             calculateTorqueSpoof( control, &TSpoofL, &TSpoofH );
 
-            setDAC( TSpoofH, 'A' );
-            setDAC( TSpoofL, 'B' );
-            latchDAC();
+            dac.outputA( TSpoofH );
+            dac.outputB( TSpoofL );
         }
         else
         {
