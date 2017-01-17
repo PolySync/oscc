@@ -21,7 +21,7 @@
 // Component
 //    Arduino Uno
 //    OSCC Sensor Interface Board V1
-// J Hartung, 2015
+// J Hartung, 2015; E Livingston, L Buckland, D Fernández, 2016
 
 
 #include <SPI.h>
@@ -48,9 +48,10 @@
     #define DEBUG_PRINT(x)
 #endif
 
-// set CAN_CS to pin 10 for CAN 
+// set CAN_CS to pin 10 for CAN
 #define CAN_CS 10
 
+//
 #define CAN_BAUD (CAN_500KBPS)
 
 //
@@ -69,10 +70,12 @@
 
 #define DAC_CS                9  // Chip select pin
 
+// signal to ADC from car
 #define SIGNAL_INPUT_A        A0  // Sensing input for the DAC output
 
 #define SIGNAL_INPUT_B        A1  // Green wire from the torque sensor, low values
 
+// Spoof signal from DAC out to car
 #define SPOOF_SIGNAL_A        A2  // Sensing input for the DAC output
 
 #define SPOOF_SIGNAL_B        A3  // Blue wire from the torque sensor, high values
@@ -120,52 +123,52 @@ static void get_update_time_delta_ms(
 {
     // check for overflow
     if( last_update_time_ms < time_in )
-    {   
+    {
 		// time remainder, prior to the overflow
-		(*delta_out) = (UINT32_MAX - time_in);
-        
+		( *delta_out ) = ( UINT32_MAX - time_in );
+
         // add time since zero
-        (*delta_out) += last_update_time_ms;
-    }   
+        ( *delta_out ) += last_update_time_ms;
+    }
     else
-    {   
+    {
         // normal delta
-        (*delta_out) = ( last_update_time_ms - time_in );
-    }   
+        ( *delta_out ) = ( last_update_time_ms - time_in );
+    }
 }
 
 
 // uses last_update_ms, corrects for overflow condition
 static void get_update_time_ms(
-                const uint32_t * const time_in,
-                        uint32_t * const delta_out )
+        const uint32_t * const time_in,
+        uint32_t * const delta_out )
 {
     // check for overflow
-    if( last_update_ms < (*time_in) )
+    if( last_update_ms < ( *time_in ) )
     {
-            // time remainder, prior to the overflow
-            (*delta_out) = (UINT32_MAX - (*time_in));
-    
-            // add time since zero
-            (*delta_out) += last_update_ms;
-        }
+        // time remainder, prior to the overflow
+        ( *delta_out ) = ( UINT32_MAX - ( *time_in ) );
+
+        // add time since zero
+        ( *delta_out ) += last_update_ms;
+    }
     else
     {
-            // normal delta
-            (*delta_out) = (last_update_ms - (*time_in));
-        }
+        // normal delta
+        ( *delta_out ) = ( last_update_ms - ( *time_in ) );
+    }
 }
 
 
-static void init_serial( void ) 
+static void init_serial( void )
 {
-    Serial.begin(115200);
+    Serial.begin( 115200 );
 }
 
-static void init_can ( void ) 
+static void init_can ( void )
 {
     // wait until we have initialized
-    while( CAN.begin(CAN_BAUD) != CAN_OK )
+    while( CAN.begin( CAN_BAUD ) != CAN_OK )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
@@ -177,23 +180,26 @@ static void init_can ( void )
 }
 
 
-// set up values for use in the steering control system
-uint16_t PSensL_current,        // Current measured accel sensor values
-         PSensH_current,
-         PSpoofH,               // Current spoofing values
-         PSpoofL;
+// set up values for use in the throttle control system
+uint16_t sig_a_current,         // Current measured accel sensor values
+         sig_b_current,
+         spoof_a_current,       // Current spoofing values
+         spoof_b_current,
+         spoof_a_previous,      // Previous measured accel sensor values
+         spoof_b_previous;
 
 can_frame_s can_frame;          // CAN message structs
 
-bool controlEnable_req,
-     controlEnabled;
+bool control_enable_req,
+     control_enabled,
+     initial_ADC;
 
 int local_override = 0;
-         
-double pedalPosition_target,
-       pedalPosition;
-       
-uint8_t incomingSerialByte;
+
+double pedal_position_target,
+       pedal_position;
+
+uint8_t incoming_serial_byte;
 
 
 
@@ -204,46 +210,47 @@ uint8_t incomingSerialByte;
 
 
 // A function to enable SCM to take control
-void enableControl() 
+void enable_control( )
 {
 	// Do a quick average to smooth out the noisy data
 	static int AVG_max = 20;  // Total number of samples to average over
 	long sum_sensA_samples = 0;
 	long sum_sensB_samples = 0;
 
-	for (int i = 0; i < AVG_max; i++) 
+	for ( int i = 0; i < AVG_max; i++ )
 	{
-		sum_sensA_samples += analogRead(SIGNAL_INPUT_A);
-		sum_sensB_samples += analogRead(SIGNAL_INPUT_B);
+		sum_sensA_samples += analogRead( SIGNAL_INPUT_A );
+		sum_sensB_samples += analogRead( SIGNAL_INPUT_B );
 	}
 
-	uint16_t avg_sensA_sample = (sum_sensA_samples / AVG_max) << 2;
-	uint16_t avg_sensB_sample = (sum_sensB_samples / AVG_max) << 2;
+	uint16_t avg_sensA_sample = ( sum_sensA_samples / AVG_max ) << 2;
+	uint16_t avg_sensB_sample = ( sum_sensB_samples / AVG_max ) << 2;
 
 	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM takes over
-     dac.outputA( avg_sensA_sample );
-     dac.outputB( avg_sensB_sample );
+    dac.outputA( avg_sensA_sample );
+    dac.outputB( avg_sensB_sample );
 
 	// TODO: check if the DAC value and the sensed values are the same. If not, return an error and do NOT enable the sigint relays.
 
 	// Enable the signal interrupt relays
-	digitalWrite(SPOOF_ENGAGE, HIGH);
+	digitalWrite( SPOOF_ENGAGE, HIGH );
 
-	controlEnabled = true;
+	control_enabled = true;
 
-	DEBUG_PRINT("Control enabled");
+	DEBUG_PRINT( "Control enabled" );
+
 }
 
 
 // A function to disable SCM control
-void disableControl() 
+void disable_control( )
 {
 	// Do a quick average to smooth out the noisy data
 	static int AVG_max = 20;  // Total number of samples to average over
 	long sum_sensA_samples = 0;
 	long sum_sensB_samples = 0;
 
-	for (int i = 0; i < AVG_max; i++) 
+	for ( int i = 0; i < AVG_max; i++ )
 	{
 		sum_sensA_samples += analogRead(SIGNAL_INPUT_A) << 2;
 		sum_sensB_samples += analogRead(SIGNAL_INPUT_B) << 2;
@@ -257,28 +264,177 @@ void disableControl()
      dac.outputB( avg_sensB_sample );
 
 	// Disable the signal interrupt relays
-	digitalWrite(SPOOF_ENGAGE, LOW);
+	digitalWrite( SPOOF_ENGAGE, LOW );
 
-	controlEnabled = false;
+	control_enabled = false;
 
-	DEBUG_PRINT("Control disabled");
+	DEBUG_PRINT( "Control disabled" );
 }
 
-void calculatePedalSpoof(float pedalPosition) {
-  
-  // values calculated with min/max calibration curve and hand tuned for neutral balance
-  // DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
-  PSpoofL = 819.2*(0.0004*pedalPosition + 0.366);    
-  PSpoofH = 819.2*(0.0008*pedalPosition + 0.732);
-  PSpoofL = constrain(PSpoofL, 0, 1800); // range = 300 - ~1750
-  PSpoofH = constrain(PSpoofH, 0, 3500); // range = 600 - ~3500
+void calculate_pedal_spoof( float pedal_position )
+{
+    spoof_a_previous = spoof_a_current;
+    spoof_b_previous = spoof_b_current;
+
+    // values calculated with min/max calibration curve and hand tuned for
+    // neutral balance.
+    // DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
+    spoof_a_current = 819.2 * ( 0.0004 * pedal_position + 0.366 );
+    spoof_b_current = 819.2 * ( 0.0008 * pedal_position + 0.732 );
+
+    // range = 300 - ~1750
+    spoof_a_current = constrain( spoof_a_current, 0, 1800 );
+    // range = 600 - ~3500
+    spoof_b_current = constrain( spoof_b_current, 0, 3500 );
 
     //Serial.print("PSPOOF_LOW:");
-    //Serial.print(PSpoofL);
+    //Serial.print(spoof_a_current);
     //Serial.print("PSPOOF_LOW");
-    //Serial.println(PSpoofH);
-  
+    //Serial.println(spoof_b_current);
+
 }
+
+//
+void check_pedal_override( )
+{
+    if ( ( sig_a_current + sig_b_current ) / 2 > PEDAL_THRESH )
+    {
+        disable_control( );
+        local_override = 1;
+    }
+    else
+    {
+        local_override = 0;
+    }
+}
+
+//
+void check_spoof_voltage(
+        bool first_ADC,
+        uint16_t sig_a1,
+        uint16_t sig_b1,
+        uint16_t sig_a0,
+        uint16_t sig_b0 )
+{
+    if ( first_ADC == true )
+    {
+        return;
+    }
+
+    int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
+    int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
+
+    int spoof_a_dac_current = int( sig_a1 );
+    int spoof_b_dac_current = int( sig_b1 );
+
+    int spoof_a_dac_previous = int( sig_a0 );
+    int spoof_b_dac_previous = int( sig_b0 );
+
+    float spoof_a_adc_volts = 0.0;
+    float spoof_b_adc_volts = 0.0;
+
+    float spoof_a_dac_current_volts = 0.0;
+    float spoof_b_dac_current_volts = 0.0;
+
+    float spoof_a_dac_previous_volts = 0.0;
+    float spoof_b_dac_previous_volts = 0.0;
+
+    spoof_a_adc_volts = spoof_a_adc * 5.0 / 1024.0;
+    spoof_b_adc_volts = spoof_b_adc * 5.0 / 1024.0;
+
+    spoof_a_dac_current_volts = spoof_a_dac_current * 5.0 / 1024.0;
+    spoof_b_dac_current_volts = spoof_b_dac_current * 5.0 / 1024.0;
+
+    spoof_a_dac_previous_volts = spoof_a_dac_previous * 5.0 / 1024.0;
+    spoof_b_dac_previous_volts = spoof_b_dac_previous * 5.0 / 1024.0;
+
+    /*
+    float input_a_volt_previous = 0.0;
+    float input_b_volt_previous = 0.0;
+
+    float input_a_voltage_read = 0.0;
+    float input_b_voltage_read = 0.0;
+    float spoof_a_voltage_read = 0.0;
+    float spoof_b_voltage_read = 0.0;
+
+
+    // energize the relay so we can read the values at the terminal
+    //digitalWrite( SPOOF_ENGAGE, HIGH );
+
+    //input_a_signal_read = analogRead( SIGNAL_INPUT_A );
+    //input_b_signal_read = analogRead( SIGNAL_INPUT_B );
+    //spoof_a_signal_read = analogRead( SPOOF_SIGNAL_A );
+    //spoof_b_signal_read = analogRead( SPOOF_SIGNAL_B );
+
+    input_a_voltage_read = input_a_signal_read * 5.0 / 1024.0;
+    input_b_voltage_read = input_b_signal_read * 5.0 / 1024.0;
+    spoof_a_voltage_read = spoof_a_signal_read * 5.0 / 1024.0;
+    spoof_b_voltage_read = spoof_b_signal_read * 5.0 / 1024.0;
+
+    input_a_volt_previous = input_a_sig_previous * 5.0 / 1024.0;
+    input_b_volt_previous = input_b_sig_previous * 5.0 / 1024.0;
+
+    */
+
+    Serial.print( "Spoof A ADC Value: " );
+    Serial.print( spoof_a_adc );
+    Serial.print( "\tSpoof A ADC Voltage: " );
+    Serial.println( spoof_a_adc_volts, 3 );
+
+    Serial.print( "Spoof B ADC Value: " );
+    Serial.print( spoof_b_adc );
+    Serial.print( "\tSpoof B ADC Voltage: " );
+    Serial.println( spoof_b_adc_volts, 3 );
+
+    Serial.print( "Spoof A DAC Value (Current): " );
+    Serial.print( spoof_a_dac_current );
+    Serial.print( "\tSpoof A DAC Voltage (Current): " );
+    Serial.println( spoof_a_dac_current_volts, 3 );
+
+    Serial.print( "Spoof B DAC Value (Current): " );
+    Serial.print( spoof_b_dac_current );
+    Serial.print( "\tSpoof B DAC Voltage (Current): " );
+    Serial.println( spoof_b_dac_current_volts, 3 );
+
+    Serial.print( "Spoof A DAC Value (Previous): " );
+    Serial.print( spoof_a_dac_previous );
+    Serial.print( "\tSpoof A DAC Voltage (Previous): " );
+    Serial.println( spoof_a_dac_previous_volts, 3 );
+
+    Serial.print( "Spoof B DAC Value (Previous): " );
+    Serial.print( spoof_b_dac_previous );
+    Serial.print( "\tSpoof B DAC Voltage (Previous): " );
+    Serial.println( spoof_b_dac_previous_volts, 3 );
+
+    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > 0.050 )
+    {
+        Serial.println( "* * * ERROR!!  Discrepancy on CurrentSigA. * * *" );
+    }
+
+    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > 0.050 )
+    {
+        Serial.println( "* * * ERROR!!  Discrepancy on Current SigB. * * *" );
+    }
+
+    if ( abs( spoof_a_adc_volts - spoof_a_dac_previous_volts ) > 0.050 )
+    {
+        Serial.println( "* * * ERROR!!  Discrepancy on Previous SigA. * * *" );
+    }
+
+    if ( abs( spoof_b_adc_volts - spoof_b_dac_previous_volts ) > 0.050 )
+    {
+        Serial.println( "* * * ERROR!!  Discrepancy on Previous SigB. * * *" );
+    }
+
+    Serial.println( " * * * * * " );
+
+    //debug signals then writeout fail criteria. ~ ( < | 50mV | )
+    //disable_control( );
+    //local_override = 1;
+
+}
+
+// check_PWM( )
 
 
 /* ====================================== */
@@ -286,20 +442,31 @@ void calculatePedalSpoof(float pedalPosition) {
 /* ====================================== */
 
 // A function to parse incoming serial bytes
-void processSerialByte() {
-  
-  if (incomingSerialByte == 'a') {                  // accelerate
-    pedalPosition_target += 1000;
-  }
-  if (incomingSerialByte == 'd') {                  // deaccelerate 
-    pedalPosition_target -= 1000;
-  }
-  if (incomingSerialByte == 's') {                  // return to center
-    pedalPosition_target = 0;
-  }
-  if (incomingSerialByte == 'p') {                  // enable/disable control
-    controlEnable_req = !controlEnable_req;
-  }
+void process_serial_byte( )
+{
+    // accelerate
+    if ( incoming_serial_byte == 'a' )
+    {
+        pedal_position_target += 1000;
+    }
+
+    // deaccelerate
+    if ( incoming_serial_byte == 'd' )
+    {
+        pedal_position_target -= 1000;
+    }
+
+    // return to center
+    if ( incoming_serial_byte == 's' )
+    {
+        pedal_position_target = 0;
+    }
+
+    // enable/disable control
+    if ( incoming_serial_byte == 'p' )
+    {
+        control_enable_req = !control_enable_req;
+    }
 }
 
 
@@ -311,7 +478,8 @@ static void publish_ps_ctrl_throttle_report( void )
             (ps_ctrl_throttle_report_msg*) tx_frame_ps_ctrl_throttle_report.data;
 
     // set frame ID
-    tx_frame_ps_ctrl_throttle_report.id = (uint32_t) (PS_CTRL_MSG_ID_THROTTLE_REPORT);
+    tx_frame_ps_ctrl_throttle_report.id =
+            (uint32_t) (PS_CTRL_MSG_ID_THROTTLE_REPORT);
 
     // set DLC
     tx_frame_ps_ctrl_throttle_report.dlc = 8; //TODO
@@ -320,7 +488,7 @@ static void publish_ps_ctrl_throttle_report( void )
     data->override = local_override;
 
     //// Set Pedal Command (PC)
-    //data->pedal_command = 
+    //data->pedal_command =
 
     //// Set Pedal Output (PO)
     //data->pedal_output = max()
@@ -343,7 +511,6 @@ static void publish_timed_tx_frames( void )
     // local vars
     uint32_t delta = 0;
 
-
     // get time since last publish
     get_update_time_ms( &tx_frame_ps_ctrl_throttle_report.timestamp, &delta );
 
@@ -351,13 +518,14 @@ static void publish_timed_tx_frames( void )
     if( delta >= PS_CTRL_THROTTLE_REPORT_PUBLISH_INTERVAL )
     {
         // publish frame, update timestamp
-        publish_ps_ctrl_throttle_report();
+        publish_ps_ctrl_throttle_report( );
     }
 }
 
 
 
-static void process_ps_ctrl_throttle_command( const uint8_t * const rx_frame_buffer )
+static void process_ps_ctrl_throttle_command(
+        const uint8_t * const rx_frame_buffer )
 {
 
     // cast control frame data
@@ -368,44 +536,44 @@ static void process_ps_ctrl_throttle_command( const uint8_t * const rx_frame_buf
     bool enabled = control_data->enabled == 1;
 
     // enable control from the PolySync interface
-    if( enabled == 1 && !controlEnabled ) 
-    {   
-        controlEnabled = true;
-        enableControl();
-    }   
+    if( enabled == 1 && !control_enabled )
+    {
+        control_enabled = true;
+        enable_control();
+    }
 
     // disable control from the PolySync interface
-    if( enabled == 0 && controlEnabled ) 
-    {   
-        controlEnabled = false;
-        disableControl();
-    }   
+    if( enabled == 0 && control_enabled )
+    {
+        control_enabled = false;
+        disable_control();
+    }
 
-    rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS();
+    rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
-    pedalPosition_target = control_data->pedal_command / 24 ;
-    DEBUG_PRINT(pedalPosition_target);
+    pedal_position_target = control_data->pedal_command / 24 ;
+    DEBUG_PRINT(pedal_position_target);
 
 }
 
 // A function to parse CAN data into useful variables
-void handle_ready_rx_frames(void) {
+void handle_ready_rx_frames( void ) {
 
     // local vars
     can_frame_s rx_frame;
 
     if( CAN.checkReceive() == CAN_MSGAVAIL )
     {
-        memset( &rx_frame, 0, sizeof(rx_frame) );
+        memset( &rx_frame, 0, sizeof( rx_frame ) );
 
         // update timestamp
         rx_frame.timestamp = last_update_ms;
 
         // read frame
         CAN.readMsgBufID(
-                (INT32U*) &rx_frame.id,
-                (INT8U*) &rx_frame.dlc,
-                (INT8U*) rx_frame.data );
+                ( INT32U* ) &rx_frame.id,
+                ( INT8U* ) &rx_frame.dlc,
+                ( INT8U* ) rx_frame.data );
 
         // check for a supported frame ID
         if( rx_frame.id == PS_CTRL_THROTTLE_COMMAND_ID )
@@ -425,19 +593,19 @@ static void check_rx_timeouts( void )
     uint32_t delta = 0;
 
     // get time since last receive
-    get_update_time_delta_ms( 
-			rx_frame_ps_ctrl_throttle_command.timestamp, 
-			GET_TIMESTAMP_MS(), 
+    get_update_time_delta_ms(
+			rx_frame_ps_ctrl_throttle_command.timestamp,
+			GET_TIMESTAMP_MS(),
 			&delta );
 
     // check rx timeout
-    if( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
+    if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
         // disable control from the PolySync interface
-        if( controlEnabled ) 
+        if( control_enabled )
         {
-            Serial.println("control disabled: timeout");
-            disableControl();
+            Serial.println( "control disabled: timeout" );
+            disable_control( );
         }
     }
 }
@@ -447,42 +615,45 @@ static void check_rx_timeouts( void )
 /* ================ SETUP =============== */
 /* ====================================== */
 
-void setup() 
+void setup()
 {
     // zero
     last_update_ms = 0;
-    memset( &rx_frame_ps_ctrl_throttle_command, 0, sizeof(rx_frame_ps_ctrl_throttle_command) );
+    memset( &rx_frame_ps_ctrl_throttle_command,
+            0,
+            sizeof(rx_frame_ps_ctrl_throttle_command ) );
 
     // set up pin modes
-    pinMode(DAC_CS, OUTPUT);
-    pinMode(SIGNAL_INPUT_A, INPUT);
-    pinMode(SIGNAL_INPUT_B, INPUT);
-    pinMode(SPOOF_SIGNAL_A, INPUT);
-    pinMode(SPOOF_SIGNAL_B, INPUT);
-    pinMode(SPOOF_ENGAGE, OUTPUT);
+    pinMode( DAC_CS, OUTPUT );
+    pinMode( SIGNAL_INPUT_A, INPUT );
+    pinMode( SIGNAL_INPUT_B, INPUT );
+    pinMode( SPOOF_SIGNAL_A, INPUT );
+    pinMode( SPOOF_SIGNAL_B, INPUT );
+    pinMode( SPOOF_ENGAGE, OUTPUT );
 
     // initialize the DAC board
-    digitalWrite(DAC_CS, HIGH);     // Deselect DAC CS
+    digitalWrite( DAC_CS, HIGH );     // Deselect DAC CS
 
     // Initialize relay board
-    digitalWrite(SPOOF_ENGAGE, LOW);
+    digitalWrite( SPOOF_ENGAGE, LOW );
 
-    init_serial();
+    init_serial( );
 
-    init_can();
+    init_can( );
 
-    publish_ps_ctrl_throttle_report();
-
+    publish_ps_ctrl_throttle_report( );
 
     // update last Rx timestamps so we don't set timeout warnings on start up
-    rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS();
+    rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
     // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS();
+    last_update_ms = GET_TIMESTAMP_MS( );
 
     // debug log
     DEBUG_PRINT( "init: pass" );
 
+    // skip first iteration of DAC/ADC diagnostic test
+    initial_ADC = true;
 
 }
 
@@ -495,53 +666,54 @@ void loop()
 {
 
     // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS();
+    last_update_ms = GET_TIMESTAMP_MS( );
 
-    handle_ready_rx_frames();
+    // checks for CAN frames, if yes, updates state variables
+    handle_ready_rx_frames( );
 
-    publish_timed_tx_frames();
+    // publish all report CAN frames
+    publish_timed_tx_frames( );
 
-    check_rx_timeouts();
+    // heartbeat checker??
+    check_rx_timeouts( );
 
     // update state variables
-    PSensL_current = analogRead(SIGNAL_INPUT_A) << 2;  //10 bit to 12 bit
-    PSensH_current = analogRead(SIGNAL_INPUT_B) << 2;
-    
-    // if someone is pressing the throttle pedal disable control
-    if ( ( PSensL_current + PSensH_current) / 2 > PEDAL_THRESH ) {
-        disableControl();
-        local_override = 1;
+    sig_a_current = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
+    sig_b_current = analogRead( SIGNAL_INPUT_B ) << 2;
 
-    } 
-    else 
-    {
-        local_override = 0;
-    }
+    // if someone is pressing the throttle pedal disable control
+    check_pedal_override( );
 
     // read and parse incoming serial commands
-    if (Serial.available() > 0) {
-        incomingSerialByte = Serial.read();
-        processSerialByte();
+    if (Serial.available() > 0)
+    {
+        incoming_serial_byte = Serial.read( );
+        process_serial_byte( );
     }
-
-
 
     // now that we've set control status, do throttle if we are in control
-    if (controlEnabled) {
-
-        calculatePedalSpoof(pedalPosition_target);
+    if ( control_enabled )
+    {
+        calculate_pedal_spoof( pedal_position_target );
 
         // debug print statements
-        //Serial.print("pedalPosition_target = ");
-        //Serial.print(pedalPosition_target);
+        //Serial.print("pedal_position_target = ");
+        //Serial.print(pedal_position_target);
         //Serial.print(" Spoof error, H = ");
-        //Serial.print(PSpoofH - (analogRead(PSENS_HIGH_SPOOF) << 2));
+        //Serial.print(spoof_a_current - (analogRead(PSENS_HIGH_SPOOF) << 2));
         //Serial.print(" Spoof error L = ");
-        //Serial.println(PSpoofL - (analogRead(PSENS_LOW_SPOOF) << 2));    
+        //Serial.println(spoof_b_current - (analogRead(PSENS_LOW_SPOOF) << 2));
 
-        dac.outputA( PSpoofL );
-        dac.outputB( PSpoofH );
+        dac.outputA( spoof_a_current );
+        dac.outputB( spoof_b_current );
 
+        check_spoof_voltage(
+                initial_ADC,
+                spoof_a_current,
+                spoof_b_current,
+                spoof_a_previous,
+                spoof_b_previous );
     }
 
+    initial_ADC = false;
 }
