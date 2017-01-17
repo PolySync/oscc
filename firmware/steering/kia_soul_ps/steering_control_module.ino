@@ -600,23 +600,26 @@ void loop()
             pidParams.proportional_gain = current_ctrl_state.SA_Kp;
             pidParams.integral_gain = current_ctrl_state.SA_Ki;
 
-            pid_update( &pidParams, steeringAngleRateTarget - steeringAngleRate, 0.050 );
+            int ret = pid_update( &pidParams, steeringAngleRateTarget - steeringAngleRate, 0.050 );
 
-            uint16_t TSpoofH;
-            uint16_t TSpoofL;
+            if( ret == PID_SUCCESS )
+            {
+                uint16_t TSpoofH;
+                uint16_t TSpoofL;
 
-            double control = pidParams.control;
+                double control = pidParams.control;
 
-            // constrain to min/max
-            control = m_constrain(
-                    (float) (control),
-                    (float) -1500.0f,
-                    (float) 1500.0f );
+                // constrain to min/max
+                control = m_constrain(
+                        (float) (control),
+                        (float) -1500.0f,
+                        (float) 1500.0f );
 
-            calculateTorqueSpoof( control, &TSpoofL, &TSpoofH );
+                calculateTorqueSpoof( control, &TSpoofL, &TSpoofH );
 
-            dac.outputA( TSpoofH );
-            dac.outputB( TSpoofL );
+                dac.outputA( TSpoofH );
+                dac.outputB( TSpoofL );
+            }
         }
         else
         {

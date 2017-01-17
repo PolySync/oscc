@@ -31,7 +31,7 @@
 
 
 
-void pid_zeroize( PID* pid ) 
+void pid_zeroize( PID* pid )
 {
     // set prev and integrated error to zero
     pid->prev_error = 0;
@@ -41,7 +41,7 @@ void pid_zeroize( PID* pid )
 }
  
 
-void pid_update( PID* pid, double curr_error, double dt ) 
+int pid_update( PID* pid, double curr_error, double dt ) 
 {
     double diff;
     double p_term;
@@ -49,6 +49,11 @@ void pid_update( PID* pid, double curr_error, double dt )
     double d_term;
     
     static int count = 0;
+
+    if( dt <= 0 )
+    {
+        return PID_ERROR;
+    }
  
     // integration with windup guarding
     pid->int_error += (curr_error * dt);
@@ -77,4 +82,6 @@ void pid_update( PID* pid, double curr_error, double dt )
  
     // save current error as previous error for next iteration
     pid->prev_error = curr_error;
+
+    return PID_SUCCESS;
 }

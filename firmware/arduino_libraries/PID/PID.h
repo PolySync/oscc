@@ -43,6 +43,18 @@
  */
 #define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
+/**
+ * @brief Error in PID calculation.
+ *
+ */
+#define PID_ERROR 1
+
+/**
+ * @brief Success in PID calculation.
+ *
+ */
+#define PID_SUCCESS 0
+
 
 
 
@@ -68,7 +80,7 @@ typedef struct
 
 
 
-void pid_update( PID* pid, double curr_error, double dt );
+int pid_update( PID* pid, double curr_error, double dt );
 
 
 void pid_zeroize( PID* pid );
