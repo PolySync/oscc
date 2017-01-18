@@ -48,15 +48,8 @@
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "kia_obd_can.h"
+#include "common.h"
 #include "control_protocol_can.h"
-
-
-
-
-// show us if debugging
-#ifdef PSYNC_DEBUG_FLAG
-#warning "PSYNC_DEBUG_FLAG defined"
-#endif
 
 
 
@@ -64,6 +57,18 @@
 // *****************************************************
 // static global types/macros
 // *****************************************************
+
+
+#define PSYNC_DEBUG_FLAG
+
+// show us if debugging
+#ifdef PSYNC_DEBUG_FLAG
+    #warning "PSYNC_DEBUG_FLAG defined"
+    #define DEBUG_PRINT(x)  Serial.println(x)
+#else
+    #define DEBUG_PRINT(x)
+#endif
+
 
 //
 #define PSVC_VGM_NODE_ID (0x10)
@@ -90,47 +95,11 @@
 
 
 //
-#define CAN_OBD_BAUD (CAN_500KBPS)
-
-
-//
-#define CAN_CONTROL_BAUD (CAN_500KBPS)
-
-
-//
-#define SERIAL_DEBUG_BAUD (115200)
-
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
-
-//
-#ifdef PSYNC_DEBUG_FLAG
-    #define DEBUG_PRINT(x)  Serial.println(x)
-#else
-    #define DEBUG_PRINT(x)
-#endif
-
-
-//
 #define STATUS_LED_ON() digitalWrite(PIN_STATUS_LED, HIGH);
 
 
 //
 #define STATUS_LED_OFF() digitalWrite(PIN_STATUS_LED, LOW);
-
-
-//
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
-
-
-//
-#define GET_TIMESTAMP_US() ((uint32_t) micros())
-
-
-//
-#define SLEEP_MS(x) delay(x)
 
 
 //
@@ -254,7 +223,7 @@ static void init_serial( void )
 
     // init if debugging
 #ifdef PSYNC_DEBUG_FLAG
-    Serial.begin( SERIAL_DEBUG_BAUD );
+    Serial.begin( SERIAL_BAUD );
 #endif
 
     // debug log
@@ -267,7 +236,7 @@ static void init_obd_can( void )
 {
     // wait until we have initialized
     // watchdog will reset if we take too long
-    while( obd_can.begin(CAN_OBD_BAUD) != CAN_OK )
+    while( obd_can.begin( CAN_BAUD ) != CAN_OK )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
@@ -283,7 +252,7 @@ static void init_control_can( void )
 {
     // wait until we have initialized
     // watchdog will reset if we take too long
-    while( control_can.begin(CAN_CONTROL_BAUD) != CAN_OK )
+    while( control_can.begin( CAN_BAUD ) != CAN_OK )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );

@@ -29,6 +29,7 @@
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "control_protocol_can.h"
+#include "common.h"
 #include "DAC_MCP49xx.h"
 
 
@@ -41,8 +42,9 @@
 
 #define PSYNC_DEBUG_FLAG
 
-//
+// show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
+    #warning "PSYNC_DEBUG_FLAG defined"
     #define DEBUG_PRINT(x)  Serial.println(x)
 #else
     #define DEBUG_PRINT(x)
@@ -51,19 +53,8 @@
 // set CAN_CS to pin 10 for CAN 
 #define CAN_CS 10
 
-#define CAN_BAUD (CAN_500KBPS)
-
-//
-#define SERIAL_DEBUG_BAUD (115200)
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
 // ms
 #define PS_CTRL_RX_WARN_TIMEOUT (250)
-
-//
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
 
 // set up pins for interface with DAC (MCP4922)
 
@@ -157,10 +148,15 @@ static void get_update_time_ms(
 }
 
 
-static void init_serial( void ) 
+//
+static void init_serial( void )
 {
-    Serial.begin(115200);
+    Serial.begin( SERIAL_BAUD );
+
+    // debug log
+    DEBUG_PRINT( "init_serial: pass" );
 }
+
 
 static void init_can ( void ) 
 {
