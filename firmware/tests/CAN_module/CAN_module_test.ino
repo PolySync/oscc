@@ -1,6 +1,7 @@
 #include "SPI.h"
 #include "mcp_can.h"
 #include "can_frame.h"
+#include "common.h"
 
 
 
@@ -8,15 +9,6 @@
 
 
 #define CAN_2_CS 10             // chip select pin for CAN2
-
-
-#define CAN_BAUD ( CAN_500KBPS )
-
-
-#define SERIAL_BAUD (115200)
-
-
-#define CAN_INIT_RETRY_DELAY (50)
 
 
 static MCP_CAN CAN_1( CAN_1_CS );
