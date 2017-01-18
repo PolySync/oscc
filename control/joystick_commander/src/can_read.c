@@ -62,7 +62,7 @@ int handle_can_rx_brake_report(
     {
         if( (*driver_override_flag) == 0 )
         {
-            (*driver_override_flag) = brake_report->override;
+            (*driver_override_flag) = (int) brake_report->override;
         }
     }
     
@@ -86,7 +86,7 @@ int handle_can_rx_throttle_report(
     {
         if( (*driver_override_flag) == 0 )
         {
-            (*driver_override_flag) = throttle_report->override; 
+            (*driver_override_flag) = (int) throttle_report->override; 
         }
     }
     
@@ -110,7 +110,7 @@ int handle_can_rx_steering_report(
     {
         if( (*driver_override_flag) == 0 )
         {
-            (*driver_override_flag) = steering_report->override;
+            (*driver_override_flag) = (int) steering_report->override;
         }
     }
     
