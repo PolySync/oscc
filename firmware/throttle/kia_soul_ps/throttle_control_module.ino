@@ -61,7 +61,7 @@
 #define CAN_INIT_RETRY_DELAY (50)
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT (250)
+#define PS_CTRL_RX_WARN_TIMEOUT (2500)
 
 //
 #define GET_TIMESTAMP_MS() ((uint32_t) millis())
@@ -230,7 +230,8 @@ void enable_control( )
     dac.outputA( avg_sensA_sample );
     dac.outputB( avg_sensB_sample );
 
-	// TODO: check if the DAC value and the sensed values are the same. If not, return an error and do NOT enable the sigint relays.
+	// TODO: check if the DAC value and the sensed values are the same. If not,
+    // return an error and do NOT enable the sigint relays.
 
 	// Enable the signal interrupt relays
 	digitalWrite( SPOOF_ENGAGE, HIGH );
@@ -309,14 +310,23 @@ void check_pedal_override( )
 }
 
 //
+// TO TRY:
+// 1.) Casting?  set all ints to uint32_t and do not cast int( )
 void check_spoof_voltage(
         bool first_ADC,
-        uint16_t sig_a1,
-        uint16_t sig_b1
+        uint16_t spoof_a_dac,
+        uint16_t spoof_b_dac
         //uint16_t sig_a0,
         //uint16_t sig_b0
         )
 {
+
+    Serial.print( "Spoof A DAC Value (in function): " );
+    Serial.print( spoof_a_dac );
+
+    Serial.print( "\tSpoof B DAC Value (in function): " );
+    Serial.println( spoof_b_dac );
+
     if ( first_ADC == true )
     {
         return;
@@ -325,26 +335,24 @@ void check_spoof_voltage(
     int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
     int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
 
-    int spoof_a_dac_current = int( sig_a1 * 2 );
-    int spoof_b_dac_current = int( sig_b1 / 2 );
+    // DAC values passed in from calculate_pedal_spoof( )
+    //int spoof_a_dac_current = int( dac_sig_a );
+    //int spoof_b_dac_current = int( dac_sig_b );
+
+    //int spoof_a_dac_current = int( sig_a1 * 2 );
+    //int spoof_b_dac_current = int( sig_b1 / 2 );
 
     //int spoof_a_dac_previous = int( sig_a0 * 2 );
     //int spoof_b_dac_previous = int( sig_b0 / 2 );
 
-    float spoof_a_adc_volts = 0.0;
-    float spoof_b_adc_volts = 0.0;
+    float spoof_a_adc_volts = spoof_a_adc * ( 5.0 / 1023.0 );
+    float spoof_b_adc_volts = spoof_b_adc * ( 5.0 / 1023.0 );
 
-    float spoof_a_dac_current_volts = 0.0;
-    float spoof_b_dac_current_volts = 0.0;
+    float spoof_a_dac_current_volts = spoof_a_dac * ( 5.0 / 4095.0 );
+    float spoof_b_dac_current_volts = spoof_b_dac * ( 5.0 / 4095.0 );
 
     //float spoof_a_dac_previous_volts = 0.0;
     //float spoof_b_dac_previous_volts = 0.0;
-
-    spoof_a_adc_volts = spoof_a_adc * 5.0 / 1023.0;
-    spoof_b_adc_volts = spoof_b_adc * 5.0 / 1023.0;
-
-    spoof_a_dac_current_volts = spoof_a_dac_current * 5.0 / 4095.0;
-    spoof_b_dac_current_volts = spoof_b_dac_current * 5.0 / 4095.0;
 
     //spoof_a_dac_previous_volts = spoof_a_dac_previous * 5.0 / 4095.0;
     //spoof_b_dac_previous_volts = spoof_b_dac_previous * 5.0 / 4095.0;
@@ -353,27 +361,26 @@ void check_spoof_voltage(
     // energize the relay so we can read the values at the terminal
     //digitalWrite( SPOOF_ENGAGE, HIGH );
 
-/*
-    Serial.print( "Spoof A ADC Value: " );
+    Serial.print( "Spoof A ADC Value (After): " );
     Serial.print( spoof_a_adc );
-    Serial.print( "\tSpoof A ADC Voltage: " );
+    Serial.print( "\tSpoof A ADC Voltage (After): " );
     Serial.println( spoof_a_adc_volts, 3 );
 
-    Serial.print( "Spoof B ADC Value: " );
-    Serial.print( spoof_b_adc );
-    Serial.print( "\tSpoof B ADC Voltage: " );
-    Serial.println( spoof_b_adc_volts, 3 );
-
-    Serial.print( "Spoof A DAC Value (Current): " );
-    Serial.print( spoof_a_dac_current );
-    Serial.print( "\tSpoof A DAC Voltage (Current): " );
+    Serial.print( "Spoof A DAC Value (After): " );
+    Serial.print( spoof_a_dac );
+    Serial.print( "\tSpoof A DAC Voltage (After): " );
     Serial.println( spoof_a_dac_current_volts, 3 );
 
-    Serial.print( "Spoof B DAC Value (Current): " );
-    Serial.print( spoof_b_dac_current );
-    Serial.print( "\tSpoof B DAC Voltage (Current): " );
-    Serial.println( spoof_b_dac_current_volts, 3 );
+    Serial.print( "Spoof B ADC Value (After): " );
+    Serial.print( spoof_b_adc );
+    Serial.print( "\tSpoof B ADC Voltage (After): " );
+    Serial.println( spoof_b_adc_volts, 3 );
 
+    Serial.print( "Spoof B DAC Value (After): " );
+    Serial.print( spoof_b_dac );
+    Serial.print( "\tSpoof B DAC Voltage (After): " );
+    Serial.println( spoof_b_dac_current_volts, 3 );
+/*
     Serial.print( "Spoof A DAC Value (Previous): " );
     Serial.print( spoof_a_dac_previous );
     Serial.print( "\tSpoof A DAC Voltage (Previous): " );
@@ -383,7 +390,7 @@ void check_spoof_voltage(
     Serial.print( spoof_b_dac_previous );
     Serial.print( "\tSpoof B DAC Voltage (Previous): " );
     Serial.println( spoof_b_dac_previous_volts, 3 );
-*/
+
     if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > 0.050 )
     {
         Serial.println( "* * * ERROR!!  Discrepancy on Current SigA. * * *" );
@@ -394,7 +401,7 @@ void check_spoof_voltage(
         Serial.println( spoof_a_adc_volts, 3 );
 
         Serial.print( "Spoof A DAC Value (Current): " );
-        Serial.print( spoof_a_dac_current );
+        Serial.print( spoof_a_dac );
         Serial.print( "\tSpoof A DAC Voltage (Current): " );
         Serial.println( spoof_a_dac_current_volts, 3 );
     }
@@ -409,11 +416,11 @@ void check_spoof_voltage(
         Serial.println( spoof_b_adc_volts, 3 );
 
         Serial.print( "Spoof B DAC Value (Current): " );
-        Serial.print( spoof_b_dac_current );
+        Serial.print( spoof_b_dac );
         Serial.print( "\tSpoof B DAC Voltage (Current): " );
         Serial.println( spoof_b_dac_current_volts, 3 );
     }
-/*
+
     if ( abs( spoof_a_adc_volts - spoof_a_dac_previous_volts ) > 0.050 )
     {
         Serial.println( "* * * ERROR!!  Discrepancy on Previous SigA. * * *" );
@@ -424,7 +431,7 @@ void check_spoof_voltage(
         Serial.println( "* * * ERROR!!  Discrepancy on Previous SigB. * * *" );
     }
 */
-    //Serial.println( " * * * * * " );
+    Serial.println( " * * * * * " );
 
     //debug signals then writeout fail criteria. ~ ( < | 50mV | )
     //disable_control( );
@@ -704,6 +711,19 @@ void loop()
 
         dac.outputA( spoof_b_current );
         dac.outputB( spoof_a_current );
+
+        int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
+        int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
+
+        Serial.print( "Spoof A DAC Value (before function): " );
+        Serial.print( spoof_a_current );
+        Serial.print( "\tSpoof A ADC Value (before): " );
+        Serial.println( spoof_a_adc );
+
+        Serial.print( "Spoof B DAC Value (before function): " );
+        Serial.print( spoof_b_current );
+        Serial.print( "\tSpoof A ADC Value (before): " );
+        Serial.println( spoof_b_adc );
 
         check_spoof_voltage(
                 initial_ADC,

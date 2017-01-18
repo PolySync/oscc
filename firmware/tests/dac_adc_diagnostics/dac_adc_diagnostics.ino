@@ -19,8 +19,6 @@
 
 #define CAN_CS 10             // chip select pin for CAN
 
-
-
 #define CAN_BAUD ( CAN_500KBPS )
 
 #define SERIAL_BAUD ( 115200 )
@@ -31,24 +29,24 @@
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 ); // DAC model, SS pin, LDAC pin
 
 // Construct the CAN shield object
-MCP_CAN CAN( CAN_CS ); 
+MCP_CAN CAN( CAN_CS );
 
 
-static void init_serial( void ) 
+static void init_serial( void )
 {
     Serial.begin( SERIAL_BAUD );
 }
 
 
-static void init_can ( void ) 
+static void init_can ( void )
 {
     // wait until we have initialized
     while( CAN.begin(CAN_BAUD) != CAN_OK )
-    {   
+    {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
         Serial.println( "init_can: retrying" );
-    }   
+    }
 
     // debug log
     Serial.println( "init_can: pass" );
@@ -61,61 +59,67 @@ static void init_can ( void )
 
 // the two DACS have circuitry for measuring the output. Create a signal and
 // measure that the output is what is expected.
-void test_DACS( ) 
+void test_DACS( )
 {
-    uint32_t dac_value;
-    int spoof_signal_a_read = 0;
-    int spoof_signal_b_read = 0;
-    float spoof_a_voltage_read = 0;
-    float spoof_b_voltage_read = 0;
+    uint16_t dac_value;
+    int spoof_a_adc_signal = 0;
+    int spoof_b_adc_signal = 0;
+    float spoof_a_adc_volts = 0;
+    float spoof_b_adc_volts = 0;
+
+    int dac_value_int;
 
     float dac_expected_output;
 
     // energize the relay so we can read the values at the terminal
     digitalWrite( SPOOF_ENGAGE, HIGH );
 
-    for ( dac_value = 0; dac_value < 4096; dac_value = dac_value + 15 )
+    for ( dac_value = 0; dac_value < 4095; dac_value = dac_value + 15 )
     {
-        dac_expected_output = ( 5.0 / 4096.0 ) * dac_value;
+        dac_value_int = int( dac_value );
+
+        dac_expected_output = ( 5.0 / 4095.0 ) * dac_value_int;
+
+        //dac_expected_output = ( 5.0 / 4095.0 ) * dac_value;
 
         dac.outputA( dac_value );
         dac.outputB( dac_value );
 
         delay( 2000 );
 
-        spoof_signal_a_read = analogRead( SPOOF_SIGNAL_A );
-        spoof_signal_b_read = analogRead( SPOOF_SIGNAL_B );
+        spoof_a_adc_signal = analogRead( SPOOF_SIGNAL_A );
+        spoof_b_adc_signal = analogRead( SPOOF_SIGNAL_B );
 
-        spoof_a_voltage_read = ( spoof_signal_a_read * 5.0 ) / 1024.0;
-        spoof_b_voltage_read = ( spoof_signal_b_read * 5.0 ) / 1024.0;
+        spoof_a_adc_volts = ( spoof_a_adc_signal * 5.0 ) / 1023.0;
+        spoof_b_adc_volts = ( spoof_b_adc_signal * 5.0 ) / 1023.0;
 
         Serial.print( "DAC Value: " );
         Serial.print( dac_value );
 
         Serial.print( "\t\t\t\t\tExpected Voltage: " );
-        Serial.println( dac_expected_output,3 );
+        Serial.println( dac_expected_output, 3 );
 
         Serial.print( "Spoof A Value: " );
-        Serial.print( spoof_signal_a_read );
+        Serial.print( spoof_a_adc_signal );
 
         Serial.print( "\tSpoof B Value: " );
-        Serial.print( spoof_signal_b_read );
+        Serial.print( spoof_b_adc_signal );
 
-        Serial.print( "\tSpoof A Voltage: " );      
-        Serial.print( spoof_a_voltage_read, 3 );      
+        Serial.print( "\tSpoof A Voltage: " );
+        Serial.print( spoof_a_adc_volts, 3 );
 
-        Serial.print( "\tSpoof B Voltage: " );      
-        Serial.println( spoof_b_voltage_read, 3 );  
+        Serial.print( "\tSpoof B Voltage: " );
+        Serial.println( spoof_b_adc_volts, 3 );
 
-        Serial.println( "" );    
-    }    
+        Serial.println( "" );
+    }
 }
 
 // to test that the signal interrupt relay functions we can blink two
 // LEDS in an alternating pattering using the the switch relay.
-void test_interrupt_relay( ) 
+void test_interrupt_relay( )
 {
-    Serial.flush(); 
+    Serial.flush();
 
     while( !Serial.available() )
     {
@@ -129,7 +133,7 @@ void test_interrupt_relay( )
 
 
 // send a CAN frame, to be recieved by some module on a CAN bus.
-void test_CAN_send( ) 
+void test_CAN_send( )
 {
     int cantxValue = 60;
 
@@ -137,23 +141,23 @@ void test_CAN_send( )
     Serial.println( cantxValue );
 
     //Create data packet for CAN message
-    unsigned char canMsg[ 8 ] = {   cantxValue, 
-                                    0x00, 
-                                    0x00, 
-                                    0x00, 
-                                    0x00, 
-                                    0x00, 
-                                    0x00, 
+    unsigned char canMsg[ 8 ] = {   cantxValue,
+                                    0x00,
+                                    0x00,
+                                    0x00,
+                                    0x00,
+                                    0x00,
+                                    0x00,
                                     0x00 };
 
     // send data:  id = 123, standard frame, data len = 8, stmp: data buf
-    CAN.sendMsgBuf( 0x07B, 0, 8, canMsg ); 
+    CAN.sendMsgBuf( 0x07B, 0, 8, canMsg );
     delay( 250 );
 }
 
 
 // recieve a CAN frame sent from some module on a CAN bus.
-void test_CAN_recieve( ) 
+void test_CAN_recieve( )
 {
     // local vars
     can_frame_s rx_frame;
@@ -177,8 +181,8 @@ void test_CAN_recieve( )
 //INSTALLATION TESTS
 
 // turn steering wheel while the car is on and check that the readings from
-// the torque sensors are as expected.      
-void test_signal_sense( ) 
+// the torque sensors are as expected.
+void test_signal_sense( )
 {
     int signal_a_read = 0;
     int signal_b_read = 0;
@@ -199,27 +203,27 @@ void test_signal_sense( )
 }
 
 
-void test_torque_spoof( ) 
+void test_torque_spoof( )
 {
     // send spoofed torque, slowly sweep stering back and forth.
 }
 
 
-void test_hard_power_off( ) 
+void test_hard_power_off( )
 {
     // while sweeping the steering wheel, cut power and test that shutdown is
     // handled gracefully or throws the expected fault.
 }
 
 
-void setup( ) 
+void setup( )
 {
     init_serial();
     init_can();
 }
 
 
-void loop() 
+void loop()
 {
     test_DACS();
     //test_interrupt_relay();
