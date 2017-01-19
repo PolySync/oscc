@@ -39,50 +39,65 @@
 // static global types/macros
 // *****************************************************
 
-#define PSYNC_DEBUG_FLAG true
+#define PSYNC_DEBUG_FLAG ( true )
 
 //
 #ifdef PSYNC_DEBUG_FLAG
-    #define DEBUG_PRINT(x)  Serial.println(x)
+    #define DEBUG_PRINT( x )  Serial.println( x )
 #else
-    #define DEBUG_PRINT(x)
+    #define DEBUG_PRINT( x )
 #endif
 
 // Set CAN_CS to pin 10 for CAN
-#define CAN_CS 10
+#define CAN_CS      ( 10 )
 
-#define CAN_BAUD ( CAN_500KBPS )
-
-//
-#define SERIAL_BAUD (115200)
+#define CAN_BAUD    ( CAN_500KBPS )
 
 //
-#define CAN_INIT_RETRY_DELAY (50)
+#define SERIAL_BAUD ( 115200 )
 
 //
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
+#define CAN_INIT_RETRY_DELAY    ( 50 )
+
+//
+//#define GET_TIMESTAMP_MS() ( (uint32_t)millis() )
+//#define GET_TIMESTAMP_US() ( (uint32_t)micros() )
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT (200) //(50)
+#define PS_CTRL_RX_WARN_TIMEOUT ( 200 ) //(50)
 
 // Set up pins for interface with the DAC (MCP4922)
 
-#define DAC_CS                9  // Chip select pin
+#define DAC_CS                ( 9 )     // Chip select pin
 
-#define SIGNAL_INPUT_A        A0  // Sensing input for the DAC output
+#define SIGNAL_INPUT_A        ( A0 )    // Sensing input for the DAC output
 
-#define SIGNAL_INPUT_B        A1  // Green wire from the torque sensor, low values
+#define SIGNAL_INPUT_B        ( A1 )    // Green wire from the torque sensor, low values
 
-#define SPOOF_SIGNAL_A        A2  // Sensing input for the DAC output
+#define SPOOF_SIGNAL_A        ( A2 )    // Sensing input for the DAC output
 
-#define SPOOF_SIGNAL_B        A3  // Blue wire from the torque sensor, high values
+#define SPOOF_SIGNAL_B        ( A3 )    // Blue wire from the torque sensor, high values
 
-#define SPOOF_ENGAGE          6   // Signal interrupt (relay) for spoofed torque values
-
-
-#define STEERING_WHEEL_CUTOFF_THRESHOLD 3000
+#define SPOOF_ENGAGE          ( 6 )     // Signal interrupt (relay) for spoofed torque values
 
 
+#define STEERING_WHEEL_CUTOFF_THRESHOLD ( 3000 )
+
+#define SAMPLE_A    ( 0 )
+#define SAMPLE_B    ( 1 )
+
+#define FAILURE     ( 0 )
+#define SUCCESS     ( 1 )
+
+// *****************************************************
+// local defined data structures
+// *****************************************************
+
+struct torque_spoof_t
+{
+    uint16_t low;
+    uint16_t high;
+};
 
 
 // *****************************************************
@@ -93,7 +108,7 @@
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
 
 // Construct the CAN shield object
-MCP_CAN CAN(CAN_CS);                            // Set CS pin for the CAN shield
+MCP_CAN CAN( CAN_CS );                            // Set CS pin for the CAN shield
 
 
 //
@@ -109,19 +124,12 @@ static current_control_state current_ctrl_state;
 
 
 //
-static PID pidParams;
+static PID pid_params;
 
 
 // *****************************************************
-// non-static global veriables
+// non-static global variables
 // *****************************************************
-
-
-const int numReadings = 2;
-
-int readings[numReadings];      // the readings from the analog input
-int readIndex = 0;              // the index of the current reading
-int total = 0;                  // the running total
 
 
 // *****************************************************
@@ -129,132 +137,243 @@ int total = 0;                  // the running total
 // *****************************************************
 
 
-// corrects for overflow condition
-static void get_update_time_delta_ms(
-		const uint32_t time_in,
-		const uint32_t last_update_time_ms,
-		uint32_t * const delta_out )
+// *****************************************************
+// Function:    timer_delta_ms
+// 
+// Purpose:     Calculate the milliseconds between the current time and the
+//              input and correct for the timer overflow condition
+// 
+// Returns:     uint32_t the time delta between the two inputs
+// 
+// Parameters:  [in] timestamp - the last time sample
+// 
+// *****************************************************
+static uint32_t timer_delta_ms( uint32_t last_time )
 {
-    // check for overflow
-    if( last_update_time_ms < time_in )
-    {   
-		// time remainder, prior to the overflow
-		(*delta_out) = (UINT32_MAX - time_in);
-        
-        // add time since zero
-        (*delta_out) += last_update_time_ms;
+    uint32_t delta = 0;
+    uint32_t current_time = millis( );
+
+    if ( current_time < last_time )
+    {
+        // Timer overflow
+        delta = ( UINT32_MAX - last_time ) + current_time;
     }   
     else
     {   
-        // normal delta
-        (*delta_out) = ( last_update_time_ms - time_in );
+        delta = current_time - last_time;
+    }
+    return ( delta );
+}
+
+// *****************************************************
+// Function:    timer_delta_us
+// 
+// Purpose:     Calculate the microseconds between the current time and the
+//              input and correct for the timer overflow condition
+// 
+// Returns:     uint32_t the time delta between the two inputs
+// 
+// Parameters:  [in] last_sample - the last time sample
+//              [in] current_sample - pointer to store the current time
+// 
+// *****************************************************
+static uint32_t timer_delta_us( uint32_t last_time, uint32_t* current_time )
+{
+    uint32_t delta = 0;
+    uint32_t local_time = micros( );
+
+    if ( local_time < last_time )
+    {
+        // Timer overflow
+        delta = ( UINT32_MAX - last_time ) + local_time;
     }   
+    else
+    {   
+        delta = local_time - last_time;
+    }
+
+    if ( current_time != NULL )
+    {
+        *current_time = local_time;
+    }
+
+    return ( delta );
 }
 
 
-//
-static void init_serial( void ) 
+// *****************************************************
+// Function:    init_serial
+// 
+// Purpose:     Initializes the serial port communication
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+static void init_serial( )
 {
     Serial.begin( SERIAL_BAUD );
 
-    // debug log
     DEBUG_PRINT( "init_serial: pass" );
 }
 
 
-//
+// *****************************************************
+// Function:    init_can
+// 
+// Purpose:     Initializes the CAN communication
+//              Function must iterate while the CAN module initializes
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
 static void init_can ( void ) 
 {
-    // wait until we have initialized
-    while( CAN.begin(CAN_BAUD) != CAN_OK )
+    while ( CAN.begin( CAN_BAUD ) != CAN_OK )
     {   
-        // wait a little
         DEBUG_PRINT( "init_can: retrying" );
+
         delay( CAN_INIT_RETRY_DELAY );
     }   
 
-    // debug log
     DEBUG_PRINT( "init_can: pass" );
 }
-
-
 
 
 /* ====================================== */
 /* ============== CONTROL =============== */
 /* ====================================== */
 
-
-
-// A function to enable SCM to take control
-void enableControl() 
+// *****************************************************
+// Function:    average_samples
+// 
+// Purpose:     Sample the current value being written and smooth it out by
+//              averaging it out over the indicated number of samples
+//              Function takes 260us * num_samples to run
+// 
+// Returns:     int16_t - SUCCESS or FAILURE
+// 
+// Parameters:  [in]  num_samples - the number of samples to average
+//              [out] averages - array of values to store the averages
+// 
+// *****************************************************
+static int16_t average_samples( int16_t num_samples, int16_t* averages )
 {
-	// Do a quick average to smooth out the noisy data
-	static int AVG_max = 20;  // Total number of samples to average over
-	long sum_sensA_samples = 0;
-	long sum_sensB_samples = 0;
+    int16_t return_code = FAILURE;
 
-	for (int i = 0; i < AVG_max; i++) 
-	{
-		sum_sensA_samples += analogRead(SIGNAL_INPUT_A);
-		sum_sensB_samples += analogRead(SIGNAL_INPUT_B);
-	}
+    if ( averages != NULL )
+    {
+        return_code = SUCCESS;
 
-	uint16_t avg_sensA_sample = (sum_sensA_samples / AVG_max) << 2;
-	uint16_t avg_sensB_sample = (sum_sensB_samples / AVG_max) << 2;
+        int32_t sums[ 2 ] = { 0, 0 };
 
-	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM takes over
-     dac.outputA( avg_sensA_sample );
-     dac.outputB( avg_sensB_sample );
+        for ( int16_t i = 0; i < num_samples; i++ ) 
+        {
+            sums[ SAMPLE_A ] += analogRead( SIGNAL_INPUT_A );
+            sums[ SAMPLE_B ] += analogRead( SIGNAL_INPUT_B );
+        }
 
-	// TODO: check if the DAC value and the sensed values are the same. If not, return an error and do NOT enable the sigint relays.
+        averages[ SAMPLE_A ] = ( sums[ SAMPLE_A ] / num_samples ) << 2;
+        averages[ SAMPLE_B ] = ( sums[ SAMPLE_B ] / num_samples ) << 2;
+    }
+    return ( return_code );
+}
 
-	// Enable the signal interrupt relays
-	digitalWrite(SPOOF_ENGAGE, HIGH);
+// *****************************************************
+// Function:    enable_control
+// 
+// Purpose:     Sample the current value being written and smooth it out by
+//              averaging it out over several samples, write that value to the
+//              DAC, and then enable the control
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void enable_control( )
+{
+    static int16_t num_samples = 20;
+    int16_t averages[ 2 ] = { 0, 0 };
 
-	current_ctrl_state.control_enabled = true;
+    int16_t status = average_samples( num_samples, averages );
 
-	DEBUG_PRINT("Control enabled");
+    if ( SUCCESS == status )
+    {
+        // Write measured torque values to DAC to avoid a signal
+        // discontinuity when the SCM takes over
+        dac.outputA( averages[ SAMPLE_A ] );
+        dac.outputB( averages[ SAMPLE_B ] );
+
+        // TODO: check if the DAC value and the sensed values are the same. If not, return an error and do NOT enable the sigint relays.
+
+        // Enable the signal interrupt relays
+        digitalWrite( SPOOF_ENGAGE, HIGH );
+
+        current_ctrl_state.control_enabled = true;
+
+        DEBUG_PRINT( "Control enabled" );
+    }
 }
 
 
-// A function to disable SCM control
-void disableControl() 
+// *****************************************************
+// Function:    disable_control
+// 
+// Purpose:     Sample the current value being written and smooth it out by
+//              averaging it out over several samples, write that value to the
+//              DAC, and then enable the control
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void disable_control() 
 {
-	// Do a quick average to smooth out the noisy data
-	static int AVG_max = 20;  // Total number of samples to average over
-	long sum_sensA_samples = 0;
-	long sum_sensB_samples = 0;
+    if ( current_ctrl_state.control_enabled == true )
+    {
+        static int16_t num_samples = 20;
+        int16_t averages[ 2 ] = { 0, 0 };
 
-	for (int i = 0; i < AVG_max; i++) 
-	{
-		sum_sensA_samples += analogRead(SIGNAL_INPUT_A) << 2;
-		sum_sensB_samples += analogRead(SIGNAL_INPUT_B) << 2;
-	}
+        current_ctrl_state.control_enabled = false; 
 
-	uint16_t avg_sensA_sample = sum_sensA_samples / AVG_max;
-	uint16_t avg_sensB_sample = sum_sensB_samples / AVG_max;
+        average_samples( num_samples, averages );
 
-	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM relinquishes control
-     dac.outputA( avg_sensA_sample );
-     dac.outputB( avg_sensB_sample );
+        // Write measured torque values to DAC to avoid a signal
+        // discontinuity when the SCM takes over
+        dac.outputA( averages[ SAMPLE_A ] );
+        dac.outputB( averages[ SAMPLE_B ] );
 
-	// Disable the signal interrupt relays
-	digitalWrite(SPOOF_ENGAGE, LOW);
-
-	current_ctrl_state.control_enabled = false;
-
-	DEBUG_PRINT("Control disabled");
+        // Disable the signal interrupt relays
+        digitalWrite(SPOOF_ENGAGE, LOW);
+    }
+    DEBUG_PRINT("Control disabled");
 }
 
 
-//
-void calculateTorqueSpoof( float torque, uint16_t * TSpoofL, uint16_t * TSpoofH ) 
+// *****************************************************
+// Function:    calculate_torque_spoof
+// 
+// Purpose:     Container for hand-tuned empirically determined values
+// 
+//              Values calculated with min/max calibration curve and hand
+//              tuned for neutral balance.
+//              DAC requires 12-bit values = (4096steps/5V = 819.2 steps/V)
+// 
+// Returns:     void
+// 
+// Parameters:  [in] torque - floating point value with the current torque value
+//              [out] torque_spoof - structure containing the integer torque values
+// 
+// *****************************************************
+void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof ) 
 {
-	// Values calculated with min/max calibration curve and hand tuned for neutral balance
-	// DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
-	( *TSpoofL ) = 819.2*( 0.0008*torque + 2.26 );
-	( *TSpoofH ) = 819.2*( -0.0008*torque + 2.5 );
+    spoof->low = 819.2 * ( 0.0008 * torque + 2.26 );
+    spoof->high = 819.2 * ( -0.0008 * torque + 2.5 );
 }
 
 
@@ -263,220 +382,184 @@ void calculateTorqueSpoof( float torque, uint16_t * TSpoofL, uint16_t * TSpoofH 
 /* =========== COMMUNICATIONS =========== */
 /* ====================================== */
 
-// A function to parse incoming serial bytes
-void processSerialByte( uint8_t incomingSerialByte) 
+
+// *****************************************************
+// Function:    publish_ps_ctrl_steering_report
+// 
+// Purpose:     Fill out the transmit CAN frame with the steering angle
+//              and publish that information on the CAN bus
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+static void publish_ps_ctrl_steering_report( )
 {
-/*
-    // enable/disable control
-    if( incomingSerialByte == 'p' )                  
-    {
-        current_ctrl_state.emergency_stop = !current_ctrl_state.emergency_stop;
+    tx_frame_ps_ctrl_steering_report.id =
+        ( uint32_t ) ( PS_CTRL_MSG_ID_STEERING_REPORT );
 
-        disableControl();
-    }
+    tx_frame_ps_ctrl_steering_report.dlc = 8;
 
-    if( incomingSerialByte == 'i' )
-    {
-        current_ctrl_state.SA_Kp += 0.001;
-        Serial.print( "proportional gain increased: " );
-        Serial.println( current_ctrl_state.SA_Kp );
-    }
-    if( incomingSerialByte == 'u' )
-    {
-        if( current_ctrl_state.SA_Kp > 0 )
-        {
-            current_ctrl_state.SA_Kp -= 0.001;
-            Serial.print( "proportional gain decreased: " );
-            Serial.println( current_ctrl_state.SA_Kp );
-        }
-    }
+    // Get a pointer to the data buffer in the CAN frame and set
+    // the steering angle
+    ps_ctrl_steering_report_msg * data =
+        ( ps_ctrl_steering_report_msg* ) tx_frame_ps_ctrl_steering_report.data;
 
-    if( incomingSerialByte == 'k' )
-    {
-        current_ctrl_state.SA_Ki += 0.01;
-        Serial.print( "integral gain increased: " );
-        Serial.println( current_ctrl_state.SA_Ki );
-    }
-    if( incomingSerialByte == 'j' )
-    {
-        if( current_ctrl_state.SA_Ki > 0 )
-        {
-            current_ctrl_state.SA_Ki -= 0.01;
-            Serial.print( "integral gain decreased: " );
-            Serial.println( current_ctrl_state.SA_Ki );
-        }
-    }
-
-    if( incomingSerialByte == 'm' )
-    {
-        current_ctrl_state.SA_Kd += 0.0001;
-        Serial.print( "derivative gain increased: " );
-        Serial.println( current_ctrl_state.SA_Kd );
-    }
-    if( incomingSerialByte == 'n' )
-    {
-        if( current_ctrl_state.SA_Kd > 0 )
-        {
-            current_ctrl_state.SA_Kd -= 0.0001;
-            Serial.print( "derivative gain decreased: " );
-            Serial.println( current_ctrl_state.SA_Kd );
-        }
-    }
-*/
-}
-
-
-//
-static void publish_ps_ctrl_steering_report( void )
-{
-    // cast data
-    ps_ctrl_steering_report_msg * const data =
-            (ps_ctrl_steering_report_msg*) tx_frame_ps_ctrl_steering_report.data;
-
-    // Set frame ID
-    tx_frame_ps_ctrl_steering_report.id = (uint32_t) (PS_CTRL_MSG_ID_STEERING_REPORT);
-
-    // Set DLC
-    tx_frame_ps_ctrl_steering_report.dlc = 8; 
-
-    // Steering Wheel Angle
     data->angle = current_ctrl_state.current_steering_angle;
 
-    // Update last publish timestamp, ms
-    tx_frame_ps_ctrl_steering_report.timestamp = GET_TIMESTAMP_MS();
+    tx_frame_ps_ctrl_steering_report.timestamp = millis( );
     
-    // Publish to control CAN bus
-    CAN.sendMsgBuf(
-            tx_frame_ps_ctrl_steering_report.id,
-            0, // standard ID (not extended)
-            tx_frame_ps_ctrl_steering_report.dlc,
-            tx_frame_ps_ctrl_steering_report.data );
+    CAN.sendMsgBuf( tx_frame_ps_ctrl_steering_report.id,
+                    0,
+                    tx_frame_ps_ctrl_steering_report.dlc,
+                    tx_frame_ps_ctrl_steering_report.data );
 }   
 
 
-//  
-static void publish_timed_tx_frames( void )
+// *****************************************************
+// Function:    publish_timed_tx_frames
+// 
+// Purpose:     Determine if enough time has passed to publish the steering
+//              report to the CAN bus again
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+static void publish_timed_tx_frames( )
 {
+    uint32_t delta =
+        timer_delta_ms( tx_frame_ps_ctrl_steering_report.timestamp );
 
-    // Local vars
-    uint32_t delta = 0;
-
-    // Get time since last publish
-    get_update_time_delta_ms( 
-			tx_frame_ps_ctrl_steering_report.timestamp, 
-			GET_TIMESTAMP_MS(),
-			&delta );
-
-    // check publish interval
-    if( delta >= PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL )
+    if ( delta >= PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL )
     {
-        // publish frame, update timestamp
         publish_ps_ctrl_steering_report();
     }
 }
 
 
-//
-static void process_ps_ctrl_steering_command( const uint8_t * const rx_frame_buffer )
+// *****************************************************
+// Function:    process_ps_ctrl_steering_command
+// 
+// Purpose:     Process a steering command message
+// 
+// Returns:     void
+// 
+// Parameters:  control_data -  pointer to a steering command control message
+// 
+// *****************************************************
+static void process_ps_ctrl_steering_command(
+    const ps_ctrl_steering_command_msg * const control_data )
 {
-    // Cast control frame data
-    const ps_ctrl_steering_command_msg * const control_data =
-            (ps_ctrl_steering_command_msg*) rx_frame_buffer;
+    current_ctrl_state.commanded_steering_angle =
+        control_data->steering_wheel_angle_command / 9.0;
 
-    current_ctrl_state.commanded_steering_angle = control_data->steering_wheel_angle_command / 9.0 ;
+    current_ctrl_state.steering_angle_rate_max =
+        control_data->steering_wheel_max_velocity * 9.0;
 
-    current_ctrl_state.steering_angle_rate_max = control_data->steering_wheel_max_velocity * 9.0;
-
-    bool enabled = control_data->enabled == 1;
-
-    // Enable control from the PolSync interface
-    if( enabled == 1 && !current_ctrl_state.control_enabled && !current_ctrl_state.emergency_stop ) 
+    if ( control_data->enabled == 1 )
     {
-        enableControl();
+         if ( current_ctrl_state.control_enabled == false
+              && current_ctrl_state.emergency_stop == false )
+        {
+             enable_control( );
+        }
+    }
+    else
+    {
+        if ( current_ctrl_state.control_enabled == true )
+        {
+            disable_control();
+        }
     }
 
-    // Disable control from the PolySync interface
-    if( enabled == 0 && current_ctrl_state.control_enabled )
-    {
-        disableControl();
-    }
-
-	rx_frame_ps_ctrl_steering_command.timestamp = GET_TIMESTAMP_MS();
+    rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 }
 
 
-//
-static void process_psvc_chassis_state1( const uint8_t * const rx_frame_buffer )
+// *****************************************************
+// Function:    process_psvc_chassis_state1
+// 
+// Purpose:     Process the chassis state message
+// 
+// Returns:     void
+// 
+// Parameters:  chassis_data - pointer to a chassis state message that contains
+//                             the steering angle
+// 
+// *****************************************************
+static void process_psvc_chassis_state1(
+    const psvc_chassis_state1_data_s * const chassis_data )
 {
-    const psvc_chassis_state1_data_s * const chassis_data =
-        (psvc_chassis_state1_data_s*) rx_frame_buffer;
+    float raw_angle = (float)chassis_data->steering_wheel_angle;
+    current_ctrl_state.current_steering_angle = raw_angle * 0.0076294;
 
-    int16_t raw_angle = chassis_data->steering_wheel_angle;
-    current_ctrl_state.current_steering_angle = float( raw_angle ) * 0.0076294;
-
-	// Convert from 40 degree range to 470 degree range in 1 deg increments
-	current_ctrl_state.current_steering_angle *= 11.7;
-
+    // Convert from 40 degree range to 470 degree range in 1 degree increments
+    current_ctrl_state.current_steering_angle *= 11.7;
 }
 
 
-// A function to parse CAN data into useful variables
-void handle_ready_rx_frames(void) 
+// *****************************************************
+// Function:    handle_ready_rx_frames
+// 
+// Purpose:     Parse received CAN data and redirect to correct
+//              processing function
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void handle_ready_rx_frames( ) 
 {
-    // local vars
-    can_frame_s rx_frame;
-
-    if( CAN.checkReceive() == CAN_MSGAVAIL )
+    if ( CAN.checkReceive() == CAN_MSGAVAIL )
     {
+        can_frame_s rx_frame;
+
         memset( &rx_frame, 0, sizeof(rx_frame) );
 
-        // read frame
-        CAN.readMsgBufID(
-                (INT32U*) &rx_frame.id,
-                (INT8U*) &rx_frame.dlc,
-                (INT8U*) rx_frame.data );
+        CAN.readMsgBufID( (INT32U*) &rx_frame.id,
+                          (INT8U*) &rx_frame.dlc,
+                          (INT8U*) rx_frame.data );
 
-        // check for a supported frame ID
-        if( rx_frame.id == PS_CTRL_MSG_ID_STEERING_COMMAND )
+        if ( rx_frame.id == PS_CTRL_MSG_ID_STEERING_COMMAND )
         {
-            // process steering commmand
-            process_ps_ctrl_steering_command( rx_frame.data );
+            process_ps_ctrl_steering_command(
+                ( const ps_ctrl_steering_command_msg * const )rx_frame.data );
         }
 
-
-        if( rx_frame.id == KIA_STATUS1_MESSAGE_ID )
+        if ( rx_frame.id == KIA_STATUS1_MESSAGE_ID )
         {
-            // process state1
-            process_psvc_chassis_state1( rx_frame.data );
-
+            process_psvc_chassis_state1(
+                ( const psvc_chassis_state1_data_s * const )rx_frame.data );
         }
     }
 }
 
 
-//
-static void check_rx_timeouts( void )
+// *****************************************************
+// Function:    check_rx_timeouts
+// 
+// Purpose:     If the control is currently enabled, but the receiver indicates
+//              a "watchdog" timeout, then disable the control
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+static void check_rx_timeouts( )
 {
-    // local vars
-    uint32_t delta = 0;
+    uint32_t delta =
+        timer_delta_ms( rx_frame_ps_ctrl_steering_command.timestamp );
 
-    // get time since last receive
-    get_update_time_delta_ms( 
-			rx_frame_ps_ctrl_steering_command.timestamp, 
-			GET_TIMESTAMP_MS(), 
-			&delta );
-
-    // check rx timeout
-    if( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
+    if ( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
     {
-        // disable control from the PolySync interface
-        if( current_ctrl_state.control_enabled ) 
-        {
-            disableControl();
-        }
+        disable_control();
     }
 }
-
 
 
 
@@ -485,46 +568,56 @@ static void check_rx_timeouts( void )
 /* ====================================== */
 
 
-//
-void setup() 
+// *****************************************************
+// Function:    setup
+// 
+// Purpose:     Initialize and clear all global data
+//              Set up hardware
+//              Initialize control loop variables
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void setup( ) 
 {
-    // zero
-    memset( &rx_frame_ps_ctrl_steering_command, 0, sizeof(rx_frame_ps_ctrl_steering_command) );
+    memset( &rx_frame_ps_ctrl_steering_command,
+            0,
+            sizeof(rx_frame_ps_ctrl_steering_command) );
 
-    // Set up pin modes
-    pinMode(DAC_CS, OUTPUT);
-    pinMode(SIGNAL_INPUT_A, INPUT);
-    pinMode(SIGNAL_INPUT_B, INPUT);
-    pinMode(SPOOF_SIGNAL_A, INPUT);
-    pinMode(SPOOF_SIGNAL_B, INPUT);
-    pinMode(SPOOF_ENGAGE, OUTPUT);
+    // Set the direction for analog pins
+    pinMode( DAC_CS, OUTPUT );
+    pinMode( SIGNAL_INPUT_A, INPUT );
+    pinMode( SIGNAL_INPUT_B, INPUT );
+    pinMode( SPOOF_SIGNAL_A, INPUT );
+    pinMode( SPOOF_SIGNAL_B, INPUT );
+    pinMode( SPOOF_ENGAGE, OUTPUT );
 
-    // Initialize the DAC board
-    digitalWrite(DAC_CS, HIGH);     // Deselect DAC CS
+    // Initialize the DAC board by setting the DAC Chip Select
+    digitalWrite( DAC_CS, HIGH );
 
-    // Initialize relay board
-    digitalWrite(SPOOF_ENGAGE, LOW);
+    // Initialize relay board by clearing the Spoof Engage
+    digitalWrite( SPOOF_ENGAGE, LOW );
 
-    init_serial();
+    init_serial( );
 
-    init_can();
+    init_can( );
 
-    publish_ps_ctrl_steering_report();
+    publish_ps_ctrl_steering_report( );
 
     current_ctrl_state.control_enabled = false;
 
     current_ctrl_state.emergency_stop = false;
 
-    // update last Rx timestamps so we don't set timeout warnings on start up
-    rx_frame_ps_ctrl_steering_command.timestamp = GET_TIMESTAMP_MS();
+    // Initialize the Rx timestamps to avoid timeout warnings on start up
+    rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 
-    pid_zeroize( &pidParams );
+    pid_zeroize( &pid_params );
 
     // debug log
     DEBUG_PRINT( "init: pass" );
 }
-
-
 
 
 /* ====================================== */
@@ -532,106 +625,81 @@ void setup()
 /* ====================================== */
 
 
-//
-void loop()
+// *****************************************************
+// Function:    loop
+// 
+// Purpose:     Main processing loop for the steering control
+//              The loop is called periodically and must check the elapsed time
+//              to determine what to do
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void loop( )
 {
-    handle_ready_rx_frames();
+    handle_ready_rx_frames( );
       
-    publish_timed_tx_frames();
+    publish_timed_tx_frames( );
 
-    check_rx_timeouts();
+    check_rx_timeouts( );
 
-    // Read and parse incoming serial commands
-    if ( Serial.available() > 0 ) 
-	{
-        uint8_t incomingSerialByte = Serial.read();
-        processSerialByte( incomingSerialByte );
-    }
+    uint32_t current_timestamp_us;
 
+    uint32_t deltaT = timer_delta_us( current_ctrl_state.timestamp_us,
+                                      &current_timestamp_us );
 
-    // Calculate a delta t
-    long unsigned int currMicros = micros();  // Fast loop, needs more precision than millis
-    unsigned int deltaT = currMicros - current_ctrl_state.lastMicros;
-
-
-    if( deltaT > 50000 )
+    if ( deltaT > 50000 )
     {
-        current_ctrl_state.lastMicros = currMicros;        
+        current_ctrl_state.timestamp_us = current_timestamp_us;
 
-        // Now that we've set control status, do steering if we are in control
-        if( current_ctrl_state.control_enabled ) 
-	    {
-            // Calculate steering angle rates
-            double steeringAngleRate = ( current_ctrl_state.current_steering_angle - current_ctrl_state.steering_angle_last )/0.05;  //  degree/microsecond
-            double steeringAngleRateTarget = ( current_ctrl_state.commanded_steering_angle - current_ctrl_state.current_steering_angle )/0.05; //  degree/microsecond
+        if ( current_ctrl_state.control_enabled == true ) 
+        {
+            // Calculate steering angle rates (degrees/microsecond)
+            double steering_angle_rate =
+                ( current_ctrl_state.current_steering_angle -
+                  current_ctrl_state.steering_angle_last ) / 0.05;
 
+            double steering_angle_rate_target =
+                ( current_ctrl_state.commanded_steering_angle -
+                  current_ctrl_state.current_steering_angle ) / 0.05;
 
-            // subtract the last reading:
-            total = total - readings[readIndex];
-            readings[readIndex] = steeringAngleRate;
-            total = total + readings[readIndex];
-            readIndex = readIndex + 1;
-            if(readIndex >= numReadings) 
-	        {
-                readIndex = 0;
-            }
-            
-	        // calculate the average:
-            double average = total / numReadings;
+            double steering_angle_rate_error =
+                steering_angle_rate_target - steering_angle_rate;
 
+            // Save the angle for next iteration
+            current_ctrl_state.steering_angle_last =
+                current_ctrl_state.current_steering_angle;
 
-            current_ctrl_state.steering_angle_last = current_ctrl_state.current_steering_angle;   // Remember for next time
+            steering_angle_rate_target =
+                constrain( ( double )steering_angle_rate_target,
+                           ( double )-current_ctrl_state.steering_angle_rate_max,
+                           ( double )current_ctrl_state.steering_angle_rate_max );
 
-            // Set saturation limits for steering wheel rotation speed
-            if( steeringAngleRateTarget >= current_ctrl_state.steering_angle_rate_max )
-            {
-                steeringAngleRateTarget = current_ctrl_state.steering_angle_rate_max;
-            }
+            pid_params.derivative_gain = current_ctrl_state.SA_Kd;
+            pid_params.proportional_gain = current_ctrl_state.SA_Kp;
+            pid_params.integral_gain = current_ctrl_state.SA_Ki;
 
-            if( steeringAngleRateTarget <= -current_ctrl_state.steering_angle_rate_max ) 
-            {
-                steeringAngleRateTarget = -current_ctrl_state.steering_angle_rate_max;
-            }
+            pid_update( &pid_params, steering_angle_rate_error, 0.050 );
 
-            current_ctrl_state.PID_input = average;
-            current_ctrl_state.PID_setpoint = steeringAngleRateTarget;
+            double control = pid_params.control;
 
-            pidParams.derivative_gain = current_ctrl_state.SA_Kd;
-            pidParams.proportional_gain = current_ctrl_state.SA_Kp;
-            pidParams.integral_gain = current_ctrl_state.SA_Ki;
+            control = constrain( ( float ) control,
+                                 ( float ) -1500.0f,
+                                 ( float ) 1500.0f );
 
-            pid_update( &pidParams, steeringAngleRateTarget - steeringAngleRate, 0.050 );
+            struct torque_spoof_t torque_spoof;
 
-            uint16_t TSpoofH;
-            uint16_t TSpoofL;
+            calculate_torque_spoof( control, &torque_spoof );
 
-            double control = pidParams.control;
-
-            // constrain to min/max
-            control = m_constrain(
-                    (float) (control),
-                    (float) -1500.0f,
-                    (float) 1500.0f );
-
-            calculateTorqueSpoof( control, &TSpoofL, &TSpoofH );
-
-            dac.outputA( TSpoofH );
-            dac.outputB( TSpoofL );
+            dac.outputA( torque_spoof.high );
+            dac.outputB( torque_spoof.low );
         }
         else
         {
-            pid_zeroize( &pidParams );
-
-            total = total - readings[readIndex];
-            readings[readIndex] = 0;
-            total = total + readings[readIndex];
-            readIndex = readIndex + 1;
-            
-            if ( readIndex >= numReadings ) 
-            {
-                readIndex = 0;
-            }
+            pid_zeroize( &pid_params );
         }
-
     }
 }
+
