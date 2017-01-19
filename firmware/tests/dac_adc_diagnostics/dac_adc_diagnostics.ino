@@ -2,6 +2,8 @@
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "DAC_MCP49xx.h"
+#include "common.h"
+
 
 
 
@@ -18,14 +20,6 @@
 #define DAC_CS 9              // chip select pin for DAC
 
 #define CAN_CS 10             // chip select pin for CAN
-
-
-
-#define CAN_BAUD ( CAN_500KBPS )
-
-#define SERIAL_BAUD ( 115200 )
-
-#define CAN_INIT_RETRY_DELAY ( 50 )
 
 
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 ); // DAC model, SS pin, LDAC pin

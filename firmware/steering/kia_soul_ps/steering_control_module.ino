@@ -30,6 +30,7 @@
 #include "control_protocol_can.h"
 #include "current_control_state.h"
 #include "PID.h"
+#include "common.h"
 #include "DAC_MCP49xx.h"
 
 
@@ -39,10 +40,12 @@
 // static global types/macros
 // *****************************************************
 
-#define PSYNC_DEBUG_FLAG true
 
-//
+#define PSYNC_DEBUG_FLAG
+
+// show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
+    #warning "PSYNC_DEBUG_FLAG defined"
     #define DEBUG_PRINT(x)  Serial.println(x)
 #else
     #define DEBUG_PRINT(x)
@@ -51,19 +54,8 @@
 // Set CAN_CS to pin 10 for CAN
 #define CAN_CS 10
 
-#define CAN_BAUD ( CAN_500KBPS )
-
-//
-#define SERIAL_BAUD (115200)
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
-//
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
-
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT (200) //(50)
+#define PS_CTRL_RX_WARN_TIMEOUT (200)
 
 // Set up pins for interface with the DAC (MCP4922)
 
@@ -132,7 +124,7 @@ int total = 0;                  // the running total
 // corrects for overflow condition
 static void get_update_time_delta_ms(
 		const uint32_t time_in,
-		const uint32_t last_update_time_ms,
+    	const uint32_t last_update_time_ms,
 		uint32_t * const delta_out )
 {
     // check for overflow
@@ -462,15 +454,15 @@ static void check_rx_timeouts( void )
 
     // get time since last receive
     get_update_time_delta_ms( 
-			rx_frame_ps_ctrl_steering_command.timestamp, 
+			rx_frame_ps_ctrl_steering_command.timestamp,
 			GET_TIMESTAMP_MS(), 
 			&delta );
 
     // check rx timeout
-    if( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
+    if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
         // disable control from the PolySync interface
-        if( current_ctrl_state.control_enabled ) 
+        if( current_ctrl_state.control_enabled )
         {
             disableControl();
         }

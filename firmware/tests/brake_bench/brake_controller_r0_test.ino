@@ -1,15 +1,12 @@
 #include "SPI.h"
 #include "mcp_can.h"
 #include "can_frame.h"
+#include "common.h"
+
+
+
 
 #define CAN_CS 53                          // chip select pin for CAN Shield
-
-#define CAN_BAUD (CAN_500KBPS)
-
-#define SERIAL_BAUD (115200)
-
-#define CAN_INIT_RETRY_DELAY (50)
-
 
 // construct the CAN shield object
 MCP_CAN CAN(CAN_CS);                                    // Set CS pin for the CAN shield

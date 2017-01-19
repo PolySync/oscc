@@ -12,15 +12,8 @@
 #include <FiniteStateMachine.h>
 #include "mcp_can.h"
 #include "can_frame.h"
+#include "common.h"
 #include "control_protocol_can.h"
-
-
-#define PSYNC_DEBUG_FLAG = true;
-
-// show us if debugging
-#ifdef PSYNC_DEBUG_FLAG
-#warning "PSYNC_DEBUG_FLAG defined"
-#endif
 
 
 
@@ -29,35 +22,20 @@
 // static global data
 // *****************************************************
 
-// chip select pin for CAN Shield
-#define CAN_CS 53
 
+#define PSYNC_DEBUG_FLAG
 
-//
-#define CAN_CONTROL_BAUD (CAN_500KBPS)
-
-
-//
-#define SERIAL_DEBUG_BAUD (115200)
-
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
-
+// show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
+    #warning "PSYNC_DEBUG_FLAG defined"
     #define DEBUG_PRINT(x)  Serial.println(x)
 #else
     #define DEBUG_PRINT(x)
 #endif
 
 
-//
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
-
-
-//
-#define GET_TIMESTAMP_US() ((uint32_t) micros())
+// chip select pin for CAN Shield
+#define CAN_CS 53
 
 
 
@@ -456,7 +434,7 @@ static void init_serial( void )
 
     // Init if debugging
 #ifdef PSYNC_DEBUG_FLAG
-    Serial.begin( SERIAL_DEBUG_BAUD );
+    Serial.begin( SERIAL_BAUD );
 #endif
 
     // Debug log
@@ -468,7 +446,7 @@ static void init_serial( void )
 static void init_can( void )
 {
     // Wait until we have initialized
-    while( CAN.begin(CAN_CONTROL_BAUD) != CAN_OK )
+    while( CAN.begin(CAN_BAUD) != CAN_OK )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
