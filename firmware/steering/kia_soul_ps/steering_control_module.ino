@@ -31,8 +31,13 @@
 #include "current_control_state.h"
 #include "PID.h"
 #include "DAC_MCP49xx.h"
+#include "Filters.h"
 
+// filters out changes faster that 5 Hz.
+float filterFrequency = 0.0050;
 
+// create a one pole (RC) lowpass filter
+FilterOnePole lowpassFilter( LOWPASS, filterFrequency );   
 
 
 // *****************************************************
@@ -80,7 +85,7 @@
 #define SPOOF_ENGAGE          6   // Signal interrupt (relay) for spoofed torque values
 
 
-#define STEERING_WHEEL_CUTOFF_THRESHOLD 3000
+#define STEERING_WHEEL_CUTOFF_THRESHOLD 2000
 
 
 
@@ -122,6 +127,8 @@ const int numReadings = 2;
 int readings[numReadings];      // the readings from the analog input
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
+
+int local_override = 0;
 
 
 // *****************************************************
@@ -247,6 +254,40 @@ void disableControl()
 	DEBUG_PRINT("Control disabled");
 }
 
+//A function to detect steering wheel input while in control
+void check_wheel_input()
+{
+	static int AVG_max = 20;  // Total number of samples to average over
+	long sum_sensA_samples = 0;
+	long sum_sensB_samples = 0;
+
+	for (int i = 0; i < AVG_max; i++) 
+	{
+		sum_sensA_samples += analogRead(SIGNAL_INPUT_A) << 2;
+		sum_sensB_samples += analogRead(SIGNAL_INPUT_B) << 2;
+	}
+
+	int avg_sensA_sample = sum_sensA_samples / AVG_max;
+	int avg_sensB_sample = sum_sensB_samples / AVG_max;
+
+
+     lowpassFilter.input(avg_sensA_sample - avg_sensB_sample );
+     Serial.println(lowpassFilter.output());
+
+
+     unsigned long time;
+     //Serial.print(avg_sensA_sample - avg_sensB_sample);
+     //time = millis();
+     ////prints time since program started
+     //Serial.print(", ");
+     //Serial.println(time);
+     //if (abs(avg_sensA_sample - avg_sensB_sample) >= STEERING_WHEEL_CUTOFF_THRESHOLD)  {
+     //    local_override = 1;
+     //    disableControl();
+     //} else {
+     //   local_override = 0;
+     //}
+}
 
 //
 void calculateTorqueSpoof( float torque, uint16_t * TSpoofL, uint16_t * TSpoofH ) 
@@ -266,13 +307,16 @@ void calculateTorqueSpoof( float torque, uint16_t * TSpoofL, uint16_t * TSpoofH 
 // A function to parse incoming serial bytes
 void processSerialByte( uint8_t incomingSerialByte) 
 {
-/*
     // enable/disable control
     if( incomingSerialByte == 'p' )                  
     {
         current_ctrl_state.emergency_stop = !current_ctrl_state.emergency_stop;
 
         disableControl();
+    }
+    if( incomingSerialByte == 'o' )                  
+    {
+        enableControl();
     }
 
     if( incomingSerialByte == 'i' )
@@ -322,7 +366,6 @@ void processSerialByte( uint8_t incomingSerialByte)
             Serial.println( current_ctrl_state.SA_Kd );
         }
     }
-*/
 }
 
 
@@ -341,6 +384,9 @@ static void publish_ps_ctrl_steering_report( void )
 
     // Steering Wheel Angle
     data->angle = current_ctrl_state.current_steering_angle;
+
+    // set override flag
+    data->override = local_override;
 
     // Update last publish timestamp, ms
     tx_frame_ps_ctrl_steering_report.timestamp = GET_TIMESTAMP_MS();
@@ -386,6 +432,9 @@ static void process_ps_ctrl_steering_command( const uint8_t * const rx_frame_buf
     current_ctrl_state.commanded_steering_angle = control_data->steering_wheel_angle_command / 9.0 ;
 
     current_ctrl_state.steering_angle_rate_max = control_data->steering_wheel_max_velocity * 9.0;
+    current_ctrl_state.steering_angle_rate_max = 350;
+    //Serial.print("max angle rate: ");
+    //Serial.println(current_ctrl_state.steering_angle_rate_max);
 
     bool enabled = control_data->enabled == 1;
 
@@ -473,6 +522,7 @@ static void check_rx_timeouts( void )
         if( current_ctrl_state.control_enabled ) 
         {
             disableControl();
+            Serial.println("timeout");
         }
     }
 }
@@ -539,7 +589,7 @@ void loop()
       
     publish_timed_tx_frames();
 
-    check_rx_timeouts();
+    //check_rx_timeouts();
 
     // Read and parse incoming serial commands
     if ( Serial.available() > 0 ) 
@@ -547,6 +597,8 @@ void loop()
         uint8_t incomingSerialByte = Serial.read();
         processSerialByte( incomingSerialByte );
     }
+      
+    check_wheel_input();
 
 
     // Calculate a delta t
@@ -615,8 +667,8 @@ void loop()
 
             calculateTorqueSpoof( control, &TSpoofL, &TSpoofH );
 
-            dac.outputA( TSpoofH );
-            dac.outputB( TSpoofL );
+            dac.outputA( TSpoofL );
+            dac.outputB( TSpoofH );
         }
         else
         {
