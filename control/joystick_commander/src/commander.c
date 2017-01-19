@@ -210,10 +210,11 @@ static int get_brake_setpoint(
             JSTICK_AXIS_BRAKE,
             &axis_position );
 
+    // if succeeded
     if( ret == NOERR )
     {       
         // set brake set point - scale to 0:max
-        (*brake) = jstick_normalize_axis_position(
+        (*brake) = jstick_normalize_trigger_position(
                 axis_position,
                 0.0,
                 MAX_BRAKE_PEDAL );
@@ -243,7 +244,7 @@ static int get_throttle_setpoint(
     if( ret == NOERR )
     {
         // set throttle set point - scale to 0:max
-        (*throttle) = jstick_normalize_axis_position(
+        (*throttle) = jstick_normalize_trigger_position(
                 axis_position,
                 0.0,
                 MAX_THROTTLE_PEDAL );
@@ -263,11 +264,14 @@ static int get_steering_setpoint(
     int axis_position = 0;
 
 
+    // read axis position
     ret = jstick_get_axis(
             jstick,
             JSTICK_AXIS_STEER,
             &axis_position );
+    
 
+    // if succeeded
     if( ret == NOERR )
     {
         // set steering wheel angle set point - scale to max:min
