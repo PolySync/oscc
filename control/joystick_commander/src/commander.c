@@ -278,8 +278,8 @@ static int get_steering_setpoint(
         // note that this is inverting the sign of the joystick axis
         (*angle) = jstick_normalize_axis_position(
                 axis_position,
-                MAX_STEERING_WHEEL_ANGLE,
-                MIN_STEERING_WHEEL_ANGLE );
+                MIN_STEERING_WHEEL_ANGLE,
+                MAX_STEERING_WHEEL_ANGLE );
     }
 
 
