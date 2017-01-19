@@ -843,15 +843,15 @@ int commander_update(
     }
 
     // send command if a enable/disable command
-    if( disable_button_pressed != 0 )
+    if( (disable_button_pressed != 0) || (commander->driver_override == 1) )
     {
-        ret = commander_disable_controls(
-                commander );
+        ret = commander_disable_controls( commander );
+        
+        commander->driver_override = 0;
     }
     else if( enable_button_pressed != 0 )
     {
-        ret = commander_enable_controls(
-                commander );
+        ret = commander_enable_controls( commander );
     }
     else
     {

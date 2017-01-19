@@ -38,7 +38,8 @@ TARGET  := bin/joystick-commander
 SRCS    :=  src/joystick.c \
 	    src/messages.c \
 	    src/commander.c \
-	    src/node.c
+	    src/node.c \
+	    src/can_read.c
 
 # dep files
 OBJS    := $(SRCS:.c=.o)
