@@ -27,18 +27,12 @@
 // E Livingston, 2016
 
 #include <SPI.h>
-#include <PID_v1.h>
 #include <FiniteStateMachine.h>
 #include "mcp_can.h"
 #include "can_frame.h"
+#include "common.h"
 #include "control_protocol_can.h"
-
-#define PSYNC_DEBUG_FLAG
-
-// show us if debugging
-#ifdef PSYNC_DEBUG_FLAG
-#warning "PSYNC_DEBUG_FLAG defined"
-#endif
+#include "PID.h"
 
 
 
@@ -47,39 +41,22 @@
 // static global data
 // *****************************************************
 
-// chip select pin for CAN Shield
-#define CAN_CS 10
 
+#define PSYNC_DEBUG_FLAG
 
-//
-#define CAN_CONTROL_BAUD (CAN_500KBPS)
-
-
-//
-#define SERIAL_DEBUG_BAUD (115200)
-
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
-
+// show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
+    #warning "PSYNC_DEBUG_FLAG defined"
     #define DEBUG_PRINT(x)  Serial.println(x)
 #else
     #define DEBUG_PRINT(x)
 #endif
 
+// chip select pin for CAN Shield
+#define CAN_CS 10
 
 // ms
 #define PS_CTRL_RX_WARN_TIMEOUT (150)
-
-
-//
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
-
-
-//
-#define GET_TIMESTAMP_US() ((uint32_t) micros())
 
 
 
@@ -105,7 +82,8 @@ static can_frame_s rx_frame_ps_ctrl_brake_command;
 static can_frame_s tx_frame_ps_ctrl_brake_report;
 
 
-
+//
+static PID pidParams;
 
 
 // *****************************************************
@@ -213,18 +191,6 @@ int deltaT=10,
 
 unsigned long previousMillis=0;
 
-double pressurePID_input,
-       pressurePID_output,
-       pressurePID_setpoint;
-
-float P_Kp=10.0, 
-      P_Ki=1.5, 
-      P_Kd=0.50;
-
-// intialize PID
-PID pressurePID(&pressurePID_input, &pressurePID_output, &pressurePID_setpoint, P_Kp, P_Ki, P_Kd, DIRECT);
-
-
 void waitEnter();
 void waitUpdate();
 void waitExit();
@@ -303,7 +269,6 @@ struct Accumulator {
     void maintainPressure() 
     {
       _pressure = convertToVoltage(analogRead(_sensorPin));
-
 
       if( _pressure < MIN_PACC ) 
       {
@@ -491,22 +456,17 @@ Brakes::Brakes( byte sensorPLeft, byte sensorPRight, byte solenoidPinLeftA, byte
 // Instantiate objects 
 Accumulator accumulator( PIN_PACC, PIN_PUMP ); 
 SMC smc(PIN_PMC1, PIN_PMC2, PIN_SMC);
-Brakes brakes = Brakes( PIN_PFL, PIN_PFL, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
+Brakes brakes = Brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
+
 
 
 
 //
 static void init_serial( void )
 {
-    // Disable serial
-    Serial.end();
+    Serial.begin( SERIAL_BAUD );
 
-    // Init if debugging
-#ifdef PSYNC_DEBUG_FLAG
-    Serial.begin( SERIAL_DEBUG_BAUD );
-#endif
-
-    // Debug log
+    // debug log
     DEBUG_PRINT( "init_serial: pass" );
 }
 
@@ -515,7 +475,7 @@ static void init_serial( void )
 static void init_can( void )
 {
     // Wait until we have initialized
-    while( CAN.begin(CAN_CONTROL_BAUD) != CAN_OK )
+    while( CAN.begin( CAN_BAUD ) != CAN_OK )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
@@ -524,24 +484,6 @@ static void init_can( void )
     // Debug log
     DEBUG_PRINT( "init_can: pass" );
 }
-
-
-// A function to parse incoming serial bytes
-void processSerialByte() {
-  
-  if (incomingSerialByte == 'a') {                  // increase pressure
-      pressure_req += PRESSURE_STEP;
-    }
-  if (incomingSerialByte == 'd') {                  // decrease pressure
-      pressure_req -= PRESSURE_STEP;
-    }
-
-  if (incomingSerialByte == 'p') {                  // reset
-      pressure_req = ZERO_PRESSURE;
-      DEBUG_PRINT("reset pressure request");
-    }
-}
-
 
 
 //
@@ -729,7 +671,9 @@ void brakeEnter()
     DEBUG_PRINT("entered brake state");
 }
 
-void brakeUpdate() 
+
+//
+void brakeUpdate()
 {
     // maintain accumulator pressure
     accumulator.maintainPressure();
@@ -750,63 +694,56 @@ void brakeUpdate()
 
     pressure_last = pressure;
 
-    pressurePID_input = pressureRate;
-    pressurePID_setpoint = pressureRate_target;
-    pressurePID.SetTunings(P_Kp, P_Ki, P_Kd);
+    pidParams.derivative_gain = 0.50;
+    pidParams.proportional_gain = 10.0;
+    pidParams.integral_gain = 1.5;
 
-    pressurePID.Compute();
+    int ret = pid_update( &pidParams, pressureRate_target - pressureRate, 0.050 );
 
-
-
-    // lots of PID debugging prints
-    //Serial.print("Kp = ");
-    //Serial.print(pressurePID.GetKp());  
-    //Serial.print(" Ki = ");
-    //Serial.print(pressurePID.GetKi()); 
-    //Serial.print(" Kd = ");
-    //Serial.print(pressurePID.GetKd()); 
-    //Serial.print(" SR error = ");
-    //Serial.print(pressureRate_target - pressureRate); // Rate error
-    //Serial.print(" Commanded rate = ");
-    //Serial.print(pressurePID_output);
-    ////Serial.print( "deltaT = ");
-    ////Serial.println(deltaT);
-    //Serial.print( " pressure = ");
-    //Serial.println(pressure);
-
-
-
-    // some logic to set a samplerate for data which is sent to processing for plotting
-    unsigned long currentMillis = millis();
-    if ((unsigned long)(currentMillis - previousMillis) >= 100) 
+    if( ret == PID_SUCCESS )
     {
-        previousMillis = currentMillis;
-    }
+        double pressurePID_output = pidParams.control;
+
+        // constrain to min/max
+        pressurePID_output = m_constrain(
+                (float) (pressurePID_output),
+                (float) -2.0f,
+                (float) 2.0f );
+
+        // some logic to set a samplerate for data which is sent to processing for plotting
+        unsigned long currentMillis = millis();
+        if ((unsigned long)(currentMillis - previousMillis) >= 100) 
+        {
+            previousMillis = currentMillis;
+        }
 
 
-    // if pressure is too high
-    if( pressurePID_output < -0.1 ) 
-    {
-        brakes.depowerSLA();
-        brakes.powerSLR(calculateSLRDutyCycle(pressurePID_output));
-    } 
+        // if pressure is too high
+        if( pressurePID_output < -0.1 ) 
+        {
+            brakes.depowerSLA();
+            brakes.powerSLR(calculateSLRDutyCycle(pressurePID_output));
+        } 
 
-    // if pressure is too low
-    if( pressurePID_output > 0.1 ) 
-    {
-        brakes.depowerSLR();
-        brakes.powerSLA(calculateSLADutyCycle(pressurePID_output));
-    }
+        // if pressure is too low
+        if( pressurePID_output > 0.1 ) 
+        {
+            brakes.depowerSLR();
+            brakes.powerSLA(calculateSLADutyCycle(pressurePID_output));
+        }
 
 
-    // if driver is not braking, transition to wait state
-    if( pressure_req <= ZERO_PRESSURE) 
-    {
-        DEBUG_PRINT("pressure request below threshold");
-        brakeStateMachine.transitionTo( Wait );
+        // if driver is not braking, transition to wait state
+        if( pressure_req <= ZERO_PRESSURE) 
+        {
+            DEBUG_PRINT("pressure request below threshold");
+            brakeStateMachine.transitionTo( Wait );
+        }
     }
 }
 
+
+//
 void brakeExit() 
 {
     // close master cylinder solenoids
@@ -841,6 +778,7 @@ static void check_rx_timeouts( void )
         {
             Serial.println("control disabled: timeout");
             controlEnabled = false;
+            brakeStateMachine.transitionTo(Wait);
         }
     }
 }
@@ -908,9 +846,8 @@ void setup( void )
     // update the global system update timestamp, ms
     last_update_ms = GET_TIMESTAMP_MS();
 
-    pressurePID.SetMode(AUTOMATIC);
-    pressurePID.SetOutputLimits(-2, 2);
-    pressurePID.SetSampleTime(50);
+    // Initialize PID params
+    pid_zeroize( &pidParams );
 
     // debug log
     DEBUG_PRINT( "init: pass" );
@@ -930,15 +867,7 @@ void loop()
     check_rx_timeouts();
         
     // check pressures on master cylinder (pressure from pedal)
-    smc.checkPedal();
-
-    // read and parse incoming serial commands
-    if( Serial.available() > 0 ) 
-    {
-        incomingSerialByte = Serial.read();
-        processSerialByte();
-    }
-      
+    smc.checkPedal();      
 
     brakeStateMachine.update();
 } 

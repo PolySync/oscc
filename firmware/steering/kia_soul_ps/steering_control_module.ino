@@ -30,6 +30,7 @@
 #include "control_protocol_can.h"
 #include "current_control_state.h"
 #include "PID.h"
+#include "common.h"
 #include "DAC_MCP49xx.h"
 
 
@@ -39,10 +40,12 @@
 // static global types/macros
 // *****************************************************
 
-#define PSYNC_DEBUG_FLAG true
 
-//
+#define PSYNC_DEBUG_FLAG
+
+// show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
+    #warning "PSYNC_DEBUG_FLAG defined"
     #define DEBUG_PRINT(x)  Serial.println(x)
 #else
     #define DEBUG_PRINT(x)
@@ -51,19 +54,8 @@
 // Set CAN_CS to pin 10 for CAN
 #define CAN_CS 10
 
-#define CAN_BAUD ( CAN_500KBPS )
-
-//
-#define SERIAL_BAUD (115200)
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
-//
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
-
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT (200) //(50)
+#define PS_CTRL_RX_WARN_TIMEOUT (200)
 
 // Set up pins for interface with the DAC (MCP4922)
 
@@ -113,18 +105,6 @@ static PID pidParams;
 
 
 // *****************************************************
-// non-static global veriables
-// *****************************************************
-
-
-const int numReadings = 2;
-
-int readings[numReadings];      // the readings from the analog input
-int readIndex = 0;              // the index of the current reading
-int total = 0;                  // the running total
-
-
-// *****************************************************
 // static declarations
 // *****************************************************
 
@@ -132,7 +112,7 @@ int total = 0;                  // the running total
 // corrects for overflow condition
 static void get_update_time_delta_ms(
 		const uint32_t time_in,
-		const uint32_t last_update_time_ms,
+    	const uint32_t last_update_time_ms,
 		uint32_t * const delta_out )
 {
     // check for overflow
@@ -262,68 +242,6 @@ void calculateTorqueSpoof( float torque, uint16_t * TSpoofL, uint16_t * TSpoofH 
 /* ====================================== */
 /* =========== COMMUNICATIONS =========== */
 /* ====================================== */
-
-// A function to parse incoming serial bytes
-void processSerialByte( uint8_t incomingSerialByte) 
-{
-/*
-    // enable/disable control
-    if( incomingSerialByte == 'p' )                  
-    {
-        current_ctrl_state.emergency_stop = !current_ctrl_state.emergency_stop;
-
-        disableControl();
-    }
-
-    if( incomingSerialByte == 'i' )
-    {
-        current_ctrl_state.SA_Kp += 0.001;
-        Serial.print( "proportional gain increased: " );
-        Serial.println( current_ctrl_state.SA_Kp );
-    }
-    if( incomingSerialByte == 'u' )
-    {
-        if( current_ctrl_state.SA_Kp > 0 )
-        {
-            current_ctrl_state.SA_Kp -= 0.001;
-            Serial.print( "proportional gain decreased: " );
-            Serial.println( current_ctrl_state.SA_Kp );
-        }
-    }
-
-    if( incomingSerialByte == 'k' )
-    {
-        current_ctrl_state.SA_Ki += 0.01;
-        Serial.print( "integral gain increased: " );
-        Serial.println( current_ctrl_state.SA_Ki );
-    }
-    if( incomingSerialByte == 'j' )
-    {
-        if( current_ctrl_state.SA_Ki > 0 )
-        {
-            current_ctrl_state.SA_Ki -= 0.01;
-            Serial.print( "integral gain decreased: " );
-            Serial.println( current_ctrl_state.SA_Ki );
-        }
-    }
-
-    if( incomingSerialByte == 'm' )
-    {
-        current_ctrl_state.SA_Kd += 0.0001;
-        Serial.print( "derivative gain increased: " );
-        Serial.println( current_ctrl_state.SA_Kd );
-    }
-    if( incomingSerialByte == 'n' )
-    {
-        if( current_ctrl_state.SA_Kd > 0 )
-        {
-            current_ctrl_state.SA_Kd -= 0.0001;
-            Serial.print( "derivative gain decreased: " );
-            Serial.println( current_ctrl_state.SA_Kd );
-        }
-    }
-*/
-}
 
 
 //
@@ -462,15 +380,15 @@ static void check_rx_timeouts( void )
 
     // get time since last receive
     get_update_time_delta_ms( 
-			rx_frame_ps_ctrl_steering_command.timestamp, 
+			rx_frame_ps_ctrl_steering_command.timestamp,
 			GET_TIMESTAMP_MS(), 
 			&delta );
 
     // check rx timeout
-    if( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
+    if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
         // disable control from the PolySync interface
-        if( current_ctrl_state.control_enabled ) 
+        if( current_ctrl_state.control_enabled )
         {
             disableControl();
         }
@@ -541,13 +459,6 @@ void loop()
 
     check_rx_timeouts();
 
-    // Read and parse incoming serial commands
-    if ( Serial.available() > 0 ) 
-	{
-        uint8_t incomingSerialByte = Serial.read();
-        processSerialByte( incomingSerialByte );
-    }
-
 
     // Calculate a delta t
     long unsigned int currMicros = micros();  // Fast loop, needs more precision than millis
@@ -565,21 +476,6 @@ void loop()
             double steeringAngleRate = ( current_ctrl_state.current_steering_angle - current_ctrl_state.steering_angle_last )/0.05;  //  degree/microsecond
             double steeringAngleRateTarget = ( current_ctrl_state.commanded_steering_angle - current_ctrl_state.current_steering_angle )/0.05; //  degree/microsecond
 
-
-            // subtract the last reading:
-            total = total - readings[readIndex];
-            readings[readIndex] = steeringAngleRate;
-            total = total + readings[readIndex];
-            readIndex = readIndex + 1;
-            if(readIndex >= numReadings) 
-	        {
-                readIndex = 0;
-            }
-            
-	        // calculate the average:
-            double average = total / numReadings;
-
-
             current_ctrl_state.steering_angle_last = current_ctrl_state.current_steering_angle;   // Remember for next time
 
             // Set saturation limits for steering wheel rotation speed
@@ -593,44 +489,34 @@ void loop()
                 steeringAngleRateTarget = -current_ctrl_state.steering_angle_rate_max;
             }
 
-            current_ctrl_state.PID_input = average;
-            current_ctrl_state.PID_setpoint = steeringAngleRateTarget;
-
             pidParams.derivative_gain = current_ctrl_state.SA_Kd;
             pidParams.proportional_gain = current_ctrl_state.SA_Kp;
             pidParams.integral_gain = current_ctrl_state.SA_Ki;
 
-            pid_update( &pidParams, steeringAngleRateTarget - steeringAngleRate, 0.050 );
+            int ret = pid_update( &pidParams, steeringAngleRateTarget - steeringAngleRate, 0.050 );
 
-            uint16_t TSpoofH;
-            uint16_t TSpoofL;
+            if( ret == PID_SUCCESS )
+            {
+                uint16_t TSpoofH;
+                uint16_t TSpoofL;
 
-            double control = pidParams.control;
+                double control = pidParams.control;
 
-            // constrain to min/max
-            control = m_constrain(
-                    (float) (control),
-                    (float) -1500.0f,
-                    (float) 1500.0f );
+                // constrain to min/max
+                control = m_constrain(
+                        (float) (control),
+                        (float) -1500.0f,
+                        (float) 1500.0f );
 
-            calculateTorqueSpoof( control, &TSpoofL, &TSpoofH );
+                calculateTorqueSpoof( control, &TSpoofL, &TSpoofH );
 
-            dac.outputA( TSpoofH );
-            dac.outputB( TSpoofL );
+                dac.outputA( TSpoofH );
+                dac.outputB( TSpoofL );
+            }
         }
         else
         {
             pid_zeroize( &pidParams );
-
-            total = total - readings[readIndex];
-            readings[readIndex] = 0;
-            total = total + readings[readIndex];
-            readIndex = readIndex + 1;
-            
-            if ( readIndex >= numReadings ) 
-            {
-                readIndex = 0;
-            }
         }
 
     }

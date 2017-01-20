@@ -38,7 +38,8 @@ TARGET  := bin/joystick-commander
 SRCS    :=  src/joystick.c \
 	    src/messages.c \
 	    src/commander.c \
-	    src/node.c
+	    src/node.c \
+	    src/can_read.c
 
 # dep files
 OBJS    := $(SRCS:.c=.o)
@@ -56,7 +57,7 @@ INCLUDE += -Iinclude -I$(LIB_HOME)
 
 # add node template library, must be first
 # add util library last, let path be found
-LIBS := $(LIBS) `pkg-config --libs sdl2` -lcanlib
+LIBS := $(LIBS) `pkg-config --libs sdl2` -lcanlib -lm
 
 # all builds directories and target
 all: dirs $(TARGET)

@@ -159,6 +159,9 @@ typedef struct
     //
     //
     canHandle canhandle; /*!< Handle to CAN interface. */
+    //
+    //
+    int driver_override;
 } commander_s;
 
 
