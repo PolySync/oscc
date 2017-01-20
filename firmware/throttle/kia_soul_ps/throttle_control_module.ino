@@ -112,7 +112,7 @@ static can_frame_s tx_frame_ps_ctrl_throttle_report;
 
 // *****************************************************
 // static declarations
-// *
+// *****************************************************
 
 
 // corrects for overflow condition
@@ -181,20 +181,21 @@ static void init_can ( void )
 
 
 // set up values for use in the throttle control system
-uint16_t sig_a_current,         // Current measured accel sensor values
-         sig_b_current,
-         spoof_a_current,       // Current spoofing values
-         spoof_b_current,
-         spoof_a_previous,      // Previous measured accel sensor values
-         spoof_b_previous;
+uint16_t signal_L_current,      // Current measured accel sensor values
+         signal_H_current,
+         spoof_L_current,       // Current spoofing values
+         spoof_H_current;
 
 can_frame_s can_frame;          // CAN message structs
 
 bool control_enable_req,
      control_enabled,
-     initial_ADC;
+     initial_ADC,
+     signal_error;
 
-int local_override = 0;
+int pedal_override = 0,
+    voltage_override = 0,
+    loop_counter = 0;
 
 double pedal_position_target,
        pedal_position;
@@ -207,7 +208,6 @@ uint8_t incoming_serial_byte;
 /* ====================================== */
 /* ============== CONTROL =============== */
 /* ====================================== */
-
 
 // A function to enable SCM to take control
 void enable_control( )
@@ -270,63 +270,44 @@ void disable_control( )
 	control_enabled = false;
 
 	DEBUG_PRINT( "Control disabled" );
+
 }
 
 void calculate_pedal_spoof( float pedal_position )
 {
-    spoof_a_previous = spoof_a_current;
-    spoof_b_previous = spoof_b_current;
-
-    // values calculated with min/max calibration curve and hand tuned for
-    // neutral balance.
-    // DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
-    spoof_a_current = 819.2 * ( 0.0004 * pedal_position + 0.366 );
-    spoof_b_current = 819.2 * ( 0.0008 * pedal_position + 0.732 );
+    // values calculated with min/max calibration curve and tuned for neutral
+    // balance.vvDAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
+    spoof_L_current = 819.2 * ( 0.0004 * pedal_position + 0.366 );
+    spoof_H_current = 819.2 * ( 0.0008 * pedal_position + 0.732 );
 
     // range = 300 - ~1750
-    spoof_a_current = constrain( spoof_a_current, 0, 1800 );
+    spoof_L_current = constrain( spoof_L_current, 0, 1800 );
     // range = 600 - ~3500
-    spoof_b_current = constrain( spoof_b_current, 0, 3500 );
-
-    //Serial.print("PSPOOF_LOW:");
-    //Serial.print(spoof_a_current);
-    //Serial.print("PSPOOF_LOW");
-    //Serial.println(spoof_b_current);
+    spoof_H_current = constrain( spoof_H_current, 0, 3500 );
 
 }
 
 //
 void check_pedal_override( )
 {
-    if ( ( sig_a_current + sig_b_current ) / 2 > PEDAL_THRESH )
+    if ( ( signal_L_current + signal_H_current ) / 2 > PEDAL_THRESH )
     {
         disable_control( );
-        local_override = 1;
+        pedal_override = 1;
     }
     else
     {
-        local_override = 0;
+        pedal_override = 0;
     }
 }
 
 //
-// TO TRY:
-// 1.) Casting?  set all ints to uint32_t and do not cast int( )
-void check_spoof_voltage(
+void check_spoof_voltages(
         bool first_ADC,
-        uint16_t spoof_a_dac,
-        uint16_t spoof_b_dac
-        //uint16_t sig_a0,
-        //uint16_t sig_b0
+        uint16_t spoof_L_dac,   // was A
+        uint16_t spoof_H_dac    // was B
         )
 {
-
-    Serial.print( "Spoof A DAC Value (in function): " );
-    Serial.print( spoof_a_dac );
-
-    Serial.print( "\tSpoof B DAC Value (in function): " );
-    Serial.println( spoof_b_dac );
-
     if ( first_ADC == true )
     {
         return;
@@ -335,107 +316,40 @@ void check_spoof_voltage(
     int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
     int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
 
+    float spoof_a_adc_volts = spoof_a_adc * ( 5.0 / 1023.0 ) + 0.010;
+    float spoof_b_adc_volts = spoof_b_adc * ( 5.0 / 1023.0 ) + 0.010;
+
     // DAC values passed in from calculate_pedal_spoof( )
-    //int spoof_a_dac_current = int( dac_sig_a );
-    //int spoof_b_dac_current = int( dac_sig_b );
+    float spoof_a_dac_current_volts = spoof_H_dac * ( 5.0 / 4095.0 );
+    float spoof_b_dac_current_volts = spoof_L_dac * ( 5.0 / 4095.0 );
 
-    //int spoof_a_dac_current = int( sig_a1 * 2 );
-    //int spoof_b_dac_current = int( sig_b1 / 2 );
-
-    //int spoof_a_dac_previous = int( sig_a0 * 2 );
-    //int spoof_b_dac_previous = int( sig_b0 / 2 );
-
-    float spoof_a_adc_volts = spoof_a_adc * ( 5.0 / 1023.0 );
-    float spoof_b_adc_volts = spoof_b_adc * ( 5.0 / 1023.0 );
-
-    float spoof_a_dac_current_volts = spoof_a_dac * ( 5.0 / 4095.0 );
-    float spoof_b_dac_current_volts = spoof_b_dac * ( 5.0 / 4095.0 );
-
-    //float spoof_a_dac_previous_volts = 0.0;
-    //float spoof_b_dac_previous_volts = 0.0;
-
-    //spoof_a_dac_previous_volts = spoof_a_dac_previous * 5.0 / 4095.0;
-    //spoof_b_dac_previous_volts = spoof_b_dac_previous * 5.0 / 4095.0;
-
-
-    // energize the relay so we can read the values at the terminal
-    //digitalWrite( SPOOF_ENGAGE, HIGH );
-
-    Serial.print( "Spoof A ADC Value (After): " );
-    Serial.print( spoof_a_adc );
-    Serial.print( "\tSpoof A ADC Voltage (After): " );
-    Serial.println( spoof_a_adc_volts, 3 );
-
-    Serial.print( "Spoof A DAC Value (After): " );
-    Serial.print( spoof_a_dac );
-    Serial.print( "\tSpoof A DAC Voltage (After): " );
-    Serial.println( spoof_a_dac_current_volts, 3 );
-
-    Serial.print( "Spoof B ADC Value (After): " );
-    Serial.print( spoof_b_adc );
-    Serial.print( "\tSpoof B ADC Voltage (After): " );
-    Serial.println( spoof_b_adc_volts, 3 );
-
-    Serial.print( "Spoof B DAC Value (After): " );
-    Serial.print( spoof_b_dac );
-    Serial.print( "\tSpoof B DAC Voltage (After): " );
-    Serial.println( spoof_b_dac_current_volts, 3 );
-/*
-    Serial.print( "Spoof A DAC Value (Previous): " );
-    Serial.print( spoof_a_dac_previous );
-    Serial.print( "\tSpoof A DAC Voltage (Previous): " );
-    Serial.println( spoof_a_dac_previous_volts, 3 );
-
-    Serial.print( "Spoof B DAC Value (Previous): " );
-    Serial.print( spoof_b_dac_previous );
-    Serial.print( "\tSpoof B DAC Voltage (Previous): " );
-    Serial.println( spoof_b_dac_previous_volts, 3 );
-
-    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > 0.050 )
+    // fail criteria. ~ ( ± 50mV )
+    if (    abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > 0.050 &&
+            control_enabled )
     {
-        Serial.println( "* * * ERROR!!  Discrepancy on Current SigA. * * *" );
+        DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal A. * * *" );
 
-        Serial.print( "Spoof A ADC Value: " );
-        Serial.print( spoof_a_adc );
-        Serial.print( "\tSpoof A ADC Voltage: " );
-        Serial.println( spoof_a_adc_volts, 3 );
-
-        Serial.print( "Spoof A DAC Value (Current): " );
-        Serial.print( spoof_a_dac );
-        Serial.print( "\tSpoof A DAC Voltage (Current): " );
-        Serial.println( spoof_a_dac_current_volts, 3 );
+        disable_control( );
+        voltage_override = 1;
+    }
+    else
+    {
+        voltage_override = 0;
     }
 
-    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > 0.050 )
+    // fail criteria. ~ ( ± 50mV )
+    if (    abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > 0.050 &&
+            control_enabled )
     {
-        Serial.println( "* * * ERROR!!  Discrepancy on Current SigB. * * *" );
+        DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal B. * * *" );
 
-        Serial.print( "Spoof B ADC Value: " );
-        Serial.print( spoof_b_adc );
-        Serial.print( "\tSpoof B ADC Voltage: " );
-        Serial.println( spoof_b_adc_volts, 3 );
-
-        Serial.print( "Spoof B DAC Value (Current): " );
-        Serial.print( spoof_b_dac );
-        Serial.print( "\tSpoof B DAC Voltage (Current): " );
-        Serial.println( spoof_b_dac_current_volts, 3 );
+        disable_control( );
+        voltage_override = 1;
     }
-
-    if ( abs( spoof_a_adc_volts - spoof_a_dac_previous_volts ) > 0.050 )
+    else
     {
-        Serial.println( "* * * ERROR!!  Discrepancy on Previous SigA. * * *" );
+        voltage_override = 0;
     }
-
-    if ( abs( spoof_b_adc_volts - spoof_b_dac_previous_volts ) > 0.050 )
-    {
-        Serial.println( "* * * ERROR!!  Discrepancy on Previous SigB. * * *" );
-    }
-*/
-    Serial.println( " * * * * * " );
-
-    //debug signals then writeout fail criteria. ~ ( < | 50mV | )
-    //disable_control( );
-    //local_override = 1;
 
 }
 
@@ -490,7 +404,15 @@ static void publish_ps_ctrl_throttle_report( void )
     tx_frame_ps_ctrl_throttle_report.dlc = 8; //TODO
 
     // set override flag
-    data->override = local_override;
+    if ( pedal_override == 0 && voltage_override == 0 )
+    {
+        data->override = 0;
+    }
+    else{
+        data->override = 1;
+    }
+
+    //data->override = local_override;
 
     //// Set Pedal Command (PC)
     //data->pedal_command =
@@ -544,14 +466,14 @@ static void process_ps_ctrl_throttle_command(
     if( enabled == 1 && !control_enabled )
     {
         control_enabled = true;
-        enable_control();
+        enable_control( );
     }
 
     // disable control from the PolySync interface
     if( enabled == 0 && control_enabled )
     {
         control_enabled = false;
-        disable_control();
+        disable_control( );
     }
 
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
@@ -660,6 +582,9 @@ void setup()
     // skip first iteration of DAC/ADC diagnostic test
     initial_ADC = true;
 
+    // initialize signal_error
+    signal_error = false;
+
 }
 
 
@@ -683,8 +608,8 @@ void loop()
     check_rx_timeouts( );
 
     // update state variables
-    sig_a_current = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
-    sig_b_current = analogRead( SIGNAL_INPUT_B ) << 2;
+    signal_L_current = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
+    signal_H_current = analogRead( SIGNAL_INPUT_B ) << 2;
 
     // if someone is pressing the throttle pedal disable control
     check_pedal_override( );
@@ -696,44 +621,24 @@ void loop()
         process_serial_byte( );
     }
 
+    if ( ++loop_counter % 10 == 0 )
+    {
+        check_spoof_voltages(
+                initial_ADC,
+                spoof_L_current,
+                spoof_H_current );
+    }
+
     // now that we've set control status, do throttle if we are in control
     if ( control_enabled )
     {
         calculate_pedal_spoof( pedal_position_target );
 
-        // debug print statements
-        //Serial.print("pedal_position_target = ");
-        //Serial.print(pedal_position_target);
-        //Serial.print(" Spoof error, H = ");
-        //Serial.print(spoof_a_current - (analogRead(PSENS_HIGH_SPOOF) << 2));
-        //Serial.print(" Spoof error L = ");
-        //Serial.println(spoof_b_current - (analogRead(PSENS_LOW_SPOOF) << 2));
+        dac.outputA( spoof_H_current );
+        dac.outputB( spoof_L_current );
 
-        dac.outputA( spoof_b_current );
-        dac.outputB( spoof_a_current );
-
-        int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
-        int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
-
-        Serial.print( "Spoof A DAC Value (before function): " );
-        Serial.print( spoof_a_current );
-        Serial.print( "\tSpoof A ADC Value (before): " );
-        Serial.println( spoof_a_adc );
-
-        Serial.print( "Spoof B DAC Value (before function): " );
-        Serial.print( spoof_b_current );
-        Serial.print( "\tSpoof A ADC Value (before): " );
-        Serial.println( spoof_b_adc );
-
-        check_spoof_voltage(
-                initial_ADC,
-                spoof_a_current,
-                spoof_b_current
-                //spoof_a_previous,
-                //spoof_b_previous
-                );
+        initial_ADC = false;
 
     }
 
-    initial_ADC = false;
 }

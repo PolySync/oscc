@@ -62,28 +62,31 @@ static void init_can ( void )
 void test_DACS( )
 {
     uint16_t dac_value;
+    uint16_t dac_val_a;
+    uint16_t dac_val_b;
+
     int spoof_a_adc_signal = 0;
     int spoof_b_adc_signal = 0;
-    float spoof_a_adc_volts = 0;
-    float spoof_b_adc_volts = 0;
 
-    int dac_value_int;
+    float spoof_a_adc_volts = 0.0;
+    float spoof_b_adc_volts = 0.0;
 
-    float dac_expected_output;
+    float dac_expected_output_a = 0.0;
+    float dac_expected_output_b = 0.0;
 
     // energize the relay so we can read the values at the terminal
     digitalWrite( SPOOF_ENGAGE, HIGH );
 
     for ( dac_value = 0; dac_value < 4095; dac_value = dac_value + 15 )
     {
-        dac_value_int = int( dac_value );
+        dac_val_a = dac_value;
+        dac_val_b = 4095.0 - dac_value;
 
-        dac_expected_output = ( 5.0 / 4095.0 ) * dac_value_int;
+        dac_expected_output_a = ( 5.0 / 4095.0 ) * dac_val_a;
+        dac_expected_output_b = ( 5.0 / 4095.0 ) * dac_val_b;
 
-        //dac_expected_output = ( 5.0 / 4095.0 ) * dac_value;
-
-        dac.outputA( dac_value );
-        dac.outputB( dac_value );
+        dac.outputA( dac_val_a );
+        dac.outputB( dac_val_b );
 
         delay( 2000 );
 
@@ -93,11 +96,17 @@ void test_DACS( )
         spoof_a_adc_volts = ( spoof_a_adc_signal * 5.0 ) / 1023.0;
         spoof_b_adc_volts = ( spoof_b_adc_signal * 5.0 ) / 1023.0;
 
-        Serial.print( "DAC Value: " );
-        Serial.print( dac_value );
+        Serial.print( "DAC Value (A): " );
+        Serial.print( dac_val_a );
 
-        Serial.print( "\t\t\t\t\tExpected Voltage: " );
-        Serial.println( dac_expected_output, 3 );
+        Serial.print( "\tDAC Value (B): " );
+        Serial.print( dac_val_b );
+
+        Serial.print( "\tOutput A Voltage: " );
+        Serial.print( dac_expected_output_a, 3 );
+
+        Serial.print( "\tOutput B Voltage: " );
+        Serial.println( dac_expected_output_b, 3 );
 
         Serial.print( "Spoof A Value: " );
         Serial.print( spoof_a_adc_signal );
