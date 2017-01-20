@@ -726,9 +726,12 @@ void brakeUpdate()
         //Serial.print(pressurePID_output);
         //Serial.print( "deltaT = ");
         //Serial.println(deltaT);
-        Serial.print( "request = ");
-        Serial.print(pressure_req);
-        Serial.print( " pressure = ");
+        unsigned long time;
+        time = millis();
+        Serial.print(time);
+        Serial.print( ",");
+        Serial.print(pressure_req); // Rate error
+        Serial.print( ",");
         Serial.println(pressure);
 
 
@@ -813,10 +816,11 @@ static void check_rx_timeouts( void )
 void setup( void ) 
 {
     // duty Scalers good for 0x02
-    SLADutyMax = 225;
-    SLADutyMin = 100;
-    SLRDutyMax = 225;
-    SLRDutyMin = 100;
+    SLADutyMax = 105;
+    SLADutyMin = 50;
+    SLRDutyMax = 100;
+    SLRDutyMin = 50;
+
 
     // set the PWM timers, above the acoustic range
     TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3

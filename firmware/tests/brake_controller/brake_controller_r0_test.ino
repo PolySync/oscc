@@ -729,16 +729,21 @@ void brakeUpdate()
     //Serial.print(pressurePID.GetKi()); 
     //Serial.print(" Kd = ");
     //Serial.print(pressurePID.GetKd()); 
-    Serial.print(" request = ");
-    Serial.print(pressure_req); // Rate error
+    //Serial.print(" request = ");
     //Serial.print(" SR error = ");
     //Serial.print(pressureRate_target - pressureRate); // Rate error
     //Serial.print(" Commanded rate = ");
     //Serial.print(pressurePID_output);
     ////Serial.print( "deltaT = ");
     ////Serial.println(deltaT);
-    Serial.print( " pressure = ");
-    Serial.println(pressure);
+    unsigned long time;
+    time = millis();
+    Serial.println(time);
+    Serial.print( ",");
+    Serial.print(pressure_req); // Rate error
+    Serial.print( ",");
+    Serial.print(pressure);
+    //prints time since program started
 
 
 
