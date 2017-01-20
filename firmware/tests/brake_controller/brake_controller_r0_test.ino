@@ -92,11 +92,13 @@ static void get_update_time_delta_ms(
 
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids ) 
 // pins are not perfectly sequential because the clock frequency of certain pins is different.
-const byte PIN_SLAFL = 4;      // front left actuation
-const byte PIN_SLAFR = 2;      // front right actuation
-const byte PIN_SLRFL = 3;      // front left return
-const byte PIN_SLRFR = 3;      // front right return
-const byte PIN_SMC = 6;        // master cylinder solenoids (two of them)
+const byte PIN_SLAFL = 5;      // front left actuation
+const byte PIN_SLAFR = 7;      // front right actuation
+// Duty cycles of pins 6, 7, and 8 controlled by timer 4 (TCCR4B)
+const byte PIN_SLRFL = 6;      // front left return
+const byte PIN_SLRFR = 8;      // front right return
+const byte PIN_SMC = 2;      // master cylinder solenoids (two of them)
+
 const byte PIN_PUMP = 49;     // accumulator pump motor
 
 
@@ -231,12 +233,12 @@ struct Accumulator {
     void maintainPressure() 
     {
       _pressure = convertToVoltage(analogRead(_sensorPin));
-      //Serial.println(_pressure);
 
 
       if( _pressure < MIN_PACC ) 
       {
           pumpOn();
+          Serial.println(_pressure);
       }
 
       if( _pressure > MAX_PACC ) 
@@ -459,6 +461,7 @@ static void init_can( void )
 
 // A function to parse incoming serial bytes
 void processSerialByte() {
+    //Serial.println(incomingSerialByte);
   
     if (incomingSerialByte == 'a') {                  // increase pressure
         pressure_req += 0.2; 
@@ -678,13 +681,11 @@ void waitUpdate()
 void waitExit() 
 {
 }
-
-void brakeEnter()
-{
+void brakeEnter() {
     // close master cylinder solenoids because they'll spill back to the reservoir
     smc.solenoidsClose(); 
 
-    digitalWrite( PIN_BREAK_SWITCH_1, LOW );
+    digitalWrite( PIN_BREAK_SWITCH_1, HIGH );
 
     // close SLRRs, they are normally open for failsafe conditions
     brakes.depowerSLR(); 
@@ -730,10 +731,10 @@ void brakeUpdate()
     //Serial.print(pressurePID.GetKd()); 
     Serial.print(" request = ");
     Serial.print(pressure_req); // Rate error
-    Serial.print(" SR error = ");
-    Serial.print(pressureRate_target - pressureRate); // Rate error
-    Serial.print(" Commanded rate = ");
-    Serial.print(pressurePID_output);
+    //Serial.print(" SR error = ");
+    //Serial.print(pressureRate_target - pressureRate); // Rate error
+    //Serial.print(" Commanded rate = ");
+    //Serial.print(pressurePID_output);
     ////Serial.print( "deltaT = ");
     ////Serial.println(deltaT);
     Serial.print( " pressure = ");
@@ -781,7 +782,7 @@ void brakeExit()
     brakes.depowerSLA();
 
     // unswitch brake switch
-    digitalWrite( PIN_BREAK_SWITCH_1, HIGH );
+    digitalWrite( PIN_BREAK_SWITCH_1, LOW );
 }
 
 
@@ -829,7 +830,7 @@ void setup( void )
     memset( &rx_frame_ps_ctrl_brake_command, 0, sizeof(rx_frame_ps_ctrl_brake_command) );
 
     // relay boards are active low, set to high before setting output to avoid unintended energisation of relay
-    digitalWrite( PIN_BREAK_SWITCH_1, HIGH );
+    digitalWrite( PIN_BREAK_SWITCH_1, LOW );
     pinMode( PIN_BREAK_SWITCH_1, OUTPUT );
 
     // depower all the things

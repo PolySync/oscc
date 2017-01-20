@@ -53,7 +53,7 @@
 #endif
 
 // chip select pin for CAN Shield
-#define CAN_CS 10
+#define CAN_CS 53
 
 // ms
 #define PS_CTRL_RX_WARN_TIMEOUT (150)
@@ -138,29 +138,26 @@ static void get_update_time_ms(
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids ) 
 // pins are not perfectly sequential because the clock frequency of certain pins is different.
 // Duty cycles of pins 3 and 5 controlled by timer 3 (TCCR3B)
-const byte PIN_SLAFL = 3;      // front left actuation
-const byte PIN_SLAFR = 5;      // front right actuation
+const byte PIN_SLAFL = 5;      // front left actuation
+const byte PIN_SLAFR = 7;      // front right actuation
+
 // Duty cycles of pins 6, 7, and 8 controlled by timer 4 (TCCR4B)
 const byte PIN_SLRFL = 6;      // front left return
-const byte PIN_SLRFR = 7;      // front right return
-const byte PIN_SMC = 8;      // master cylinder solenoids (two of them)
-
-const byte PIN_PUMP = 9;     // accumulator pump motor
-
+const byte PIN_SLRFR = 8;      // front right return
+const byte PIN_SMC   = 2;      // master cylinder solenoids (two of them)
 
 // brake spoofer relay pin definitions
-const byte PIN_BREAK_SWITCH_1 = 48;
-const byte PIN_BREAK_SWITCH_2 = 49;
-
+const byte PIN_BREAK_SWITCH = 48;
+const byte PIN_PUMP         = 49;     // accumulator pump motor
 
 // sensor pin (analog) definitions
 const byte PIN_PACC = 9;       // pressure accumulator sensor
 const byte PIN_PMC1 = 10;      // pressure master cylinder sensor 1
 const byte PIN_PMC2 = 11;      // pressure master cylinder sensor 2
-const byte PIN_PRL = 12;       // pressure rear left sensor 
-const byte PIN_PFR = 13;       // pressure front right sensor
-const byte PIN_PFL = 14;       // pressure front left sensor
-const byte PIN_PRR = 15;       // pressure rear right sensor
+const byte PIN_PRL  = 12;      // pressure rear left sensor 
+const byte PIN_PFR  = 13;      // pressure front right sensor
+const byte PIN_PFL  = 14;      // pressure front left sensor
+const byte PIN_PRR  = 15;      // pressure rear right sensor
 
 
 // the following are guesses, these need to be debugged/researched
@@ -169,7 +166,7 @@ const double PRESSURE_STEP = 0.2;         // The amount that the 'a' and 'd' com
                                           // voltage each time they are pressed.
 const double MIN_PACC = 2.3;              // minumum accumulator pressure to maintain 
 const double MAX_PACC = 2.4;              // max accumulator pressure to maintain
-const double PEDAL_THRESH = 0.5;          // Pressure for pedal interference
+const double PEDAL_THRESH = 0.6;          // Pressure for pedal interference
 
 int SLADutyMax, 
     SLADutyMin,
@@ -335,6 +332,11 @@ struct SMC {
         if (_pressure1 > PEDAL_THRESH || _pressure2 > PEDAL_THRESH ) 
         {
             DEBUG_PRINT("Brake Pedal Detected");
+            DEBUG_PRINT("Brake Pedal Detected");
+            Serial.print("smc 1 pressure: ");
+            Serial.print(_pressure1);
+            Serial.print("smc 2 pressure: ");
+            Serial.println(_pressure2);
             pressure_req = ZERO_PRESSURE;
             local_override = 1;
             brakeStateMachine.transitionTo(Wait);
@@ -468,7 +470,7 @@ Brakes::Brakes( byte sensorPLeft, byte sensorPRight, byte solenoidPinLeftA, byte
 // Instantiate objects 
 Accumulator accumulator( PIN_PACC, PIN_PUMP ); 
 SMC smc(PIN_PMC1, PIN_PMC2, PIN_SMC);
-Brakes brakes = Brakes( PIN_PFL, PIN_PFL, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
+Brakes brakes = Brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
 
 
 
@@ -491,29 +493,12 @@ static void init_can( void )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
+        DEBUG_PRINT( "init_can: retrying" );
     }
 
     // Debug log
     DEBUG_PRINT( "init_can: pass" );
 }
-
-
-// A function to parse incoming serial bytes
-void processSerialByte() {
-  
-  if (incomingSerialByte == 'a') {                  // increase pressure
-      pressure_req += PRESSURE_STEP;
-    }
-  if (incomingSerialByte == 'd') {                  // decrease pressure
-      pressure_req -= PRESSURE_STEP;
-    }
-
-  if (incomingSerialByte == 'p') {                  // reset
-      pressure_req = ZERO_PRESSURE;
-      DEBUG_PRINT("reset pressure request");
-    }
-}
-
 
 
 //
@@ -575,17 +560,18 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
 
     bool enabled = control_data->enabled == 1;
 
-    // enable control from the MKZ interface
+    // enable control from the high-level interface
     if( enabled == 1 && !controlEnabled )
     {
         controlEnabled = true;
         brakeStateMachine.transitionTo(Brake);
     }
 
-    // disable control from the MKZ interface
+    // disable control from the high-level interface
     if( enabled == 0 && controlEnabled )
     {
         controlEnabled = false;
+        Serial.println("transition to wait from high-level interface");
         brakeStateMachine.transitionTo(Wait);
     }
 
@@ -594,8 +580,8 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
     unsigned int pedal_command = control_data->pedal_command;
     pressure_req = map(pedal_command, 0, 65535, 48, 230); // map to voltage range 
     pressure_req = pressure_req / 100;
-    DEBUG_PRINT("pressure_req: ");
-    DEBUG_PRINT(pressure_req);
+    //DEBUG_PRINT("pressure_req: ");
+    //DEBUG_PRINT(pressure_req);
      
 
 }
@@ -613,9 +599,6 @@ static void process_psvc_chassis_state1( const uint8_t * const rx_frame_buffer )
 
     // average the pressure of the rear and front lines
     float pressure = ( brakes._pressureLeft + brakes._pressureRight ) / 2;
-    DEBUG_PRINT(pressure);
-    DEBUG_PRINT(",");
-    DEBUG_PRINT(brake_pressure);
 }
 
 
@@ -692,12 +675,9 @@ void brakeEnter()
     // close master cylinder solenoids because they'll spill back to the reservoir
     smc.solenoidsClose(); 
 
-    digitalWrite( PIN_BREAK_SWITCH_1, LOW );
-    digitalWrite( PIN_BREAK_SWITCH_2, LOW );
 
     // close SLRRs, they are normally open for failsafe conditions
     brakes.depowerSLR(); 
-
     DEBUG_PRINT("entered brake state");
 }
 
@@ -706,77 +686,89 @@ void brakeUpdate()
     // maintain accumulator pressure
     accumulator.maintainPressure();
 
-    // calculate a delta t
-    lastMicros = currMicros;
-    currMicros = micros();  // Fast loop, needs more precision than millis
-    deltaT = currMicros - lastMicros;
-
-
-    // take a reading from the brake pressure sensors
-    brakes.updatePressure();
-    pressure = ( brakes._pressureLeft + brakes._pressureRight ) / 2;
-
-
-    pressureRate = ( pressure - pressure_last)/ deltaT;  // pressure/microsecond
-    pressureRate_target = pressure_req - pressure;
-
-    pressure_last = pressure;
-
-    pressurePID_input = pressureRate;
-    pressurePID_setpoint = pressureRate_target;
-    pressurePID.SetTunings(P_Kp, P_Ki, P_Kd);
-
-    pressurePID.Compute();
-
-
-
-    // lots of PID debugging prints
-    //Serial.print("Kp = ");
-    //Serial.print(pressurePID.GetKp());  
-    //Serial.print(" Ki = ");
-    //Serial.print(pressurePID.GetKi()); 
-    //Serial.print(" Kd = ");
-    //Serial.print(pressurePID.GetKd()); 
-    //Serial.print(" SR error = ");
-    //Serial.print(pressureRate_target - pressureRate); // Rate error
-    //Serial.print(" Commanded rate = ");
-    //Serial.print(pressurePID_output);
-    ////Serial.print( "deltaT = ");
-    ////Serial.println(deltaT);
-    //Serial.print( " pressure = ");
-    //Serial.println(pressure);
-
-
-
-    // some logic to set a samplerate for data which is sent to processing for plotting
-    unsigned long currentMillis = millis();
-    if ((unsigned long)(currentMillis - previousMillis) >= 100) 
+    if (pressure_req > ZERO_PRESSURE )
     {
-        previousMillis = currentMillis;
+        digitalWrite( PIN_BREAK_SWITCH, HIGH );
+        // calculate a delta t
+        lastMicros = currMicros;
+        currMicros = micros();  // Fast loop, needs more precision than millis
+        deltaT = currMicros - lastMicros;
+
+
+        // take a reading from the brake pressure sensors
+        brakes.updatePressure();
+        pressure = ( brakes._pressureLeft + brakes._pressureRight ) / 2;
+
+
+        pressureRate = ( pressure - pressure_last)/ deltaT;  // pressure/microsecond
+        pressureRate_target = pressure_req - pressure;
+
+        pressure_last = pressure;
+
+        pressurePID_input = pressureRate;
+        pressurePID_setpoint = pressureRate_target;
+        pressurePID.SetTunings(P_Kp, P_Ki, P_Kd);
+
+        pressurePID.Compute();
+
+
+
+        // lots of PID debugging prints
+        //Serial.print("Kp = ");
+        //Serial.print(pressurePID.GetKp());  
+        //Serial.print(" Ki = ");
+        //Serial.print(pressurePID.GetKi()); 
+        //Serial.print(" Kd = ");
+        //Serial.print(pressurePID.GetKd()); 
+        //Serial.print(" SR error = ");
+        //Serial.print(pressureRate_target - pressureRate); // Rate error
+        //Serial.print(" Commanded rate = ");
+        //Serial.print(pressurePID_output);
+        //Serial.print( "deltaT = ");
+        //Serial.println(deltaT);
+        Serial.print( "request = ");
+        Serial.print(pressure_req);
+        Serial.print( " pressure = ");
+        Serial.println(pressure);
+
+
+
+        // some logic to set a samplerate for data which is sent to processing for plotting
+        unsigned long currentMillis = millis();
+        if ((unsigned long)(currentMillis - previousMillis) >= 100) 
+        {
+            previousMillis = currentMillis;
+        }
+
+
+        // if pressure is too high
+        if( pressurePID_output < -0.1 ) 
+        {
+            brakes.depowerSLA();
+            brakes.powerSLR(calculateSLRDutyCycle(pressurePID_output));
+        } 
+
+        // if pressure is too low
+        if( pressurePID_output > 0.1 ) 
+        {
+            brakes.depowerSLR();
+            brakes.powerSLA(calculateSLADutyCycle(pressurePID_output));
+        }
+
+    }
+    else 
+    {
+        digitalWrite( PIN_BREAK_SWITCH, LOW );
     }
 
-
-    // if pressure is too high
-    if( pressurePID_output < -0.1 ) 
-    {
-        brakes.depowerSLA();
-        brakes.powerSLR(calculateSLRDutyCycle(pressurePID_output));
-    } 
-
-    // if pressure is too low
-    if( pressurePID_output > 0.1 ) 
-    {
-        brakes.depowerSLR();
-        brakes.powerSLA(calculateSLADutyCycle(pressurePID_output));
-    }
 
 
     // if driver is not braking, transition to wait state
-    if( pressure_req <= ZERO_PRESSURE) 
-    {
-        DEBUG_PRINT("pressure request below threshold");
-        brakeStateMachine.transitionTo( Wait );
-    }
+    //if( pressure_req <= ZERO_PRESSURE) 
+    //{
+    //    DEBUG_PRINT("pressure request below threshold");
+    //    brakeStateMachine.transitionTo( Wait );
+    //}
 }
 
 void brakeExit() 
@@ -788,8 +780,7 @@ void brakeExit()
     brakes.depowerSLA();
 
     // unswitch brake switch
-    digitalWrite( PIN_BREAK_SWITCH_1, HIGH );
-    digitalWrite( PIN_BREAK_SWITCH_2, HIGH );
+    digitalWrite( PIN_BREAK_SWITCH, LOW );
 }
 
 
@@ -821,14 +812,6 @@ static void check_rx_timeouts( void )
 // the setup routine runs once when you press reset:
 void setup( void ) 
 {
-
-    // duty Scalers good for 0x05
-    //SLADutyMax = 50;
-    //SLADutyMin = 5;
-    //SLRDutyMax = 50;
-    //SLRDutyMin = 20;
-
-
     // duty Scalers good for 0x02
     SLADutyMax = 225;
     SLADutyMin = 100;
@@ -854,11 +837,8 @@ void setup( void )
     last_update_ms = 0;
     memset( &rx_frame_ps_ctrl_brake_command, 0, sizeof(rx_frame_ps_ctrl_brake_command) );
 
-    // relay boards are active low, set to high before setting output to avoid unintended energisation of relay
-    digitalWrite( PIN_BREAK_SWITCH_1, HIGH );
-    digitalWrite( PIN_BREAK_SWITCH_2, HIGH );
-    pinMode( PIN_BREAK_SWITCH_1, OUTPUT );
-    pinMode( PIN_BREAK_SWITCH_2, OUTPUT );
+    digitalWrite( PIN_BREAK_SWITCH, LOW );
+    pinMode( PIN_BREAK_SWITCH, OUTPUT );
 
     // depower all the things
     accumulator.pumpOff();
@@ -902,15 +882,7 @@ void loop()
     check_rx_timeouts();
         
     // check pressures on master cylinder (pressure from pedal)
-    smc.checkPedal();
-
-    // read and parse incoming serial commands
-    if( Serial.available() > 0 ) 
-    {
-        incomingSerialByte = Serial.read();
-        processSerialByte();
-    }
-      
+    //smc.checkPedal();
 
     brakeStateMachine.update();
 } 
