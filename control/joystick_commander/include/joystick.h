@@ -249,6 +249,22 @@ double jstick_normalize_axis_position(
         const double range_max );
 
 
+/**
+ * @brief Map trigger value from one range to another.
+ *
+ * @param [in] position Input value to map.
+ * @param [in] range_min Output minimum range.
+ * @param [in] range_max Output maximum range.
+ *
+ * @return position mapped to the range of min:max.
+ *
+ */
+double jstick_normalize_trigger_position(
+        const int position,
+        const double range_min,
+        const double range_max );
+
+
 
 
 #endif	/* JOYSTICK_H */
