@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_joystick.h>
 
@@ -341,7 +342,58 @@ int jstick_get_button(
 
 
 //
+double jstick_calc_log_range( 
+        double a1, 
+        double a2, 
+        double b1, 
+        double b2, 
+        double position )
+{
+    const double x1 = 1.0; // cannot include zero in range
+    const double y1 = 1.0; // cannot include zero in range
+    const double x2 = a2 - a1 + 1.0; // add one to make sure the range doesn't include zero
+    const double y2 = b2 - b1 + 1.0; // add one to make sure the range doesn't include zero
+    
+    const double b = log( y1 / y2 )/( x1 - x2 );
+    const double a = y1 / exp( b * x1 );
+    
+    double result = a * exp( b * (position - a1 + 1.0) );
+    return result + b1 - 1.0; // normalize back to correct range
+}
+
+
+//
 double jstick_normalize_axis_position(
+        const int position,
+        const double range_min,
+        const double range_max )
+{
+    const double s = (double) position;
+    
+    double a1, a2, b1, b2;
+    
+    if( position < 0 )
+    {
+        a1 = 0;
+        a2 = JOYSTICK_AXIS_POSITION_MIN;
+        b1 = 0;
+        b2 = range_max;
+    }
+    else
+    {
+        a1 = JOYSTICK_AXIS_POSITION_MAX;
+        a2 = 0;
+        b1 = range_min;
+        b2 = 0;
+    }
+    
+    // map value s in the range of a1 and a2, to t(return) in the range b1 and b2, exponential
+    return jstick_calc_log_range( a1, a2, b1, b2, s );
+}
+
+
+//
+double jstick_normalize_trigger_position(
         const int position,
         const double range_min,
         const double range_max )
@@ -349,10 +401,9 @@ double jstick_normalize_axis_position(
     const double s = (double) position;
     const double a1 = (double) JOYSTICK_AXIS_POSITION_MIN;
     const double a2 = (double) JOYSTICK_AXIS_POSITION_MAX;
+    
     const double b1 = range_min;
     const double b2 = range_max;
-
-
-    // map value s in the range of a1 and a2, to t(return) in the range b1 and b2, linear
-    return b1 + (s-a1) * (b2-b1) / (a2-a1);
+    
+    return jstick_calc_log_range( a1, a2, b1, b2, s );
 }

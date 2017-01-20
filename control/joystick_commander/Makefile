@@ -57,7 +57,7 @@ INCLUDE += -Iinclude -I$(LIB_HOME)
 
 # add node template library, must be first
 # add util library last, let path be found
-LIBS := $(LIBS) `pkg-config --libs sdl2` -lcanlib
+LIBS := $(LIBS) `pkg-config --libs sdl2` -lcanlib -lm
 
 # all builds directories and target
 all: dirs $(TARGET)
