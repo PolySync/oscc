@@ -18,7 +18,7 @@
 
 // Throttle control ECU firmware
 // Firmware for control of 2014 Kia Soul throttle system
-// Component
+// Component:
 //    Arduino Uno
 //    OSCC Sensor Interface Board V1
 // J Hartung, 2015; E Livingston, L Buckland, D Fernández, 2016
