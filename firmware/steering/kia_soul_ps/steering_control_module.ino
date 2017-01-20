@@ -308,8 +308,6 @@ void enable_control( )
         dac.outputA( averages[ SAMPLE_A ] );
         dac.outputB( averages[ SAMPLE_B ] );
 
-        // TODO: check if the DAC value and the sensed values are the same. If not, return an error and do NOT enable the sigint relays.
-
         // Enable the signal interrupt relays
         digitalWrite( SPOOF_ENGAGE, HIGH );
 
@@ -339,18 +337,19 @@ void disable_control()
         static int16_t num_samples = 20;
         int16_t averages[ 2 ] = { 0, 0 };
 
-        current_ctrl_state.control_enabled = false; 
-
         average_samples( num_samples, averages );
 
         // Write measured torque values to DAC to avoid a signal
         // discontinuity when the SCM takes over
         dac.outputA( averages[ SAMPLE_A ] );
         dac.outputB( averages[ SAMPLE_B ] );
-
-        // Disable the signal interrupt relays
-        digitalWrite(SPOOF_ENGAGE, LOW);
     }
+
+    current_ctrl_state.control_enabled = false;
+
+    // Disable the signal interrupt relays
+    digitalWrite(SPOOF_ENGAGE, LOW);
+
     DEBUG_PRINT("Control disabled");
 }
 
@@ -461,18 +460,17 @@ static void process_ps_ctrl_steering_command(
 
     if ( control_data->enabled == 1 )
     {
-         if ( current_ctrl_state.control_enabled == false
-              && current_ctrl_state.emergency_stop == false )
+        if ( ( current_ctrl_state.control_enabled == false ) &&
+             ( current_ctrl_state.emergency_stop == false ) )
         {
              enable_control( );
         }
     }
-    else
+
+    if ( ( control_data->enabled == 0 ) &&
+         ( current_ctrl_state.control_enabled == true ) )
     {
-        if ( current_ctrl_state.control_enabled == true )
-        {
             disable_control();
-        }
     }
 
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
