@@ -1,0 +1,51 @@
+# For information on keywords, see
+# http://arduino.cc/en/Hacking/LibraryTutorial
+# 
+# Each line has the name of the keyword,
+# followed by a tab (not spaces), 
+# followed by the kind of keyword. 
+# 
+# classes should be KEYWORD1 and are colored orange 
+# functions should be KEYWORD2 and will be brown
+
+###
+Filters	KEYWORD1
+
+
+###
+FilterDerivative	KEYWORD1
+input	KEYWORD2
+output	KEYWORD2
+
+###
+FilterOnePole	KEYWORD1
+setFilter	KEYWORD2
+setFrequency	KEYWORD2
+setTau	KEYWORD2
+input	KEYWORD2
+output	KEYWORD2
+print	KEYWORD2
+test	KEYWORD2
+setToNewValue	KEYWORD2
+
+###
+FilterTwoPole	KEYWORD1
+SetQ	KEYWORD2
+SetFrequency0	KEYWORD2
+setAsFilter	KEYWORD2
+input	KEYWORD2
+output	KEYWORD2
+getMaxAmp	KEYWORD2
+print	KEYWORD2
+test	KEYWORD2
+setToNewValue	KEYWORD2
+
+###
+RunningStatistics	KEYWORD1
+setWindowSecs	KEYWORD2
+setInitialValue	KEYWORD2
+mean	KEYWORD2
+variance	KEYWORD2
+sigma	KEYWORD2
+CV	KEYWORD2
+

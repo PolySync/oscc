@@ -33,11 +33,6 @@
 #include "DAC_MCP49xx.h"
 #include "Filters.h"
 
-// filters out changes faster that 5 Hz.
-float filterFrequency = 0.0050;
-
-// create a one pole (RC) lowpass filter
-FilterOnePole lowpassFilter( LOWPASS, filterFrequency );   
 
 
 // *****************************************************
@@ -84,8 +79,7 @@ FilterOnePole lowpassFilter( LOWPASS, filterFrequency );
 
 #define SPOOF_ENGAGE          6   // Signal interrupt (relay) for spoofed torque values
 
-
-#define STEERING_WHEEL_CUTOFF_THRESHOLD 2000
+#define STEERING_WHEEL_CUTOFF_THRESHOLD 200
 
 
 
@@ -93,6 +87,11 @@ FilterOnePole lowpassFilter( LOWPASS, filterFrequency );
 // *****************************************************
 // static structures
 // *****************************************************
+
+float filterFrequency = 0.07;
+
+// create a one pole (RC) lowpass filter for torque input
+FilterOnePole lowpassFilter( LOWPASS, filterFrequency );   
 
 
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
@@ -271,22 +270,17 @@ void check_wheel_input()
 	int avg_sensB_sample = sum_sensB_samples / AVG_max;
 
 
+     // Filter out high frequency torque changes
      lowpassFilter.input(avg_sensA_sample - avg_sensB_sample );
-     Serial.println(lowpassFilter.output());
 
 
-     unsigned long time;
-     //Serial.print(avg_sensA_sample - avg_sensB_sample);
-     //time = millis();
-     ////prints time since program started
-     //Serial.print(", ");
-     //Serial.println(time);
-     //if (abs(avg_sensA_sample - avg_sensB_sample) >= STEERING_WHEEL_CUTOFF_THRESHOLD)  {
-     //    local_override = 1;
-     //    disableControl();
-     //} else {
-     //   local_override = 0;
-     //}
+     // If filtered torque spikes above threshold, consider the spike interference on the wheel.
+     if (abs(lowpassFilter.output()) >= STEERING_WHEEL_CUTOFF_THRESHOLD)  {
+         local_override = 1;
+         disableControl();
+     } else {
+        local_override = 0;
+     }
 }
 
 //
