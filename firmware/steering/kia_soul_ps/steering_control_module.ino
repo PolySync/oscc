@@ -30,6 +30,7 @@
 #include "control_protocol_can.h"
 #include "current_control_state.h"
 #include "PID.h"
+#include "common.h"
 #include "DAC_MCP49xx.h"
 
 
@@ -41,7 +42,6 @@
 
 #define PSYNC_DEBUG_FLAG ( true )
 
-//
 #ifdef PSYNC_DEBUG_FLAG
     #define DEBUG_PRINT( x )  Serial.println( x )
 #else
@@ -51,20 +51,8 @@
 // Set CAN_CS to pin 10 for CAN
 #define CAN_CS      ( 10 )
 
-#define CAN_BAUD    ( CAN_500KBPS )
-
-//
-#define SERIAL_BAUD ( 115200 )
-
-//
-#define CAN_INIT_RETRY_DELAY    ( 50 )
-
-//
-//#define GET_TIMESTAMP_MS() ( (uint32_t)millis() )
-//#define GET_TIMESTAMP_US() ( (uint32_t)micros() )
-
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT ( 200 ) //(50)
+#define PS_CTRL_RX_WARN_TIMEOUT ( 200 )
 
 // Set up pins for interface with the DAC (MCP4922)
 
@@ -125,11 +113,6 @@ static current_control_state current_ctrl_state;
 
 //
 static PID pid_params;
-
-
-// *****************************************************
-// non-static global variables
-// *****************************************************
 
 
 // *****************************************************
@@ -458,13 +441,11 @@ static void process_ps_ctrl_steering_command(
     current_ctrl_state.steering_angle_rate_max =
         control_data->steering_wheel_max_velocity * 9.0;
 
-    if ( control_data->enabled == 1 )
+    if ( ( control_data->enabled == 1 ) &&
+         ( current_ctrl_state.control_enabled == false ) &&
+         ( current_ctrl_state.emergency_stop == false ) )
     {
-        if ( ( current_ctrl_state.control_enabled == false ) &&
-             ( current_ctrl_state.emergency_stop == false ) )
-        {
-             enable_control( );
-        }
+         enable_control( );
     }
 
     if ( ( control_data->enabled == 0 ) &&

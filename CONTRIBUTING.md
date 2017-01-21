@@ -5,7 +5,7 @@ CAN frames can be better detailed, PCBs can be optimized
 or code could be refactored and improved.
 
 The directory structure of the project is created in such a way that adding support for additional vehicles should be simple and intuitive.
-All vehicle specific directories should be recreated for each additional vehicle. The naming convention for is <make>_<model>_<generational identifier>
+All vehicle specific directories should be recreated for each additional vehicle. The naming convention is <make>_<model>_<generational identifier>
 Below is a sample of how additional vehicle directories should be created.
 
 
@@ -77,7 +77,7 @@ Enhancement suggestions are tracked as GitHub issues:
 
 ### Pull Request Labels
 * Fill in the required template
-* Follow the style guides
+* Follow the style guide
 * Code should be complete
     * Any changes should include unit tests for the submitted
 * End files with a new line
@@ -150,8 +150,8 @@ the MISRA standard.
 	1. All arithmetic operations must be checked (e.g. divide by zero)
 	1. Pointer arithmetic must be checked
 	1. Array bounds must be checked
-	1. Check validity of parameters either before or inside a function call
-	1. Check pointer validity before dereference
+	1. Parameter validity must be checked either before or inside a function call
+	1. Pointer validity must be checked before dereference
 	1. Avoid dynamic memory allocation
 		1. If used, check validity of allocation
 
@@ -171,7 +171,7 @@ the MISRA standard.
 	1. `float32_t, float64_t, float128_t`
 	1. If abstract types are required, use the signed and size types to create the new type
 	1. Exceptions:
-		1. `char`, `unsigned char`, `float` and `double` are acceptable for embedded code as they all have specific signs and sizes associated with them
+		1. `bool`, `char`, `unsigned char`, `float` and `double` are acceptable for embedded code as they all have specific signs and sizes associated with them
 		1. User space applications have more flexibility and can use the intrinsic types: `long`, `unsigned long`, `int` and `unsigned int`
 
 1. Prefer function calls to function-like macros
@@ -551,7 +551,7 @@ switch ( input_parameter )
 
 1. Free all allocated memory
 
-1. Do not open files for read and write at the same file, file access is read-only or write only
+1. Do not open files for read and write at the same time, file access is read-only or write only
 
 1. Do not dereference a FILE object pointer
 

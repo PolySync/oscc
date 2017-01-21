@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_joystick.h>
 
@@ -370,18 +371,30 @@ int jstick_get_button( joystick_device_s * const jstick,
 }
 
 
+double jstick_calc_log_range( double a1,
+                              double a2,
+                              double b1,
+                              double b2,
+                              double position )
+{
+    const double x1 = 1.0; // cannot include zero in range
+    const double y1 = 1.0; // cannot include zero in range
+    const double x2 = a2 - a1 + 1.0; // add one to make sure the range doesn't include zero
+    const double y2 = b2 - b1 + 1.0; // add one to make sure the range doesn't include zero
+    
+    const double b = log( y1 / y2 ) / ( x1 - x2 );
+    const double a = y1 / exp( b * x1 );
+    
+    double result = a * exp( b * (position - a1 + 1.0) );
+    return result + b1 - 1.0; // normalize back to correct range
+}
+
 // *****************************************************
 // Function:    jstick_normalize_axis_position
 // 
 // Purpose:     Convert the integer current joystick input position into a
 //              scaled value for the variable that the joystick input
 //              represents
-// 
-//              output is represented by:
-// 
-//                                    ( current position * scaled range )
-//              output = scaled min + -----------------------------------
-//                                              joystick range
 // 
 // Returns:     double - the normalized axis position
 // 
@@ -394,28 +407,53 @@ double jstick_normalize_axis_position( const int position,
                                        const double range_min,
                                        const double range_max )
 {
-    #if 0
+    const double s = (double) position;
+    
+    double a1, a2, b1, b2;
+    
+    if( position < 0 )
+    {
+        a1 = 0;
+        a2 = JOYSTICK_AXIS_POSITION_MIN;
+        b1 = 0;
+        b2 = range_max;
+    }
+    else
+    {
+        a1 = JOYSTICK_AXIS_POSITION_MAX;
+        a2 = 0;
+        b1 = range_min;
+        b2 = 0;
+    }
+    
+    // map value s in the range of a1 and a2, to t(return) in the range b1 and b2, exponential
+    return jstick_calc_log_range( a1, a2, b1, b2, s );
+}
+
+
+// *****************************************************
+// Function:    jstick_normalize_trigger_position
+// 
+// Purpose:     Convert the integer current joystick trigger position
+//              to a scaled value
+// 
+// Returns:     double - the normalized trigger position
+// 
+// Parameters:  position - current trigger position on the joystick
+//              range_min - minimum scaled value for the variable
+//              range_max - maximum scaled value for the variable
+// 
+// *****************************************************
+double jstick_normalize_trigger_position( const int position,
+                                          const double range_min,
+                                          const double range_max )
+{
     const double s = (double) position;
     const double a1 = (double) JOYSTICK_AXIS_POSITION_MIN;
     const double a2 = (double) JOYSTICK_AXIS_POSITION_MAX;
+    
     const double b1 = range_min;
     const double b2 = range_max;
-
-    return b1 + (s-a1) * (b2-b1) / (a2-a1);
-    #else
-
-    const double current_position =
-        ( double )( position - JOYSTICK_AXIS_POSITION_MIN );
-
-    const double scaled_range = ( range_max - range_min );
-
-    const double joystick_range = 
-        ( double )( JOYSTICK_AXIS_POSITION_MAX - JOYSTICK_AXIS_POSITION_MIN );
-
-    double return_code =
-        range_min + (( current_position * scaled_range ) / joystick_range );
-
-    return ( return_code );
-
-    #endif
+    
+    return jstick_calc_log_range( a1, a2, b1, b2, s );
 }

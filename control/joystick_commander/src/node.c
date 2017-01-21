@@ -63,6 +63,7 @@
 #include "messages.h"
 #include "commander.h"
 #include "control_protocol_can.h"
+#include "can_read.h"
 
 
 
@@ -409,7 +410,6 @@ static int update_loop(
     
     unsigned long long now = 0;
 
-
     // get the amount of time since our last update/publish
     const unsigned long long time_since_last_publish =
             get_time_since( commander->last_commander_update, &now );
@@ -424,6 +424,8 @@ static int update_loop(
 
         commander->last_commander_update = now;
     }
+    
+    ret = can_read_buffer( commander );
 
     // sleep for 1 ms to avoid loading the CPU
     (void) usleep( NODE_SLEEP_TICK_INTERVAL );
