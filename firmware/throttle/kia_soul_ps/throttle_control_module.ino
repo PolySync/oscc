@@ -50,34 +50,36 @@
 #endif
 
 // set CAN_CS to pin 10 for CAN
-#define CAN_CS 10
+#define CAN_CS                          ( 10 )
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT (2500)
+#define PS_CTRL_RX_WARN_TIMEOUT         ( 2500 )
 
 // set up pins for interface with DAC (MCP4922)
-#define DAC_CS              9       // Chip select pin
+#define DAC_CS                          ( 9 )       // Chip select pin
 
 // Signal to ADC from car
-#define SIGNAL_INPUT_A      A0
+#define SIGNAL_INPUT_A                  ( A0 )
 
 // Green wire from the torque sensor, low values
-#define SIGNAL_INPUT_B      A1
+#define SIGNAL_INPUT_B                  ( A1 )
 
 // Spoof signal from DAC out to car
-#define SPOOF_SIGNAL_A      A2
+#define SPOOF_SIGNAL_A                  ( A2 )
 
 // Blue wire from the torque sensor, high values
-#define SPOOF_SIGNAL_B      A3
+#define SPOOF_SIGNAL_B                  ( A3 )
 
 // Signal interrupt (relay) for spoofed torque values
-#define SPOOF_ENGAGE        6
+#define SPOOF_ENGAGE                    ( 6 )
 
 // Threshhold to detect when a person is pressing accelerator
-#define PEDAL_THRESH        1000
+#define PEDAL_THRESH                    ( 1000 )
 
 // Threshhold to detect when there is a discrepancy between DAC and ADC values
-#define VOLTAGE_THRESH      250     // mV
+#define VOLTAGE_THRESH                  ( 200 )     // mV
+
+
 
 
 // *****************************************************
@@ -179,10 +181,10 @@ static void init_can ( void )
 
 
 // set up values for use in the throttle control system
-uint16_t signal_L_current,      // Current measured accel sensor values
-         signal_H_current,
-         spoof_L_current,       // Current spoofing values
-         spoof_H_current;
+uint16_t signal_L,              // Current measured accel sensor values
+         signal_H,
+         spoof_L,               // Current spoofing values
+         spoof_H;
 
 can_frame_s can_frame;          // CAN message structs
 
@@ -196,7 +198,7 @@ int pedal_override = 0,
 double pedal_position_target,
        pedal_position;
 
-uint8_t incoming_serial_byte;
+//uint8_t incoming_serial_byte;
 
 
 
@@ -247,15 +249,15 @@ void disable_control( )
 
 	for ( int i = 0; i < AVG_max; i++ )
 	{
-		sum_sensA_samples += analogRead(SIGNAL_INPUT_A) << 2;
-		sum_sensB_samples += analogRead(SIGNAL_INPUT_B) << 2;
+		sum_sensA_samples += analogRead( SIGNAL_INPUT_A ) << 2;
+		sum_sensB_samples += analogRead( SIGNAL_INPUT_B ) << 2;
 	}
 
 	uint16_t avg_sensA_sample = sum_sensA_samples / AVG_max;
 	uint16_t avg_sensB_sample = sum_sensB_samples / AVG_max;
 
 	// Write measured torque values to DAC to avoid a signal discontinuity when
-    //the SCM relinquishes control
+    // the SCM relinquishes control
     dac.outputA( avg_sensA_sample );
     dac.outputB( avg_sensB_sample );
 
@@ -271,21 +273,21 @@ void disable_control( )
 void calculate_pedal_spoof( float pedal_position )
 {
     // values calculated with min/max calibration curve and tuned for neutral
-    // balance.vvDAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
-    spoof_L_current = 819.2 * ( 0.0004 * pedal_position + 0.366 );
-    spoof_H_current = 819.2 * ( 0.0008 * pedal_position + 0.732 );
+    // balance.  DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
+    spoof_L = 819.2 * ( 0.0004 * pedal_position + 0.366 );
+    spoof_H = 819.2 * ( 0.0008 * pedal_position + 0.732 );
 
     // range = 300 - ~1750
-    spoof_L_current = constrain( spoof_L_current, 0, 1800 );
+    spoof_L = constrain( spoof_L, 0, 1800 );
     // range = 600 - ~3500
-    spoof_H_current = constrain( spoof_H_current, 0, 3500 );
+    spoof_H = constrain( spoof_H, 0, 3500 );
 
 }
 
 //
 void check_pedal_override( )
 {
-    if ( ( signal_L_current + signal_H_current ) / 2 > PEDAL_THRESH )
+    if ( ( signal_L + signal_H ) / 2 > PEDAL_THRESH )
     {
         disable_control( );
         pedal_override = 1;
@@ -318,7 +320,7 @@ void check_spoof_voltages(
     float spoof_a_dac_current_volts = spoof_H_dac * ( 5.0 / 4095.0 );
     float spoof_b_dac_current_volts = spoof_L_dac * ( 5.0 / 4095.0 );
 
-    // fail criteria. ~ ( ± 250mV )
+    // fail criteria. ~ ( ± 200mV )
     if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > VOLTAGE_THRESH
             && control_enabled )
     {
@@ -332,7 +334,7 @@ void check_spoof_voltages(
         voltage_override = 0;
     }
 
-    // fail criteria. ~ ( ± 250mV )
+    // fail criteria. ~ ( ± 200mV )
     if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > VOLTAGE_THRESH
             && control_enabled )
     {
@@ -368,7 +370,7 @@ static void publish_ps_ctrl_throttle_report( void )
             (uint32_t) (PS_CTRL_MSG_ID_THROTTLE_REPORT);
 
     // set DLC
-    tx_frame_ps_ctrl_throttle_report.dlc = 8; //TODO
+    tx_frame_ps_ctrl_throttle_report.dlc = 8;
 
     // set override flag
     if ( pedal_override == 0 && voltage_override == 0 )
@@ -426,7 +428,6 @@ static void process_ps_ctrl_throttle_command(
     const ps_ctrl_throttle_command_msg * const control_data =
             (ps_ctrl_throttle_command_msg*) rx_frame_buffer;
 
-
     bool enabled = control_data->enabled == 1;
 
     // enable control from the PolySync interface
@@ -453,11 +454,10 @@ static void process_ps_ctrl_throttle_command(
 // A function to parse CAN data into useful variables
 void handle_ready_rx_frames( void )
 {
-
     // local vars
     can_frame_s rx_frame;
 
-    if( CAN.checkReceive() == CAN_MSGAVAIL )
+    if( CAN.checkReceive( ) == CAN_MSGAVAIL )
     {
         memset( &rx_frame, 0, sizeof( rx_frame ) );
 
@@ -516,7 +516,7 @@ void setup()
     last_update_ms = 0;
     memset( &rx_frame_ps_ctrl_throttle_command,
             0,
-            sizeof(rx_frame_ps_ctrl_throttle_command ) );
+            sizeof( rx_frame_ps_ctrl_throttle_command ) );
 
     // set up pin modes
     pinMode( DAC_CS, OUTPUT );
@@ -570,14 +570,14 @@ void loop()
     check_rx_timeouts( );
 
     // update state variables
-    signal_L_current = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
-    signal_H_current = analogRead( SIGNAL_INPUT_B ) << 2;
+    signal_L = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
+    signal_H = analogRead( SIGNAL_INPUT_B ) << 2;
 
     // if someone is pressing the throttle pedal, disable control
     check_pedal_override( );
 
     // if DAC out and ADC in voltages differ, disable control
-    check_spoof_voltages( spoof_L_current, spoof_H_current, ++loop_counter );
+    check_spoof_voltages( spoof_L, spoof_H, ++loop_counter );
 
 
     // now that we've set control status, do throttle if we are in control
@@ -585,8 +585,8 @@ void loop()
     {
         calculate_pedal_spoof( pedal_position_target );
 
-        dac.outputA( spoof_H_current );
-        dac.outputB( spoof_L_current );
+        dac.outputA( spoof_H );
+        dac.outputB( spoof_L );
 
     }
 
