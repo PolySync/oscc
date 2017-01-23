@@ -3,6 +3,10 @@
 - [Introduction](#introduction)
 - [Getting Started](#getting-started)
 - [Making Contributions](#making-contributions)
+  - [Contributing Code](#contributing-code)
+  - [Contributing a Diagram](#contributing-a-diagram)
+  - [Submitting Enhancement Requests](#submitting-enhancement-requests)
+  - [Pull Request Labels](#pull-request-labels)
 - [Directory Contents](#directory-contents)
 - [Diagrams](#diagrams)
 - [Building](#building)
@@ -47,11 +51,6 @@ Below is a sample of how additional vehicle directories should be created.
   - Create a branch using `git fork` in the repository on GitHub
 
 ## Making Contributions
-
-- [Contributing Code](#contributing-code)
-- [Contributing a Diagram](#contributing-a-diagram)
-- [Submitting Enhancement Requests](#submitting-enhancement-requests)
-- [Pull Request Labels](#pull-request-labels)
 
 - Do not work directly on the `master` branch; changes to the master branch will be removed
 - Create a topic branch from where you want to base your work
