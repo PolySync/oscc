@@ -603,7 +603,7 @@ void loop()
                 dac.outputB( spoof_L );
 
                 // if DAC out and ADC in voltages differ, disable control
-                // only test every tenth loop
+                // only test every tenth lake cleaoop
                 if ( test_countdown >= 10 ) {
 
                     test_countdown = 0;
