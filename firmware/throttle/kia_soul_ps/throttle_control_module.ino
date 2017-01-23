@@ -56,24 +56,28 @@
 #define PS_CTRL_RX_WARN_TIMEOUT (2500)
 
 // set up pins for interface with DAC (MCP4922)
+#define DAC_CS              9       // Chip select pin
 
-#define DAC_CS                9  // Chip select pin
+// Signal to ADC from car
+#define SIGNAL_INPUT_A      A0
 
-// signal to ADC from car
-#define SIGNAL_INPUT_A        A0  // Sensing input for the DAC output
-
-#define SIGNAL_INPUT_B        A1  // Green wire from the torque sensor, low values
+// Green wire from the torque sensor, low values
+#define SIGNAL_INPUT_B      A1
 
 // Spoof signal from DAC out to car
-#define SPOOF_SIGNAL_A        A2  // Sensing input for the DAC output
+#define SPOOF_SIGNAL_A      A2
 
-#define SPOOF_SIGNAL_B        A3  // Blue wire from the torque sensor, high values
+// Blue wire from the torque sensor, high values
+#define SPOOF_SIGNAL_B      A3
 
-#define SPOOF_ENGAGE          6   // Signal interrupt (relay) for spoofed torque values
-
+// Signal interrupt (relay) for spoofed torque values
+#define SPOOF_ENGAGE        6
 
 // Threshhold to detect when a person is pressing accelerator
-#define PEDAL_THRESH 1000
+#define PEDAL_THRESH        1000
+
+// Threshhold to detect when there is a discrepancy between DAC and ADC values
+#define VOLTAGE_THRESH      250     // mV
 
 
 // *****************************************************
@@ -159,7 +163,7 @@ static void init_serial( void )
 }
 
 
-static void init_can ( void ) 
+static void init_can ( void )
 {
     // wait until we have initialized
     while( CAN.begin( CAN_BAUD ) != CAN_OK )
@@ -183,9 +187,7 @@ uint16_t signal_L_current,      // Current measured accel sensor values
 can_frame_s can_frame;          // CAN message structs
 
 bool control_enable_req,
-     control_enabled,
-     initial_ADC,
-     signal_error;
+     control_enabled;
 
 int pedal_override = 0,
     voltage_override = 0,
@@ -220,12 +222,10 @@ void enable_control( )
 	uint16_t avg_sensA_sample = ( sum_sensA_samples / AVG_max ) << 2;
 	uint16_t avg_sensB_sample = ( sum_sensB_samples / AVG_max ) << 2;
 
-	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM takes over
+	// Write measured torque values to DAC to avoid a signal discontinuity when
+    // the SCM takes over
     dac.outputA( avg_sensA_sample );
     dac.outputB( avg_sensB_sample );
-
-	// TODO: check if the DAC value and the sensed values are the same. If not,
-    // return an error and do NOT enable the sigint relays.
 
 	// Enable the signal interrupt relays
 	digitalWrite( SPOOF_ENGAGE, HIGH );
@@ -254,9 +254,10 @@ void disable_control( )
 	uint16_t avg_sensA_sample = sum_sensA_samples / AVG_max;
 	uint16_t avg_sensB_sample = sum_sensB_samples / AVG_max;
 
-	// Write measured torque values to DAC to avoid a signal discontinuity when the SCM relinquishes control
-     dac.outputA( avg_sensA_sample );
-     dac.outputB( avg_sensB_sample );
+	// Write measured torque values to DAC to avoid a signal discontinuity when
+    //the SCM relinquishes control
+    dac.outputA( avg_sensA_sample );
+    dac.outputB( avg_sensB_sample );
 
 	// Disable the signal interrupt relays
 	digitalWrite( SPOOF_ENGAGE, LOW );
@@ -297,13 +298,13 @@ void check_pedal_override( )
 
 //
 void check_spoof_voltages(
-        bool first_ADC,
         uint16_t spoof_L_dac,   // was A
-        uint16_t spoof_H_dac    // was B
+        uint16_t spoof_H_dac,   // was B
+        int loop_count
         )
 {
-    if ( first_ADC == true )
-    {
+    // only test every tenth loop
+    if ( loop_count % 10 == 0 ) {
         return;
     }
 
@@ -317,9 +318,9 @@ void check_spoof_voltages(
     float spoof_a_dac_current_volts = spoof_H_dac * ( 5.0 / 4095.0 );
     float spoof_b_dac_current_volts = spoof_L_dac * ( 5.0 / 4095.0 );
 
-    // fail criteria. ~ ( ± 50mV )
-    if (    abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > 0.050 &&
-            control_enabled )
+    // fail criteria. ~ ( ± 250mV )
+    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > VOLTAGE_THRESH
+            && control_enabled )
     {
         DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal A. * * *" );
 
@@ -331,9 +332,9 @@ void check_spoof_voltages(
         voltage_override = 0;
     }
 
-    // fail criteria. ~ ( ± 50mV )
-    if (    abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > 0.050 &&
-            control_enabled )
+    // fail criteria. ~ ( ± 250mV )
+    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > VOLTAGE_THRESH
+            && control_enabled )
     {
         DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal B. * * *" );
 
@@ -353,34 +354,6 @@ void check_spoof_voltages(
 /* ====================================== */
 /* =========== COMMUNICATIONS =========== */
 /* ====================================== */
-
-// A function to parse incoming serial bytes
-void process_serial_byte( )
-{
-    // accelerate
-    if ( incoming_serial_byte == 'a' )
-    {
-        pedal_position_target += 1000;
-    }
-
-    // deaccelerate
-    if ( incoming_serial_byte == 'd' )
-    {
-        pedal_position_target -= 1000;
-    }
-
-    // return to center
-    if ( incoming_serial_byte == 's' )
-    {
-        pedal_position_target = 0;
-    }
-
-    // enable/disable control
-    if ( incoming_serial_byte == 'p' )
-    {
-        control_enable_req = !control_enable_req;
-    }
-}
 
 
 //
@@ -444,7 +417,7 @@ static void publish_timed_tx_frames( void )
 }
 
 
-
+//
 static void process_ps_ctrl_throttle_command(
         const uint8_t * const rx_frame_buffer )
 {
@@ -478,7 +451,8 @@ static void process_ps_ctrl_throttle_command(
 }
 
 // A function to parse CAN data into useful variables
-void handle_ready_rx_frames( void ) {
+void handle_ready_rx_frames( void )
+{
 
     // local vars
     can_frame_s rx_frame;
@@ -573,12 +547,6 @@ void setup()
     // debug log
     DEBUG_PRINT( "init: pass" );
 
-    // skip first iteration of DAC/ADC diagnostic test
-    initial_ADC = true;
-
-    // initialize signal_error
-    signal_error = false;
-
 }
 
 
@@ -605,23 +573,12 @@ void loop()
     signal_L_current = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
     signal_H_current = analogRead( SIGNAL_INPUT_B ) << 2;
 
-    // if someone is pressing the throttle pedal disable control
+    // if someone is pressing the throttle pedal, disable control
     check_pedal_override( );
 
-    // read and parse incoming serial commands
-    if (Serial.available() > 0)
-    {
-        incoming_serial_byte = Serial.read( );
-        process_serial_byte( );
-    }
+    // if DAC out and ADC in voltages differ, disable control
+    check_spoof_voltages( spoof_L_current, spoof_H_current, ++loop_counter );
 
-    if ( ++loop_counter % 10 == 0 )
-    {
-        check_spoof_voltages(
-                initial_ADC,
-                spoof_L_current,
-                spoof_H_current );
-    }
 
     // now that we've set control status, do throttle if we are in control
     if ( control_enabled )
@@ -630,8 +587,6 @@ void loop()
 
         dac.outputA( spoof_H_current );
         dac.outputB( spoof_L_current );
-
-        initial_ADC = false;
 
     }
 
