@@ -181,22 +181,21 @@ static void init_can ( void )
 
 
 // set up values for use in the throttle control system
-uint16_t signal_L,              // Current measured accel sensor values
-         signal_H,
-         spoof_L,               // Current spoofing values
-         spoof_H;
+uint16_t signal_L;              // Current measured accel sensor values
+uint16_t signal_H;
+uint16_t spoof_L;               // Current spoofing values
+uint16_t spoof_H;
+uint16_t pedal_override = 0;
+uint16_t voltage_override = 0;
+uint16_t test_countdown = 0;
 
 can_frame_s can_frame;          // CAN message structs
 
-bool control_enable_req,
-     control_enabled;
+bool control_enable_req;
+bool control_enabled;
 
-int pedal_override = 0,
-    voltage_override = 0,
-    loop_counter = 0;
-
-double pedal_position_target,
-       pedal_position;
+double pedal_position_target;
+double pedal_position;
 
 //uint8_t incoming_serial_byte;
 
@@ -211,18 +210,18 @@ double pedal_position_target,
 void enable_control( )
 {
 	// Do a quick average to smooth out the noisy data
-	static int AVG_max = 20;  // Total number of samples to average over
+	static uint16_t n_samples = 20;  // Total number of samples to average over
 	long sum_sensA_samples = 0;
 	long sum_sensB_samples = 0;
 
-	for ( int i = 0; i < AVG_max; i++ )
+	for ( int i = 0; i < n_samples; i++ )
 	{
 		sum_sensA_samples += analogRead( SIGNAL_INPUT_A );
 		sum_sensB_samples += analogRead( SIGNAL_INPUT_B );
 	}
 
-	uint16_t avg_sensA_sample = ( sum_sensA_samples / AVG_max ) << 2;
-	uint16_t avg_sensB_sample = ( sum_sensB_samples / AVG_max ) << 2;
+	uint16_t avg_sensA_sample = ( sum_sensA_samples / n_samples ) << 2;
+	uint16_t avg_sensB_sample = ( sum_sensB_samples / n_samples ) << 2;
 
 	// Write measured torque values to DAC to avoid a signal discontinuity when
     // the SCM takes over
@@ -243,18 +242,18 @@ void enable_control( )
 void disable_control( )
 {
 	// Do a quick average to smooth out the noisy data
-	static int AVG_max = 20;  // Total number of samples to average over
+	static uint16_t n_samples = 20;  // Total number of samples to average over
 	long sum_sensA_samples = 0;
 	long sum_sensB_samples = 0;
 
-	for ( int i = 0; i < AVG_max; i++ )
+	for ( int i = 0; i < n_samples; i++ )
 	{
 		sum_sensA_samples += analogRead( SIGNAL_INPUT_A ) << 2;
 		sum_sensB_samples += analogRead( SIGNAL_INPUT_B ) << 2;
 	}
 
-	uint16_t avg_sensA_sample = sum_sensA_samples / AVG_max;
-	uint16_t avg_sensB_sample = sum_sensB_samples / AVG_max;
+	uint16_t avg_sensA_sample = sum_sensA_samples / n_samples;
+	uint16_t avg_sensB_sample = sum_sensB_samples / n_samples;
 
 	// Write measured torque values to DAC to avoid a signal discontinuity when
     // the SCM relinquishes control
@@ -301,14 +300,9 @@ void check_pedal_override( )
 //
 void check_spoof_voltages(
         uint16_t spoof_L_dac,   // was A
-        uint16_t spoof_H_dac,   // was B
-        int loop_count
+        uint16_t spoof_H_dac    // was B
         )
 {
-    // only test every tenth loop
-    if ( loop_count % 10 == 0 ) {
-        return;
-    }
 
     int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
     int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
@@ -321,8 +315,7 @@ void check_spoof_voltages(
     float spoof_b_dac_current_volts = spoof_L_dac * ( 5.0 / 4095.0 );
 
     // fail criteria. ~ ( ± 200mV )
-    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > VOLTAGE_THRESH
-            && control_enabled )
+    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > VOLTAGE_THRESH )
     {
         DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal A. * * *" );
 
@@ -335,8 +328,7 @@ void check_spoof_voltages(
     }
 
     // fail criteria. ~ ( ± 200mV )
-    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > VOLTAGE_THRESH
-            && control_enabled )
+    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > VOLTAGE_THRESH )
     {
         DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal B. * * *" );
 
@@ -557,6 +549,8 @@ void setup()
 void loop()
 {
 
+    test_countdown += 1;
+
     // update the global system update timestamp, ms
     last_update_ms = GET_TIMESTAMP_MS( );
 
@@ -577,8 +571,12 @@ void loop()
     check_pedal_override( );
 
     // if DAC out and ADC in voltages differ, disable control
-    check_spoof_voltages( spoof_L, spoof_H, ++loop_counter );
+    // only test every tenth loop
+    if ( test_countdown >= 10 ) {
 
+        test_countdown = 0;
+        check_spoof_voltages( spoof_L, spoof_H );
+    }
 
     // now that we've set control status, do throttle if we are in control
     if ( control_enabled )

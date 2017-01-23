@@ -61,8 +61,8 @@ void test_DACS( )
     uint16_t dac_val_a;
     uint16_t dac_val_b;
 
-    int spoof_a_adc_signal = 0;
-    int spoof_b_adc_signal = 0;
+    uint16_t spoof_a_adc_signal = 0;
+    uint16_t spoof_b_adc_signal = 0;
 
     float spoof_a_adc_volts = 0.0;
     float spoof_b_adc_volts = 0.0;

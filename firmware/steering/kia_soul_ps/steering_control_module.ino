@@ -166,8 +166,8 @@ static void init_can ( void )
 
 
 // set up values for use in the steering control system
-int voltage_override = 0,
-    loop_counter = 0;
+static uint16_t voltage_override = 0;
+static uint16_t test_countdown = 0;
 
 
 
@@ -182,18 +182,18 @@ int voltage_override = 0,
 void enable_control( )
 {
 	// Do a quick average to smooth out the noisy data
-	static int AVG_max = 20;  // Total number of samples to average over
+	static uint16_t n_samples = 20;  // Total number of samples to average over
 	long sum_sensA_samples = 0;
 	long sum_sensB_samples = 0;
 
-	for ( int i = 0; i < AVG_max; i++ )
+	for ( int i = 0; i < n_samples; i++ )
 	{
 		sum_sensA_samples += analogRead( SIGNAL_INPUT_A );
 		sum_sensB_samples += analogRead( SIGNAL_INPUT_B );
 	}
 
-	uint16_t avg_sensA_sample = ( sum_sensA_samples / AVG_max ) << 2;
-	uint16_t avg_sensB_sample = ( sum_sensB_samples / AVG_max ) << 2;
+	uint16_t avg_sensA_sample = ( sum_sensA_samples / n_samples ) << 2;
+	uint16_t avg_sensB_sample = ( sum_sensB_samples / n_samples ) << 2;
 
 	// Write measured torque values to DAC to avoid a signal discontinuity when
     // the SCM takes over
@@ -214,18 +214,18 @@ void enable_control( )
 void disable_control( )
 {
 	// Do a quick average to smooth out the noisy data
-	static int AVG_max = 20;  // Total number of samples to average over
+	static uint16_t n_samples = 20;  // Total number of samples to average over
 	long sum_sensA_samples = 0;
 	long sum_sensB_samples = 0;
 
-	for ( int i = 0; i < AVG_max; i++ )
+	for ( int i = 0; i < n_samples; i++ )
 	{
 		sum_sensA_samples += analogRead( SIGNAL_INPUT_A ) << 2;
 		sum_sensB_samples += analogRead( SIGNAL_INPUT_B ) << 2;
 	}
 
-	uint16_t avg_sensA_sample = sum_sensA_samples / AVG_max;
-	uint16_t avg_sensB_sample = sum_sensB_samples / AVG_max;
+	uint16_t avg_sensA_sample = sum_sensA_samples / n_samples;
+	uint16_t avg_sensB_sample = sum_sensB_samples / n_samples;
 
 	// Write measured torque values to DAC to avoid a signal discontinuity when
     // the SCM relinquishes control
@@ -257,14 +257,9 @@ void calculate_torque_spoof(
 //
 void check_spoof_voltages(
         uint16_t * spoof_L_dac,   // was A
-        uint16_t * spoof_H_dac,   // was B
-        int loop_count
+        uint16_t * spoof_H_dac    // was B
         )
 {
-    // only test every tenth loop
-    if ( loop_count % 10 == 0 ) {
-        return;
-    }
 
     int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
     int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
@@ -589,6 +584,8 @@ void loop()
 
             if( ret == PID_SUCCESS )
             {
+                test_countdown += 1;
+
                 uint16_t spoof_L;
                 uint16_t spoof_H;
 
@@ -606,7 +603,12 @@ void loop()
                 dac.outputB( spoof_L );
 
                 // if DAC out and ADC in voltages differ, disable control
-                check_spoof_voltages( &spoof_L, &spoof_H, ++loop_counter );
+                // only test every tenth loop
+                if ( test_countdown >= 10 ) {
+
+                    test_countdown = 0;
+                    check_spoof_voltages( &spoof_L, &spoof_H );
+                }
             }
         }
         else
