@@ -8,12 +8,12 @@
 // E Livingston, 2016
 
 #include <SPI.h>
-#include <PID_v1.h>
 #include <FiniteStateMachine.h>
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "common.h"
 #include "control_protocol_can.h"
+#include "PID.h"
 
 
 
@@ -60,6 +60,9 @@ static can_frame_s rx_frame_ps_ctrl_brake_command;
 //
 static can_frame_s tx_frame_ps_ctrl_brake_report;
 
+
+//
+static PID pidParams;
 
 
 
@@ -138,18 +141,6 @@ int deltaT=10,
     lastMicros = 0;
 
 unsigned long previousMillis=0;
-
-double pressurePID_input,
-       pressurePID_output,
-       pressurePID_setpoint;
-
-float P_Kp=10.0, 
-      P_Ki=1.5, 
-      P_Kd=0.50;
-
-// intialize PID
-PID pressurePID(&pressurePID_input, &pressurePID_output, &pressurePID_setpoint, P_Kp, P_Ki, P_Kd, DIRECT);
-
 
 void waitEnter();
 void waitUpdate();
@@ -713,62 +704,58 @@ void brakeUpdate()
 
     pressure_last = pressure;
 
-    pressurePID_input = pressureRate;
-    pressurePID_setpoint = pressureRate_target;
-    pressurePID.SetTunings(P_Kp, P_Ki, P_Kd);
+    pidParams.derivative_gain = 0.50;
+    pidParams.proportional_gain = 10.0;
+    pidParams.integral_gain = 1.5;
 
-    pressurePID.Compute();
+    int ret = pid_update( &pidParams, pressureRate_target - pressureRate, 0.050 );
 
-
-
-    // lots of PID debugging prints
-    //Serial.print("Kp = ");
-    //Serial.print(pressurePID.GetKp());  
-    //Serial.print(" Ki = ");
-    //Serial.print(pressurePID.GetKi()); 
-    //Serial.print(" Kd = ");
-    //Serial.print(pressurePID.GetKd()); 
-    Serial.print(" request = ");
-    Serial.print(pressure_req); // Rate error
-    Serial.print(" SR error = ");
-    Serial.print(pressureRate_target - pressureRate); // Rate error
-    Serial.print(" Commanded rate = ");
-    Serial.print(pressurePID_output);
-    ////Serial.print( "deltaT = ");
-    ////Serial.println(deltaT);
-    Serial.print( " pressure = ");
-    Serial.println(pressure);
-
-
-
-    // some logic to set a samplerate for data which is sent to processing for plotting
-    unsigned long currentMillis = millis();
-    if ((unsigned long)(currentMillis - previousMillis) >= 100) 
+    if( ret == PID_SUCCESS )
     {
-        previousMillis = currentMillis;
-    }
+        double pressurePID_output = pidParams.control;
+
+        // constrain to min/max
+        pressurePID_output = m_constrain(
+                (float) (pressurePID_output),
+                (float) -2.0f,
+                (float) 2.0f );
+
+        Serial.print(" request = ");
+        Serial.print(pressure_req); // Rate error
+        Serial.print(" SR error = ");
+        Serial.print(pressureRate_target - pressureRate); // Rate error
+        Serial.print( " pressure = ");
+        Serial.println(pressure);
+
+        // some logic to set a samplerate for data which is sent to processing for plotting
+        unsigned long currentMillis = millis();
+        if ((unsigned long)(currentMillis - previousMillis) >= 100) 
+        {
+            previousMillis = currentMillis;
+        }
 
 
-    // if pressure is too high
-    if( pressurePID_output < -0.1 ) 
-    {
-        brakes.depowerSLA();
-        brakes.powerSLR(calculateSLRDutyCycle(pressurePID_output));
-    } 
+        // if pressure is too high
+        if( pressurePID_output < -0.1 ) 
+        {
+            brakes.depowerSLA();
+            brakes.powerSLR(calculateSLRDutyCycle(pressurePID_output));
+        } 
 
-    // if pressure is too low
-    if( pressurePID_output > 0.1 ) 
-    {
-        brakes.depowerSLR();
-        brakes.powerSLA(calculateSLADutyCycle(pressurePID_output));
-    }
+        // if pressure is too low
+        if( pressurePID_output > 0.1 ) 
+        {
+            brakes.depowerSLR();
+            brakes.powerSLA(calculateSLADutyCycle(pressurePID_output));
+        }
 
 
-    // if driver is not braking, transition to wait state
-    if( pressure_req <= ZERO_PRESSURE) 
-    {
-        DEBUG_PRINT("pressure request below threshold");
-        brakeStateMachine.transitionTo( Wait );
+        // if driver is not braking, transition to wait state
+        if( pressure_req <= ZERO_PRESSURE) 
+        {
+            DEBUG_PRINT("pressure request below threshold");
+            brakeStateMachine.transitionTo( Wait );
+        }
     }
 }
 
@@ -852,9 +839,8 @@ void setup( void )
     // update the global system update timestamp, ms
     //last_update_ms = GET_TIMESTAMP_MS();
 
-    pressurePID.SetMode(AUTOMATIC);
-    pressurePID.SetOutputLimits(-2, 2);
-    pressurePID.SetSampleTime(50);
+    // Initialize PID params
+    pid_zeroize( &pidParams );
 
     // debug log
     DEBUG_PRINT( "init: pass" );
