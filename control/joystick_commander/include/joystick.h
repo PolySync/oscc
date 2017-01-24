@@ -38,40 +38,51 @@
 
 
 
-
 /**
  * @brief Invalid \ref joystick_device_s.handle value.
  *
  */
-#define JOYSTICK_DEVICE_HANDLE_INVALID (NULL)
+#define JOYSTICK_DEVICE_HANDLE_INVALID ( NULL )
 
 
 /**
  * @brief Lowest joystick axis value.
  *
  */
-#define JOYSTICK_AXIS_POSITION_MIN (-32768)
+#define JOYSTICK_AXIS_POSITION_MIN ( -32768 )
 
 
 /**
  * @brief Highest joystick axis value.
  *
  */
-#define JOYSTICK_AXIS_POSITION_MAX (32767)
+#define JOYSTICK_AXIS_POSITION_MAX ( 32767 )
 
 
 /**
  * @brief Button state not pressed.
  *
  */
-#define JOYSTICK_BUTTON_STATE_NOT_PRESSED (0)
+#define JOYSTICK_BUTTON_STATE_NOT_PRESSED ( 0 )
 
 
 /**
  * @brief Button state pressed.
  *
  */
-#define JOYSTICK_BUTTON_STATE_PRESSED (1)
+#define JOYSTICK_BUTTON_STATE_PRESSED ( 1 )
+
+/**
+ * @brief Joystick Identifier Data
+ *
+ */
+#define JOYSTICK_ID_DATA_SIZE ( 16 )
+
+/**
+ * @brief Joystick Description String
+ *
+ */
+#define JOYSTICK_ID_STRING_SIZE ( 64 )
 
 
 
@@ -84,12 +95,9 @@
  */
 typedef struct
 {
-    //
-    //
-    unsigned char data[16]; /*!< Identifier data. */
-    //
-    //
-    char ascii_string[64]; /*!< Description string. */
+    unsigned char data[ JOYSTICK_ID_DATA_SIZE ];
+    char ascii_string[ JOYSTICK_ID_STRING_SIZE ];
+
 } joystick_guid_s;
 
 
@@ -99,12 +107,9 @@ typedef struct
  */
 typedef struct
 {
-    //
-    //
-    void *handle; /*!< Device handle. */
-    //
-    //
-    joystick_guid_s guid; /*!< Device GUID. */
+    void *handle;
+    joystick_guid_s guid;
+
 } joystick_device_s;
 
 
@@ -113,21 +118,21 @@ typedef struct
 /**
  * @brief Initialize joystick subsystem.
  *
- * @return DTC code:
- * \li \ref DTC_NONE (zero) if success.
+ * @return ERROR code
+ * \li \ref NOERR (1) if success.
+ * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_init_subsystem( void );
+int jstick_init_subsystem( );
 
 
 /**
  * @brief Release joystick subsystem.
  *
- * @return DTC code:
- * \li \ref DTC_NONE (zero) if success.
+ * @return void
  *
  */
-void jstick_release_subsystem( void );
+void jstick_release_subsystem( );
 
 
 /**
@@ -147,13 +152,13 @@ int jstick_get_num_devices( void );
  * @param [in] device_index Device index in the subsystem.
  * @param [out] guid A pointer to \ref joystick_guid_s which receives the GUID value.
  *
- * @return DTC code:
- * \li \ref DTC_NONE (zero) if success.
+ * @return ERROR code
+ * \li \ref NOERR (1) if success.
+ * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_get_guid_at_index(
-        const unsigned long device_index,
-        joystick_guid_s * const guid );
+int jstick_get_guid_at_index( const unsigned long device_index,
+                              joystick_guid_s * const guid );
 
 
 /**
@@ -162,13 +167,13 @@ int jstick_get_guid_at_index(
  * @param [in] device_index Device index in the subsystem.
  * @param [out] jstick A pointer to \ref joystick_device_s which receives the configuration.
  *
- * @return DTC code:
- * \li \ref DTC_NONE (zero) if success.
+ * @return ERROR code:
+ * \li \ref NOERR (1) if success.
+ * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_open(
-        const unsigned long device_index,
-        joystick_device_s * const jstick );
+int jstick_open( const unsigned long device_index,
+                 joystick_device_s * const jstick );
 
 
 /**
@@ -176,12 +181,10 @@ int jstick_open(
  *
  * @param [out] jstick A pointer to \ref joystick_device_s which is to be closed.
  *
- * @return DTC code:
- * \li \ref DTC_NONE (zero) if success.
+ * @return void
  *
  */
-void jstick_close(
-    joystick_device_s * const jstick );
+void jstick_close( joystick_device_s * const jstick );
 
 
 /**
@@ -189,14 +192,12 @@ void jstick_close(
  *
  * @param [out] jstick A pointer to \ref joystick_device_s which receives the update.
  *
- * @return DTC code:
- * \li \ref DTC_NONE (zero) if success.
- * \li \ref DTC_USAGE if arguments invalid.
- * \li \ref DTC_UNAVAILABLE if joystick is not accessible.
+ * @return ERROR code:
+ * \li \ref NOERR (1) if success.
+ * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_update(
-    joystick_device_s * const jstick );
+int jstick_update( joystick_device_s * const jstick );
 
 
 /**
@@ -206,14 +207,14 @@ int jstick_update(
  * @param [in] axis_index Axis index.
  * @param [out] position Current axis value.
  *
- * @return DTC code:
- * \li \ref DTC_NONE (zero) if success.
+ * @return ERROR code:
+ * \li \ref NOERR (1) if success.
+ * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_get_axis(
-        joystick_device_s * const jstick,
-        const unsigned long axis_index,
-        int * const position );
+int jstick_get_axis( joystick_device_s * const jstick,
+                     const unsigned long axis_index,
+                     int * const position );
 
 
 /**
@@ -223,14 +224,14 @@ int jstick_get_axis(
  * @param [in] button_index Button index.
  * @param [out] state Current button state.
  *
- * @return DTC code:
- * \li \ref DTC_NONE (zero) if success.
+ * @return ERROR code:
+ * \li \ref NOERR (1) if success.
+ * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_get_button(
-        joystick_device_s * const jstick,
-        const unsigned long button_index,
-        unsigned int * const state );
+int jstick_get_button( joystick_device_s * const jstick,
+                       const unsigned long button_index,
+                       unsigned int * const state );
 
 
 /**
@@ -240,13 +241,12 @@ int jstick_get_button(
  * @param [in] range_min Output minimum range.
  * @param [in] range_max Output maximum range.
  *
- * @return position mapped to the range of min:max.
+ * @return joystick position mapped to the range of min:max.
  *
  */
-double jstick_normalize_axis_position(
-        const int position,
-        const double range_min,
-        const double range_max );
+double jstick_normalize_axis_position( const int position,
+                                       const double range_min,
+                                       const double range_max );
 
 
 /**
