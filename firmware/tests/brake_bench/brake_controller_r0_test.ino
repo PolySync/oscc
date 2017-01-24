@@ -21,11 +21,11 @@ int val = 0;
 
 
 // accumulator pump motor
-const byte PIN_PUMP = 9;     
+const byte PIN_PUMP = 9;
 
 
 // brake spoofer relay pin definitions
-const byte PIN_BREAK_SWITCH = 48;
+const byte PIN_BRAKE_SWITCH = 48;
 
 
 // sensor pin (analog) definitions
@@ -51,22 +51,22 @@ int SLADutyMax,
     SLRDutyMin;
 
 
-static void init_serial( void ) 
+static void init_serial( void )
 {
     Serial.begin( SERIAL_BAUD );
 }
 
 
 
-static void init_can ( void ) 
+static void init_can ( void )
 {
     // wait until we have initialized
     while( CAN.begin(CAN_BAUD) != CAN_OK )
-    {   
+    {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
         Serial.println( "init_can: retrying" );
-    }   
+    }
 
     // debug log
     Serial.println( "init_can: pass" );
@@ -101,7 +101,7 @@ void test_power_drivers() {
         // wait for 30 milliseconds to see the dimming effect
         delay(100);
         val = analogRead(A3);    // read the input pin
-        Serial.println(val);  
+        Serial.println(val);
     }
 
     // fade from 100% duty cycle back to 0% duty cycle
@@ -127,12 +127,12 @@ void test_power_drivers() {
 void test_pump_relay() {
 
     // flush all previous received and transmitted data
-    Serial.flush(); 
+    Serial.flush();
 
     while(!Serial.available()) {
-        digitalWrite(PIN_PUMP, HIGH);   
-        delay(1000);                   
-        digitalWrite(PIN_PUMP, LOW);  
+        digitalWrite(PIN_PUMP, HIGH);
+        delay(1000);
+        digitalWrite(PIN_PUMP, LOW);
         delay(1000);
     }
 }
@@ -143,12 +143,12 @@ void test_pump_relay() {
 void test_switch_relay() {
 
     // flush all previous received and transmitted data
-    Serial.flush(); 
+    Serial.flush();
 
     while(!Serial.available()) {
-        digitalWrite(PIN_BREAK_SWITCH, HIGH);   
-        delay(1000);                       
-        digitalWrite(PIN_BREAK_SWITCH, LOW);   
+        digitalWrite(PIN_BRAKE_SWITCH, HIGH);
+        delay(1000);
+        digitalWrite(PIN_BRAKE_SWITCH, LOW);
         delay(1000);
     }
 }
@@ -163,7 +163,7 @@ void test_CAN_send() {
     //Create data packet for CAN message
     unsigned char canMsg[8] = {cantxValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     // send data:  id = 0x123, standrad frame, data len = 8, stmp: data buf
-    CAN.sendMsgBuf(0x07B, 0, 8, canMsg); 
+    CAN.sendMsgBuf(0x07B, 0, 8, canMsg);
     delay(250);
 }
 
