@@ -212,7 +212,7 @@ static int get_brake_setpoint(
 
     // if succeeded
     if( ret == NOERR )
-    {       
+    {
         // set brake set point - scale to 0:max
         (*brake) = jstick_normalize_trigger_position(
                 axis_position,
@@ -269,7 +269,7 @@ static int get_steering_setpoint(
             jstick,
             JSTICK_AXIS_STEER,
             &axis_position );
-    
+
 
     // if succeeded
     if( ret == NOERR )
@@ -357,11 +357,11 @@ static int publish_disable_brake_command(
     if( ret == NOERR )
     {
         msg->pedal_command = (uint16_t) 0.0;
-        
+
         msg->enabled = 0;
     }
-    
-    printf( "break: %d %d\n", msg->enabled, msg->pedal_command );
+
+    printf( "brake: %d %d\n", msg->enabled, msg->pedal_command );
 
     if( ret == NOERR )
     {
@@ -383,10 +383,10 @@ static int publish_disable_throttle_command(
     if( ret == NOERR )
     {
         msg->pedal_command = (uint16_t) 0.0;
-        
+
         msg->enabled = 0;
     }
-    
+
     printf( "throttle: %d %d\n", msg->enabled, msg->pedal_command );
 
     if( ret == NOERR )
@@ -417,12 +417,12 @@ static int publish_disable_steering_command(
     if( ret == NOERR )
     {
         msg->steering_wheel_angle_command = (int16_t) 0.0;
-        
+
         msg->steering_wheel_max_velocity = (uint8_t) constrained_rate;
-        
+
         msg->enabled = 0;
     }
-    
+
     printf( "steering: %d %d %d\n", msg->enabled, msg->steering_wheel_angle_command, msg->steering_wheel_max_velocity );
 
     if( ret == NOERR )
@@ -447,7 +447,7 @@ static int publish_brake_command(
     ret = get_brake_setpoint(
             jstick,
             &brake_setpoint );
-    
+
     // Redundant, but better safe then sorry
     const float normalized_value = (float) m_constrain(
             (float) brake_setpoint,
@@ -463,8 +463,8 @@ static int publish_brake_command(
     {
         msg->pedal_command = (uint16_t) constrained_value;
     }
-    
-    printf( "break: %d %d\n", msg->enabled, msg->pedal_command );
+
+    printf( "brake: %d %d\n", msg->enabled, msg->pedal_command );
 
     if( ret == NOERR )
     {
@@ -503,7 +503,7 @@ static int publish_throttle_command(
             throttle_setpoint = 0.0;
         }
     }
-    
+
     // Redundant, but better safe then sorry
     const float normalized_value = (float) m_constrain(
             (float) throttle_setpoint,
@@ -519,7 +519,7 @@ static int publish_throttle_command(
     {
         msg->pedal_command = (uint16_t) constrained_value;
     }
-    
+
     printf( "throttle: %d %d\n", msg->enabled, msg->pedal_command );
 
     if( ret == NOERR )
@@ -545,7 +545,7 @@ static int publish_steering_command(
     ret = get_steering_setpoint(
             jstick,
             &steering_setpoint );
-    
+
     const float angle_degrees = (float) m_degrees(
             (float) steering_setpoint );
 
@@ -565,10 +565,10 @@ static int publish_steering_command(
     if( ret == NOERR )
     {
         msg->steering_wheel_angle_command = (int16_t) constrained_angle;
-        
+
         msg->steering_wheel_max_velocity = (uint8_t) constrained_rate;
     }
-    
+
     printf( "steering: %d %d %d\n", msg->enabled, msg->steering_wheel_angle_command, msg->steering_wheel_max_velocity );
 
     if( ret == NOERR )
@@ -785,9 +785,9 @@ int commander_enable_controls(
         if( ret == NOERR )
         {
             commander->messages.brake_cmd.enabled = 1;
-            
+
             commander->messages.steering_cmd.enabled = 1;
-            
+
             commander->messages.throttle_cmd.enabled = 1;
         }
     }
@@ -850,7 +850,7 @@ int commander_update(
     if( (disable_button_pressed != 0) || (commander->driver_override == 1) )
     {
         ret = commander_disable_controls( commander );
-        
+
         commander->driver_override = 0;
     }
     else if( enable_button_pressed != 0 )
