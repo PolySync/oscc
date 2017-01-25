@@ -674,7 +674,7 @@ void brakeEnter() {
     // close master cylinder solenoids because they'll spill back to the reservoir
     smc.solenoidsClose();
 
-    digitalWrite( PIN_BREAK_SWITCH_1, HIGH );
+    digitalWrite( PIN_BRAKE_SWITCH_1, HIGH );
 
     // close SLRRs, they are normally open for failsafe conditions
     brakes.depowerSLR();
@@ -766,7 +766,7 @@ void brakeExit()
     brakes.depowerSLA();
 
     // unswitch brake switch
-    digitalWrite( PIN_BREAK_SWITCH_1, LOW );
+    digitalWrite( PIN_BRAKE_SWITCH_1, LOW );
 }
 
 
@@ -814,8 +814,8 @@ void setup( void )
     memset( &rx_frame_ps_ctrl_brake_command, 0, sizeof(rx_frame_ps_ctrl_brake_command) );
 
     // relay boards are active low, set to high before setting output to avoid unintended energisation of relay
-    digitalWrite( PIN_BREAK_SWITCH_1, LOW );
-    pinMode( PIN_BREAK_SWITCH_1, OUTPUT );
+    digitalWrite( PIN_BRAKE_SWITCH_1, LOW );
+    pinMode( PIN_BRAKE_SWITCH_1, OUTPUT );
 
     // depower all the things
     accumulator.pumpOff();

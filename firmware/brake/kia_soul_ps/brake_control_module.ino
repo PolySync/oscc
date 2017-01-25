@@ -147,7 +147,7 @@ const byte PIN_SLRFL = 6;      // front left return
 const byte PIN_SLRFR = 8;      // front right return
 const byte PIN_SMC   = 2;      // master cylinder solenoids (two of them)
 
-const byte PIN_BREAK_SWITCH = 48;
+const byte PIN_BRAKE_SWITCH = 48;
 const byte PIN_PUMP         = 49;     // accumulator pump motor
 
 // sensor pin (analog) definitions
@@ -645,7 +645,7 @@ void brakeUpdate()
 
     if (pressure_req > ZERO_PRESSURE )
     {
-        digitalWrite( PIN_BREAK_SWITCH, HIGH );
+        digitalWrite( PIN_BRAKE_SWITCH, HIGH );
         // calculate a delta t
         lastMicros = currMicros;
         currMicros = micros();  // Fast loop, needs more precision than millis
@@ -718,7 +718,7 @@ void brakeUpdate()
         brakes.depowerSLA();
 
         // unswitch brake switch
-        digitalWrite( PIN_BREAK_SWITCH, LOW );
+        digitalWrite( PIN_BRAKE_SWITCH, LOW );
     }
 
 
@@ -767,8 +767,8 @@ void setup( void )
     last_update_ms = 0;
     memset( &rx_frame_ps_ctrl_brake_command, 0, sizeof(rx_frame_ps_ctrl_brake_command) );
 
-    digitalWrite( PIN_BREAK_SWITCH, LOW );
-    pinMode( PIN_BREAK_SWITCH, OUTPUT );
+    digitalWrite( PIN_BRAKE_SWITCH, LOW );
+    pinMode( PIN_BRAKE_SWITCH, OUTPUT );
 
     // depower all the things
     accumulator.pumpOff();
