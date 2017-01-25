@@ -68,8 +68,7 @@
 
 #define SPOOF_ENGAGE          ( 6 )     // Signal interrupt (relay) for spoofed torque values
 
-
-#define STEERING_WHEEL_CUTOFF_THRESHOLD ( 3000 )
+//#define STEERING_WHEEL_CUTOFF_THRESHOLD ( 200 )
 
 #define SAMPLE_A    ( 0 )
 #define SAMPLE_B    ( 1 )
@@ -92,6 +91,7 @@ struct torque_spoof_t
 // static structures
 // *****************************************************
 
+static int8_t local_override = 0;
 
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
 
@@ -338,6 +338,60 @@ void disable_control()
 
 
 // *****************************************************
+// Function:    check_driver_input
+//
+// Purpose:     This function checks the voltage input from the steering
+//              wheel's torque sensors to determine if the driver is attempting
+//              to steer the vehicle.  This must be done over time by taking
+//              periodic samples of the input torque voltage, calculating the
+//              difference between the two and then passing that difference
+//              through a basic exponential filter to smooth the input.
+//
+//              The required response time for the filter is 250 ms, which at
+//              50ms per sample is 5 samples.  As such, the alpha for the
+//              exponential filter is 0.5 to make the input go "close to" zero
+//              in 5 samples.
+//
+//              The implementation is:
+//                  s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
+//
+//              If the filtered bias between the two torque inputs exceeds the
+//              threshold, if is an indicator that there is feedback on the
+//              steering wheel and the control should be disabled.
+//
+// Returns:     void
+//
+// Parameters:  None
+//
+// *****************************************************
+void check_driver_input( )
+{
+    static float filtered_torque_difference = 0.0;
+    static const float torque_filter_alpha = 0.5;
+    static const float steering_wheel_cutoff_threshold = 200.0;
+
+    int16_t torque_sensor_a = analogRead( SIGNAL_INPUT_A );
+    int16_t torque_sensor_b = analogRead( SIGNAL_INPUT_B );
+
+    float difference = ( float )( ( torque_sensor_a - torque_sensor_b ) << 2 );
+
+    filtered_torque_difference = 
+        ( torque_filter_alpha * difference ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_difference );
+
+    local_override = 0;
+
+    if ( ( filtered_torque_difference > steering_wheel_cutoff_threshold ) ||
+         ( filtered_torque_difference < -steering_wheel_cutoff_threshold ) )
+    {
+        local_override = 1;
+        disable_control( );
+    }
+
+}
+
+
+// *****************************************************
 // Function:    calculate_torque_spoof
 // 
 // Purpose:     Container for hand-tuned empirically determined values
@@ -389,6 +443,8 @@ static void publish_ps_ctrl_steering_report( )
         ( ps_ctrl_steering_report_msg* ) tx_frame_ps_ctrl_steering_report.data;
 
     data->angle = current_ctrl_state.current_steering_angle;
+
+    data->override = local_override;
 
     tx_frame_ps_ctrl_steering_report.timestamp = millis( );
     
@@ -623,6 +679,8 @@ void loop( )
     publish_timed_tx_frames( );
 
     check_rx_timeouts( );
+
+    check_driver_input( );
 
     uint32_t current_timestamp_us;
 
