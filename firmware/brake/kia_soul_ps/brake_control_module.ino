@@ -154,10 +154,8 @@ const byte PIN_PUMP         = 49;     // accumulator pump motor
 const byte PIN_PACC = 9;       // pressure accumulator sensor
 const byte PIN_PMC1 = 10;      // pressure master cylinder sensor 1
 const byte PIN_PMC2 = 11;      // pressure master cylinder sensor 2
-const byte PIN_PRL  = 12;      // pressure rear left sensor 
 const byte PIN_PFR  = 13;      // pressure front right sensor
 const byte PIN_PFL  = 14;      // pressure front left sensor
-const byte PIN_PRR  = 15;      // pressure rear right sensor
 
 
 // the following are guesses, these need to be debugged/researched
@@ -332,11 +330,6 @@ struct SMC {
         if (_pressure1 > PEDAL_THRESH || _pressure2 > PEDAL_THRESH ) 
         {
             DEBUG_PRINT("Brake Pedal Detected");
-            DEBUG_PRINT("Brake Pedal Detected");
-            Serial.print("smc 1 pressure: ");
-            Serial.print(_pressure1);
-            Serial.print("smc 2 pressure: ");
-            Serial.println(_pressure2);
             pressure_req = ZERO_PRESSURE;
             local_override = 1;
             brakeStateMachine.transitionTo(Wait);
@@ -359,8 +352,6 @@ struct SMC {
 };
 
 
-
-
 SMC::SMC( byte sensor1Pin, byte sensor2Pin, byte controlPin ) 
 {
   _sensor1Pin = sensor1Pin;
@@ -371,8 +362,6 @@ SMC::SMC( byte sensor1Pin, byte sensor2Pin, byte controlPin )
 
   solenoidsOpen();
 }
-
-
 
 
 // wheel structure
@@ -389,9 +378,7 @@ struct Brakes {
     bool _decreasingPressure = false;     // used to track if pressure should be decreasing 
     unsigned long _previousMillis = 0;    // will store last time solenoid was updated 
 
-
     Brakes( byte sensorPinLeft, byte sensorPinRight, byte solenoidPinLeftA, byte solenoidPinRightA, byte solenoidPinLeftR, byte solenoidPinRightR );
-
 
     void depowerSolenoids() 
     {
@@ -402,7 +389,6 @@ struct Brakes {
 
     }
 
-
     // fill pressure
     void powerSLA(int scaler) 
     {
@@ -410,13 +396,11 @@ struct Brakes {
         analogWrite( _solenoidPinRightA, scaler );
     }
 
-    
     void depowerSLA() 
     {
         analogWrite( _solenoidPinLeftA, 0 );
         analogWrite( _solenoidPinRightA, 0 );
     }
-
 
     // spill pressure
     void powerSLR(int scaler) 
@@ -424,14 +408,12 @@ struct Brakes {
         analogWrite( _solenoidPinLeftR, scaler );
         analogWrite( _solenoidPinRightR, scaler );
     }
-
     
     void depowerSLR() 
     {
         digitalWrite( _solenoidPinLeftR, LOW );
         digitalWrite( _solenoidPinRightR, LOW );
     }
-
 
     // take a pressure reading 
     void updatePressure() 
@@ -450,13 +432,11 @@ Brakes::Brakes( byte sensorPLeft, byte sensorPRight, byte solenoidPinLeftA, byte
   _solenoidPinLeftR = solenoidPinLeftR;
   _solenoidPinRightR = solenoidPinRightR;
 
-
   // initialize solenoid pins to off
   digitalWrite( _solenoidPinLeftA, LOW );
   digitalWrite( _solenoidPinRightA, LOW );
   digitalWrite( _solenoidPinLeftR, LOW );
   digitalWrite( _solenoidPinRightR, LOW );
-
 
   // set pinmode to OUTPUT
   pinMode( _solenoidPinLeftA, OUTPUT );
@@ -465,15 +445,10 @@ Brakes::Brakes( byte sensorPLeft, byte sensorPRight, byte solenoidPinLeftA, byte
   pinMode( _solenoidPinRightR, OUTPUT );
 }
 
-
-
 // Instantiate objects 
 Accumulator accumulator( PIN_PACC, PIN_PUMP ); 
 SMC smc(PIN_PMC1, PIN_PMC2, PIN_SMC);
 Brakes brakes = Brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
-
-
-
 
 //
 static void init_serial( void )
@@ -571,7 +546,6 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
     if( enabled == 0 && controlEnabled )
     {
         controlEnabled = false;
-        Serial.println("transition to wait from high-level interface");
         brakeStateMachine.transitionTo(Wait);
     }
 
@@ -580,8 +554,6 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
     unsigned int pedal_command = control_data->pedal_command;
     pressure_req = map(pedal_command, 0, 65535, 48, 230); // map to voltage range 
     pressure_req = pressure_req / 100;
-    //DEBUG_PRINT("pressure_req: ");
-    //DEBUG_PRINT(pressure_req);
      
 
 }
@@ -699,7 +671,6 @@ void brakeUpdate()
         brakes.updatePressure();
         pressure = ( brakes._pressureLeft + brakes._pressureRight ) / 2;
 
-
         pressureRate = ( pressure - pressure_last)/ deltaT;  // pressure/microsecond
         pressureRate_target = pressure_req - pressure;
 
@@ -710,31 +681,6 @@ void brakeUpdate()
         pressurePID.SetTunings(P_Kp, P_Ki, P_Kd);
 
         pressurePID.Compute();
-
-
-
-        // lots of PID debugging prints
-        //Serial.print("Kp = ");
-        //Serial.print(pressurePID.GetKp());  
-        //Serial.print(" Ki = ");
-        //Serial.print(pressurePID.GetKi()); 
-        //Serial.print(" Kd = ");
-        //Serial.print(pressurePID.GetKd()); 
-        //Serial.print(" SR error = ");
-        //Serial.print(pressureRate_target - pressureRate); // Rate error
-        //Serial.print(" Commanded rate = ");
-        //Serial.print(pressurePID_output);
-        //Serial.print( "deltaT = ");
-        //Serial.println(deltaT);
-        unsigned long time;
-        time = millis();
-        Serial.print(time);
-        Serial.print( ",");
-        Serial.print(pressure_req); // Rate error
-        Serial.print( ",");
-        Serial.println(pressure);
-
-
 
         // some logic to set a samplerate for data which is sent to processing for plotting
         unsigned long currentMillis = millis();
@@ -763,8 +709,6 @@ void brakeUpdate()
     {
         digitalWrite( PIN_BREAK_SWITCH, LOW );
     }
-
-
 
     // if driver is not braking, transition to wait state
     //if( pressure_req <= ZERO_PRESSURE) 
@@ -815,27 +759,17 @@ static void check_rx_timeouts( void )
 // the setup routine runs once when you press reset:
 void setup( void ) 
 {
-    // duty Scalers good for 0x02
+    // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range 
+    TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
+    TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
+
+    // set the min/max duty cycle scalers used for 3.921 KHz PWM frequency.
+    // These represent the minimum duty cycles that begin to actuate the proportional solenoids 
+    // and the maximum dudty cycle where the solenoids have reached their stops.
     SLADutyMax = 105;
     SLADutyMin = 50;
     SLRDutyMax = 100;
     SLRDutyMin = 50;
-
-
-    // set the PWM timers, above the acoustic range
-    TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
-    TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
-
-
-    /*
-       0x01      31.374 KHz
-       0x02      3.921 KHz
-       0x03      980.3 Hz
-       0x04      490.1 Hz
-       0x05      245 hz
-       0x06      122.5 hz
-       0x07      30.63 hz
-     */
 
     // zero
     last_update_ms = 0;
@@ -847,8 +781,6 @@ void setup( void )
     // depower all the things
     accumulator.pumpOff();
     smc.solenoidsOpen();
-
-    // close rear slrs. These should open only for emergencies and to release break pressure
     brakes.depowerSLR();
     brakes.depowerSLA();
 
@@ -886,7 +818,7 @@ void loop()
     check_rx_timeouts();
         
     // check pressures on master cylinder (pressure from pedal)
-    //smc.checkPedal();
+    smc.checkPedal();
 
     brakeStateMachine.update();
 } 
