@@ -644,9 +644,6 @@ void loop( )
                 ( current_ctrl_state.commanded_steering_angle -
                   current_ctrl_state.current_steering_angle ) / 0.05;
 
-            double steering_angle_rate_error =
-                steering_angle_rate_target - steering_angle_rate;
-
             // Save the angle for next iteration
             current_ctrl_state.steering_angle_last =
                 current_ctrl_state.current_steering_angle;
@@ -655,6 +652,9 @@ void loop( )
                 constrain( ( double )steering_angle_rate_target,
                            ( double )-current_ctrl_state.steering_angle_rate_max,
                            ( double )current_ctrl_state.steering_angle_rate_max );
+            
+            double steering_angle_rate_error =
+                steering_angle_rate_target - steering_angle_rate;
 
             pid_params.derivative_gain = current_ctrl_state.SA_Kd;
             pid_params.proportional_gain = current_ctrl_state.SA_Kp;
