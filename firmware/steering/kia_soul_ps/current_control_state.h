@@ -67,11 +67,11 @@ typedef struct
     double SA_Kd = 0.03; /* Derivative gain for PID controller */
     //
     //
-    double steering_angle_rate_max = 1000; /* Maximum rate of change of steering wheel angle */
+    double steering_angle_rate_max = 1000.0; /* Maximum rate of change of steering wheel angle */
     //
     //    
     double steering_angle_last; /* Last steering angle recorded */
     //
     //
-    long unsigned int lastMicros; /* Keeps track of last control loop time */
+    uint32_t timestamp_us; /* Keeps track of last control loop time in us */
 } current_control_state;

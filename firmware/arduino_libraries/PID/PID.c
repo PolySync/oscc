@@ -26,63 +26,62 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/* 
- * File:   PID.h
- *
- */
-
-#ifndef PID_H
-#define PID_H
+#include "PID.h"
 
 
 
 
-/**
- * @brief Math macro: constrain(amount, low, high).
- *
- */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-
-
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
-
-typedef struct 
+void pid_zeroize( PID* pid )
 {
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_error;
-    double int_error;
-    double control;
-    double prev_steering_angle;
-} PID;
-
-
-
-
-void pid_update( PID* pid, double curr_error, double dt );
-
-
-void pid_zeroize( PID* pid );
-
-
-
-
-#ifdef __cplusplus
+    // set prev and integrated error to zero
+    pid->prev_error = 0;
+    pid->int_error = 0;
+    pid->prev_steering_angle = 0;
+    pid->windup_guard = 500;
 }
-#endif
  
 
+int pid_update( PID* pid, double curr_error, double dt ) 
+{
+    double diff;
+    double p_term;
+    double i_term;
+    double d_term;
+    
+    static int count = 0;
 
+    if( dt <= 0 )
+    {
+        return PID_ERROR;
+    }
+ 
+    // integration with windup guarding
+    pid->int_error += (curr_error * dt);
+    
+    count++;
+    
+    if (pid->int_error < -(pid->windup_guard))
+    {
+        pid->int_error = -(pid->windup_guard);
+    }
+    else if (pid->int_error > pid->windup_guard)
+    {
+        pid->int_error = pid->windup_guard;
+    }
+ 
+    // differentiation
+    diff = ((curr_error - pid->prev_error) / dt);
+ 
+    // scaling
+    p_term = (pid->proportional_gain * curr_error);
+    i_term = (pid->integral_gain     * pid->int_error);
+    d_term = (pid->derivative_gain   * diff);
+    
+    // summation of terms
+    pid->control = p_term + i_term + d_term;
+ 
+    // save current error as previous error for next iteration
+    pid->prev_error = curr_error;
 
-#endif /* PID_H */
-
-
+    return PID_SUCCESS;
+}
