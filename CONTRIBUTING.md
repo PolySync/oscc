@@ -279,6 +279,10 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
    1. Macros should use descriptive names which are all uppercase and separated by an underscore
        - macro: `#define TOGGLE_BIT( BIT, X ) ( ( X ) ^= ( 1 << ( BIT ) ) )`
 
+7. All names (variable, macro, function or otherwise) should be human readable and avoid the use of abbreviations
+	1. e.g. The macro name PEDAL_THRESHOLD should be used instead of PEDAL_THRESH
+
+
 ### 5. Types
 
 1. Prefer bit access macros to bit-field usage (see below)
