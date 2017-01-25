@@ -7,6 +7,7 @@
   - [Contributing a Diagram](#contributing-a-diagram)
   - [Submitting Enhancement Requests](#submitting-enhancement-requests)
   - [Pull Request Labels](#pull-request-labels)
+  - [Acceptance Tests](#acceptance-tests)
 - [Directory Contents](#directory-contents)
 - [Diagrams](#diagrams)
 - [Building](#building)
@@ -106,6 +107,15 @@ Enhancement suggestions are tracked as GitHub issues:
 - End files with a new line
 - Changes should be located in the most appropriate directory
 - Please open an issue to suggest a new label.
+
+### Acceptance Tests
+- All submitted changes will go through a round of acceptance tests.
+    - Acceptance includes:
+        - Unit Tests to demonstrate the code works out of context
+        - System Integration tests to demonstrate that the system works as intended
+    - If there are specific or special test scenarios required for the change, they should be documented for any testing
+	- PolySync will perform the acceptance testing periodically in order to get changes incorporated into the source
+    - If the scope of the change is small enough that the modification is not visible from the system-level, a unit test alone may be acceptable.
 
 ## Directory Contents
 
@@ -261,6 +271,17 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 4. Type definitions must be unique
 
 5. Structure, union, and enumeration tags must be unique
+
+6. Variable, macro and function naming should use “snake case”
+   1. Variables and functions should use descriptive names which are all lowercase and separated by an underscore 
+       - variable: `int32_t range_max;`
+       - function: `int16_t send_can_frame( can_frame* transmit_frame );`
+   1. Macros should use descriptive names which are all uppercase and separated by an underscore
+       - macro: `#define TOGGLE_BIT( BIT, X ) ( ( X ) ^= ( 1 << ( BIT ) ) )`
+
+7. All names (variable, macro, function or otherwise) should be human readable and avoid the use of abbreviations
+	1. e.g. The macro name PEDAL_THRESHOLD should be used instead of PEDAL_THRESH
+
 
 ### 5. Types
 
