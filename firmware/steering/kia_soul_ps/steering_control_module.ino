@@ -147,15 +147,13 @@ static uint32_t timer_delta_ms( uint32_t last_time )
 }
 
 // *****************************************************
-// Function:    timer_delta_us
+// Function:    is_timer_expired
 // 
-// Purpose:     Calculate the microseconds between the current time and the
-//              input and correct for the timer overflow condition
+// Purpose:     Determine if the current time is greater than the input
 // 
-// Returns:     uint32_t the time delta between the two inputs
+// Returns:     bool - the timer has expired
 // 
-// Parameters:  [in] last_sample - the last time sample
-//              [in] current_sample - pointer to store the current time
+// Parameters:  [in] expiration_time - the time to check current against
 // 
 // *****************************************************
 static bool is_timer_expired( uint32_t expiration_time )
