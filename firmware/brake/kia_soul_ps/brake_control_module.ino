@@ -160,8 +160,6 @@ const byte PIN_PFL  = 14;      // pressure front left sensor
 
 // the following are guesses, these need to be debugged/researched
 const double ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
-const double PRESSURE_STEP = 0.2;         // The amount that the 'a' and 'd' commands change the
-                                          // voltage each time they are pressed.
 const double MIN_PACC = 2.3;              // minumum accumulator pressure to maintain
 const double MAX_PACC = 2.4;              // max accumulator pressure to maintain
 const double PEDAL_THRESH = 0.6;          // Pressure for pedal interference
@@ -316,7 +314,6 @@ struct SMC {
         // driver override by pressing the brake pedal), disable.
         if (_pressure1 > PEDAL_THRESH || _pressure2 > PEDAL_THRESH )
         {
-            DEBUG_PRINT("Brake Pedal Detected");
             pressure_req = ZERO_PRESSURE;
             local_override = 1;
             brakeStateMachine.transitionTo(Wait);
@@ -397,8 +394,8 @@ struct Brakes {
     }
     void depowerSLR() 
     {
-        digitalWrite( _solenoidPinLeftR, LOW );
-        digitalWrite( _solenoidPinRightR, LOW );
+        digitalWrite( _solenoidPinLeftR, 0 );
+        digitalWrite( _solenoidPinRightR, 0 );
     }
 
     // take a pressure reading
@@ -558,7 +555,6 @@ static void process_psvc_chassis_state1( const uint8_t * const rx_frame_buffer )
 }
 
 
-
 // a function to parse CAN data into useful variables
 void handle_ready_rx_frames(void) {
 
@@ -592,7 +588,6 @@ void handle_ready_rx_frames(void) {
             process_psvc_chassis_state1( rx_frame.data );
         }
     }
-
 }
 
 
@@ -643,18 +638,18 @@ void brakeUpdate()
     // maintain accumulator pressure
     accumulator.maintainPressure();
 
+    // take a reading from the brake pressure sensors
+    brakes.updatePressure();
+    pressure = ( brakes._pressureLeft + brakes._pressureRight ) / 2;
+
     if (pressure_req > ZERO_PRESSURE )
     {
         digitalWrite( PIN_BRAKE_SWITCH, HIGH );
+        smc.solenoidsClose();
         // calculate a delta t
         lastMicros = currMicros;
         currMicros = micros();  // Fast loop, needs more precision than millis
         deltaT = currMicros - lastMicros;
-
-
-        // take a reading from the brake pressure sensors
-        brakes.updatePressure();
-        pressure = ( brakes._pressureLeft + brakes._pressureRight ) / 2;
 
         pressureRate = ( pressure - pressure_last)/ deltaT;  // pressure/microsecond
         pressureRate_target = pressure_req - pressure;
@@ -698,28 +693,32 @@ void brakeUpdate()
             }
 
 
-            // if driver is not braking, transition to wait state
-            if( pressure_req <= ZERO_PRESSURE)
-            {
-                DEBUG_PRINT("pressure request below threshold");
-                brakeStateMachine.transitionTo( Wait );
-            }
+
         }
-    }
-
-
-    //
-    void brakeExit()
+    } else if (pressure_req <= ZERO_PRESSURE) 
     {
-        // close master cylinder solenoids
         smc.solenoidsOpen();
-
-        // depower wheel solenoids to vent brake pressure at wheels
         brakes.depowerSLA();
+        brakes.depowerSLR();
 
         // unswitch brake switch
         digitalWrite( PIN_BRAKE_SWITCH, LOW );
     }
+}
+
+
+//
+void brakeExit()
+{
+    // close master cylinder solenoids
+    smc.solenoidsOpen();
+
+    // depower wheel solenoids to vent brake pressure at wheels
+    brakes.depowerSLA();
+
+    // unswitch brake switch
+    digitalWrite( PIN_BRAKE_SWITCH, LOW );
+}
 
 
 //
@@ -730,9 +729,9 @@ static void check_rx_timeouts( void )
 
     // get time since last receive
     get_update_time_delta_ms(
-			rx_frame_ps_ctrl_brake_command.timestamp,
-			GET_TIMESTAMP_MS(),
-			&delta );
+            rx_frame_ps_ctrl_brake_command.timestamp,
+            GET_TIMESTAMP_MS(),
+            &delta );
 
     // check rx timeout
     if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
@@ -740,7 +739,6 @@ static void check_rx_timeouts( void )
         // disable control from the PolySync interface
         if( controlEnabled )
         {
-            Serial.println("control disabled: timeout");
             controlEnabled = false;
             brakeStateMachine.transitionTo(Wait);
         }
