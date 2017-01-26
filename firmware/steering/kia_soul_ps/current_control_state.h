@@ -73,5 +73,5 @@ typedef struct
     double steering_angle_last; /* Last steering angle recorded */
     //
     //
-    uint32_t timestamp_us; /* Keeps track of last control loop time in us */
+    uint32_t timestamp_ms; /* Keeps track of last control loop time in us */
 } current_control_state;

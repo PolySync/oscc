@@ -68,8 +68,6 @@
 
 #define SPOOF_ENGAGE          ( 6 )     // Signal interrupt (relay) for spoofed torque values
 
-//#define STEERING_WHEEL_CUTOFF_THRESHOLD ( 200 )
-
 #define SAMPLE_A    ( 0 )
 #define SAMPLE_B    ( 1 )
 
@@ -160,27 +158,18 @@ static uint32_t timer_delta_ms( uint32_t last_time )
 //              [in] current_sample - pointer to store the current time
 // 
 // *****************************************************
-static uint32_t timer_delta_us( uint32_t last_time, uint32_t* current_time )
+static bool is_timer_expired( uint32_t expiration_time )
 {
-    uint32_t delta = 0;
-    uint32_t local_time = micros( );
+    bool expired = false;
 
-    if ( local_time < last_time )
+    uint32_t current_time = millis( );
+
+    if ( current_time > expiration_time )
     {
-        // Timer overflow
-        delta = ( UINT32_MAX - last_time ) + local_time;
+        expired = true;
     }   
-    else
-    {   
-        delta = local_time - last_time;
-    }
 
-    if ( current_time != NULL )
-    {
-        *current_time = local_time;
-    }
-
-    return ( delta );
+    return ( expired );
 }
 
 
@@ -338,7 +327,7 @@ void disable_control()
 
 
 // *****************************************************
-// Function:    check_driver_input
+// Function:    check_driver_steering_override
 //
 // Purpose:     This function checks the voltage input from the steering
 //              wheel's torque sensors to determine if the driver is attempting
@@ -355,39 +344,57 @@ void disable_control()
 //              The implementation is:
 //                  s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
 //
-//              If the filtered bias between the two torque inputs exceeds the
-//              threshold, if is an indicator that there is feedback on the
-//              steering wheel and the control should be disabled.
+//              If the filtered torque exceeds the max torque, it is an
+//              indicator that there is feedback on the steering wheel and the
+//              control should be disabled.
 //
-// Returns:     void
+//              The final check determines if the a and b signals are opposite
+//              each other.  If they are not, it is an indicator that there is
+//              a problem with one of the sensors.  The check is looking for a
+//              90% tolerance.
+//
+// Returns:     true if the driver is requesting an override
 //
 // Parameters:  None
 //
 // *****************************************************
-void check_driver_input( )
+bool check_driver_steering_override( )
 {
-    static float filtered_torque_difference = 0.0;
     static const float torque_filter_alpha = 0.5;
-    static const float steering_wheel_cutoff_threshold = 200.0;
+    static const float steering_wheel_max_torque = 2500.0;
 
-    int16_t torque_sensor_a = analogRead( SIGNAL_INPUT_A );
-    int16_t torque_sensor_b = analogRead( SIGNAL_INPUT_B );
+    static float filtered_torque_a = 0.0;
+    static float filtered_torque_b = 0.0;
 
-    float difference = ( float )( ( torque_sensor_a - torque_sensor_b ) << 2 );
+    bool override = false;
 
-    filtered_torque_difference = 
-        ( torque_filter_alpha * difference ) +
-            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_difference );
+    float torque_sensor_a = ( float )( analogRead( SIGNAL_INPUT_A ) << 2 );
+    float torque_sensor_b = ( float )( analogRead( SIGNAL_INPUT_B ) << 2 );
 
-    local_override = 0;
+    filtered_torque_a = 
+        ( torque_filter_alpha * torque_sensor_a ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_a );
 
-    if ( ( filtered_torque_difference > steering_wheel_cutoff_threshold ) ||
-         ( filtered_torque_difference < -steering_wheel_cutoff_threshold ) )
+    filtered_torque_b = 
+        ( torque_filter_alpha * torque_sensor_b ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_b );
+
+    if ( ( abs( filtered_torque_a ) > steering_wheel_max_torque ) ||
+         ( abs( filtered_torque_b ) > steering_wheel_max_torque ) )
     {
-        local_override = 1;
-        disable_control( );
+        override = true;
+    }
+    else
+    {
+        float difference = abs( torque_sensor_a + torque_sensor_b );
+
+        if ( difference > ( steering_wheel_max_torque / 10.0 ) )
+        {
+            override = true;
+        }
     }
 
+    return ( override );
 }
 
 
@@ -501,13 +508,13 @@ static void process_ps_ctrl_steering_command(
          ( current_ctrl_state.control_enabled == false ) &&
          ( current_ctrl_state.emergency_stop == false ) )
     {
-         enable_control( );
+        enable_control( );
     }
 
     if ( ( control_data->enabled == 0 ) &&
          ( current_ctrl_state.control_enabled == true ) )
     {
-            disable_control();
+        disable_control();
     }
 
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
@@ -645,6 +652,8 @@ void setup( )
 
     current_ctrl_state.emergency_stop = false;
 
+    current_ctrl_state.timestamp_ms = millis();
+
     // Initialize the Rx timestamps to avoid timeout warnings on start up
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 
@@ -674,24 +683,28 @@ void setup( )
 // *****************************************************
 void loop( )
 {
+    const static uint32_t loop_time_ms = 50;
+
     handle_ready_rx_frames( );
       
     publish_timed_tx_frames( );
 
     check_rx_timeouts( );
 
-    check_driver_input( );
+    bool timer_expired = is_timer_expired( current_ctrl_state.timestamp_ms );
 
-    uint32_t current_timestamp_us;
-
-    uint32_t deltaT = timer_delta_us( current_ctrl_state.timestamp_us,
-                                      &current_timestamp_us );
-
-    if ( deltaT > 50000 )
+    if ( timer_expired == true )
     {
-        current_ctrl_state.timestamp_us = current_timestamp_us;
+        current_ctrl_state.timestamp_ms += loop_time_ms;
 
-        if ( current_ctrl_state.control_enabled == true ) 
+        bool override = check_driver_steering_override( );
+
+        if ( override == true )
+        {
+            local_override = 1;
+            disable_control( );
+        }
+        else if ( current_ctrl_state.control_enabled == true ) 
         {
             // Calculate steering angle rates (degrees/microsecond)
             double steering_angle_rate =
