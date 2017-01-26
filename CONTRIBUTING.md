@@ -425,7 +425,19 @@ union my_array_64bits
 3. Variable and function naming should use “snake case”, namely descriptive names which are all lowercase and separated by an underscore
    1. `int32_t this_is_an_example_of_a_variable;`
 
-4. For loops shall have the following form:
+4. `if` statements shall have the following form:
+
+```c
+int32_t sum;
+const static int32_t max = 25;
+
+if ( sum > max )
+{
+    sum = max;
+}
+```
+
+4. `for` loops shall have the following form:
 
 ```c
 int32_t i;
@@ -438,7 +450,7 @@ for ( i = 0; i < max; i++ )
 }
 ```
 
-1. While loops shall have the following form:
+1. `while` loops shall have the following form:
 
 ```c
 int32_t i = 0;
@@ -452,7 +464,7 @@ while ( i < max )
 }
 ```
 
-1. Do loops shall have the following form:
+1. `do` loops shall have the following form:
 
 ```c
 int32_t i = 0;
