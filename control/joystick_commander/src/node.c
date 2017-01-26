@@ -252,7 +252,12 @@ static int init_joystick( commander_s * commander )
     ret = jstick_init_subsystem();
     
     if( ret == ERROR )
-        printf("init subsystem error\n");    
+        printf("init subsystem error\n");
+
+    ret = jstick_init_state( &commander->joystick );
+    
+    if( ret == ERROR )
+        printf("joystick joystick_device_s is NULL error\n");
 
     // get number of joysticks visible
     const int num_joysticks = jstick_get_num_devices();

@@ -90,6 +90,42 @@
 
 
 // *****************************************************
+// Function:    jstick_init_state
+// 
+// Purpose:     Initialize the joystick state struct
+// 
+// Returns:     int - ERROR or NOERROR
+// 
+// Parameters:  jstick - pointer to the joystick to open
+// 
+// *****************************************************
+int jstick_init_state( joystick_device_s * const jstick )
+{
+    int return_code = NOERR;
+    
+    if( jstick == NULL )
+    {
+        return_code = ERROR;
+    }
+    
+    if( return_code == NOERR )
+    {
+        jstick->joystick_state.brake_setpoint_average = 0;
+
+        jstick->joystick_state.throttle_setpoint_average = 0;
+
+        jstick->joystick_state.steering_setpoint_average = 0;
+
+        jstick->joystick_state.last_joystick_state_steering = 0;
+    }
+    
+    return ( return_code );
+}
+
+
+
+
+// *****************************************************
 // Function:    jstick_init_subsystem
 // 
 // Purpose:     Initialize the joystick subsystem
@@ -456,4 +492,26 @@ double jstick_normalize_trigger_position( const int position,
     const double b2 = range_max;
     
     return jstick_calc_log_range( a1, a2, b1, b2, s );
+}
+
+
+// *****************************************************
+// Function:    jstick_calc_exponential_average 
+// 
+// Purpose:     Calculate an exponential average based on previous values.
+// 
+// Returns:     double - the exponentially averaged result.
+// 
+// Parameters:  average - pointer to previous result of exponential averaging
+//              setpoint - new setpoint to incorperate into average
+//              factor - factor of exponential average
+// 
+// *****************************************************
+double jstick_calc_exponential_average( double * const average,
+                                        const double setpoint,
+                                        const double factor )
+{
+    (*average) = setpoint * factor + ( 1 - factor ) * (*average);
+    
+    return (*average);
 }
