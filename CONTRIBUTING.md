@@ -181,9 +181,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
       1. If used, check validity of allocation
 
 5. Avoid assembly language usage.
-   - If used:
-     - Document all usage
-     - Encapsulate and isolate usage
+   1. If used, then document, encapsulate and isolate all usage
 
 6. No “commented out” code
    1. C Style: `/- ... */`
@@ -207,16 +205,16 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
    1. Use the `#ifndef HEADER_FILE_H, #define HEADER_FILE_H ... #endif` mechanism
 
 10. Check validity of parameters passed to library functions
-11. E.g. math calls and string calls
+	1. e.g. math calls and string calls
 
-12. Restrict dynamic memory allocation
-13. Allocate all required memory during initialization
-   2. If the allocation fails, prevent the system from starting
+11. Restrict dynamic memory allocation
+	1. Allocate all required memory during initialization
+	2. If the allocation fails, prevent the system from starting
 
-14. Sequence access to system resources appropriately
-15. File access - open, read/write, close
-   2. Register access - atomic interaction
-   3. Prefer to create a system object that manages the interaction (i.e. the singleton pattern)
+12. Sequence access to system resources appropriately
+	1. File access - open, read/write, close
+	2. Register access - atomic interaction
+	3. Prefer to create a system object that manages the interaction (i.e. the singleton pattern)
 
 ## 2. Rules
 
@@ -304,18 +302,18 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 
 6. Unions (overlapped storage) are only allowed when the items in the union are all the same size
 
-```c
-// Example union is allowed because each element is 64 bits
-union my_array_64bits
-{
-	char     char_array[8];
-	int16_t  int_array[4];
-	int32_t  int_array[2];
-	float    float_array[2];
-	double   double_array[1];
-};
+  ```c
+  // Example union is allowed because each element is 64 bits
+  union my_array_64bits
+  {
+      char     char_array[8];
+      int16_t  int_array[4];
+      int32_t  int_array[2];
+      float    float_array[2];
+      double   double_array[1];
+  };
 
-```
+  ```
 
 ### 6. Declarations
 
@@ -398,19 +396,19 @@ union my_array_64bits
    2. Make all statements explicit
 
 2. Check macros to prevent side-effects in calls (e.g. What happens when you call `DO_COPY_INDEX ( i++ )`?)
-```
-#define DO_COPY_INDEX ( x ) ( a [ ( x ) ] = b [ ( x ) ] )
-```
+  ```
+  #define DO_COPY_INDEX ( x ) ( a [ ( x ) ] = b [ ( x ) ] )
+  ```
 
 
-1. Prefer that increment and decrement operators ( `++` and `--` ) are explicit statements instead of integral in an operation, e.g.
+3. Prefer that increment and decrement operators ( `++` and `--` ) are explicit statements instead of integral in an operation, e.g.
    1. Macros
    2. Logical comparisons ( `&&` and `||` )
    3. `sizeof`
 
-2. Do not use the result of an assignment operation as a variable or input into another statement
+4. Do not use the result of an assignment operation as a variable or input into another statement
 
-3. Logical comparisons should not contain persistent side effects such as assignments
+5. Logical comparisons should not contain persistent side effects such as assignments
 
 ### 11. Control Statements
 
@@ -425,60 +423,72 @@ union my_array_64bits
 3. Variable and function naming should use “snake case”, namely descriptive names which are all lowercase and separated by an underscore
    1. `int32_t this_is_an_example_of_a_variable;`
 
-4. For loops shall have the following form:
+4. `if` statements shall have the following form:
 
-```c
-int32_t i;
-int32_t sum = 0;
-int32_t max = 25;
+	```c
+	int32_t sum;
+	const static int32_t max = 25;
 
-for ( i = 0; i < max; i++ )
-{
-    sum += i;
-}
-```
+	if ( sum > max )
+	{
+	    sum = max;
+	}
+	```
 
-1. While loops shall have the following form:
+5. `for` loops shall have the following form:
 
-```c
-int32_t i = 0;
-int32_t sum = 0;
-int32_t max = 25;
+	```c
+	int32_t i;
+	int32_t sum = 0;
+	int32_t max = 25;
 
-while ( i < max )
-{
-    sum += i;
-    i++;
-}
-```
+	for ( i = 0; i < max; i++ )
+	{
+	    sum += i;
+	}
+	```
 
-1. Do loops shall have the following form:
+6. `while` loops shall have the following form:
 
-```c
-int32_t i = 0;
-int32_t sum = 0;
-int32_t max = 25;
+	```c
+	int32_t i = 0;
+	int32_t sum = 0;
+	int32_t max = 25;
 
-do
-{
-	sum += i;
-	i++;
-} ( while i < max );
+	while ( i < max )
+	{
+	    sum += i;
+	    i++;
+	}
+	```
 
-```
+7. `do` loops shall have the following form:
 
-1. Prefer that loops exit using control logic instead of a `break`  statement
+	```c
+	int32_t i = 0;
+	int32_t sum = 0;
+	int32_t max = 25;
 
-2. Loop counter should not use a floating type as the iterator
+	do
+	{
+	    sum += i;
+	    i++;
+	} ( while i < max );
 
-3. The control logic to exit a given loop must be controlled by a variable
+	```
+
+8. Prefer that loops exit using control logic instead of a `break`  statement
+
+9. Loop counter should not use a floating type as the iterator
+
+10. The control logic to exit a given loop must be controlled by a variable
 
     1. This prevents statements that are always true or always false
     2. Exceptions:
         1. `for ( ; ; )`
         2. `while ( 1 )` or `while ( true )`
 
-4. The control logic for a statement used in if, for, while and do must resolve to a boolean expression
+11. The control logic for a statement used in if, for, while and do must resolve to a boolean expression
 
     1. Checking for the validity of a variable like an integer or pointer is not allowed (e.g. `while ( i )` is not acceptable where `while ( i != 0 )` is)
 
@@ -491,32 +501,32 @@ do
 
 3. Functions should have a single point of exit at the end
 
-```c
-uint32_t example_function( uint32_t- pointer_parameter )
-{
-    uint32_t return_code = 0;
+	```c
+	uint32_t example_function( uint32_t- pointer_parameter )
+	{
+	    uint32_t return_code = 0;
 
-    if ( pointer_parameter != NULL )
-    {
-        ...
-        return_code = 1;
-    }
-    else
-    {
-        ...
-        return_code = 10;
-    }
-    return ( return_code );
-}
-```
+	    if ( pointer_parameter != NULL )
+	    {
+	        ...
+	        return_code = 1;
+	    }
+	    else
+	    {
+	        ...
+	        return_code = 10;
+	    }
+	    return ( return_code );
+	}
+	```
 
-1. Prefer to keep functions as small as possible
-2. Duplicate code is not allowed
-3. Statements shall always use braces to delineate the scope of their operation
+4. Prefer to keep functions as small as possible
+5. Duplicate code is not allowed
+6. Statements shall always use braces to delineate the scope of their operation
 
    1. As with a function, `if`, `while`, `do`, `for`, always use braces to scope the set of statements or other functions that the conditional controls
 
-4. All `if`, `else if`, trees shall be terminated with an `else` statement
+7. All `if`, `else if`, trees shall be terminated with an `else` statement
 
 ### 13. Switch Statements
 
@@ -527,27 +537,27 @@ uint32_t example_function( uint32_t- pointer_parameter )
    4. All `switch` statements must contain a final `default` case
    5. `switch` statements must contain at least 2 `cases` and a `default`
 
-```c
-uint32_t input_parameter;
+	```c
+	uint32_t input_parameter;
 
-switch ( input_parameter )
-{
-    case 1:
-    ...
-    break;
+	switch ( input_parameter )
+	{
+	    case 1:
+	    ...
+	    break;
 
-    case 2:
-    case 3:
-    {
-        uint32_t local_scope_variable;
-        ...
-        break;
-    }
+	    case 2:
+	    case 3:
+	    {
+	        uint32_t local_scope_variable;
+	        ...
+	        break;
+	    }
 
-    default:
-    break;
-}
-```
+	    default:
+	    break;
+	}
+	```
 
 ### 14. Functions
 
