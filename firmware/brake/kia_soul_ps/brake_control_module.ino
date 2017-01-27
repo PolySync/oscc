@@ -695,7 +695,8 @@ void brakeUpdate()
 
 
         }
-    } else if (pressure_req <= ZERO_PRESSURE) 
+    } 
+    else if( pressure_req <= ZERO_PRESSURE ) 
     {
         smc.solenoidsOpen();
         brakes.depowerSLA();
