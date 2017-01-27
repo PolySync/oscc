@@ -21,7 +21,7 @@ int val = 0;
 
 
 // accumulator pump motor
-const byte PIN_PUMP = 9;
+const byte PIN_PUMP = 49;
 
 
 // brake spoofer relay pin definitions
