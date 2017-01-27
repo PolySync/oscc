@@ -37,6 +37,9 @@
 // chip select pin for CAN Shield
 #define CAN_CS 53
 
+// Braking PID windup guard
+#define BRAKE_PID_WINDUP_GUARD ( 500 )
+
 
 
 
@@ -706,7 +709,7 @@ void brakeUpdate()
     pidParams.derivative_gain = 0.50;
     pidParams.proportional_gain = 10.0;
     pidParams.integral_gain = 1.5;
-    int ret = pid_update( &pidParams, pressureRate_target - pressureRate, 0.050 );
+    int ret = pid_update( &pidParams, pressureRate_target, pressureRate, 0.050 );
 
     if( ret == PID_SUCCESS )
     {
@@ -838,7 +841,7 @@ void setup( void )
     //last_update_ms = GET_TIMESTAMP_MS();
 
     // Initialize PID params
-    pid_zeroize( &pidParams );
+    pid_zeroize( &pidParams,  BRAKE_PID_WINDUP_GUARD );
 
     // debug log
     DEBUG_PRINT( "init: pass" );

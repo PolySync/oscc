@@ -31,30 +31,32 @@
 
 
 
-void pid_zeroize( PID* pid )
+void pid_zeroize( PID* pid, double integral_windup_guard )
 {
     // set prev and integrated error to zero
-    pid->prev_error = 0;
+    pid->prev_input = 0;
     pid->int_error = 0;
     pid->prev_steering_angle = 0;
-    pid->windup_guard = 500;
+    pid->windup_guard = integral_windup_guard;
 }
- 
 
-int pid_update( PID* pid, double curr_error, double dt ) 
+
+int pid_update( PID* pid, double setpoint, double input, double dt )
 {
     double diff;
     double p_term;
     double i_term;
     double d_term;
-    
+
+    double curr_error = setpoint - input;
+
     static int count = 0;
 
     if( dt <= 0 )
     {
         return PID_ERROR;
     }
- 
+
     // integration with windup guarding
     pid->int_error += (curr_error * dt);
     
@@ -68,9 +70,9 @@ int pid_update( PID* pid, double curr_error, double dt )
     {
         pid->int_error = pid->windup_guard;
     }
- 
+
     // differentiation
-    diff = ((curr_error - pid->prev_error) / dt);
+    diff = ((input - pid->prev_input) / dt);
  
     // scaling
     p_term = (pid->proportional_gain * curr_error);
@@ -78,10 +80,11 @@ int pid_update( PID* pid, double curr_error, double dt )
     d_term = (pid->derivative_gain   * diff);
     
     // summation of terms
-    pid->control = p_term + i_term + d_term;
+    pid->control = p_term + i_term - d_term;
  
     // save current error as previous error for next iteration
-    pid->prev_error = curr_error;
+    pid->prev_input = input;
 
     return PID_SUCCESS;
 }
+

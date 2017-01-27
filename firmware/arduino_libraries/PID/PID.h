@@ -71,7 +71,7 @@ typedef struct
     double proportional_gain;
     double integral_gain;
     double derivative_gain;
-    double prev_error;
+    double prev_input;
     double int_error;
     double control;
     double prev_steering_angle;
@@ -80,10 +80,10 @@ typedef struct
 
 
 
-int pid_update( PID* pid, double curr_error, double dt );
+int pid_update( PID* pid, double setpoint, double input, double dt );
 
 
-void pid_zeroize( PID* pid );
+void pid_zeroize( PID* pid, double integral_windup_guard );
 
 
 
