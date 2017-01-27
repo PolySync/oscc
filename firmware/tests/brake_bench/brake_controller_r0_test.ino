@@ -204,6 +204,7 @@ void test_brake_pedal_spoof() {
 }
 
 void setup() {
+    // set up the pin for the `test_pump_relay()` function
     pinMode( PIN_PUMP, OUTPUT );
     init_serial();
     init_can();
