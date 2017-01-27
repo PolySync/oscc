@@ -134,7 +134,7 @@
  * @brief Steering command steering wheel velocity scale factor.
  *
  */
-#define STEERING_COMMAND_MAX_VELOCITY_FACTOR (2)
+#define STEERING_COMMAND_MAX_VELOCITY_FACTOR (0.25)
 
 
 /**
