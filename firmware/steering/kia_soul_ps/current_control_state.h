@@ -38,15 +38,15 @@ typedef struct
     //
     //
     bool control_enabled; /* Is control currently enabled flag */
-	//
-	//
-	bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
-	//
-	//
-	double current_steering_angle; /* Current steering angle as reported by car */
-	//
-	//
-	double commanded_steering_angle; /* Commanded steering angle as specified by higher level controller */
+    //
+    //
+    bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
+    //
+    //
+    double current_steering_angle; /* Current steering angle as reported by car */
+    //
+    //
+    double commanded_steering_angle; /* Commanded steering angle as specified by higher level controller */
     //
     //
     double PID_input; /* Input to PID controller */
@@ -58,18 +58,18 @@ typedef struct
     double PID_setpoint; /* Setpoint for PID controller */
     //
     //
-    double SA_Kp = 0.32; /* Proportional gain for PID controller */
+    double SA_Kp = 0.3; /* Proportional gain for PID controller */
     //
     //
-    double SA_Ki = 2.0; /* Integral gain for PID controller */
+    double SA_Ki = 1.3; /* Integral gain for PID controller */
     //
-    //    
+    //
     double SA_Kd = 0.03; /* Derivative gain for PID controller */
     //
     //
     double steering_angle_rate_max = 1000.0; /* Maximum rate of change of steering wheel angle */
     //
-    //    
+    //
     double steering_angle_last; /* Last steering angle recorded */
     //
     //

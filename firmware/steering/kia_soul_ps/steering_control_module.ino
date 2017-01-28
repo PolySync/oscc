@@ -57,6 +57,9 @@
 // set up pins for interface with DAC (MCP4922)
 #define DAC_CS                          ( 9 )       // Chip select pin
 
+// Windup guard for steering PID controller
+#define STEERING_WINDUP_GUARD           ( 1500 )
+
 // Signal to ADC from car
 #define SIGNAL_INPUT_A                  ( A0 )
 
@@ -655,7 +658,7 @@ void setup( )
     // Initialize the Rx timestamps to avoid timeout warnings on start up
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 
-    pid_zeroize( &pid_params );
+    pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
 
     // debug log
     DEBUG_PRINT( "init: pass" );
@@ -720,15 +723,16 @@ void loop( )
                 constrain( ( double )steering_angle_rate_target,
                            ( double )-current_ctrl_state.steering_angle_rate_max,
                            ( double )current_ctrl_state.steering_angle_rate_max );
-            
-            double steering_angle_rate_error =
-                steering_angle_rate_target - steering_angle_rate;
 
             pid_params.derivative_gain = current_ctrl_state.SA_Kd;
             pid_params.proportional_gain = current_ctrl_state.SA_Kp;
             pid_params.integral_gain = current_ctrl_state.SA_Ki;
 
-            pid_update( &pid_params, steering_angle_rate_error, 0.050 );
+            pid_update(
+                    &pid_params,
+                    steering_angle_rate_target,
+                    steering_angle_rate,
+                    0.050 );
 
             double control = pid_params.control;
 
@@ -756,7 +760,7 @@ void loop( )
         }
         else
         {
-            pid_zeroize( &pid_params );
+            pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
         }
     }
 }

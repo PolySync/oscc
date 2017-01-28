@@ -406,19 +406,11 @@ static int publish_disable_steering_command(
 {
     int ret = NOERR;
 
-    const float rate_degrees = (float) m_degrees(
-            (float) STEERING_WHEEL_ANGLE_RATE_LIMIT );
-
-    const float constrained_rate = (float) m_constrain(
-            (float) (rate_degrees / (float) STEERING_COMMAND_MAX_VELOCITY_FACTOR),
-            (float) STEERING_COMMAND_MAX_VELOCITY_MIN + 1.0f,
-            (float) STEERING_COMMAND_MAX_VELOCITY_MAX );
-
     if( ret == NOERR )
     {
         msg->steering_wheel_angle_command = (int16_t) 0.0;
 
-        msg->steering_wheel_max_velocity = (uint8_t) constrained_rate;
+        msg->steering_wheel_max_velocity = (uint8_t) 0.0;
 
         msg->enabled = 0;
     }
@@ -447,12 +439,16 @@ static int publish_brake_command(
     ret = get_brake_setpoint(
             jstick,
             &brake_setpoint );
+    
+    double exponential_average = jstick_calc_exponential_average(
+            &jstick->joystick_state.brake_setpoint_average,
+            brake_setpoint,
+            BRAKES_FILTER_FACTOR );
 
-    // Redundant, but better safe then sorry
     const float normalized_value = (float) m_constrain(
-            (float) brake_setpoint,
+            (float) exponential_average,
             0.0f,
-            1.0f );
+            MAX_BRAKE_PEDAL );
 
     const float constrained_value = (float) m_constrain(
             (float) (normalized_value * (float) UINT16_MAX),
@@ -545,17 +541,25 @@ static int publish_steering_command(
     ret = get_steering_setpoint(
             jstick,
             &steering_setpoint );
+    
+    double exponential_average = jstick_calc_exponential_average(
+            &jstick->joystick_state.steering_setpoint_average,
+            steering_setpoint,
+            STEERING_FILTER_FACTOR );
 
     const float angle_degrees = (float) m_degrees(
-            (float) steering_setpoint );
+            (float) exponential_average );
 
     const float constrained_angle = (float) m_constrain(
             (float) (angle_degrees * (float) STEERING_COMMAND_ANGLE_FACTOR),
             (float) STEERING_COMMAND_ANGLE_MIN,
             (float) STEERING_COMMAND_ANGLE_MAX );
 
-    const float rate_degrees = (float) m_degrees(
-            (float) STEERING_WHEEL_ANGLE_RATE_LIMIT );
+    float rate_degrees =  
+            (float) fabs( constrained_angle - 
+            jstick->joystick_state.last_joystick_state_steering );
+    
+    jstick->joystick_state.last_joystick_state_steering = constrained_angle;
 
     const float constrained_rate = (float) m_constrain(
             (float) (rate_degrees / (float) STEERING_COMMAND_MAX_VELOCITY_FACTOR),
@@ -723,7 +727,7 @@ int commander_disable_controls(
         commander_s * const commander )
 {
     int ret = NOERR;
-
+    
 
     printf( "Sending command to disable controls\n" );
 
@@ -791,6 +795,11 @@ int commander_enable_controls(
             commander->messages.throttle_cmd.enabled = 1;
         }
     }
+    
+    if( ret == NOERR )
+    {
+        ret = jstick_init_state( &commander->joystick );
+    }
 
 
     return ret;
@@ -849,6 +858,7 @@ int commander_update(
     // send command if a enable/disable command
     if( (disable_button_pressed != 0) || (commander->driver_override == 1) )
     {
+        printf( "Global disable: ");
         ret = commander_disable_controls( commander );
 
         commander->driver_override = 0;
