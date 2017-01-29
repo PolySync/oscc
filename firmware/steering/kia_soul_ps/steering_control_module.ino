@@ -790,8 +790,8 @@ void loop( )
 
             calculate_torque_spoof( control, &torque_spoof );
 
-            dac.outputA( torque_spoof.high );
-            dac.outputB( torque_spoof.low );
+            dac.outputA( torque_spoof.low );
+            dac.outputB( torque_spoof.high );
 
             current_ctrl_state.test_countdown += 1;
 
