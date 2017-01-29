@@ -79,7 +79,7 @@
 #define STEERING_WHEEL_CUTOFF_THRESHOLD ( 3000 )
 
 // Threshhold to detect when there is a discrepancy between DAC and ADC values
-#define VOLTAGE_THRESH                  ( 200 )     // mV
+#define VOLTAGE_THRESHOLD               ( 200 )     // mV
 
 #define SAMPLE_A                        ( 0 )
 
@@ -239,10 +239,6 @@ static void init_can ( void )
     DEBUG_PRINT( "init_can: pass" );
 }
 
-// set up values for use in the steering control system
-static uint16_t voltage_override = 0;
-static uint16_t test_countdown = 0;
-
 
 
 /* ====================================== */
@@ -379,13 +375,22 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof )
 }
 
 
+// *****************************************************
+// Function:    check_spoof_voltages
 //
-
+// Purpose:     Check for discrepancies between DAC output and ADC input for
+//              spoof voltages.
+//
+// Returns:     void
+//
+// Parameters:  [out] torque_spoof - struct containing the integer torque values
+//
+// *****************************************************
 void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
 {
 
-    int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
-    int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
+    uint16_t spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
+    uint16_t spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
 
     float spoof_a_adc_volts = spoof_a_adc * ( 5.0 / 1023.0 ) + 0.010;
     float spoof_b_adc_volts = spoof_b_adc * ( 5.0 / 1023.0 ) + 0.010;
@@ -394,30 +399,48 @@ void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
     float spoof_a_dac_current_volts = spoof->high * ( 5.0 / 4095.0 );
     float spoof_b_dac_current_volts = spoof->low * ( 5.0 / 4095.0 );
 
-    // fail criteria. ~ ( ± 200mV )
-    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > VOLTAGE_THRESH )
+    // fail criteria. ~ ( ± 96mV )
+    if (    abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
+            VOLTAGE_THRESHOLD )
     {
-        DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal A. * * *" );
+        if ( current_ctrl_state.override_flag.voltage_spike_a == 0 )
+        {
+            current_ctrl_state.override_flag.voltage_spike_a = 1;
+        }
+        else
+        {
+            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal A. * *" );
 
-        disable_control( );
-        voltage_override = 1;
+            disable_control( );
+            current_ctrl_state.override_flag.voltage = 1;
+        }
     }
     else
     {
-        voltage_override = 0;
+        current_ctrl_state.override_flag.voltage = 0;
+        current_ctrl_state.override_flag.voltage_spike_a = 0;
     }
 
-    // fail criteria. ~ ( ± 200mV )
-    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > VOLTAGE_THRESH )
+    // fail criteria. ~ ( ± 96mV )
+    if (    abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
+            VOLTAGE_THRESHOLD )
     {
-        DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal B. * * *" );
+        if ( current_ctrl_state.override_flag.voltage_spike_b == 0 )
+        {
+            current_ctrl_state.override_flag.voltage_spike_b = 1;
+        }
+        else
+        {
+            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal B. * *" );
 
-        disable_control( );
-        voltage_override = 1;
+            disable_control( );
+            current_ctrl_state.override_flag.voltage = 1;
+        }
     }
     else
     {
-        voltage_override = 0;
+        current_ctrl_state.override_flag.voltage = 0;
+        current_ctrl_state.override_flag.voltage_spike_b = 0;
     }
 }
 
@@ -455,6 +478,17 @@ static void publish_ps_ctrl_steering_report( )
     data->angle = current_ctrl_state.current_steering_angle;
 
     tx_frame_ps_ctrl_steering_report.timestamp = millis( );
+
+    // set override flag
+    if (    ( current_ctrl_state.override_flag.wheel == 0 ) &&
+            ( current_ctrl_state.override_flag.voltage == 0 ) )
+    {
+        data->override = 0;
+    }
+    else
+    {
+        data->override = 1;
+    }
 
     CAN.sendMsgBuf( tx_frame_ps_ctrl_steering_report.id,
                     0,
@@ -509,13 +543,15 @@ static void process_ps_ctrl_steering_command(
          ( current_ctrl_state.control_enabled == false ) &&
          ( current_ctrl_state.emergency_stop == false ) )
     {
-         enable_control( );
+        current_ctrl_state.control_enabled = true;
+        enable_control( );
     }
 
     if ( ( control_data->enabled == 0 ) &&
          ( current_ctrl_state.control_enabled == true ) )
     {
-            disable_control();
+        current_ctrl_state.control_enabled = false;
+        disable_control( );
     }
 
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
@@ -655,6 +691,16 @@ void setup( )
 
     current_ctrl_state.emergency_stop = false;
 
+    current_ctrl_state.override_flag.wheel = 0;
+
+    current_ctrl_state.override_flag.voltage = 0;
+
+    current_ctrl_state.override_flag.voltage_spike_a = 0;
+
+    current_ctrl_state.override_flag.voltage_spike_b = 0;
+
+    current_ctrl_state.test_countdown = 0;
+
     // Initialize the Rx timestamps to avoid timeout warnings on start up
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 
@@ -747,13 +793,13 @@ void loop( )
             dac.outputA( torque_spoof.high );
             dac.outputB( torque_spoof.low );
 
-            test_countdown += 1;
+            current_ctrl_state.test_countdown += 1;
 
             // if DAC out and ADC in voltages differ, disable control
             // only test every tenth lake cleaoop
-            if ( test_countdown >= 10 ) {
+            if ( current_ctrl_state.test_countdown >= 10 ) {
 
-                test_countdown = 0;
+                current_ctrl_state.test_countdown = 0;
                 check_spoof_voltages( &torque_spoof );
             }
 

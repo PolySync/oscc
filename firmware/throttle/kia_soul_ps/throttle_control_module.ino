@@ -28,6 +28,7 @@
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "control_protocol_can.h"
+#include "current_control_state.h"
 #include "common.h"
 #include "DAC_MCP49xx.h"
 
@@ -77,9 +78,19 @@
 #define PEDAL_THRESH                    ( 1000 )
 
 // Threshhold to detect when there is a discrepancy between DAC and ADC values
-#define VOLTAGE_THRESH                  ( 200 )     // mV
+#define VOLTAGE_THRESHOLD               ( 0.096 )     // mV
 
 
+
+// *****************************************************
+// local defined data structures
+// *****************************************************
+
+struct torque_spoof_t
+{
+    uint16_t low;
+    uint16_t high;
+};
 
 
 // *****************************************************
@@ -101,7 +112,8 @@ static can_frame_s rx_frame_ps_ctrl_throttle_command;
 //
 static can_frame_s tx_frame_ps_ctrl_throttle_report;
 
-
+//
+static current_control_state current_ctrl_state;
 
 
 
@@ -183,21 +195,8 @@ static void init_can ( void )
 // set up values for use in the throttle control system
 uint16_t signal_L;              // Current measured accel sensor values
 uint16_t signal_H;
-uint16_t spoof_L;               // Current spoofing values
-uint16_t spoof_H;
-uint16_t pedal_override = 0;
-uint16_t voltage_override = 0;
-uint16_t test_countdown = 0;
 
 can_frame_s can_frame;          // CAN message structs
-
-bool control_enable_req;
-bool control_enabled;
-
-double pedal_position_target;
-double pedal_position;
-
-//uint8_t incoming_serial_byte;
 
 
 
@@ -231,7 +230,7 @@ void enable_control( )
 	// Enable the signal interrupt relays
 	digitalWrite( SPOOF_ENGAGE, HIGH );
 
-	control_enabled = true;
+	current_ctrl_state.control_enabled = true;
 
 	DEBUG_PRINT( "Control enabled" );
 
@@ -263,23 +262,23 @@ void disable_control( )
 	// Disable the signal interrupt relays
 	digitalWrite( SPOOF_ENGAGE, LOW );
 
-	control_enabled = false;
+	current_ctrl_state.control_enabled = false;
 
 	DEBUG_PRINT( "Control disabled" );
 
 }
 
-void calculate_pedal_spoof( float pedal_position )
+void calculate_pedal_spoof( float pedal_target, struct torque_spoof_t* spoof )
 {
     // values calculated with min/max calibration curve and tuned for neutral
     // balance.  DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
-    spoof_L = 819.2 * ( 0.0004 * pedal_position + 0.366 );
-    spoof_H = 819.2 * ( 0.0008 * pedal_position + 0.732 );
+    spoof->low = 819.2 * ( 0.0004 * pedal_target + 0.366 );
+    spoof->high = 819.2 * ( 0.0008 * pedal_target + 0.732 );
 
     // range = 300 - ~1750
-    spoof_L = constrain( spoof_L, 0, 1800 );
+    spoof->low = constrain( spoof->low, 0, 1800 );
     // range = 600 - ~3500
-    spoof_H = constrain( spoof_H, 0, 3500 );
+    spoof->high = constrain( spoof->high, 0, 3500 );
 
 }
 
@@ -289,55 +288,70 @@ void check_pedal_override( )
     if ( ( signal_L + signal_H ) / 2 > PEDAL_THRESH )
     {
         disable_control( );
-        pedal_override = 1;
+        current_ctrl_state.override_flag.pedal = 1;
     }
     else
     {
-        pedal_override = 0;
+        current_ctrl_state.override_flag.pedal = 0;
     }
 }
 
 //
-void check_spoof_voltages(
-        uint16_t spoof_L_dac,   // was A
-        uint16_t spoof_H_dac    // was B
-        )
+void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
 {
 
-    int spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
-    int spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
+    uint16_t spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
+    uint16_t spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
 
     float spoof_a_adc_volts = spoof_a_adc * ( 5.0 / 1023.0 ) + 0.010;
     float spoof_b_adc_volts = spoof_b_adc * ( 5.0 / 1023.0 ) + 0.010;
 
     // DAC values passed in from calculate_pedal_spoof( )
-    float spoof_a_dac_current_volts = spoof_H_dac * ( 5.0 / 4095.0 );
-    float spoof_b_dac_current_volts = spoof_L_dac * ( 5.0 / 4095.0 );
+    float spoof_a_dac_current_volts = spoof->high * ( 5.0 / 4095.0 );
+    float spoof_b_dac_current_volts = spoof->low * ( 5.0 / 4095.0 );
 
-    // fail criteria. ~ ( ± 200mV )
-    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) > VOLTAGE_THRESH )
+    // fail criteria. ~ ( ± 96mV )
+    if (    abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
+            VOLTAGE_THRESHOLD )
     {
-        DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal A. * * *" );
+        if ( current_ctrl_state.override_flag.voltage_spike_a == 0 )
+        {
+            current_ctrl_state.override_flag.voltage_spike_a = 1;
+        }
+        else
+        {
+            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal A. * *" );
 
-        disable_control( );
-        voltage_override = 1;
+            disable_control( );
+            current_ctrl_state.override_flag.voltage = 1;
+        }
     }
     else
     {
-        voltage_override = 0;
+        current_ctrl_state.override_flag.voltage = 0;
+        current_ctrl_state.override_flag.voltage_spike_a = 0;
     }
 
-    // fail criteria. ~ ( ± 200mV )
-    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) > VOLTAGE_THRESH )
+    // fail criteria. ~ ( ± 96mV )
+    if (    abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
+            VOLTAGE_THRESHOLD )
     {
-        DEBUG_PRINT( "* * * ERROR!!  Voltage Discrepancy on Signal B. * * *" );
+        if ( current_ctrl_state.override_flag.voltage_spike_b == 0 )
+        {
+            current_ctrl_state.override_flag.voltage_spike_b = 1;
+        }
+        else
+        {
+            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal B. * *" );
 
-        disable_control( );
-        voltage_override = 1;
+            disable_control( );
+            current_ctrl_state.override_flag.voltage = 1;
+        }
     }
     else
     {
-        voltage_override = 0;
+        current_ctrl_state.override_flag.voltage = 0;
+        current_ctrl_state.override_flag.voltage_spike_b = 0;
     }
 
 }
@@ -365,11 +379,13 @@ static void publish_ps_ctrl_throttle_report( void )
     tx_frame_ps_ctrl_throttle_report.dlc = 8;
 
     // set override flag
-    if ( pedal_override == 0 && voltage_override == 0 )
+    if (    ( current_ctrl_state.override_flag.pedal == 0 ) &&
+            ( current_ctrl_state.override_flag.voltage == 0 ) )
     {
         data->override = 0;
     }
-    else{
+    else
+    {
         data->override = 1;
     }
 
@@ -420,26 +436,27 @@ static void process_ps_ctrl_throttle_command(
     const ps_ctrl_throttle_command_msg * const control_data =
             (ps_ctrl_throttle_command_msg*) rx_frame_buffer;
 
-    bool enabled = control_data->enabled == 1;
-
     // enable control from the PolySync interface
-    if( enabled == 1 && !control_enabled )
+    if( ( control_data->enabled == 1 ) &&
+        ( current_ctrl_state.control_enabled == false ) &&
+        ( current_ctrl_state.emergency_stop == false ) )
     {
-        control_enabled = true;
+        current_ctrl_state.control_enabled = true;
         enable_control( );
     }
 
     // disable control from the PolySync interface
-    if( enabled == 0 && control_enabled )
+    if( ( control_data->enabled == 0 ) &&
+        ( current_ctrl_state.control_enabled == true ) )
     {
-        control_enabled = false;
+        current_ctrl_state.control_enabled = false;
         disable_control( );
     }
 
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
-    pedal_position_target = control_data->pedal_command / 24 ;
-    DEBUG_PRINT(pedal_position_target);
+    current_ctrl_state.pedal_position_target = control_data->pedal_command / 24;
+    DEBUG_PRINT( current_ctrl_state.pedal_position_target );
 
 }
 
@@ -489,7 +506,7 @@ static void check_rx_timeouts( void )
     if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
         // disable control from the PolySync interface
-        if( control_enabled )
+        if( current_ctrl_state.control_enabled == true )
         {
             Serial.println( "control disabled: timeout" );
             disable_control( );
@@ -502,7 +519,7 @@ static void check_rx_timeouts( void )
 /* ================ SETUP =============== */
 /* ====================================== */
 
-void setup()
+void setup( )
 {
     // zero
     last_update_ms = 0;
@@ -530,6 +547,20 @@ void setup()
 
     publish_ps_ctrl_throttle_report( );
 
+    current_ctrl_state.control_enabled = false;
+
+    current_ctrl_state.emergency_stop = false;
+
+    current_ctrl_state.override_flag.pedal = 0;
+
+    current_ctrl_state.override_flag.voltage = 0;
+
+    current_ctrl_state.override_flag.voltage_spike_a = 0;
+
+    current_ctrl_state.override_flag.voltage_spike_b = 0;
+
+    current_ctrl_state.test_countdown = 0;
+
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
@@ -549,8 +580,6 @@ void setup()
 void loop()
 {
 
-    test_countdown += 1;
-
     // update the global system update timestamp, ms
     last_update_ms = GET_TIMESTAMP_MS( );
 
@@ -567,25 +596,30 @@ void loop()
     signal_L = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
     signal_H = analogRead( SIGNAL_INPUT_B ) << 2;
 
-    // if someone is pressing the throttle pedal, disable control
-    check_pedal_override( );
-
-    // if DAC out and ADC in voltages differ, disable control
-    // only test every tenth loop
-    if ( test_countdown >= 10 ) {
-
-        test_countdown = 0;
-        check_spoof_voltages( spoof_L, spoof_H );
-    }
-
     // now that we've set control status, do throttle if we are in control
-    if ( control_enabled )
+    if ( current_ctrl_state.control_enabled == true )
     {
-        calculate_pedal_spoof( pedal_position_target );
+        // if someone is pressing the throttle pedal, disable control
+        check_pedal_override( );
 
-        dac.outputA( spoof_H );
-        dac.outputB( spoof_L );
+        struct torque_spoof_t torque_spoof;
 
+        calculate_pedal_spoof(
+                current_ctrl_state.pedal_position_target,
+                &torque_spoof );
+
+        dac.outputA( torque_spoof.high );
+        dac.outputB( torque_spoof.low );
+
+        current_ctrl_state.test_countdown += 1;
+
+        // if DAC out and ADC in voltages differ, disable control
+        // only test every tenth loop
+        if ( current_ctrl_state.test_countdown >= 10 ) {
+
+            current_ctrl_state.test_countdown = 0;
+            check_spoof_voltages( &torque_spoof );
+        }
     }
 
 }
