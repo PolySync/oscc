@@ -197,6 +197,40 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
       1. `bool`, `char`, `unsigned char`, `float` and `double` are acceptable for embedded code as they all have specific signs and sizes associated with them
       2. User space applications have more flexibility and can use the intrinsic types: `long`, `unsigned long`, `int` and `unsigned int`
 
+   6. `struct`s shall have a '_s' appended to the name and have the following form:
+
+    ```c
+    // Example struct
+
+	struct torque_spoof_s
+	{
+	    uint16_t low;
+
+	    uint16_t high;
+	};
+
+	```
+
+   7. type defined structures shall conform to the structure rules and have the following form:
+
+	```c
+	#define CAN_FRAME_DLC_MAX (8)
+
+	// Example type defined structure
+	typedef struct
+	{
+	    uint32_t id;
+
+	    uint8_t  dlc;
+
+	    uint32_t timestamp;
+
+	    uint8_t  data[CAN_FRAME_DLC_MAX];
+
+	} can_frame_s;
+
+	```
+
 8. Prefer function calls to function-like macros
    1. Macros do not perform type-checking during compilation
    2. `inline` can be used, but is subject to compiler interpretation
@@ -300,7 +334,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
    1. Exceptions exist when complying with a communication protocol or  hardware register width
    2. Rule applies to both narrowing and widening the result of an operation
 
-6. Unions (overlapped storage) are only allowed when the items in the union are all the same size
+6. `union`s (overlapped storage) are only allowed when the items in the union are all the same size
 
   ```c
   // Example union is allowed because each element is 64 bits
