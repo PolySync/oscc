@@ -53,6 +53,7 @@
 
 // ms
 #define PS_CTRL_RX_WARN_TIMEOUT ( 200 )
+#define STEERING_LOOP_TIME_MS ( 50 )
 
 // Set up pins for interface with the DAC (MCP4922)
 
@@ -89,7 +90,7 @@ struct torque_spoof_t
 // static structures
 // *****************************************************
 
-static int8_t local_override = 0;
+static int8_t driver_override = 0;
 
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
 
@@ -98,11 +99,11 @@ MCP_CAN CAN( CAN_CS );                            // Set CS pin for the CAN shie
 
 
 //
-static can_frame_s rx_frame_ps_ctrl_steering_command;
+static uint32_t rx_steering_command_timestamp;
 
 
 //
-static can_frame_s tx_frame_ps_ctrl_steering_report;
+static uint32_t tx_steering_report_timestamp;
 
 
 //
@@ -119,32 +120,43 @@ static PID pid_params;
 
 
 // *****************************************************
-// Function:    timer_delta_ms
+// Function:    schedule_timer
 // 
-// Purpose:     Calculate the milliseconds between the current time and the
-//              input and correct for the timer overflow condition
+// Purpose:     Set a timer expiration at somepoint in the future based on the
+//              current time
 // 
-// Returns:     uint32_t the time delta between the two inputs
+// Returns:     uint32_t - the timer expiration value
 // 
-// Parameters:  [in] timestamp - the last time sample
+// Parameters:  [in] expiration - the number of milliseconds in the future
+//                                when the timer will expire
 // 
 // *****************************************************
-static uint32_t timer_delta_ms( uint32_t last_time )
+static uint32_t schedule_timer( uint32_t expiration)
 {
-    uint32_t delta = 0;
-    uint32_t current_time = millis( );
+    uint32_t expiration_time = millis( );
 
-    if ( current_time < last_time )
-    {
-        // Timer overflow
-        delta = ( UINT32_MAX - last_time ) + current_time;
-    }   
-    else
-    {   
-        delta = current_time - last_time;
-    }
-    return ( delta );
+    expiration_time += expiration;
+
+    return ( expiration_time );
 }
+
+
+// *****************************************************
+// Function:    update_periodic_timer
+// 
+// Purpose:     Update the timer to the next period for this timer.
+// 
+// Returns:     void
+// 
+// Parameters:  [in/out] timer - the timer to update
+//              [in] period - period of the timer
+// 
+// *****************************************************
+static void update_periodic_timer( uint32_t* const timer, uint32_t period )
+{
+    *timer += period;
+}
+
 
 // *****************************************************
 // Function:    is_timer_expired
@@ -169,6 +181,8 @@ static bool is_timer_expired( uint32_t expiration_time )
 
     return ( expired );
 }
+
+
 
 
 // *****************************************************
@@ -437,26 +451,22 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof )
 // *****************************************************
 static void publish_ps_ctrl_steering_report( )
 {
-    tx_frame_ps_ctrl_steering_report.id =
-        ( uint32_t ) ( PS_CTRL_MSG_ID_STEERING_REPORT );
+    can_frame_s tx_frame;
 
-    tx_frame_ps_ctrl_steering_report.dlc = 8;
+    tx_frame.id = ( uint32_t )( PS_CTRL_MSG_ID_STEERING_REPORT );
+
+    tx_frame.dlc = 8;
 
     // Get a pointer to the data buffer in the CAN frame and set
     // the steering angle
     ps_ctrl_steering_report_msg * data =
-        ( ps_ctrl_steering_report_msg* ) tx_frame_ps_ctrl_steering_report.data;
+        ( ps_ctrl_steering_report_msg* )tx_frame.data;
 
     data->angle = current_ctrl_state.current_steering_angle;
 
-    data->override = local_override;
-
-    tx_frame_ps_ctrl_steering_report.timestamp = millis( );
+    data->override = driver_override;
     
-    CAN.sendMsgBuf( tx_frame_ps_ctrl_steering_report.id,
-                    0,
-                    tx_frame_ps_ctrl_steering_report.dlc,
-                    tx_frame_ps_ctrl_steering_report.data );
+    CAN.sendMsgBuf( tx_frame.id, 0, tx_frame.dlc, tx_frame.data );
 }   
 
 
@@ -473,11 +483,13 @@ static void publish_ps_ctrl_steering_report( )
 // *****************************************************
 static void publish_timed_tx_frames( )
 {
-    uint32_t delta =
-        timer_delta_ms( tx_frame_ps_ctrl_steering_report.timestamp );
+    bool timer_expired = is_timer_expired( tx_steering_report_timestamp );
 
-    if ( delta >= PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL )
+    if ( timer_expired == true )
     {
+        update_periodic_timer( &tx_steering_report_timestamp,
+                               PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL );
+
         publish_ps_ctrl_steering_report();
     }
 }
@@ -515,7 +527,7 @@ static void process_ps_ctrl_steering_command(
         disable_control();
     }
 
-    rx_frame_ps_ctrl_steering_command.timestamp = millis( );
+    rx_steering_command_timestamp = schedule_timer( PS_CTRL_RX_WARN_TIMEOUT );
 }
 
 
@@ -592,10 +604,9 @@ void handle_ready_rx_frames( )
 // *****************************************************
 static void check_rx_timeouts( )
 {
-    uint32_t delta =
-        timer_delta_ms( rx_frame_ps_ctrl_steering_command.timestamp );
+    bool timer_expired = is_timer_expired( rx_steering_command_timestamp );
 
-    if ( delta >= PS_CTRL_RX_WARN_TIMEOUT ) 
+    if ( timer_expired == true ) 
     {
         disable_control();
     }
@@ -622,10 +633,6 @@ static void check_rx_timeouts( )
 // *****************************************************
 void setup( ) 
 {
-    memset( &rx_frame_ps_ctrl_steering_command,
-            0,
-            sizeof(rx_frame_ps_ctrl_steering_command) );
-
     // Set the direction for analog pins
     pinMode( DAC_CS, OUTPUT );
     pinMode( SIGNAL_INPUT_A, INPUT );
@@ -650,10 +657,13 @@ void setup( )
 
     current_ctrl_state.emergency_stop = false;
 
-    current_ctrl_state.timestamp_ms = millis();
+    current_ctrl_state.timestamp_ms = schedule_timer( STEERING_LOOP_TIME_MS );
 
-    // Initialize the Rx timestamps to avoid timeout warnings on start up
-    rx_frame_ps_ctrl_steering_command.timestamp = millis( );
+    // Initialize the Rx and Tx timestamps to avoid timeout warnings on start up
+    rx_steering_command_timestamp = schedule_timer( PS_CTRL_RX_WARN_TIMEOUT );
+
+    tx_steering_report_timestamp =
+        schedule_timer( PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL );
 
     pid_zeroize( &pid_params );
 
@@ -681,8 +691,6 @@ void setup( )
 // *****************************************************
 void loop( )
 {
-    const static uint32_t loop_time_ms = 50;
-
     handle_ready_rx_frames( );
       
     publish_timed_tx_frames( );
@@ -693,13 +701,14 @@ void loop( )
 
     if ( timer_expired == true )
     {
-        current_ctrl_state.timestamp_ms += loop_time_ms;
+        update_periodic_timer( &current_ctrl_state.timestamp_ms,
+                               STEERING_LOOP_TIME_MS );
 
         bool override = check_driver_steering_override( );
 
         if ( override == true )
         {
-            local_override = 1;
+            driver_override = 1;
             disable_control( );
         }
         else if ( current_ctrl_state.control_enabled == true ) 
