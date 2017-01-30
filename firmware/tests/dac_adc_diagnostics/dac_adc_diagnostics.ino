@@ -78,6 +78,8 @@ void test_DACS( )
         dac_val_a = dac_value;
         dac_val_b = 4095.0 - dac_value;
 
+        // Convert 12-bit DAC output integer value to volts ( 5V / 4096steps )
+        // Maximum voltage is 5 Volts.
         dac_expected_output_a = ( 5.0 / 4095.0 ) * dac_val_a;
         dac_expected_output_b = ( 5.0 / 4095.0 ) * dac_val_b;
 
@@ -89,6 +91,8 @@ void test_DACS( )
         spoof_a_adc_signal = analogRead( SPOOF_SIGNAL_A );
         spoof_b_adc_signal = analogRead( SPOOF_SIGNAL_B );
 
+        // Convert 10-bit ADC input integer value to volts ( 5V / 1024steps )
+        // Maximum voltage is 5 Volts.
         spoof_a_adc_volts = ( spoof_a_adc_signal * 5.0 ) / 1023.0;
         spoof_b_adc_volts = ( spoof_b_adc_signal * 5.0 ) / 1023.0;
 

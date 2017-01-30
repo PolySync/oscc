@@ -17,11 +17,7 @@
 /************************************************************************/
 
 // Throttle control ECU firmware
-// Firmware for control of 2014 Kia Soul throttle system
-// Component:
-//    Arduino Uno
-//    OSCC Sensor Interface Board V1
-// J Hartung, 2015; E Livingston, L Buckland, D Fernández, 2016
+// 2014 Kia Soul throttle system
 
 
 #include <SPI.h>
@@ -31,7 +27,6 @@
 #include "current_control_state.h"
 #include "common.h"
 #include "DAC_MCP49xx.h"
-
 
 
 
@@ -275,7 +270,7 @@ void calculate_pedal_spoof( float pedal_target, struct torque_spoof_t* spoof )
     spoof->low = 819.2 * ( 0.0004 * pedal_target + 0.366 );
     spoof->high = 819.2 * ( 0.0008 * pedal_target + 0.732 );
 
-    // range = 300 - ~1750
+    // range = 300 - ~1800
     spoof->low = constrain( spoof->low, 0, 1800 );
     // range = 600 - ~3500
     spoof->high = constrain( spoof->high, 0, 3500 );
@@ -311,7 +306,7 @@ void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
     float spoof_b_dac_current_volts = spoof->low * ( 5.0 / 4095.0 );
 
     // fail criteria. ~ ( ± 96mV )
-    if (    abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
+    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
             VOLTAGE_THRESHOLD )
     {
         if ( current_ctrl_state.override_flag.voltage_spike_a == 0 )
@@ -333,7 +328,7 @@ void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
     }
 
     // fail criteria. ~ ( ± 96mV )
-    if (    abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
+    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
             VOLTAGE_THRESHOLD )
     {
         if ( current_ctrl_state.override_flag.voltage_spike_b == 0 )
@@ -379,7 +374,7 @@ static void publish_ps_ctrl_throttle_report( void )
     tx_frame_ps_ctrl_throttle_report.dlc = 8;
 
     // set override flag
-    if (    ( current_ctrl_state.override_flag.pedal == 0 ) &&
+    if ( ( current_ctrl_state.override_flag.pedal == 0 ) &&
             ( current_ctrl_state.override_flag.voltage == 0 ) )
     {
         data->override = 0;
@@ -438,8 +433,8 @@ static void process_ps_ctrl_throttle_command(
 
     // enable control from the PolySync interface
     if( ( control_data->enabled == 1 ) &&
-        ( current_ctrl_state.control_enabled == false ) &&
-        ( current_ctrl_state.emergency_stop == false ) )
+            ( current_ctrl_state.control_enabled == false ) &&
+            ( current_ctrl_state.emergency_stop == false ) )
     {
         current_ctrl_state.control_enabled = true;
         enable_control( );
@@ -447,7 +442,7 @@ static void process_ps_ctrl_throttle_command(
 
     // disable control from the PolySync interface
     if( ( control_data->enabled == 0 ) &&
-        ( current_ctrl_state.control_enabled == true ) )
+            ( current_ctrl_state.control_enabled == true ) )
     {
         current_ctrl_state.control_enabled = false;
         disable_control( );
@@ -508,7 +503,7 @@ static void check_rx_timeouts( void )
         // disable control from the PolySync interface
         if( current_ctrl_state.control_enabled == true )
         {
-            Serial.println( "control disabled: timeout" );
+            DEBUG_PRINT( "Control disabled: Timeout" );
             disable_control( );
         }
     }
@@ -615,8 +610,8 @@ void loop()
 
         // if DAC out and ADC in voltages differ, disable control
         // only test every tenth loop
-        if ( current_ctrl_state.test_countdown >= 10 ) {
-
+        if ( current_ctrl_state.test_countdown >= 5 )
+        {
             current_ctrl_state.test_countdown = 0;
             check_spoof_voltages( &torque_spoof );
         }

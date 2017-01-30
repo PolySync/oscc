@@ -17,11 +17,7 @@
 /************************************************************************/
 
 // Steering control ECU firmware
-// Firmware for control of 2014 Kia Soul Motor Driven Power Steering (MDPS) system
-// Components:
-//    Arduino Uno
-//    OSCC Sensor Interface Board V1
-// J Hartung, 2015; E Livingston, L Buckland, D Fernández, 2016
+// 2014 Kia Soul Motor Driven Power Steering (MDPS) system
 
 
 #include <SPI.h>
@@ -400,7 +396,7 @@ void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
     float spoof_b_dac_current_volts = spoof->low * ( 5.0 / 4095.0 );
 
     // fail criteria. ~ ( ± 96mV )
-    if (    abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
+    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
             VOLTAGE_THRESHOLD )
     {
         if ( current_ctrl_state.override_flag.voltage_spike_a == 0 )
@@ -422,7 +418,7 @@ void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
     }
 
     // fail criteria. ~ ( ± 96mV )
-    if (    abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
+    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
             VOLTAGE_THRESHOLD )
     {
         if ( current_ctrl_state.override_flag.voltage_spike_b == 0 )
@@ -480,7 +476,7 @@ static void publish_ps_ctrl_steering_report( )
     tx_frame_ps_ctrl_steering_report.timestamp = millis( );
 
     // set override flag
-    if (    ( current_ctrl_state.override_flag.wheel == 0 ) &&
+    if ( ( current_ctrl_state.override_flag.wheel == 0 ) &&
             ( current_ctrl_state.override_flag.voltage == 0 ) )
     {
         data->override = 0;
@@ -540,15 +536,15 @@ static void process_ps_ctrl_steering_command(
         control_data->steering_wheel_max_velocity * 9.0;
 
     if ( ( control_data->enabled == 1 ) &&
-         ( current_ctrl_state.control_enabled == false ) &&
-         ( current_ctrl_state.emergency_stop == false ) )
+            ( current_ctrl_state.control_enabled == false ) &&
+            ( current_ctrl_state.emergency_stop == false ) )
     {
         current_ctrl_state.control_enabled = true;
         enable_control( );
     }
 
     if ( ( control_data->enabled == 0 ) &&
-         ( current_ctrl_state.control_enabled == true ) )
+            ( current_ctrl_state.control_enabled == true ) )
     {
         current_ctrl_state.control_enabled = false;
         disable_control( );
@@ -636,6 +632,7 @@ static void check_rx_timeouts( )
 
     if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
+        DEBUG_PRINT( "Control disabled: Timeout" );
         disable_control();
     }
 }
@@ -797,8 +794,8 @@ void loop( )
 
             // if DAC out and ADC in voltages differ, disable control
             // only test every tenth lake cleaoop
-            if ( current_ctrl_state.test_countdown >= 10 ) {
-
+            if ( current_ctrl_state.test_countdown >= 5 )
+            {
                 current_ctrl_state.test_countdown = 0;
                 check_spoof_voltages( &torque_spoof );
             }
