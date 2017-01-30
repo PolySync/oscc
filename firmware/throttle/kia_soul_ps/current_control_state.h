@@ -50,11 +50,11 @@ typedef struct
 	//
     bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
     //
-	//
-	double pedal_position; /* Current pedal position as reported by car */
-	//
-	//
-	double pedal_position_target; /* As specified by higher level controller */
+    //
+    double pedal_position; /* Current pedal position as reported by car */
+    //
+    //
+    double pedal_position_target; /* As specified by higher level controller */
     //
     //
     uint32_t timestamp_us; /* Keeps track of last control loop time in us */
