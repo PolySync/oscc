@@ -142,6 +142,16 @@ int16_t solenoid_left_actuation_duty_min;
 int16_t solenoid_left_release_duty_max;
 int16_t solenoid_left_release_duty_min;
 
+// *****************************************************
+// Function:    calculate_solenoid_left_actuation_duty_cycle
+// 
+// Purpose:     Calculate pressure value
+// 
+// Returns:     int16_t - the scaled pressure value
+// 
+// Parameters:  float pre - the pressure value
+// 
+// *****************************************************
 int16_t calculate_solenoid_left_actuation_duty_cycle( float pre )
 {
   int16_t scaled = abs( pre ) * 512;
@@ -149,7 +159,16 @@ int16_t calculate_solenoid_left_actuation_duty_cycle( float pre )
   return scale;
 }
 
-
+// *****************************************************
+// Function:    calculate_solenoid_left_release_duty_cycle
+// 
+// Purpose:     Calculate pressure value
+// 
+// Returns:     int16_t - the scaled pressure value
+// 
+// Parameters:  float pre - the pressure value
+// 
+// *****************************************************
 int16_t calculate_solenoid_left_release_duty_cycle( float pre )
 {
   int16_t scaled = abs( pre ) * 512;
@@ -157,51 +176,81 @@ int16_t calculate_solenoid_left_release_duty_cycle( float pre )
   return scale;
 }
 
+// *****************************************************
+// Function:    pressure_to_voltage
+// 
+// Purpose:     Convert pressure to voltage
+// 
+// Returns:     float - voltage
+// 
+// Parameters:  int16_t - pressure in MPa
+// 
+// *****************************************************
 float pressure_to_voltage( int16_t MPa )
 {
-	// convert MPa pressure to equivalent voltage
     return ( MPa + 217.1319446 ) / 505.5662053;
 }
 
+// *****************************************************
+// Function:    voltage_to_pressure
+// 
+// Purpose:     Convert voltage to pressure
+// 
+// Returns:     int16_t - pressure in MPa
+// 
+// Parameters:  float - volts
+// 
+// *****************************************************
 int16_t voltage_to_pressure( float voltage )
 {
-    // convert voltage reading from sensors to pressure in MPa
     return ( voltage * 505.5662053 ) - 217.1319446;
 }
 
-// convert the ADC reading (which goes from 0 - 1023) to a voltage (0 - 5V):
+// *****************************************************
+// Function:    convert_to_voltage
+// 
+// Purpose:     Convert the ADC reading
+//				(which goes from 0-1023)
+//				to a voltage (0 - 5V)
+// 
+// Returns:     float - volts
+// 
+// Parameters:  int16_t - ADC reading 
+// 
+// *****************************************************
 float convert_to_voltage( int16_t input )
 {
     return input * ( 5.0 / 1023.0 );
 }
 
-
+// *****************************************************
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids )
-// pins are not perfectly sequential because the clock frequency of certain pins is different.
+//
+// Pins are not perfectly sequential because the clock frequency of certain pins is different.
+//
+// *****************************************************
 // Duty cycles of pins 3 and 5 controlled by timer 3 (TCCR3B)
-const byte PIN_SLAFL = 3;      // front left actuation
-const byte PIN_SLAFR = 5;      // front right actuation
+const uint8_t PIN_SLAFL = 3;      // front left actuation
+const uint8_t PIN_SLAFR = 5;      // front right actuation
 // Duty cycles of pins 6, 7, and 8 controlled by timer 4 (TCCR4B)
-const byte PIN_SLRFL = 6;      // front left return
-const byte PIN_SLRFR = 7;      // front right return
-const byte PIN_SMC = 8;      // master cylinder solenoids (two of them)
+const uint8_t PIN_SLRFL = 6;      // front left return
+const uint8_t PIN_SLRFR = 7;      // front right return
+const uint8_t PIN_SMC = 8;      // master cylinder solenoids (two of them)
 
-const byte PIN_PUMP = 9;     // accumulator pump motor
-
+const uint8_t PIN_PUMP = 9;     // accumulator pump motor
 
 // brake spoofer relay pin definitions
-const byte PIN_BRAKE_SWITCH_1 = 48;
-const byte PIN_BRAKE_SWITCH_2 = 49;
-
+const uint8_t PIN_BRAKE_SWITCH_1 = 48;
+const uint8_t PIN_BRAKE_SWITCH_2 = 49;
 
 // sensor pin (analog) definitions
-const byte PIN_PACC = 9;       // pressure accumulator sensor
-const byte PIN_PMC1 = 10;      // pressure master cylinder sensor 1
-const byte PIN_PMC2 = 11;      // pressure master cylinder sensor 2
-const byte PIN_PRL = 12;       // pressure rear left sensor
-const byte PIN_PFR = 13;       // pressure front right sensor
-const byte PIN_PFL = 14;       // pressure front left sensor
-const byte PIN_PRR = 15;       // pressure rear right sensor
+const uint8_t PIN_PACC = 9;       // pressure accumulator sensor
+const uint8_t PIN_PMC1 = 10;      // pressure master cylinder sensor 1
+const uint8_t PIN_PMC2 = 11;      // pressure master cylinder sensor 2
+const uint8_t PIN_PRL = 12;       // pressure rear left sensor
+const uint8_t PIN_PFR = 13;       // pressure front right sensor
+const uint8_t PIN_PFL = 14;       // pressure front left sensor
+const uint8_t PIN_PRR = 15;       // pressure rear right sensor
 
 // the following are guesses, these need to be debugged/researched
 const double ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
@@ -211,99 +260,182 @@ const double MIN_PACC = 2.3;              // minumum accumulator pressure to mai
 const double MAX_PACC = 2.4;              // max accumulator pressure to maintain
 const double PEDAL_THRESHOLD = 0.5;          // Pressure for pedal interference
 
-// initialize states
+// *****************************************************
+// Initialize states
+// *****************************************************
 State Wait = State( wait_enter, wait_update, wait_exit );        // Wait for brake instructions
 State Brake = State( brake_enter, brake_update, brake_exit );    // Control braking
-
 
 // initialize state machine, start in state: Wait
 FSM brake_state_machine = FSM( Wait );
 
-
 // *****************************************************
-// local data structures
+// local data structures and associated functions
 // *****************************************************
-struct accumulator_s
+struct accumulator_data_s
 {
 	float _pressure = 0.0;
-	byte _sensor_pin = 99;
-	byte _control_pin = 99;
-};
+	uint8_t _sensor_pin = 99;
+	uint8_t _control_pin = 99;
+} accumulator;
 
-void accumulator_pump_off( accumulator_s * const accumulator )
+// *****************************************************
+// Function:    turn_accumulator_pump_off
+// 
+// Purpose:     Turn off accumulator pump
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void turn_accumulator_pump_off( )
 {
-	digitalWrite( accumulator->_control_pin, LOW );
+	digitalWrite( accumulator._control_pin, LOW );
 }
 
-void accumulator_update_pressure( accumulator_s * const accumulator )
+// *****************************************************
+// Function:    update_accumulator_pressure
+// 
+// Purpose:     Update accumulator pressure
+//				TODO: Currently does nothing
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void update_accumulator_pressure( )
 {
 
 }
 
-void accumulator_pump_on( accumulator_s * const accumulator )
+// *****************************************************
+// Function:    turn_accumulator_pump_on
+// 
+// Purpose:     Turn on accumulator pump
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void turn_accumulator_pump_on( )
 {
-	digitalWrite( accumulator->_control_pin, HIGH );
+	digitalWrite( accumulator._control_pin, HIGH );
 }
 
-void accumulator_maintain_pressure( accumulator_s * const accumulator )
+// *****************************************************
+// Function:    maintain_accumulator_pressure
+// 
+// Purpose:     Turn accumulator pump on or off
+//				to maintain pressure
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void maintain_accumulator_pressure( )
 {
-	accumulator->_pressure = convert_to_voltage( analogRead( accumulator->_sensor_pin ) );
+	accumulator._pressure = convert_to_voltage( analogRead( accumulator._sensor_pin ) );
 
-	if( accumulator->_pressure < MIN_PACC )
+	if( accumulator._pressure < MIN_PACC )
 	{
-		accumulator_pump_on( accumulator );
+		turn_accumulator_pump_on( );
 	}
 
-	if( accumulator->_pressure > MAX_PACC )
+	if( accumulator._pressure > MAX_PACC )
 	{
-		accumulator_pump_off( accumulator );
+		turn_accumulator_pump_off( );
 	}
 }
 
-void init_accumulator( accumulator_s * const accumulator, byte sensor_pin, byte control_pin )
+// *****************************************************
+// Function:    init_accumulator
+// 
+// Purpose:     Initializes the accumulator
+// 
+// Returns:     void
+// 
+// Parameters:  uint8_t sensor_pin
+//				uint8_t control_pin
+// 
+// *****************************************************
+void init_accumulator( uint8_t sensor_pin, uint8_t control_pin )
 {
-	accumulator->_sensor_pin = sensor_pin;
-	accumulator->_control_pin = control_pin;
+	accumulator._sensor_pin = sensor_pin;
+	accumulator._control_pin = control_pin;
 
-	pinMode( accumulator->control_pin, OUTPUT );
+	pinMode( accumulator._control_pin, OUTPUT );
 
-	accumulator_pump_off( accumulator );
+	turn_accumulator_pump_off( );
 }
 
 //master solenoid structure
-struct SMC_s
+struct master_cylinder_solenoid_data_s
 {
 	float _pressure1 = 0.0; // Initialize pressures to 0.0 to avoid false values
     float _pressure2 = 0.0;
-    byte _sensor1_pin = 99;
-    byte _sensor2_pin = 99;
-    byte _control_pin = 99;
-};
+    uint8_t _sensor1_pin = 99;
+    uint8_t _sensor2_pin = 99;
+    uint8_t _control_pin = 99;
+} master_cylinder_solenoid;
 
-void SMC_solenoids_open( SMC_s * const SMC )
+// *****************************************************
+// Function:    open_master_cylinder_solenoid
+// 
+// Purpose:     Open master cylinder solenoid
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void open_master_cylinder_solenoid( )
 {
-	analogWrite( SMC->_control_pin, 0 );
+	analogWrite( master_cylinder_solenoid._control_pin, 0 );
 }
 
-void SMC_solenoids_close( SMC_s * const SMC )
+// *****************************************************
+// Function:    close_master_cylinder_solenoid
+// 
+// Purpose:     Close master cylinder solenoid
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void close_master_cylinder_solenoid( )
 {
-	analogWrite( SMC->_control_pin, 255 );
+	analogWrite( master_cylinder_solenoid._control_pin, 255 );
 }
 
-void SMC_check_pedal( SMC_s * const SMC )
+// *****************************************************
+// Function:    check_driver_brake_override
+// 
+// Purpose:     Check if driver is pressing the brake
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void check_driver_brake_override( )
 {
-	SMC->_pressure1 = convert_to_voltage( analogRead( SMC->_sensor1_pin ) );
-	SMC->_pressure2 = convert_to_voltage( analogRead( SMC->_sensor2_pin ) );
+	master_cylinder_solenoid._pressure1 = convert_to_voltage( analogRead( master_cylinder_solenoid._sensor1_pin ) );
+	master_cylinder_solenoid._pressure2 = convert_to_voltage( analogRead( master_cylinder_solenoid._sensor2_pin ) );
 
 	//if current pedal pressure is greater than the limit
 	//(because of driver override by pressing the brake pedal), disable.
-	if( ( SMC->_pressure1 > PEDAL_THRESHOLD ) ||
-		( SMC->_pressure2 > PEDAL_THRESHOLD ) )
+	if( ( master_cylinder_solenoid._pressure1 > PEDAL_THRESHOLD ) ||
+		( master_cylinder_solenoid._pressure2 > PEDAL_THRESHOLD ) )
 	{
-		DEBUG_PRINT( "Brake Pedal Detected" )
+		DEBUG_PRINT( "Brake Pedal Detected" );
 		pressure_req = ZERO_PRESSURE;
 		local_override = 1;
-		brakeStateMachine.transitionTo( Wait );
+		brake_state_machine.transitionTo( Wait );
 	}
 	else
 	{
@@ -311,109 +443,194 @@ void SMC_check_pedal( SMC_s * const SMC )
 	}
 }
 
-void init_SMC( SMC_s * const SMC, byte sensor1_pin, byte sensor2_pin, byte control_pin )
+// *****************************************************
+// Function:    init_master_cylinder_solenoid
+// 
+// Purpose:     Initializes the master cylinder solenoid
+// 
+// Returns:     void
+// 
+// Parameters:  uint8_t sensor1_pin
+//				uint8_t sensor2_pin
+//				uint8_t control_pin
+// 
+// *****************************************************
+void init_master_cylinder_solenoid( uint8_t sensor1_pin, uint8_t sensor2_pin, uint8_t control_pin )
 {
-	SMC->_sensor1_pin = sensor1_pin;
-	SMC->_sensor2_pin = sensor2_pin;
-	SMC->_control_pin = control_pin;
+	master_cylinder_solenoid._sensor1_pin = sensor1_pin;
+	master_cylinder_solenoid._sensor2_pin = sensor2_pin;
+	master_cylinder_solenoid._control_pin = control_pin;
 
-	pinMode( SMC->_control_pin, OUTPUT );
+	pinMode( master_cylinder_solenoid._control_pin, OUTPUT );
 
-	SMC_solenoids_open( SMC );
+	open_master_cylinder_solenoid( );
 }
 
-struct brakes_s
+//brake structure
+struct brake_data_s
 {
 	float _pressure_left = 0.0;            // last known right-side pressure
     float _pressure_right = 0.0;           // last known left-side pressure
-    byte _sensor_pin_left = 99;            // pin associated with left-side  pressure sensor
-    byte _sensor_pin_right = 99;           // pin associated with right-side pressure sensors
-    byte _solenoid_pin_left_a = 99;        // pin associated with MOSFET, associated with actuation solenoid
-    byte _solenoid_pin_right_a = 99;       // pin associated with MOSFET, associated with return solenoid
-    byte _solenoid_pin_left_r = 99;        // pin associated with MOSFET, associated with actuation solenoid
-    byte _solenoid_pin_right_r = 99;       // pin associated with MOSFET, associated with return solenoid
+    uint8_t _sensor_pin_left = 99;            // pin associated with left-side  pressure sensor
+    uint8_t _sensor_pin_right = 99;           // pin associated with right-side pressure sensors
+    uint8_t _solenoid_pin_left_a = 99;        // pin associated with MOSFET, associated with actuation solenoid
+    uint8_t _solenoid_pin_right_a = 99;       // pin associated with MOSFET, associated with return solenoid
+    uint8_t _solenoid_pin_left_r = 99;        // pin associated with MOSFET, associated with actuation solenoid
+    uint8_t _solenoid_pin_right_r = 99;       // pin associated with MOSFET, associated with return solenoid
     bool _increasing_pressure = false;     // used to track if pressure should be increasing
     bool _decreasing_pressure = false;     // used to track if pressure should be decreasing
     uint32_t _previous_millis = 0;    	   // will store last time solenoid was updated
-};
+} brakes;
 
-void brakes_depower_solenoids( brakes_s * const brakes )
+// *****************************************************
+// Function:    turn_off_all_brake_solenoids
+// 
+// Purpose:     Turn off all brake solenoids
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void turn_off_all_brake_solenoids( )
 {
-	analogWrite( brakes->_solenoid_pin_left_a, 0 );
-    analogWrite( brakes->_solenoid_pin_right_a, 0 );
-    analogWrite( brakes->_solenoid_pin_left_r, 0 );
-    analogWrite( brakes->_solenoid_pin_right_r, 0 );
+	analogWrite( brakes._solenoid_pin_left_a, 0 );
+    analogWrite( brakes._solenoid_pin_right_a, 0 );
+    analogWrite( brakes._solenoid_pin_left_r, 0 );
+    analogWrite( brakes._solenoid_pin_right_r, 0 );
 }
 
-//fill pressure
-void brakes_power_solenoid_left_actuation( brakes_s * const brakes, int16_t scaler )
+// *****************************************************
+// Function:    turn_on_brake_actuator_solenoids
+// 
+// Purpose:     Turn on brake actuator solenoids
+// 
+// Returns:     void
+// 
+// Parameters:  int16_t scalar to write to solenoids
+// 
+// *****************************************************
+void turn_on_brake_actuator_solenoids( int16_t scaler )
 {
-	analogWrite( brakes->_solenoid_pin_left_a, scaler );
-    analogWrite( brakes->_solenoid_pin_right_a, scaler );
+	analogWrite( brakes._solenoid_pin_left_a, scaler );
+    analogWrite( brakes._solenoid_pin_right_a, scaler );
 }
 
-void brakes_depower_solenoid_left_actuation( brakes_s * const brakes )
+// *****************************************************
+// Function:    turn_off_brake_actuator_solenoids
+// 
+// Purpose:     Turn off brake actuator solenoids
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void turn_off_brake_actuator_solenoids( )
 {
-	analogWrite( brakes->_solenoid_pin_left_a, 0 );
-    analogWrite( brakes->_solenoid_pin_right_a, 0 );
+	analogWrite( brakes._solenoid_pin_left_a, 0 );
+    analogWrite( brakes._solenoid_pin_right_a, 0 );
 }
 
-//spill pressure
-void brakes_power_solenoid_left_release( brakes_s * const brakes, int16_t scaler )
+// *****************************************************
+// Function:    turn_on_brake_release_solenoids
+// 
+// Purpose:     Turn on brake actuator solenoids
+// 
+// Returns:     void
+// 
+// Parameters:  int16_t scalar to write to solenoids
+// 
+// *****************************************************
+void turn_on_brake_release_solenoids( int16_t scaler )
 {
-    analogWrite( brakes->_solenoid_pin_left_r, scaler );
-    analogWrite( brakes->_solenoid_pin_right_r, scaler );	
+    analogWrite( brakes._solenoid_pin_left_r, scaler );
+    analogWrite( brakes._solenoid_pin_right_r, scaler );	
 }
 
-void brakes_depower_solenoid_left_release( brakes_s * const brakes )
+// *****************************************************
+// Function:    turn_off_brake_release_solenoids
+// 
+// Purpose:     Turn off brake release solenoids
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void turn_off_brake_release_solenoids( )
 {
-	digitalWrite( brakes->_solenoid_pin_left_r, LOW );
-    digitalWrite( brakes->_solenoid_pin_right_r, LOW );
+	digitalWrite( brakes._solenoid_pin_left_r, LOW );
+    digitalWrite( brakes._solenoid_pin_right_r, LOW );
 }
 
-void brakes_update_pressure( brakes_s * const brakes )
+// *****************************************************
+// Function:    update_brake_pressure
+// 
+// Purpose:     Update brake pressure
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void update_brake_pressure( )
 {
-    brakes->_pressure_left = convert_to_voltage( analogRead( brakes->_sensor_pin_left ) );
-    brakes->_pressure_right = convert_to_voltage( analogRead( brakes->_sensor_pin_right ) );	
+    brakes._pressure_left = convert_to_voltage( analogRead( brakes._sensor_pin_left ) );
+    brakes._pressure_right = convert_to_voltage( analogRead( brakes._sensor_pin_right ) );	
 }
 
-void init_brakes( brakes_s * const brakes,
-				  byte sensor_p_left,
-				  byte sensor_p_right,
-				  byte solenoid_pin_left_a,
-				  byte solenoid_pin_right_a,
-				  byte solenoid_pin_left_r,
-				  byte solenoid_pin_right_r )
+// *****************************************************
+// Function:    init_brakes
+// 
+// Purpose:     Initializes the brakes
+// 
+// Returns:     void
+// 
+// Parameters:  uint8_t sensor_p_left
+//				uint8_t sensor_p_right
+//				uint8_t solenoid_pin_left_a
+//				uint8_t solenoid_pin_right_a
+//				uint8_t solenoid_pin_left_r
+//				uint8_t solenoid_pin_right_r
+// 
+// *****************************************************
+void init_brakes( uint8_t sensor_p_left,
+				  uint8_t sensor_p_right,
+				  uint8_t solenoid_pin_left_a,
+				  uint8_t solenoid_pin_right_a,
+				  uint8_t solenoid_pin_left_r,
+				  uint8_t solenoid_pin_right_r )
 {
-	brakes->_sensor_pin_left = sensor_p_left;
-    brakes->_sensor_pin_right = sensor_p_right;
-    brakes->_solenoid_pin_left_a = solenoid_pin_left_a;
-    brakes->_solenoid_pin_right_a = solenoid_pin_right_a;
-    brakes->_solenoid_pin_left_r = solenoid_pin_left_r;
-    brakes->_solenoid_pin_right_r = solenoid_pin_right_r;
+	brakes._sensor_pin_left = sensor_p_left;
+    brakes._sensor_pin_right = sensor_p_right;
+    brakes._solenoid_pin_left_a = solenoid_pin_left_a;
+    brakes._solenoid_pin_right_a = solenoid_pin_right_a;
+    brakes._solenoid_pin_left_r = solenoid_pin_left_r;
+    brakes._solenoid_pin_right_r = solenoid_pin_right_r;
 
     // initialize solenoid pins to off
-    digitalWrite( brakes->_solenoid_pin_left_a, LOW );
-    digitalWrite( brakes->_solenoid_pin_right_a, LOW );
-    digitalWrite( brakes->_solenoid_pin_left_r, LOW );
-    digitalWrite( brakes->_solenoid_pin_right_r, LOW );
+    digitalWrite( brakes._solenoid_pin_left_a, LOW );
+    digitalWrite( brakes._solenoid_pin_right_a, LOW );
+    digitalWrite( brakes._solenoid_pin_left_r, LOW );
+    digitalWrite( brakes._solenoid_pin_right_r, LOW );
 
     // set pinmode to OUTPUT
-    pinMode( brakes->_solenoid_pin_left_a, OUTPUT );
-    pinMode( brakes->_solenoid_pin_right_a, OUTPUT );
-    pinMode( brakes->_solenoid_pin_left_r, OUTPUT );
-    pinMode( brakes->_solenoid_pin_right_r, OUTPUT );
+    pinMode( brakes._solenoid_pin_left_a, OUTPUT );
+    pinMode( brakes._solenoid_pin_right_a, OUTPUT );
+    pinMode( brakes._solenoid_pin_left_r, OUTPUT );
+    pinMode( brakes._solenoid_pin_right_r, OUTPUT );
 }
 
 // *****************************************************
 // Initialize Global Structs
 // *****************************************************
 //Accumulator accumulator( PIN_PACC, PIN_PUMP );
-accumulator_s accumulator = { PIN_PACC, PIN_PUMP };
+//accumulator_data_s accumulator = { PIN_PACC, PIN_PUMP };
 //SMC smc( PIN_PMC1, PIN_PMC2, PIN_SMC );
-SMC_s smc = { PIN_PMC1, PIN_PMC2, PIN_SMC };
+//master_cylinder_solenoid_data_s master_cylinder_solonoid = { PIN_PMC1, PIN_PMC2, PIN_SMC };
 //Brakes brakes = Brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR );
-brakes_s brakes = { PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR }
+//brake_data_s brakes = { PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR }
 
 
 // *****************************************************
@@ -580,7 +797,7 @@ static void process_psvc_chassis_state1(
     int16_t brake_pressure = chassis_data->brake_pressure;
 
     // take a reading from the brake pressure sensors
-    brakes.brakes_update_pressure( );
+    update_brake_pressure( );
 
     // average the pressure of the rear and front lines
     float pressure = ( brakes._pressure_left + brakes._pressure_right ) / 2;
@@ -653,9 +870,9 @@ void wait_enter( )
     control_enabled = false;
 
     // open master cylinder solenoids
-    smc.SMC_solenoids_open();
-    brakes.brakes_depower_solenoid_left_actuation();
-    brakes.brakes_depower_solenoid_left_release();
+    open_master_cylinder_solenoid( );
+    turn_off_brake_actuator_solenoids( );
+    turn_off_brake_release_solenoids( );
 
     DEBUG_PRINT( "Entered wait state" );
 }
@@ -674,7 +891,7 @@ void wait_enter( )
 void wait_update( )
 {
     // keep accumulator pressurized
-    accumulator.accumulator_maintain_pressure( );
+    maintain_accumulator_pressure( );
 
     // TODO: Is this check needed? Don't we force transition elsewhere?
     if( ( pressure_req > ZERO_PRESSURE + .01 ) &&
@@ -689,6 +906,7 @@ void wait_update( )
 // Function:    wait_exit
 // 
 // Purpose:     Exit wait state
+//				TODO: Currently does nothing
 // 
 // Returns:     void
 // 
@@ -713,13 +931,13 @@ void wait_exit( )
 void brake_enter( )
 {
     // close master cylinder solenoids because they'll spill back to the reservoir
-    smc.SMC_solenoids_close( );
+    close_master_cylinder_solenoid( );
 
     digitalWrite( PIN_BRAKE_SWITCH_1, LOW );
     digitalWrite( PIN_BRAKE_SWITCH_2, LOW );
 
     // close solenoid_left_releases, they are normally open for failsafe conditions
-    brakes.brakes_depower_solenoid_left_release( );
+    turn_off_brake_release_solenoids( );
 
     DEBUG_PRINT( "entered brake state" );
 }
@@ -746,7 +964,7 @@ void brake_update( )
     double pressure_rate;
     
     // maintain accumulator pressure
-    accumulator.accumulator_maintain_pressure( );
+    maintain_accumulator_pressure( );
 
     // calculate a delta t
     last_micros = curr_micros;
@@ -755,7 +973,7 @@ void brake_update( )
 
 
     // take a reading from the brake pressure sensors
-    brakes.brakes_update_pressure( );
+    update_brake_pressure( );
     pressure = ( brakes._pressure_left + brakes._pressure_right ) / 2;
 
 
@@ -790,15 +1008,15 @@ void brake_update( )
         // if pressure is too high
         if( pressure_pid_output < -0.1 )
         {
-            brakes.brakes_depower_solenoid_left_actuation( );
-            brakes.brakes_power_solenoid_left_release( calculate_solenoid_left_release_duty_cycle( pressure_pid_output ) );
+            turn_off_brake_actuator_solenoids( );
+            turn_on_brake_release_solenoids( calculate_solenoid_left_release_duty_cycle( pressure_pid_output ) );
         }
 
         // if pressure is too low
         if( pressure_pid_output > 0.1 )
         {
-            brakes.brakes_depower_solenoid_left_release( );
-            brakes.brakes_power_solenoid_left_actuation( calculate_solenoid_left_actuation_duty_cycle( pressure_pid_output ) );
+            turn_off_brake_release_solenoids( );
+            turn_on_brake_actuator_solenoids( calculate_solenoid_left_actuation_duty_cycle( pressure_pid_output ) );
         }
 
         // if driver is not braking, transition to wait state
@@ -824,10 +1042,10 @@ void brake_update( )
 void brake_exit( )
 {
     // close master cylinder solenoids
-    smc.SMC_solenoids_open( );
+    open_master_cylinder_solenoid( );
 
     // depower wheel solenoids to vent brake pressure at wheels
-    brakes.brakes_depower_solenoid_left_actuation( );
+    turn_off_brake_actuator_solenoids( );
 
     // unswitch brake switch
     digitalWrite( PIN_BRAKE_SWITCH_1, HIGH );
@@ -910,6 +1128,11 @@ void setup( void )
        0x07      30.63 hz
      */
 
+    //Initialize structs
+    init_accumulator( PIN_PACC, PIN_PUMP );
+    init_master_cylinder_solenoid( PIN_PMC1, PIN_PMC2, PIN_SMC );
+    init_brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR );
+
     // zero
     last_update_ms = 0;
     memset( &rx_frame_ps_ctrl_brake_command, 0, sizeof( rx_frame_ps_ctrl_brake_command ) );
@@ -921,12 +1144,12 @@ void setup( void )
     pinMode( PIN_BRAKE_SWITCH_2, OUTPUT );
 
     // depower all the things
-    accumulator.accumulator_pump_off( );
-    smc.SMC_solenoids_open( );
+    turn_accumulator_pump_off( );
+    open_master_cylinder_solenoid( );
 
     // close rear solenoid_left_releases. These should open only for emergencies and to release brake pressure
-    brakes.brakes_depower_solenoid_left_release( );
-    brakes.brakes_depower_solenoid_left_actuation( );
+    turn_off_brake_release_solenoids( );
+    turn_off_brake_actuator_solenoids( );
 
     init_serial( );
 
@@ -947,6 +1170,24 @@ void setup( void )
     DEBUG_PRINT( "init: pass" );
 }
 
+
+/* ====================================== */
+/* ================ LOOP ================ */
+/* ====================================== */
+
+// *****************************************************
+// Function:    loop
+// 
+// Purpose:     Update timestamp
+//              Handle and publish CAN frames
+//              Check for timeouts
+//				Check for driver brake override
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
 void loop()
 {
 
@@ -960,7 +1201,7 @@ void loop()
     check_rx_timeouts( );
 
     // check pressures on master cylinder (pressure from pedal)
-    smc.SMC_check_pedal( );
+    check_driver_brake_override( );
 
     brake_state_machine.update( );
 }
