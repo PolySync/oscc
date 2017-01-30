@@ -793,7 +793,7 @@ void loop( )
             current_ctrl_state.test_countdown += 1;
 
             // if DAC out and ADC in voltages differ, disable control
-            // only test every tenth lake cleaoop
+            // only test every fifth loop
             if ( current_ctrl_state.test_countdown >= 5 )
             {
                 current_ctrl_state.test_countdown = 0;
