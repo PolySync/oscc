@@ -126,15 +126,10 @@ void test_power_drivers() {
 // the pump relay.
 void test_pump_relay() {
 
-    // flush all previous received and transmitted data
-    Serial.flush();
-
-    while(!Serial.available()) {
-        digitalWrite(PIN_PUMP, HIGH);
-        delay(1000);
-        digitalWrite(PIN_PUMP, LOW);
-        delay(1000);
-    }
+    digitalWrite(PIN_PUMP, HIGH);
+    delay(1000);
+    digitalWrite(PIN_PUMP, LOW);
+    delay(1000);
 }
 
 
@@ -209,14 +204,18 @@ void test_brake_pedal_spoof() {
 }
 
 void setup() {
+    // set up the pin for the `test_pump_relay()` function
+    pinMode( PIN_PUMP, OUTPUT );
     init_serial();
     init_can();
 }
 
 void loop() {
+
     // interactively run tests
     //test_power_drivers();
     test_CAN_send();
     test_CAN_recieve();
-
+    test_pump_relay();
 }
+
