@@ -154,7 +154,10 @@ static uint32_t schedule_timer( uint32_t expiration)
 // *****************************************************
 static void update_periodic_timer( uint32_t* const timer, uint32_t period )
 {
-    *timer += period;
+    if ( timer != NULL )
+    {
+        *timer += period;
+    }
 }
 
 
