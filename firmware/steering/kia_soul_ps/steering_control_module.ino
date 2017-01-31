@@ -79,10 +79,16 @@
 // local defined data structures
 // *****************************************************
 
-struct torque_spoof_t
+struct torque_spoof_s
 {
     uint16_t low;
     uint16_t high;
+};
+
+struct timer_struct_s
+{
+    uint32_t timestamp;
+    const uint32_t period;
 };
 
 
@@ -99,16 +105,19 @@ MCP_CAN CAN( CAN_CS );                            // Set CS pin for the CAN shie
 
 
 //
-static uint32_t rx_steering_command_timestamp;
+static struct timer_struct_s rx_steering_command_timestamp =
+    { 0, PS_CTRL_RX_WARN_TIMEOUT };
 
 
 //
-static uint32_t tx_steering_report_timestamp;
+static struct timer_struct_s tx_steering_report_timestamp =
+    { 0, PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL };
 
 
 //
 static current_control_state current_ctrl_state;
-
+static struct timer_struct_s ctrl_state_timestamp =
+    { 0, STEERING_LOOP_TIME_MS };
 
 //
 static PID pid_params;
@@ -122,41 +131,39 @@ static PID pid_params;
 // *****************************************************
 // Function:    schedule_timer
 // 
-// Purpose:     Set a timer expiration at somepoint in the future based on the
+// Purpose:     Set a timer expiration at some point in the future based on the
 //              current time
 // 
-// Returns:     uint32_t - the timer expiration value
+// Returns:     void
 // 
-// Parameters:  [in] expiration - the number of milliseconds in the future
-//                                when the timer will expire
+// Parameters:  [in/out] timer - pointer to the timer structure to schedule
 // 
 // *****************************************************
-static uint32_t schedule_timer( uint32_t expiration)
+static void schedule_timer( struct timer_struct_s* const timer )
 {
-    uint32_t expiration_time = millis( );
-
-    expiration_time += expiration;
-
-    return ( expiration_time );
+    if ( timer != NULL )
+    {
+        timer->timestamp = millis();
+        timer->timestamp += timer->period;
+    }
 }
 
 
 // *****************************************************
 // Function:    update_periodic_timer
 // 
-// Purpose:     Update the timer to the next period for this timer.
+// Purpose:     Update the timer to the next period for this timer
 // 
 // Returns:     void
 // 
-// Parameters:  [in/out] timer - the timer to update
-//              [in] period - period of the timer
+// Parameters:  [in/out] timer - the timer structure to update
 // 
 // *****************************************************
-static void update_periodic_timer( uint32_t* const timer, uint32_t period )
+static void update_periodic_timer( struct timer_struct_s* const timer )
 {
     if ( timer != NULL )
     {
-        *timer += period;
+        timer->timestamp += timer->period;
     }
 }
 
@@ -168,24 +175,24 @@ static void update_periodic_timer( uint32_t* const timer, uint32_t period )
 // 
 // Returns:     bool - the timer has expired
 // 
-// Parameters:  [in] expiration_time - the time to check current against
+// Parameters:  [in/out] timer - the time to check current against
 // 
 // *****************************************************
-static bool is_timer_expired( uint32_t expiration_time )
+static bool is_timer_expired( const struct timer_struct_s* const timer )
 {
-    bool expired = false;
+    bool expired = true;
 
-    uint32_t current_time = millis( );
-
-    if ( current_time > expiration_time )
+    if ( timer != NULL )
     {
-        expired = true;
-    }   
+        uint32_t current_time = millis( );
 
+        if ( timer->timestamp > current_time )
+        {
+            expired = false;
+        }
+    }
     return ( expired );
 }
-
-
 
 
 // *****************************************************
@@ -428,7 +435,7 @@ bool check_driver_steering_override( )
 //              [out] torque_spoof - structure containing the integer torque values
 // 
 // *****************************************************
-void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof ) 
+void calculate_torque_spoof( float torque, struct torque_spoof_s* spoof )
 {
     spoof->low = 819.2 * ( 0.0008 * torque + 2.26 );
     spoof->high = 819.2 * ( -0.0008 * torque + 2.5 );
@@ -486,12 +493,11 @@ static void publish_ps_ctrl_steering_report( )
 // *****************************************************
 static void publish_timed_tx_frames( )
 {
-    bool timer_expired = is_timer_expired( tx_steering_report_timestamp );
+    bool timer_expired = is_timer_expired( &tx_steering_report_timestamp );
 
     if ( timer_expired == true )
     {
-        update_periodic_timer( &tx_steering_report_timestamp,
-                               PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL );
+        update_periodic_timer( &tx_steering_report_timestamp );
 
         publish_ps_ctrl_steering_report();
     }
@@ -530,7 +536,7 @@ static void process_ps_ctrl_steering_command(
         disable_control();
     }
 
-    rx_steering_command_timestamp = schedule_timer( PS_CTRL_RX_WARN_TIMEOUT );
+    schedule_timer( &rx_steering_command_timestamp );
 }
 
 
@@ -607,7 +613,7 @@ void handle_ready_rx_frames( )
 // *****************************************************
 static void check_rx_timeouts( )
 {
-    bool timer_expired = is_timer_expired( rx_steering_command_timestamp );
+    bool timer_expired = is_timer_expired( &rx_steering_command_timestamp );
 
     if ( timer_expired == true ) 
     {
@@ -660,13 +666,12 @@ void setup( )
 
     current_ctrl_state.emergency_stop = false;
 
-    current_ctrl_state.timestamp_ms = schedule_timer( STEERING_LOOP_TIME_MS );
+    schedule_timer( &ctrl_state_timestamp );
 
     // Initialize the Rx and Tx timestamps to avoid timeout warnings on start up
-    rx_steering_command_timestamp = schedule_timer( PS_CTRL_RX_WARN_TIMEOUT );
+    schedule_timer( &rx_steering_command_timestamp );
 
-    tx_steering_report_timestamp =
-        schedule_timer( PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL );
+    schedule_timer( &tx_steering_report_timestamp );
 
     pid_zeroize( &pid_params );
 
@@ -700,12 +705,11 @@ void loop( )
 
     check_rx_timeouts( );
 
-    bool timer_expired = is_timer_expired( current_ctrl_state.timestamp_ms );
+    bool timer_expired = is_timer_expired( &ctrl_state_timestamp );
 
     if ( timer_expired == true )
     {
-        update_periodic_timer( &current_ctrl_state.timestamp_ms,
-                               STEERING_LOOP_TIME_MS );
+        update_periodic_timer( &ctrl_state_timestamp );
 
         bool override = check_driver_steering_override( );
 
@@ -749,7 +753,7 @@ void loop( )
                                  ( float ) -1500.0f,
                                  ( float ) 1500.0f );
 
-            struct torque_spoof_t torque_spoof;
+            struct torque_spoof_s torque_spoof;
 
             calculate_torque_spoof( control, &torque_spoof );
 
