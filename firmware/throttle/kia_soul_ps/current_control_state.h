@@ -35,7 +35,7 @@
 
  typedef struct /* Tracks override flags for pedal and voltages */
  {
-     uint16_t wheel; /* Tracks whether pedal is pressed */
+     uint16_t pedal; /* Tracks whether pedal is pressed */
      uint16_t voltage; /* Tracks any DAC/ADC voltage discrepancies */
      uint16_t voltage_spike_a; /* Used to filter any DAC/ADC voltage spikes */
      uint16_t voltage_spike_b; /* Used to filter any DAC/ADC voltage spikes */
@@ -46,39 +46,15 @@ typedef struct
     //
     //
     bool control_enabled; /* Is control currently enabled flag */
-    //
-    //
+	//
+	//
     bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
     //
     //
-    double current_steering_angle; /* Current steering angle as reported by car */
+    double pedal_position; /* Current pedal position as reported by car */
     //
     //
-    double commanded_steering_angle; /* Commanded steering angle as specified by higher level controller */
-    //
-    //
-    double PID_input; /* Input to PID controller */
-    //
-    //
-    double PID_output; /* Output from PID controller */
-    //
-    //
-    double PID_setpoint; /* Setpoint for PID controller */
-    //
-    //
-    double SA_Kp = 0.3; /* Proportional gain for PID controller */
-    //
-    //
-    double SA_Ki = 1.3; /* Integral gain for PID controller */
-    //
-    //
-    double SA_Kd = 0.03; /* Derivative gain for PID controller */
-    //
-    //
-    double steering_angle_rate_max = 1000.0; /* Maximum rate of change of steering wheel angle */
-    //
-    //
-    double steering_angle_last; /* Last steering angle recorded */
+    double pedal_position_target; /* As specified by higher level controller */
     //
     //
     uint32_t timestamp_us; /* Keeps track of last control loop time in us */
