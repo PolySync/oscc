@@ -799,7 +799,6 @@ void loop( )
                 current_ctrl_state.test_countdown = 0;
                 check_spoof_voltages( &torque_spoof );
             }
-
         }
         else
         {

@@ -132,6 +132,10 @@
 
 /**
  * @brief Steering command steering wheel velocity scale factor.
+ * 
+ * This factor can be increased to provide smoother, but slightly less responsive, steering control.
+ * It is recommended to smooth at the higher level, with this factor, before trying to smooth at the
+ * lower level.
  *
  */
 #define STEERING_COMMAND_MAX_VELOCITY_FACTOR (0.25)
