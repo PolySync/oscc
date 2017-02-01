@@ -110,7 +110,7 @@ Controlling Your Vehicle
 Now that all your Arduino modules are properly setup, it is time to start sending control commands. There is an example application to do this that uses the Logitech F310 Gamepad. The example interfaces to the joystick gamepad via the SDL2 joystick library and sends CAN commands over the control CAN bus via the Kvaser CANlib SDK. These CAN control commands are interpreted by the respective Arduino modules and used to actuate the vehicle.
 
 **Pre-requisites:** A Logitech F310 gamepad is required, and the SDL2 library and CANlib SDK need to be pre-installed. 
-A CAN interface adapter, such as the [Kvaser Leaflight](https://www.kvaser.com), is also required.
+A CAN interface adapter, such as the [Kvaser Leaf Light](https://www.kvaser.com), is also required.
 
 [logitech-F310](http://a.co/3GoUlkN)
 
@@ -144,14 +144,14 @@ Then navigate to the examples directory of the CANlib install.
 
 `cd /usr/src/linuxcan/canlib/examples/`
 
-You can use the "listChannels" and "canmonitor" examples to determine which CAN channel your control bus is connected to. CAN monitor will dump any data on a selected channel and list channels will tell you what channels are avaliable. You can use both to determine which channel you will need to use. Once you know the correct chanel number, you can run the joystick example with the command below.
+You can use the "listChannels" and "canmonitor" examples to determine which CAN channel your control bus is connected to. CAN monitor will dump any data on a selected channel and list channels will tell you what channels are available. You can use both to determine which channel you will need to use. Once you know the correct channel number, you can run the joystick example with the command below.
 
 `./joystick-commander <channel-number>`
 
 **Controlling the Vehicle with the Joystick Gamepad**
 
 Once the joystick commander is up and running you can use it to send commands to the Arduino modules. The controls are listed when the programs start up. Be sure the switch on the back of the controller is 
-switched to the 'X' position, not 'D'. The vehicle will only response to commands if control is enabled with the start button. The back button disables control.
+switched to the 'X' position, not 'D'. The vehicle will only respond to commands if control is enabled with the start button. The back button disables control.
 
 
 Additional Vehicles & Contributing
