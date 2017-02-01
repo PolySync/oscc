@@ -19,12 +19,10 @@ Repository Contents
 Boards
 -----
 
-Once we finish testing and validating the board designs, we will be releasing the schematics and design files along with the board test plans and testing firmware. Check back soon for complete designs.
-Once we have validated the boards, we will be shipping the boards as a kit.
+The sensor interface and actuator control board schematics and design files are located in the `OSCC/boards/` directory. If you don't have the time or fabrication resources, the boards can be purchased as a kit from the [OSCC website](http://oscc.io). 
+
 Thanks to [Trey German](https://www.PolymorphicLabs.com) and [Macrofab](https://macrofab.com/) for help desiging the boards and getting them made.
 
-
-Click [Here](http://oscc.io) to order your autonomy kit now.
 
 Building and Installing Arduino Firmware
 ------------
