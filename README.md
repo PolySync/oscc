@@ -21,7 +21,7 @@ Boards
 
 The sensor interface and actuator control board schematics and design files are located in the `OSCC/boards/` directory. If you don't have the time or fabrication resources, the boards can be purchased as a kit from the [OSCC website](http://oscc.io). 
 
-Thanks to [Trey German](https://www.PolymorphicLabs.com) and [Macrofab](https://macrofab.com/) for help desiging the boards and getting them made.
+Thanks to [Trey German](https://www.PolymorphicLabs.com) and [Macrofab](https://macrofab.com/) for help designing the boards and getting the boards made.
 
 
 Building and Installing Arduino Firmware
