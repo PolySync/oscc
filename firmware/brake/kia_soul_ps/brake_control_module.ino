@@ -604,12 +604,7 @@ void update_brake_pressure( )
 // 
 // Returns:     void
 // 
-// Parameters:  uint8_t sensor_p_left
-//              uint8_t sensor_p_right
-//              uint8_t solenoid_pin_left_a
-//              uint8_t solenoid_pin_right_a
-//              uint8_t solenoid_pin_left_r
-//              uint8_t solenoid_pin_right_r
+// Parameters:  struct brake_init_data data to initialze brake structure
 // 
 // *****************************************************
 void init_brakes( const struct brake_data_s * const brake_init_data )
