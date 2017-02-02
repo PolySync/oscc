@@ -34,6 +34,17 @@
 #include "control_protocol_can.h"
 #include "PID.h"
 
+// *****************************************************
+// Constants
+// *****************************************************
+
+// the following are guesses, these need to be debugged/researched
+const float ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
+const float PRESSURE_STEP = 0.2;         // The amount that the 'a' and 'd' commands change the
+                                          // voltage each time they are pressed.
+const float MIN_PACC = 2.3;              // minumum accumulator pressure to maintain
+const float MAX_PACC = 2.4;              // max accumulator pressure to maintain
+const float PEDAL_THRESHOLD = 0.5;          // Pressure for pedal interference
 
 // *****************************************************
 // static global data/macros
@@ -154,7 +165,7 @@ int16_t solenoid_left_release_duty_min;
 // *****************************************************
 int16_t calculate_solenoid_left_actuation_duty_cycle( float PID_output )
 {
-  int16_t scaled = ( int16_t )abs( PID_output ) * 512;
+  int16_t scaled = ( ( int16_t )abs( PID_output ) ) * 512;
   int16_t scale =  map( scaled, 0, 1024, solenoid_left_actuation_duty_min, solenoid_left_actuation_duty_max );
   return scale;
 }
@@ -171,7 +182,7 @@ int16_t calculate_solenoid_left_actuation_duty_cycle( float PID_output )
 // *****************************************************
 int16_t calculate_solenoid_left_release_duty_cycle( float PID_output )
 {
-  int16_t scaled = ( int16_t )abs( PID_output ) * 512;
+  int16_t scaled = ( ( int16_t )abs( PID_output ) ) * 512;
   int16_t scale =  map( scaled, 0, 1024, solenoid_left_release_duty_min, solenoid_left_release_duty_max );
   return scale;
 }
@@ -188,7 +199,8 @@ int16_t calculate_solenoid_left_release_duty_cycle( float PID_output )
 // *****************************************************
 float pressure_to_voltage( int16_t pressure )
 {
-    return ( ( float )pressure + 217.1319446 ) / 505.5662053;
+    float voltage = ( ( float )pressure + 217.1319446 ) / 505.5662053;
+    return voltage;
 }
 
 // *****************************************************
@@ -203,24 +215,26 @@ float pressure_to_voltage( int16_t pressure )
 // *****************************************************
 int16_t voltage_to_pressure( float voltage )
 {
-    return ( (int16_t)voltage * 505.5662053 ) - 217.1319446;
+    int16_t pressure = (int16_t)( ( voltage * 505.5662053 ) - 217.1319446 );
+    return pressure;
 }
 
 // *****************************************************
-// Function:    convert_ADC_reading_to_voltage
+// Function:    convert_ADC_reading_to_pressure
 // 
 // Purpose:     Convert the ADC reading
 //              (which goes from 0-1023)
-//              to a voltage (0 - 5V)
+//              to a pressure (0 - 5V)
 // 
-// Returns:     float - volts
+// Returns:     float - pressure
 // 
 // Parameters:  int16_t - ADC reading 
 // 
 // *****************************************************
-float convert_ADC_reading_to_voltage( int16_t input )
+float convert_ADC_reading_to_pressure( int16_t input )
 {
-    return ( ( float )input * ( 5.0 / 1023.0 ) );
+    float voltage = ( ( float )input * ( 5.0 / 1023.0 ) );
+    return voltage;
 }
 
 // *****************************************************
@@ -252,14 +266,6 @@ const uint8_t PIN_PFR = 13;       // pressure front right sensor
 const uint8_t PIN_PFL = 14;       // pressure front left sensor
 const uint8_t PIN_PRR = 15;       // pressure rear right sensor
 
-// the following are guesses, these need to be debugged/researched
-const float ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
-const float PRESSURE_STEP = 0.2;         // The amount that the 'a' and 'd' commands change the
-                                          // voltage each time they are pressed.
-const float MIN_PACC = 2.3;              // minumum accumulator pressure to maintain
-const float MAX_PACC = 2.4;              // max accumulator pressure to maintain
-const float PEDAL_THRESHOLD = 0.5;          // Pressure for pedal interference
-
 // *****************************************************
 // Initialize states
 // *****************************************************
@@ -277,7 +283,9 @@ struct accumulator_data_s
     float pressure = 0.0;
     uint8_t sensor_pin = 99;
     uint8_t control_pin = 99;
-} accumulator;
+};
+
+struct accumulator_data_s accumulator;
 
 // *****************************************************
 // Function:    turn_accumulator_pump_off
@@ -338,8 +346,8 @@ void turn_accumulator_pump_on( )
 // *****************************************************
 void maintain_accumulator_pressure( )
 {
-    int16_t result = analogRead( accumulator.sensor_pin );
-    accumulator.pressure = convert_ADC_reading_to_voltage( result );
+    int16_t raw_accumulator_data = analogRead( accumulator.sensor_pin );
+    accumulator.pressure = convert_ADC_reading_to_pressure( raw_accumulator_data );
 
     if ( accumulator.pressure < MIN_PACC )
     {
@@ -383,7 +391,9 @@ struct master_cylinder_solenoid_data_s
     uint8_t sensor1_pin = 99;
     uint8_t sensor2_pin = 99;
     uint8_t control_pin = 99;
-} master_cylinder_solenoid;
+};
+
+struct master_cylinder_solenoid_data_s master_cylinder_solenoid;
 
 // *****************************************************
 // Function:    open_master_cylinder_solenoid
@@ -427,10 +437,10 @@ void close_master_cylinder_solenoid( )
 // *****************************************************
 void check_driver_brake_override( )
 {
-    int16_t read1 = analogRead( master_cylinder_solenoid.sensor1_pin );
-    master_cylinder_solenoid.pressure1 = convert_ADC_reading_to_voltage( read1 );
-    int16_t read2 = analogRead( master_cylinder_solenoid.sensor2_pin );
-    master_cylinder_solenoid.pressure2 = convert_ADC_reading_to_voltage( read2 );
+    int16_t raw_ADC_sensor1_data = analogRead( master_cylinder_solenoid.sensor1_pin );
+    master_cylinder_solenoid.pressure1 = convert_ADC_reading_to_pressure( raw_ADC_sensor1_data );
+    int16_t raw_ADC_sensor2_data = analogRead( master_cylinder_solenoid.sensor2_pin );
+    master_cylinder_solenoid.pressure2 = convert_ADC_reading_to_pressure( raw_ADC_sensor2_data );
 
     //if current pedal pressure is greater than the limit
     //(because of driver override by pressing the brake pedal), disable.
@@ -485,7 +495,9 @@ struct brake_data_s
     bool increasing_pressure = false;           // used to track if pressure should be increasing
     bool decreasing_pressure = false;           // used to track if pressure should be decreasing
     uint32_t previous_millis = 0;               // will store last time solenoid was updated
-} brakes;
+};
+
+struct brake_data_s brakes;
 
 // *****************************************************
 // Function:    turn_off_all_brake_solenoids
@@ -512,13 +524,13 @@ void turn_off_all_brake_solenoids( )
 // 
 // Returns:     void
 // 
-// Parameters:  int16_t scalar to write to solenoids
+// Parameters:  int16_t scaled_pressure_value
 // 
 // *****************************************************
-void turn_on_brake_actuator_solenoids( int16_t scaler )
+void turn_on_brake_actuator_solenoids( int16_t scaled_pressure_value )
 {
-    analogWrite( brakes.solenoid_left_actuation, scaler );
-    analogWrite( brakes.solenoid_right_actuation, scaler );
+    analogWrite( brakes.solenoid_left_actuation, scaled_pressure_value );
+    analogWrite( brakes.solenoid_right_actuation, scaled_pressure_value );
 }
 
 // *****************************************************
@@ -547,10 +559,10 @@ void turn_off_brake_actuator_solenoids( )
 // Parameters:  int16_t scalar to write to solenoids
 // 
 // *****************************************************
-void turn_on_brake_release_solenoids( int16_t scaler )
+void turn_on_brake_release_solenoids( int16_t scaled_pressure_value )
 {
-    analogWrite( brakes.solenoid_left_release, scaler );
-    analogWrite( brakes.solenoid_right_release, scaler );    
+    analogWrite( brakes.solenoid_left_release, scaled_pressure_value );
+    analogWrite( brakes.solenoid_right_release, scaled_pressure_value );    
 }
 
 // *****************************************************
@@ -581,8 +593,8 @@ void turn_off_brake_release_solenoids( )
 // *****************************************************
 void update_brake_pressure( )
 {
-    brakes.pressure_left = convert_ADC_reading_to_voltage( analogRead( brakes.sensor_pin_left ) );
-    brakes.pressure_right = convert_ADC_reading_to_voltage( analogRead( brakes.sensor_pin_right ) );  
+    brakes.pressure_left = convert_ADC_reading_to_pressure( analogRead( brakes.sensor_pin_left ) );
+    brakes.pressure_right = convert_ADC_reading_to_pressure( analogRead( brakes.sensor_pin_right ) );  
 }
 
 // *****************************************************
@@ -600,31 +612,29 @@ void update_brake_pressure( )
 //              uint8_t solenoid_pin_right_r
 // 
 // *****************************************************
-void init_brakes( uint8_t sensor_p_left,
-                  uint8_t sensor_p_right,
-                  uint8_t solenoid_pin_left_a,
-                  uint8_t solenoid_pin_right_a,
-                  uint8_t solenoid_pin_left_r,
-                  uint8_t solenoid_pin_right_r )
+void init_brakes( const struct brake_data_s * const brake_init_data )
 {
-    brakes.sensor_pin_left = sensor_p_left;
-    brakes.sensor_pin_right = sensor_p_right;
-    brakes.solenoid_left_actuation = solenoid_pin_left_a;
-    brakes.solenoid_right_actuation = solenoid_pin_right_a;
-    brakes.solenoid_left_release = solenoid_pin_left_r;
-    brakes.solenoid_right_release = solenoid_pin_right_r;
+    if ( brake_init_data != NULL )
+    {
+        brakes.sensor_pin_left = brake_init_data->sensor_pin_left;
+        brakes.sensor_pin_right = brake_init_data->sensor_pin_right;
+        brakes.solenoid_left_actuation = brake_init_data->solenoid_left_actuation;
+        brakes.solenoid_right_actuation = brake_init_data->solenoid_right_actuation;
+        brakes.solenoid_left_release = brake_init_data->solenoid_left_release;
+        brakes.solenoid_right_release = brake_init_data->solenoid_right_release;
 
-    // initialize solenoid pins to off
-    digitalWrite( brakes.solenoid_left_actuation, LOW );
-    digitalWrite( brakes.solenoid_right_actuation, LOW );
-    digitalWrite( brakes.solenoid_left_release, LOW );
-    digitalWrite( brakes.solenoid_right_release, LOW );
+        // initialize solenoid pins to off
+        digitalWrite( brakes.solenoid_left_actuation, LOW );
+        digitalWrite( brakes.solenoid_right_actuation, LOW );
+        digitalWrite( brakes.solenoid_left_release, LOW );
+        digitalWrite( brakes.solenoid_right_release, LOW );
 
-    // set pinmode to OUTPUT
-    pinMode( brakes.solenoid_left_actuation, OUTPUT );
-    pinMode( brakes.solenoid_right_actuation, OUTPUT );
-    pinMode( brakes.solenoid_left_release, OUTPUT );
-    pinMode( brakes.solenoid_right_release, OUTPUT );
+        // set pinmode to OUTPUT
+        pinMode( brakes.solenoid_left_actuation, OUTPUT );
+        pinMode( brakes.solenoid_right_actuation, OUTPUT );
+        pinMode( brakes.solenoid_left_release, OUTPUT );
+        pinMode( brakes.solenoid_right_release, OUTPUT );
+    }
 }
 
 
@@ -685,7 +695,7 @@ static void init_can( void )
 static void publish_ps_ctrl_brake_report( void )
 {
     // cast data
-    ps_ctrl_brake_report_msg * const data =
+    ps_ctrl_brake_report_msg * data =
             ( ps_ctrl_brake_report_msg* ) tx_frame_ps_ctrl_brake_report.data;
 
     // set frame ID
@@ -721,7 +731,6 @@ static void publish_ps_ctrl_brake_report( void )
 // *****************************************************
 static void publish_timed_tx_frames( void )
 {
-    // local vars
     uint32_t delta = 
         timer_delta_ms( tx_frame_ps_ctrl_brake_report.timestamp );
 
@@ -788,17 +797,14 @@ static void process_ps_ctrl_brake_command(
 static void process_psvc_chassis_state1(
     const psvc_chassis_state1_data_s * const chassis_data )
 {
-    // brake pressure as reported from the C-CAN bus
-    int16_t brake_pressure = chassis_data->brake_pressure;
-
     // take a reading from the brake pressure sensors
     update_brake_pressure( );
 
     // average the pressure of the rear and front lines
-    float pressure = ( brakes.pressure_left + brakes.pressure_right ) / 2;
+    float pressure = ( brakes.pressure_left + brakes.pressure_right ) / 2.0;
     DEBUG_PRINT( pressure );
     DEBUG_PRINT( "," );
-    DEBUG_PRINT( brake_pressure );
+    DEBUG_PRINT( chassis_data->brake_pressure );
 }
 
 
@@ -950,13 +956,13 @@ void brake_enter( )
 // *****************************************************
 void brake_update( )
 {
-    int16_t delta_t = 10;
-    int16_t curr_micros;
-    int16_t last_micros = 0;
+    static int16_t delta_t = 10;
+    static int16_t curr_micros = 0;
+    static int16_t last_micros = 0;
 
-    float pressure_last;
-    float pressure_rate_target;
-    float pressure_rate;
+    static float pressure_last = 0;
+    static float pressure_rate_target = 0;
+    static float pressure_rate = 0;
     
     // maintain accumulator pressure
     maintain_accumulator_pressure( );
@@ -1126,7 +1132,16 @@ void setup( void )
     //Initialize structs
     init_accumulator( PIN_PACC, PIN_PUMP );
     init_master_cylinder_solenoid( PIN_PMC1, PIN_PMC2, PIN_SMC );
-    init_brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR );
+    struct brake_data_s local_brake_data;
+
+    local_brake_data.sensor_pin_left = PIN_PFL;
+    local_brake_data.sensor_pin_right = PIN_PFR;
+    local_brake_data.solenoid_left_actuation = PIN_SLAFL;
+    local_brake_data.solenoid_right_actuation = PIN_SLAFR;
+    local_brake_data.solenoid_left_release = PIN_SLRFL;
+    local_brake_data.solenoid_right_release = PIN_SLRFR;
+
+    init_brakes( &local_brake_data );
 
     // zero
     last_update_ms = 0;
