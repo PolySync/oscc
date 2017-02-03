@@ -56,7 +56,7 @@
 #define CAN_CS 53
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT ( 150 )
+#define PS_CTRL_RX_WARN_TIMEOUT ( 250 )
 
 // Braking PID windup guard
 #define BRAKE_PID_WINDUP_GUARD ( 500 )
