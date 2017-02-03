@@ -75,7 +75,7 @@
 #define STEERING_WHEEL_CUTOFF_THRESHOLD ( 3000 )
 
 // Threshhold to detect when there is a discrepancy between DAC and ADC values
-#define VOLTAGE_THRESHOLD               ( 200 )     // mV
+#define VOLTAGE_THRESHOLD               ( 0.096 )     // mV
 
 #define SAMPLE_A                        ( 0 )
 
