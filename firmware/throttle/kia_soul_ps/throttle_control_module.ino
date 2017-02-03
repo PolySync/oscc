@@ -70,7 +70,7 @@
 #define SPOOF_ENGAGE                    ( 6 )
 
 // Threshhold to detect when a person is pressing accelerator
-#define PEDAL_THRESH                    ( 1000 )
+#define PEDAL_THRESHOLD                 ( 1000 )
 
 // Threshhold to detect when there is a discrepancy between DAC and ADC values
 #define VOLTAGE_THRESHOLD               ( 0.096 )     // mV
@@ -280,7 +280,7 @@ void calculate_pedal_spoof( float pedal_target, struct torque_spoof_t* spoof )
 //
 void check_pedal_override( )
 {
-    if ( ( signal_L + signal_H ) / 2 > PEDAL_THRESH )
+    if ( ( signal_L + signal_H ) / 2 > PEDAL_THRESHOLD )
     {
         disable_control( );
         current_ctrl_state.override_flag.pedal = 1;
