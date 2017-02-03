@@ -617,7 +617,6 @@ void loop()
         if ( current_ctrl_state.test_countdown >= 5 )
         {
             current_ctrl_state.test_countdown = 0;
-            //check_spoof_voltages( &torque_spoof );
         }
     }
 
