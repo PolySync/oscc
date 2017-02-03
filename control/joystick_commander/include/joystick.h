@@ -101,18 +101,53 @@ typedef struct
 } joystick_guid_s;
 
 
+typedef struct
+{
+    //
+    //
+    double brake_setpoint_average;
+    //
+    //
+    double throttle_setpoint_average;
+    //
+    //
+    double steering_setpoint_average;
+    //
+    //
+    double last_joystick_state_steering;
+} joystick_state_s;
+
+
 /**
  * @brief Joystick device.
  *
  */
 typedef struct
 {
+    //
+    //
     void *handle;
+    //
+    //
     joystick_guid_s guid;
+    //
+    //
+    joystick_state_s joystick_state;
 
 } joystick_device_s;
 
 
+
+
+/**
+ * @brief Initialize joystick state struct.
+ *
+ * @return ERROR code
+ * \li \ref NOERR (1) if success.
+ * \li \ref ERROR (0) if failure.
+ *
+ */
+int jstick_init_state( joystick_device_s * const jstick );
 
 
 /**
@@ -263,6 +298,21 @@ double jstick_normalize_trigger_position(
         const int position,
         const double range_min,
         const double range_max );
+
+
+/**
+ * @brief Calculate exponential average from current and previous values.
+ *
+ * @param [in] average Pointer to exponential average from previous calculations.
+ * @param [in] setpoint New input value to exponential average.
+ * @param [in] factor Factor applied to exponential averaging.
+ *
+ * @return New exponential average.
+ *
+ */
+double jstick_calc_exponential_average( double * const average,
+                                        const double setpoint,
+                                        const double factor );
 
 
 

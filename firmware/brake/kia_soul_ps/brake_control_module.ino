@@ -41,10 +41,10 @@
 // the following are guesses, these need to be debugged/researched
 const float ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
 const float PRESSURE_STEP = 0.2;         // The amount that the 'a' and 'd' commands change the
-                                          // voltage each time they are pressed.
+                                         // voltage each time they are pressed.
 const float MIN_PACC = 2.3;              // minumum accumulator pressure to maintain
 const float MAX_PACC = 2.4;              // max accumulator pressure to maintain
-const float PEDAL_THRESHOLD = 0.5;          // Pressure for pedal interference
+const float PEDAL_THRESHOLD = 0.6;       // Pressure for pedal interference
 
 // *****************************************************
 // static global data/macros
@@ -62,10 +62,13 @@ const float PEDAL_THRESHOLD = 0.5;          // Pressure for pedal interference
 #endif
 
 // chip select pin for CAN Shield
-#define CAN_CS ( 10 )
+#define CAN_CS ( 53 )
 
 // ms
 #define PS_CTRL_RX_WARN_TIMEOUT ( 150 )
+
+// Braking PID windup guard
+#define BRAKE_PID_WINDUP_GUARD ( 500 )
 
 //
 static uint32_t last_update_ms;
@@ -244,27 +247,23 @@ float convert_ADC_reading_to_pressure( int16_t input )
 //
 // *****************************************************
 // Duty cycles of pins 3 and 5 controlled by timer 3 (TCCR3B)
-const uint8_t PIN_SLAFL = 3;      // front left actuation
-const uint8_t PIN_SLAFR = 5;      // front right actuation
+const uint8_t PIN_SLAFL = 5;      // front left actuation
+const uint8_t PIN_SLAFR = 7;      // front right actuation
+
 // Duty cycles of pins 6, 7, and 8 controlled by timer 4 (TCCR4B)
 const uint8_t PIN_SLRFL = 6;      // front left return
-const uint8_t PIN_SLRFR = 7;      // front right return
-const uint8_t PIN_SMC = 8;      // master cylinder solenoids (two of them)
+const uint8_t PIN_SLRFR = 8;      // front right return
+const uint8_t PIN_SMC   = 2;      // master cylinder solenoids (two of them)
 
-const uint8_t PIN_PUMP = 9;     // accumulator pump motor
-
-// brake spoofer relay pin definitions
-const uint8_t PIN_BRAKE_SWITCH_1 = 48;
-const uint8_t PIN_BRAKE_SWITCH_2 = 49;
+const uint8_t PIN_BRAKE_SWITCH = 48;
+const uint8_t PIN_PUMP         = 49;     // accumulator pump motor
 
 // sensor pin (analog) definitions
 const uint8_t PIN_PACC = 9;       // pressure accumulator sensor
 const uint8_t PIN_PMC1 = 10;      // pressure master cylinder sensor 1
 const uint8_t PIN_PMC2 = 11;      // pressure master cylinder sensor 2
-const uint8_t PIN_PRL = 12;       // pressure rear left sensor
-const uint8_t PIN_PFR = 13;       // pressure front right sensor
-const uint8_t PIN_PFL = 14;       // pressure front left sensor
-const uint8_t PIN_PRR = 15;       // pressure rear right sensor
+const uint8_t PIN_PFR  = 13;      // pressure front right sensor
+const uint8_t PIN_PFL  = 14;      // pressure front left sensor
 
 // *****************************************************
 // Initialize states
@@ -333,6 +332,7 @@ void turn_accumulator_pump_on( )
     digitalWrite( accumulator.control_pin, HIGH );
 }
 
+<<<<<<< HEAD
 // *****************************************************
 // Function:    maintain_accumulator_pressure
 // 
@@ -669,6 +669,7 @@ static void init_can( void )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
+        DEBUG_PRINT( "init_can: retrying" );
     }
 
     // Debug log
@@ -817,7 +818,7 @@ static void process_psvc_chassis_state1(
 // *****************************************************
 void handle_ready_rx_frames( void )
 {
-    if ( CAN.checkReceive() == CAN_MSGAVAIL )
+    if ( CAN.checkReceive( ) == CAN_MSGAVAIL )
     {
         can_frame_s rx_frame;
 
@@ -929,9 +930,6 @@ void brake_enter( )
     // close master cylinder solenoids because they'll spill back to the reservoir
     close_master_cylinder_solenoid( );
 
-    digitalWrite( PIN_BRAKE_SWITCH_1, LOW );
-    digitalWrite( PIN_BRAKE_SWITCH_2, LOW );
-
     // close solenoid_left_releases, they are normally open for failsafe conditions
     turn_off_brake_release_solenoids( );
 
@@ -962,65 +960,76 @@ void brake_update( )
     // maintain accumulator pressure
     maintain_accumulator_pressure( );
 
-    // calculate a delta t
-    last_micros = curr_micros;
-    curr_micros = micros( );  // Fast loop, needs more precision than millis
-    delta_t = curr_micros - last_micros;
-
-
     // take a reading from the brake pressure sensors
     update_brake_pressure( );
     pressure = ( brakes.pressure_left + brakes.pressure_right ) / 2;
 
-
-    pressure_rate = ( pressure - pressure_last)/ delta_t;  // pressure/microsecond
-    pressure_rate_target = pressure_req - pressure;
-
-    pressure_last = pressure;
-
-    pid_params.derivative_gain = 0.50;
-    pid_params.proportional_gain = 10.0;
-    pid_params.integral_gain = 1.5;
-
-    int16_t ret = pid_update( &pid_params, pressure_rate_target - pressure_rate, 0.050 );
-
-    if ( ret == PID_SUCCESS )
+    if ( pressure_req > ZERO_PRESSURE )
     {
-        float pressure_pid_output = pid_params.control;
+        digitalWrite( PIN_BRAKE_SWITCH, HIGH );
+        close_master_cylinder_solenoid();
+        
+        // calculate a delta t
+        lastMicros = currMicros;
+        currMicros = micros();  // Fast loop, needs more precision than millis
+        deltaT = currMicros - lastMicros;
 
-        // constrain to min/max
-        pressure_pid_output = m_constrain(
-                (float) (pressure_pid_output),
-                (float) -2.0f,
-                (float) 2.0f );
+        pressure_rate = ( pressure - pressure_last)/ delta_t;  // pressure/microsecond
+        pressure_rate_target = pressure_req - pressure;
 
-        // some logic to set a samplerate for data which is sent to processing for plotting
-        uint32_t current_millis = millis();
-        if ( ( uint32_t )( current_millis - previous_millis ) >= 100 )
+        pid_params.derivative_gain = 0.50;
+        pid_params.proportional_gain = 10.0;
+        pid_params.integral_gain = 1.5;
+
+        int16_t ret = pid_update( &pid_params, pressure_rate_target - pressure_rate, 0.050 );
+
+        if ( ret == PID_SUCCESS )
         {
-            previous_millis = current_millis;
-        }
+            float pressure_pid_output = pid_params.control;
 
-        // if pressure is too high
-        if ( pressure_pid_output < -0.1 )
-        {
-            turn_off_brake_actuator_solenoids( );
-            turn_on_brake_release_solenoids( calculate_solenoid_left_release_duty_cycle( pressure_pid_output ) );
-        }
+            // constrain to min/max
+            pressure_pid_output = m_constrain(
+                    (float) (pressure_pid_output),
+                    (float) -2.0f,
+                    (float) 2.0f );
 
-        // if pressure is too low
-        if ( pressure_pid_output > 0.1 )
-        {
-            turn_off_brake_release_solenoids( );
-            turn_on_brake_actuator_solenoids( calculate_solenoid_left_actuation_duty_cycle( pressure_pid_output ) );
-        }
+            // some logic to set a samplerate for data which is sent to processing for plotting
+            uint32_t current_millis = millis();
+            if ( ( uint32_t )( current_millis - previous_millis ) >= 100 )
+            {
+                previous_millis = current_millis;
+            }
 
-        // if driver is not braking, transition to wait state
-        if ( pressure_req <= ZERO_PRESSURE )
-        {
-            DEBUG_PRINT( "pressure request below threshold" );
-            brake_state_machine.transitionTo( waiting_state );
+            // if pressure is too high
+            if ( pressure_pid_output < -0.1 )
+            {
+                turn_off_brake_actuator_solenoids( );
+                turn_on_brake_release_solenoids( calculate_solenoid_left_release_duty_cycle( pressure_pid_output ) );
+            }
+
+            // if pressure is too low
+            if ( pressure_pid_output > 0.1 )
+            {
+                turn_off_brake_release_solenoids( );
+                turn_on_brake_actuator_solenoids( calculate_solenoid_left_actuation_duty_cycle( pressure_pid_output ) );
+            }
+
+            // if driver is not braking, transition to wait state
+            if ( pressure_req <= ZERO_PRESSURE )
+            {
+                DEBUG_PRINT( "pressure request below threshold" );
+                brake_state_machine.transitionTo( waiting_state );
+            }
         }
+    }
+    else if ( pressure_req <= ZERO_PRESSURE ) 
+    {
+        open_master_cylinder_solenoid();
+        brakes.turn_off_brake_actuator_solenoids();
+        brakes.turn_off_brake_release_solenoids();
+
+        // unswitch brake switch
+        digitalWrite( PIN_BRAKE_SWITCH, LOW );
     }
 }
 
@@ -1044,8 +1053,7 @@ void brake_exit( )
     turn_off_brake_actuator_solenoids( );
 
     // unswitch brake switch
-    digitalWrite( PIN_BRAKE_SWITCH_1, HIGH );
-    digitalWrite( PIN_BRAKE_SWITCH_2, HIGH );
+    digitalWrite( PIN_BRAKE_SWITCH, LOW );
 }
 
 
@@ -1071,7 +1079,6 @@ static void check_rx_timeouts( )
         // disable control from the PolySync interface
         if ( control_enabled )
         {
-            Serial.println( "control disabled: timeout" );
             control_enabled = false;
             brake_state_machine.transitionTo( waiting_state );
         }
@@ -1098,31 +1105,17 @@ static void check_rx_timeouts( )
 // *****************************************************
 void setup( void )
 {
-    // duty Scalers good for 0x05
-    //solenoid_left_actuation_duty_max = 50;
-    //solenoid_left_actuation_duty_min = 5;
-    //solenoid_left_release_duty_max = 50;
-    //solenoid_left_release_duty_min = 20;
+    // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range 
+    TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
+    TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
 
-    // duty Scalers good for 0x02
-    solenoid_left_actuation_duty_max = 225;
-    solenoid_left_actuation_duty_min = 100;
-    solenoid_left_release_duty_max = 225;
-    solenoid_left_release_duty_min = 100;
-
-    // set the PWM timers, above the acoustic range
-    TCCR3B = ( TCCR3B & 0xF8 ) | 0x02; // pins 2,3,5 | timer 3
-    TCCR4B = ( TCCR4B & 0xF8 ) | 0x02; // pins 6,7,8 | timer 4
-
-    /*
-       0x01      31.374 KHz
-       0x02      3.921 KHz
-       0x03      980.3 Hz
-       0x04      490.1 Hz
-       0x05      245 hz
-       0x06      122.5 hz
-       0x07      30.63 hz
-     */
+    // set the min/max duty cycle scalers used for 3.921 KHz PWM frequency.
+    // These represent the minimum duty cycles that begin to actuate the proportional solenoids 
+    // and the maximum dudty cycle where the solenoids have reached their stops.
+    solenoid_left_actuation_duty_max = 105;
+    solenoid_left_actuation_duty_min = 50;
+    solenoid_left_release_duty_max = 100;
+    solenoid_left_release_duty_min = 50;
 
     //Initialize structs
     init_accumulator( PIN_PACC, PIN_PUMP );
@@ -1142,11 +1135,8 @@ void setup( void )
     last_update_ms = 0;
     memset( &rx_frame_ps_ctrl_brake_command, 0, sizeof( rx_frame_ps_ctrl_brake_command ) );
 
-    // relay boards are active low, set to high before setting output to avoid unintended energisation of relay
-    digitalWrite( PIN_BRAKE_SWITCH_1, HIGH );
-    digitalWrite( PIN_BRAKE_SWITCH_2, HIGH );
-    pinMode( PIN_BRAKE_SWITCH_1, OUTPUT );
-    pinMode( PIN_BRAKE_SWITCH_2, OUTPUT );
+    digitalWrite( PIN_BRAKE_SWITCH, LOW );
+    pinMode( PIN_BRAKE_SWITCH, OUTPUT );
 
     // depower all the things
     turn_accumulator_pump_off( );
@@ -1169,7 +1159,7 @@ void setup( void )
     last_update_ms = millis( );
 
     // Initialize PID params
-    pid_zeroize( &pid_params );
+    pid_zeroize( &pid_params, BRAKE_PID_WINDUP_GUARD );
 
     // debug log
     DEBUG_PRINT( "init: pass" );
@@ -1193,9 +1183,8 @@ void setup( void )
 // Parameters:  None
 // 
 // *****************************************************
-void loop()
+void loop( )
 {
-
     // update the global system update timestamp, ms
     last_update_ms = millis( );
 

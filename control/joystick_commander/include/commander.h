@@ -120,7 +120,7 @@
  * @brief Steering command steering wheel velocity minimum valid value. [uint8_t]
  *
  */
-#define STEERING_COMMAND_MAX_VELOCITY_MIN (0)
+#define STEERING_COMMAND_MAX_VELOCITY_MIN (20)
 
 
 /**
@@ -132,9 +132,34 @@
 
 /**
  * @brief Steering command steering wheel velocity scale factor.
+ * 
+ * This factor can be increased to provide smoother, but slightly less responsive, steering control.
+ * It is recommended to smooth at the higher level, with this factor, before trying to smooth at the
+ * lower level.
  *
  */
-#define STEERING_COMMAND_MAX_VELOCITY_FACTOR (2)
+#define STEERING_COMMAND_MAX_VELOCITY_FACTOR (0.25)
+
+
+/**
+ * @brief Exponential filter factor for braking commands.
+ *
+ */
+#define BRAKES_FILTER_FACTOR (0.2)
+
+
+/**
+ * @brief Exponential filter factor for throttle commands.
+ *
+ */
+#define THROTTLE_FILTER_FACTOR (0.2)
+
+
+/**
+ * @brief Exponential filter factor for steering commands.
+ *
+ */
+#define STEERING_FILTER_FACTOR (0.1)
 
 
 

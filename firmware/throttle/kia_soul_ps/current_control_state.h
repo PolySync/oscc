@@ -26,75 +26,44 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/* 
- * File:   PID.h
- *
- */
-
-#ifndef PID_H
-#define PID_H
-
-
-
-
 /**
- * @brief Math macro: constrain(amount, low, high).
+ * @brief Current control state.
+ *
+ * Keeps track of what state the arduino controller is currently in.
  *
  */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
-/**
- * @brief Error in PID calculation.
- *
- */
-#define PID_ERROR 1
+ typedef struct /* Tracks override flags for pedal and voltages */
+ {
+     uint16_t pedal; /* Tracks whether pedal is pressed */
+     uint16_t voltage; /* Tracks any DAC/ADC voltage discrepancies */
+     uint16_t voltage_spike_a; /* Used to filter any DAC/ADC voltage spikes */
+     uint16_t voltage_spike_b; /* Used to filter any DAC/ADC voltage spikes */
+ } override_flags;
 
-/**
- * @brief Success in PID calculation.
- *
- */
-#define PID_SUCCESS 0
-
-
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
-
-typedef struct 
+typedef struct
 {
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_input;
-    double int_error;
-    double control;
-    double prev_steering_angle;
-} PID;
-
-
-
-
-int pid_update( PID* pid, double setpoint, double input, double dt );
-
-
-void pid_zeroize( PID* pid, double integral_windup_guard );
-
-
-
-
-#ifdef __cplusplus
-}
-#endif
- 
-
-
-
-#endif /* PID_H */
-
-
+    //
+    //
+    bool control_enabled; /* Is control currently enabled flag */
+	//
+	//
+    bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
+    //
+    //
+    double pedal_position; /* Current pedal position as reported by car */
+    //
+    //
+    double pedal_position_target; /* As specified by higher level controller */
+    //
+    //
+    uint32_t timestamp_us; /* Keeps track of last control loop time in us */
+    //
+    //
+    override_flags override_flag;
+    //
+    //
+    uint16_t test_countdown; /* Iterator for DAC/ADC Voltage check */
+    //
+    //
+} current_control_state;
