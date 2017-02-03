@@ -50,7 +50,6 @@ const float PEDAL_THRESHOLD = 0.6;       // Pressure for pedal interference
 // static global data/macros
 // *****************************************************
 
-
 #define PSYNC_DEBUG_FLAG
 
 // show us if debugging
@@ -332,7 +331,6 @@ void turn_accumulator_pump_on( )
     digitalWrite( accumulator.control_pin, HIGH );
 }
 
-<<<<<<< HEAD
 // *****************************************************
 // Function:    maintain_accumulator_pressure
 // 
@@ -970,9 +968,9 @@ void brake_update( )
         close_master_cylinder_solenoid();
         
         // calculate a delta t
-        lastMicros = currMicros;
-        currMicros = micros();  // Fast loop, needs more precision than millis
-        deltaT = currMicros - lastMicros;
+        last_micros = curr_micros;
+        curr_micros = micros( );  // Fast loop, needs more precision than millis
+        delta_t = curr_micros - last_micros;
 
         pressure_rate = ( pressure - pressure_last)/ delta_t;  // pressure/microsecond
         pressure_rate_target = pressure_req - pressure;
@@ -981,7 +979,7 @@ void brake_update( )
         pid_params.proportional_gain = 10.0;
         pid_params.integral_gain = 1.5;
 
-        int16_t ret = pid_update( &pid_params, pressure_rate_target - pressure_rate, 0.050 );
+        int16_t ret = pid_update( &pid_params, pressure_rate_target, pressure_rate, 0.050 );
 
         if ( ret == PID_SUCCESS )
         {
@@ -1025,8 +1023,8 @@ void brake_update( )
     else if ( pressure_req <= ZERO_PRESSURE ) 
     {
         open_master_cylinder_solenoid();
-        brakes.turn_off_brake_actuator_solenoids();
-        brakes.turn_off_brake_release_solenoids();
+        turn_off_brake_actuator_solenoids();
+        turn_off_brake_release_solenoids();
 
         // unswitch brake switch
         digitalWrite( PIN_BRAKE_SWITCH, LOW );
