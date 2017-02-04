@@ -399,9 +399,9 @@ void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
     if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
             VOLTAGE_THRESHOLD )
     {
-        if ( current_ctrl_state.override_flag.voltage_spike_a == 0 )
+        if ( current_ctrl_state.override_flag.voltage_spike_a < 3 )
         {
-            current_ctrl_state.override_flag.voltage_spike_a = 1;
+            current_ctrl_state.override_flag.voltage_spike_a += 1;
         }
         else
         {
@@ -409,21 +409,22 @@ void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
 
             disable_control( );
             current_ctrl_state.override_flag.voltage = 1;
+            current_ctrl_state.override_flag.voltage_spike_a = 1;
         }
     }
     else
     {
         current_ctrl_state.override_flag.voltage = 0;
-        current_ctrl_state.override_flag.voltage_spike_a = 0;
+        current_ctrl_state.override_flag.voltage_spike_a = 1;
     }
 
     // fail criteria. ~ ( ± 96mV )
     if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
             VOLTAGE_THRESHOLD )
     {
-        if ( current_ctrl_state.override_flag.voltage_spike_b == 0 )
+        if ( current_ctrl_state.override_flag.voltage_spike_b < 3 )
         {
-            current_ctrl_state.override_flag.voltage_spike_b = 1;
+            current_ctrl_state.override_flag.voltage_spike_b += 1;
         }
         else
         {
@@ -431,12 +432,13 @@ void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
 
             disable_control( );
             current_ctrl_state.override_flag.voltage = 1;
+            current_ctrl_state.override_flag.voltage_spike_b = 1;
         }
     }
     else
     {
         current_ctrl_state.override_flag.voltage = 0;
-        current_ctrl_state.override_flag.voltage_spike_b = 0;
+        current_ctrl_state.override_flag.voltage_spike_b = 1;
     }
 }
 
@@ -541,6 +543,8 @@ static void process_ps_ctrl_steering_command(
     {
         current_ctrl_state.control_enabled = true;
         enable_control( );
+        current_ctrl_state.override_flag.voltage_spike_a = 1;
+        current_ctrl_state.override_flag.voltage_spike_b = 1;
     }
 
     if ( ( control_data->enabled == 0 ) &&
@@ -692,9 +696,9 @@ void setup( )
 
     current_ctrl_state.override_flag.voltage = 0;
 
-    current_ctrl_state.override_flag.voltage_spike_a = 0;
+    current_ctrl_state.override_flag.voltage_spike_a = 1;
 
-    current_ctrl_state.override_flag.voltage_spike_b = 0;
+    current_ctrl_state.override_flag.voltage_spike_b = 1;
 
     current_ctrl_state.test_countdown = 0;
 
@@ -797,7 +801,6 @@ void loop( )
             if ( current_ctrl_state.test_countdown >= 5 )
             {
                 current_ctrl_state.test_countdown = 0;
-                check_spoof_voltages( &torque_spoof );
             }
         }
         else
