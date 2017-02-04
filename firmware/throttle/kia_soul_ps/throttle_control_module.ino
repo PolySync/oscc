@@ -591,11 +591,12 @@ void loop()
     signal_L = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
     signal_H = analogRead( SIGNAL_INPUT_B ) << 2;
 
+    // if someone is pressing the throttle pedal, disable control
+    check_pedal_override( );
+
     // now that we've set control status, do throttle if we are in control
     if ( current_ctrl_state.control_enabled == true )
     {
-        // if someone is pressing the throttle pedal, disable control
-        check_pedal_override( );
 
         struct torque_spoof_t torque_spoof;
 
