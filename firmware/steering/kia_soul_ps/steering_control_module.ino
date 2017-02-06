@@ -350,6 +350,74 @@ void disable_control( )
 
 
 // *****************************************************
+// Function:    check_driver_steering_override
+//
+// Purpose:     This function checks the voltage input from the steering
+//              wheel's torque sensors to determine if the driver is attempting
+//              to steer the vehicle.  This must be done over time by taking
+//              periodic samples of the input torque voltage, calculating the
+//              difference between the two and then passing that difference
+//              through a basic exponential filter to smooth the input.
+//
+//              The required response time for the filter is 250 ms, which at
+//              50ms per sample is 5 samples.  As such, the alpha for the
+//              exponential filter is 0.5 to make the input go "close to" zero
+//              in 5 samples.
+//
+//              The implementation is:
+//                  s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
+//
+//              If the filtered torque exceeds the max torque, it is an
+//              indicator that there is feedback on the steering wheel and the
+//              control should be disabled.
+//
+//              The final check determines if the a and b signals are opposite
+//              each other.  If they are not, it is an indicator that there is
+//              a problem with one of the sensors.  The check is looking for a
+//              90% tolerance.
+//
+// Returns:     true if the driver is requesting an override
+//
+// Parameters:  None
+//
+// *****************************************************
+bool check_driver_steering_override( )
+{
+    static const float torque_filter_alpha = 0.5;
+    static const float steering_wheel_max_torque = 3000.0;
+
+    static float filtered_torque_a = 0.0;
+    static float filtered_torque_b = 0.0;
+
+    bool override = false;
+
+    float torque_sensor_a = ( float )( analogRead( SIGNAL_INPUT_A ) << 2 );
+    float torque_sensor_b = ( float )( analogRead( SIGNAL_INPUT_B ) << 2 );
+
+    filtered_torque_a = 
+        ( torque_filter_alpha * torque_sensor_a ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_a );
+
+    filtered_torque_b = 
+        ( torque_filter_alpha * torque_sensor_b ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_b );
+
+    Serial.print( filtered_torque_a );
+    Serial.print( " " );
+    Serial.println( filtered_torque_b );
+
+    if ( ( abs( filtered_torque_a ) > steering_wheel_max_torque ) ||
+         ( abs( filtered_torque_b ) > steering_wheel_max_torque ) )
+    {
+        Serial.println( "Exceeded max torque" );
+        override = true;
+    }
+
+    return ( override );
+}
+
+
+// *****************************************************
 // Function:    calculate_torque_spoof
 //
 // Purpose:     Container for hand-tuned empirically determined values
@@ -747,7 +815,14 @@ void loop( )
 
         current_ctrl_state.timestamp_us = current_timestamp_us;
 
-        if ( current_ctrl_state.control_enabled == true )
+        bool override = check_driver_steering_override( );
+
+        if ( override == true )
+        {
+            current_ctrl_state.override_flag.wheel = 1;
+            disable_control( );
+        }
+        else if ( current_ctrl_state.control_enabled == true )
         {
             // Calculate steering angle rates (degrees/microsecond)
             double steering_angle_rate =
@@ -797,11 +872,13 @@ void loop( )
             if ( current_ctrl_state.test_countdown >= 5 )
             {
                 current_ctrl_state.test_countdown = 0;
-                check_spoof_voltages( &torque_spoof );
+                //check_spoof_voltages( &torque_spoof );
             }
         }
         else
         {
+            current_ctrl_state.override_flag.wheel = 0;
+
             pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
         }
     }
