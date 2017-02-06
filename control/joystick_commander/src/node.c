@@ -184,7 +184,7 @@ static int init_can( int can_channel_index, canHandle* handle )
     
     if( ret == NOERR )
     {
-        (*handle) = canOpenChannel( can_channel_index, 0x40 );
+        (*handle) = canOpenChannel( can_channel_index, canOPEN_EXCLUSIVE );
 
         if ( (*handle) < 0 ) 
         {
