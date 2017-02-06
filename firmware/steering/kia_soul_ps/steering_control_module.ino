@@ -402,14 +402,9 @@ bool check_driver_steering_override( )
         ( torque_filter_alpha * torque_sensor_b ) +
             ( ( 1.0 - torque_filter_alpha ) * filtered_torque_b );
 
-    Serial.print( filtered_torque_a );
-    Serial.print( " " );
-    Serial.println( filtered_torque_b );
-
     if ( ( abs( filtered_torque_a ) > steering_wheel_max_torque ) ||
          ( abs( filtered_torque_b ) > steering_wheel_max_torque ) )
     {
-        Serial.println( "Exceeded max torque" );
         override = true;
     }
 
