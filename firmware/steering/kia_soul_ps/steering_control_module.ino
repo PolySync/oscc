@@ -383,6 +383,21 @@ void disable_control( )
 // *****************************************************
 bool check_driver_steering_override( )
 {
+    // The parameters below; torque_filter_alpha and steering_wheel_max_torque,
+    // can be used to modify how selective the steering override functionality
+    // is. If torque_filter_alpha or steering_wheel_max_torque is increased
+    // then steering override will be more selective about disabling on driver
+    // input. That is, it will require a harder input for the steering wheel
+    // to automatically disable. If these values are lowered then the steering
+    // override will be less selective; this may result in drastic movements
+    // of the joystick controller triggering steering override. 
+    // It is expected behavior that if a user uses the joystick controller to
+    // purposefully "fight" the direction of steering wheel movement that this
+    // will cause a steering override with the below parameters. That is if
+    // the steering wheel is drastically "jerked" back and forth, opposing the
+    // direction of steering wheel movement and purposefully trying to cause
+    // an unstable situation, the steering override is expected to be 
+    // triggered.
     static const float torque_filter_alpha = 0.5;
     static const float steering_wheel_max_torque = 3000.0;
 
