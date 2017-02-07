@@ -350,6 +350,84 @@ void disable_control( )
 
 
 // *****************************************************
+// Function:    check_driver_steering_override
+//
+// Purpose:     This function checks the voltage input from the steering
+//              wheel's torque sensors to determine if the driver is attempting
+//              to steer the vehicle.  This must be done over time by taking
+//              periodic samples of the input torque voltage, calculating the
+//              difference between the two and then passing that difference
+//              through a basic exponential filter to smooth the input.
+//
+//              The required response time for the filter is 250 ms, which at
+//              50ms per sample is 5 samples.  As such, the alpha for the
+//              exponential filter is 0.5 to make the input go "close to" zero
+//              in 5 samples.
+//
+//              The implementation is:
+//                  s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
+//
+//              If the filtered torque exceeds the max torque, it is an
+//              indicator that there is feedback on the steering wheel and the
+//              control should be disabled.
+//
+//              The final check determines if the a and b signals are opposite
+//              each other.  If they are not, it is an indicator that there is
+//              a problem with one of the sensors.  The check is looking for a
+//              90% tolerance.
+//
+// Returns:     true if the driver is requesting an override
+//
+// Parameters:  None
+//
+// *****************************************************
+bool check_driver_steering_override( )
+{
+    // The parameters below; torque_filter_alpha and steering_wheel_max_torque,
+    // can be used to modify how selective the steering override functionality
+    // is. If torque_filter_alpha or steering_wheel_max_torque is increased
+    // then steering override will be more selective about disabling on driver
+    // input. That is, it will require a harder input for the steering wheel
+    // to automatically disable. If these values are lowered then the steering
+    // override will be less selective; this may result in drastic movements
+    // of the joystick controller triggering steering override. 
+    // It is expected behavior that if a user uses the joystick controller to
+    // purposefully "fight" the direction of steering wheel movement that this
+    // will cause a steering override with the below parameters. That is if
+    // the steering wheel is drastically "jerked" back and forth, opposing the
+    // direction of steering wheel movement and purposefully trying to cause
+    // an unstable situation, the steering override is expected to be 
+    // triggered.
+    static const float torque_filter_alpha = 0.5;
+    static const float steering_wheel_max_torque = 3000.0;
+
+    static float filtered_torque_a = 0.0;
+    static float filtered_torque_b = 0.0;
+
+    bool override = false;
+
+    float torque_sensor_a = ( float )( analogRead( SIGNAL_INPUT_A ) << 2 );
+    float torque_sensor_b = ( float )( analogRead( SIGNAL_INPUT_B ) << 2 );
+
+    filtered_torque_a = 
+        ( torque_filter_alpha * torque_sensor_a ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_a );
+
+    filtered_torque_b = 
+        ( torque_filter_alpha * torque_sensor_b ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_b );
+
+    if ( ( abs( filtered_torque_a ) > steering_wheel_max_torque ) ||
+         ( abs( filtered_torque_b ) > steering_wheel_max_torque ) )
+    {
+        override = true;
+    }
+
+    return ( override );
+}
+
+
+// *****************************************************
 // Function:    calculate_torque_spoof
 //
 // Purpose:     Container for hand-tuned empirically determined values
@@ -675,7 +753,14 @@ void loop( )
 
         current_ctrl_state.timestamp_us = current_timestamp_us;
 
-        if ( current_ctrl_state.control_enabled == true )
+        bool override = check_driver_steering_override( );
+
+        if ( override == true )
+        {
+            current_ctrl_state.override_flag.wheel = 1;
+            disable_control( );
+        }
+        else if ( current_ctrl_state.control_enabled == true )
         {
             // Calculate steering angle rates (degrees/microsecond)
             double steering_angle_rate =
@@ -720,6 +805,8 @@ void loop( )
         }
         else
         {
+            current_ctrl_state.override_flag.wheel = 0;
+
             pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
         }
     }
