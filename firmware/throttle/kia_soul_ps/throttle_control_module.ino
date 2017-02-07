@@ -291,66 +291,6 @@ void check_pedal_override( )
     }
 }
 
-//
-void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
-{
-
-    uint16_t spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
-    uint16_t spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
-
-    float spoof_a_adc_volts = spoof_a_adc * ( 5.0 / 1023.0 ) + 0.010;
-    float spoof_b_adc_volts = spoof_b_adc * ( 5.0 / 1023.0 ) + 0.010;
-
-    // DAC values passed in from calculate_pedal_spoof( )
-    float spoof_a_dac_current_volts = spoof->high * ( 5.0 / 4095.0 );
-    float spoof_b_dac_current_volts = spoof->low * ( 5.0 / 4095.0 );
-
-    // fail criteria. ~ ( ± 96mV )
-    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
-            VOLTAGE_THRESHOLD )
-    {
-        if ( current_ctrl_state.override_flag.voltage_spike_a == 0 )
-        {
-            current_ctrl_state.override_flag.voltage_spike_a = 1;
-        }
-        else
-        {
-            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal A. * *" );
-
-            disable_control( );
-            current_ctrl_state.override_flag.voltage = 1;
-        }
-    }
-    else
-    {
-        current_ctrl_state.override_flag.voltage = 0;
-        current_ctrl_state.override_flag.voltage_spike_a = 0;
-    }
-
-    // fail criteria. ~ ( ± 96mV )
-    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
-            VOLTAGE_THRESHOLD )
-    {
-        if ( current_ctrl_state.override_flag.voltage_spike_b == 0 )
-        {
-            current_ctrl_state.override_flag.voltage_spike_b = 1;
-        }
-        else
-        {
-            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal B. * *" );
-
-            disable_control( );
-            current_ctrl_state.override_flag.voltage = 1;
-        }
-    }
-    else
-    {
-        current_ctrl_state.override_flag.voltage = 0;
-        current_ctrl_state.override_flag.voltage_spike_b = 0;
-    }
-
-}
-
 
 
 
@@ -554,8 +494,6 @@ void setup( )
 
     current_ctrl_state.override_flag.voltage_spike_b = 0;
 
-    current_ctrl_state.test_countdown = 0;
-
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
@@ -606,16 +544,6 @@ void loop()
 
         dac.outputA( torque_spoof.high );
         dac.outputB( torque_spoof.low );
-
-        current_ctrl_state.test_countdown += 1;
-
-        // if DAC out and ADC in voltages differ, disable control
-        // only test every fifth loop
-        if ( current_ctrl_state.test_countdown >= 5 )
-        {
-            current_ctrl_state.test_countdown = 0;
-            check_spoof_voltages( &torque_spoof );
-        }
     }
 
 }
