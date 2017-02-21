@@ -91,6 +91,34 @@ static struct oscc_interface_data_s* oscc = NULL;
 // *****************************************************
 
 // *****************************************************
+// Function:    oscc_can_write
+// 
+// Purpose:     Wrapper around the canWrite routine from the CAN library
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  id - ID of the CAN message ot send
+//              msg - pointer to the buffer to send
+//              dlc - size of the buffer
+//
+// *****************************************************
+static int oscc_can_write( long id, void* msg, unsigned int dlc )
+{
+    int return_code = ERROR;
+
+    if ( oscc != NULL )
+    {
+        canStatus status = canWrite( oscc->can_handle, id, msg, dlc, 0 );
+
+        if ( status == canOK )
+        {
+            return_code = NOERR;
+        }
+    }
+    return return_code;
+}
+
+// *****************************************************
 // Function:    oscc_interface_init_can
 // 
 // Purpose:     Initialize the OSCC communication layer with known values
@@ -295,15 +323,9 @@ int oscc_interface_disable_brakes( )
 
         printf( "brake: %d %d\n", brakes->enabled, brakes->pedal_command );
 
-        canStatus status = canWrite( oscc->can_handle,
-                                     PS_CTRL_MSG_ID_BRAKE_COMMAND,
-                                     (void *) brakes,
-                                     sizeof( ps_ctrl_brake_command_msg ),
-                                     0 );
-        if ( status == canOK )
-        {
-            return_code = NOERR;
-        }
+        return_code = oscc_can_write( PS_CTRL_MSG_ID_BRAKE_COMMAND,
+                                      (void *) brakes,
+                                      sizeof( ps_ctrl_brake_command_msg ) );
     }
     return ( return_code );
 }
@@ -333,15 +355,9 @@ int oscc_interface_disable_throttle( )
 
         printf( "throttle: %d %d\n", throttle->enabled, throttle->pedal_command );
 
-        canStatus status = canWrite( oscc->can_handle,
-                                     PS_CTRL_THROTTLE_COMMAND_ID,
-                                     (void *) throttle,
-                                     sizeof( ps_ctrl_throttle_command_msg ),
-                                     0 );
-        if ( status == canOK )
-        {
-            return_code = NOERR;
-        }
+        return_code = oscc_can_write( PS_CTRL_THROTTLE_COMMAND_ID,
+                                      (void *) throttle,
+                                      sizeof( ps_ctrl_throttle_command_msg ) );
     }
     return ( return_code );
 }
@@ -375,15 +391,9 @@ int oscc_interface_disable_steering( )
                 steering->steering_wheel_angle_command,
                 steering->steering_wheel_max_velocity );
 
-        canStatus status = canWrite( oscc->can_handle,
-                                     PS_CTRL_MSG_ID_STEERING_COMMAND,
-                                     (void *) steering,
-                                     sizeof( ps_ctrl_steering_command_msg ),
-                                     0 );
-        if ( status == canOK )
-        {
-            return_code = NOERR;
-        }
+        return_code = oscc_can_write( PS_CTRL_MSG_ID_STEERING_COMMAND,
+                                      (void *) steering,
+                                      sizeof( ps_ctrl_steering_command_msg ) );
     }
     return ( return_code );
 }
@@ -440,15 +450,9 @@ int oscc_interface_command_brakes( uint16_t brake_setpoint )
 
         brakes->pedal_command = brake_setpoint;
 
-        canStatus status = canWrite( oscc->can_handle,
-                                     PS_CTRL_MSG_ID_BRAKE_COMMAND,
-                                     (void *) brakes,
-                                     sizeof( ps_ctrl_brake_command_msg ),
-                                     0 );
-        if ( status == canOK )
-        {
-            return_code = NOERR;
-        }
+        return_code = oscc_can_write( PS_CTRL_MSG_ID_BRAKE_COMMAND,
+                                      (void *) brakes,
+                                      sizeof( ps_ctrl_brake_command_msg ) );
     }
     return ( return_code );
 }
@@ -468,7 +472,7 @@ int oscc_interface_command_brakes( uint16_t brake_setpoint )
 // *****************************************************
 int oscc_interface_command_throttle( uint16_t throttle_setpoint )
 {
-    int return_code = NOERR;
+    int return_code = ERROR;
 
     if ( oscc != NULL )
     {
@@ -476,15 +480,9 @@ int oscc_interface_command_throttle( uint16_t throttle_setpoint )
 
         throttle->pedal_command = throttle_setpoint;
 
-        canStatus status = canWrite( oscc->can_handle,
-                                     PS_CTRL_THROTTLE_COMMAND_ID,
-                                     (void *) throttle,
-                                     sizeof( ps_ctrl_throttle_command_msg ),
-                                     0 );
-        if ( status == canOK )
-        {
-            return_code = NOERR;
-        }
+        return_code = oscc_can_write( PS_CTRL_THROTTLE_COMMAND_ID,
+                                      (void *) throttle,
+                                      sizeof( ps_ctrl_throttle_command_msg ) );
     }
 
     return ( return_code );
@@ -507,7 +505,7 @@ int oscc_interface_command_throttle( uint16_t throttle_setpoint )
 // *****************************************************
 int oscc_interface_command_steering( int16_t angle, uint16_t rate )
 {
-    int return_code = NOERR;
+    int return_code = ERROR;
 
     if ( oscc != NULL )
     {
@@ -516,15 +514,9 @@ int oscc_interface_command_steering( int16_t angle, uint16_t rate )
         steering->steering_wheel_angle_command = angle;
         steering->steering_wheel_max_velocity = rate;
 
-        canStatus status = canWrite( oscc->can_handle,
-                                     PS_CTRL_MSG_ID_STEERING_COMMAND,
-                                     (void *) steering,
-                                     sizeof( ps_ctrl_steering_command_msg ),
-                                     0 );
-        if ( status == canOK )
-        {
-            return_code = NOERR;
-        }
+        return_code = oscc_can_write( PS_CTRL_MSG_ID_STEERING_COMMAND,
+                                      (void *) steering,
+                                      sizeof( ps_ctrl_steering_command_msg ) );
     }
     return ( return_code );
 }
