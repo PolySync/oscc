@@ -762,6 +762,23 @@ void loop( )
         }
         else if ( current_ctrl_state.control_enabled == true )
         {
+                        
+/*******************************************************************************
+*   WARNING
+*
+*   The ranges selected to do steering control are carefully tested to
+*   ensure that a torque is not requested that the vehicles steering motor
+*   cannot handle. By changing any of this code you risk attempting to actuate
+*   a torque outside of the vehicles valid range. Actuating a torque outside of
+*   the vehicles valid range will, at best, cause the vehicle to go into an
+*   unrecoverable fault state. Clearing this fault state requires one of Kia's
+*   native diagnostics tools, and someone who knows how to clear DTC codes with
+*   said tool.
+*
+*   It is NOT recommended to modify any of the existing control ranges, or
+*   gains, without expert knowledge.
+*******************************************************************************/
+            
             // Calculate steering angle rates (degrees/microsecond)
             double steering_angle_rate =
                 ( current_ctrl_state.current_steering_angle -
