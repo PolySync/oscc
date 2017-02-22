@@ -647,6 +647,24 @@ void brakeUpdate()
 
     if (pressure_req > ZERO_PRESSURE )
     {
+
+/*******************************************************************************
+*   WARNING
+*
+*   The ranges selected to do brake control are carefully tested to ensure that
+*   the pressure actuated is not outside of the range of what the brake module
+*   can handle. By changing any of this code you risk attempting to actuate
+*   a pressure outside of the brake modules valid range. Actuating a pressure
+*   outside of the modules valid range will, at best, cause it to go into an
+*   unrecoverable fault state. This is characterized by the accumulator
+*   "continuously pumping" without accumulating any actual pressure, or being
+*   "over pressured." Clearing this fault state requires expert knowledge of the
+*   breaking module.
+*
+*   It is NOT recommended to modify any of the existing control ranges, or
+*   gains, without expert knowledge.
+*******************************************************************************/
+	    
         digitalWrite( PIN_BRAKE_SWITCH, HIGH );
         smc.solenoidsClose();
         // calculate a delta t
