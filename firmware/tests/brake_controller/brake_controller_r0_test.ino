@@ -370,7 +370,6 @@ struct Brakes {
         Serial.println(scaler);
         analogWrite( _solenoidPinLeftR, scaler );
         analogWrite( _solenoidPinRightR, scaler );
-        analogWrite( 5, scaler );
     }
 
 
@@ -418,7 +417,7 @@ Brakes::Brakes( byte sensorPLeft, byte sensorPRight, byte solenoidPinLeftA, byte
 // Instantiate objects
 Accumulator accumulator( PIN_PACC, PIN_PUMP );
 SMC smc(PIN_PMC1, PIN_PMC2, PIN_SMC);
-Brakes brakes = Brakes( PIN_PFL, PIN_PFL, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
+Brakes brakes = Brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
 
 
 
