@@ -49,7 +49,7 @@
 #define CAN_CS                          ( 10 )
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT         ( 2500 )
+#define PS_CTRL_RX_WARN_TIMEOUT         ( 250 )
 
 // set up pins for interface with DAC (MCP4922)
 #define DAC_CS                          ( 9 )       // Chip select pin
