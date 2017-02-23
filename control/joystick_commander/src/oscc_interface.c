@@ -300,6 +300,94 @@ int oscc_interface_enable( )
 
 
 // *****************************************************
+// Function:    oscc_interface_command_brakes
+// 
+// Purpose:     Send a CAN message to set the brakes to a commanded value
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  brake_setpoint - unsigned 16 bit value that contains the
+//              brake value to set.
+//              The value is range limited between 0 and 52428
+//
+// *****************************************************
+int oscc_interface_command_brakes( uint16_t brake_setpoint )
+{
+    int return_code = ERROR;
+
+    if ( oscc != NULL )
+    {
+        oscc->brake_cmd.pedal_command = brake_setpoint;
+
+        return_code = oscc_can_write( PS_CTRL_MSG_ID_BRAKE_COMMAND,
+                                      (void *) &oscc->brake_cmd,
+                                      sizeof( ps_ctrl_brake_command_msg ) );
+    }
+    return ( return_code );
+}
+
+
+// *****************************************************
+// Function:    oscc_interface_command_throttle
+// 
+// Purpose:     Send a CAN message to set the throttle to a commanded value
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  throttle_setpoint - unsigned 16 bit value that contains the
+//              throttle value to set.
+//              The value is range limited between 0 and 19660
+//
+// *****************************************************
+int oscc_interface_command_throttle( uint16_t throttle_setpoint )
+{
+    int return_code = ERROR;
+
+    if ( oscc != NULL )
+    {
+        oscc->throttle_cmd.pedal_command = throttle_setpoint;
+
+        return_code = oscc_can_write( PS_CTRL_THROTTLE_COMMAND_ID,
+                                      (void *) &oscc->throttle_cmd,
+                                      sizeof( ps_ctrl_throttle_command_msg ) );
+    }
+
+    return ( return_code );
+}
+
+
+// *****************************************************
+// Function:    oscc_interface_command_steering
+// 
+// Purpose:     Send a CAN message to set the steering to a commanded value
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  angle - signed 16 bit value: the steering angle in degrees
+//              rate - unsigned 16 bit value; the steering rate in degrees/sec
+// 
+//              angle is range limited between -4700 to 4700
+//              rate is range limited between 20 to 254
+//
+// *****************************************************
+int oscc_interface_command_steering( int16_t angle, uint16_t rate )
+{
+    int return_code = ERROR;
+
+    if ( oscc != NULL )
+    {
+        oscc->steering_cmd.steering_wheel_angle_command = angle;
+        oscc->steering_cmd.steering_wheel_max_velocity = rate;
+
+        return_code = oscc_can_write( PS_CTRL_MSG_ID_STEERING_COMMAND,
+                                      (void *) &oscc->steering_cmd,
+                                      sizeof( ps_ctrl_steering_command_msg ) );
+    }
+    return ( return_code );
+}
+
+
+// *****************************************************
 // Function:    oscc_interface_disable_brakes
 // 
 // Purpose:     Send a specific CAN message to set the brake enable value
@@ -316,16 +404,12 @@ int oscc_interface_disable_brakes( )
 
     if ( oscc != NULL )
     {
-        ps_ctrl_brake_command_msg* brakes = &oscc->brake_cmd;
+        oscc->brake_cmd.enabled = 0;
 
-        brakes->pedal_command = 0;
-        brakes->enabled = 0;
+        printf( "brake: %d %d\n", oscc->brake_cmd.enabled,
+                oscc->brake_cmd.pedal_command );
 
-        printf( "brake: %d %d\n", brakes->enabled, brakes->pedal_command );
-
-        return_code = oscc_can_write( PS_CTRL_MSG_ID_BRAKE_COMMAND,
-                                      (void *) brakes,
-                                      sizeof( ps_ctrl_brake_command_msg ) );
+        return_code = oscc_interface_command_brakes( 0 );
     }
     return ( return_code );
 }
@@ -348,16 +432,12 @@ int oscc_interface_disable_throttle( )
 
     if ( oscc != NULL )
     {
-        ps_ctrl_throttle_command_msg* throttle = &oscc->throttle_cmd;
+        oscc->throttle_cmd.enabled = 0;
 
-        throttle->pedal_command = 0;
-        throttle->enabled = 0;
+        printf( "throttle: %d %d\n", oscc->throttle_cmd.enabled,
+                oscc->throttle_cmd.pedal_command );
 
-        printf( "throttle: %d %d\n", throttle->enabled, throttle->pedal_command );
-
-        return_code = oscc_can_write( PS_CTRL_THROTTLE_COMMAND_ID,
-                                      (void *) throttle,
-                                      sizeof( ps_ctrl_throttle_command_msg ) );
+        return_code = oscc_interface_command_throttle( 0 );
     }
     return ( return_code );
 }
@@ -380,20 +460,14 @@ int oscc_interface_disable_steering( )
 
     if ( oscc != NULL )
     {
-        ps_ctrl_steering_command_msg* steering = &oscc->steering_cmd;
-
-        steering->steering_wheel_angle_command = 0;
-        steering->steering_wheel_max_velocity = 0;
-        steering->enabled = 0;
+        oscc->steering_cmd.enabled = 0;
 
         printf( "steering: %d %d %d\n",
-                steering->enabled,
-                steering->steering_wheel_angle_command,
-                steering->steering_wheel_max_velocity );
+                oscc->steering_cmd.enabled,
+                oscc->steering_cmd.steering_wheel_angle_command,
+                oscc->steering_cmd.steering_wheel_max_velocity );
 
-        return_code = oscc_can_write( PS_CTRL_MSG_ID_STEERING_COMMAND,
-                                      (void *) steering,
-                                      sizeof( ps_ctrl_steering_command_msg ) );
+        return_code = oscc_interface_command_steering( 0, 0 );
     }
     return ( return_code );
 }
@@ -429,101 +503,7 @@ int oscc_interface_disable( )
 
 
 // *****************************************************
-// Function:    oscc_interface_command_brakes
-// 
-// Purpose:     Send a CAN message to set the brakes to a commanded value
-// 
-// Returns:     int - ERROR or NOERR
-// 
-// Parameters:  brake_setpoint - unsigned 16 bit value that contains the
-//              brake value to set.
-//              The value is range limited between 0 and 52428
-//
-// *****************************************************
-int oscc_interface_command_brakes( uint16_t brake_setpoint )
-{
-    int return_code = ERROR;
-
-    if ( oscc != NULL )
-    {
-        ps_ctrl_brake_command_msg* brakes = &oscc->brake_cmd;
-
-        brakes->pedal_command = brake_setpoint;
-
-        return_code = oscc_can_write( PS_CTRL_MSG_ID_BRAKE_COMMAND,
-                                      (void *) brakes,
-                                      sizeof( ps_ctrl_brake_command_msg ) );
-    }
-    return ( return_code );
-}
-
-
-// *****************************************************
-// Function:    oscc_interface_command_throttle
-// 
-// Purpose:     Send a CAN message to set the throttle to a commanded value
-// 
-// Returns:     int - ERROR or NOERR
-// 
-// Parameters:  throttle_setpoint - unsigned 16 bit value that contains the
-//              throttle value to set.
-//              The value is range limited between 0 and 19660
-//
-// *****************************************************
-int oscc_interface_command_throttle( uint16_t throttle_setpoint )
-{
-    int return_code = ERROR;
-
-    if ( oscc != NULL )
-    {
-        ps_ctrl_throttle_command_msg* throttle = &oscc->throttle_cmd;
-
-        throttle->pedal_command = throttle_setpoint;
-
-        return_code = oscc_can_write( PS_CTRL_THROTTLE_COMMAND_ID,
-                                      (void *) throttle,
-                                      sizeof( ps_ctrl_throttle_command_msg ) );
-    }
-
-    return ( return_code );
-}
-
-
-// *****************************************************
-// Function:    oscc_interface_command_throttle
-// 
-// Purpose:     Send a CAN message to set the throttle to a commanded value
-// 
-// Returns:     int - ERROR or NOERR
-// 
-// Parameters:  angle - signed 16 bit value: the steering angle in degrees
-//              rate - unsigned 16 bit value; the steering rate in degrees/sec
-// 
-//              angle is range limited between -4700 to 4700
-//              rate is range limited between 20 to 254
-//
-// *****************************************************
-int oscc_interface_command_steering( int16_t angle, uint16_t rate )
-{
-    int return_code = ERROR;
-
-    if ( oscc != NULL )
-    {
-        ps_ctrl_steering_command_msg* steering = &oscc->steering_cmd;
-
-        steering->steering_wheel_angle_command = angle;
-        steering->steering_wheel_max_velocity = rate;
-
-        return_code = oscc_can_write( PS_CTRL_MSG_ID_STEERING_COMMAND,
-                                      (void *) steering,
-                                      sizeof( ps_ctrl_steering_command_msg ) );
-    }
-    return ( return_code );
-}
-
-
-// *****************************************************
-// Function:    oscc_interface_update
+// Function:    oscc_interface_update_status
 // 
 // Purpose:     Read CAN messages from the OSCC modules and check for any
 //              driver overrides
@@ -561,24 +541,24 @@ int oscc_interface_update_status( int* override )
             {
                 if ( can_id == PS_CTRL_MSG_ID_BRAKE_REPORT )
                 {
-                    ps_ctrl_brake_report_msg* brake_report =
+                    ps_ctrl_brake_report_msg* report =
                         ( ps_ctrl_brake_report_msg* )buffer;
 
-                    *override = (int) brake_report->override;
+                    *override = (int) report->override;
                 }
                 else if ( can_id == PS_CTRL_MSG_ID_THROTTLE_REPORT )
                 {
-                    ps_ctrl_throttle_report_msg* throttle_report =
+                    ps_ctrl_throttle_report_msg* report =
                         ( ps_ctrl_throttle_report_msg* )buffer;
 
-                    *override = (int) throttle_report->override;
+                    *override = (int) report->override;
                 }
                 else if ( can_id == PS_CTRL_MSG_ID_STEERING_REPORT )
                 {
-                    ps_ctrl_steering_report_msg* steering_report =
+                    ps_ctrl_steering_report_msg* report =
                         ( ps_ctrl_steering_report_msg* )buffer;
 
-                    *override = (int) steering_report->override;
+                    *override = (int) report->override;
                 }
             }
         }
@@ -594,3 +574,4 @@ int oscc_interface_update_status( int* override )
     }
     return return_code;
 }
+
