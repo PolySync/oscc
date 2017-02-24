@@ -27,8 +27,8 @@
 /************************************************************************/
 
 /**
- * @file vehicle_gateway_module.ino
- * @brief Vehicle Gateway Module Source.
+ * @file can_gateway.ino
+ * @brief CAN Gateway Module Source.
  *
  * Board: Arduino Uno
  * Arduino Build/Version: 1.6.7 linux-x86_64
