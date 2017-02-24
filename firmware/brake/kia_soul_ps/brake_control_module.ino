@@ -336,7 +336,7 @@ struct SMC {
     // *****************************************************
     void check_brake_pedal( )
     {
-        static const float filter_alpha = 0.5;
+        static const float filter_alpha = 0.05;
         static const float max_pedal_voltage = PEDAL_THRESH;
 
         static float filtered_input_1 = 0.0;
