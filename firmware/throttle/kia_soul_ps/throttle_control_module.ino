@@ -324,13 +324,11 @@ static void publish_ps_ctrl_throttle_report( void )
         data->override = 1;
     }
 
-    //data->override = local_override;
+    data->enabled = (uint8_t) current_ctrl_state.control_enabled;
 
-    //// Set Pedal Command (PC)
-    //data->pedal_command =
-
-    //// Set Pedal Output (PO)
-    //data->pedal_output = max()
+    data->pedal_input = signal_L + signal_H;
+    // Set Pedal Command (PC)
+    data->pedal_command = current_ctrl_state.pedal_position_target;
 
     // publish to control CAN bus
     CAN.sendMsgBuf(
