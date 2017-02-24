@@ -194,6 +194,9 @@ void brakeExit();
 bool controlEnabled = false;
 int local_override = 0;
 
+unsigned int pedal_command_raw;
+int brake_pressure_can;
+
 // initialize states
 State Wait = State(waitEnter, waitUpdate, waitExit);        // Wait for brake instructions
 State Brake = State(brakeEnter, brakeUpdate, brakeExit);    // Control braking
@@ -336,7 +339,7 @@ struct SMC {
 };
 
 
-SMC::SMC( byte sensor1Pin, byte sensor2Pin, byte controlPin ) 
+SMC::SMC( byte sensor1Pin, byte sensor2Pin, byte controlPin )
 {
   _sensor1Pin = sensor1Pin;
   _sensor2Pin = sensor2Pin;
@@ -364,7 +367,7 @@ struct Brakes {
 
     Brakes( byte sensorPinLeft, byte sensorPinRight, byte solenoidPinLeftA, byte solenoidPinRightA, byte solenoidPinLeftR, byte solenoidPinRightR );
 
-    void depowerSolenoids() 
+    void depowerSolenoids()
     {
       analogWrite(_solenoidPinLeftA, 0);
       analogWrite(_solenoidPinRightA, 0);
@@ -380,7 +383,7 @@ struct Brakes {
         analogWrite( _solenoidPinRightA, scaler );
     }
 
-    void depowerSLA() 
+    void depowerSLA()
     {
         analogWrite( _solenoidPinLeftA, 0 );
         analogWrite( _solenoidPinRightA, 0 );
@@ -392,7 +395,7 @@ struct Brakes {
         analogWrite( _solenoidPinLeftR, scaler );
         analogWrite( _solenoidPinRightR, scaler );
     }
-    void depowerSLR() 
+    void depowerSLR()
     {
         digitalWrite( _solenoidPinLeftR, 0 );
         digitalWrite( _solenoidPinRightR, 0 );
@@ -428,8 +431,8 @@ Brakes::Brakes( byte sensorPLeft, byte sensorPRight, byte solenoidPinLeftA, byte
   pinMode( _solenoidPinRightR, OUTPUT );
 }
 
-// Instantiate objects 
-Accumulator accumulator( PIN_PACC, PIN_PUMP ); 
+// Instantiate objects
+Accumulator accumulator( PIN_PACC, PIN_PUMP );
 SMC smc(PIN_PMC1, PIN_PMC2, PIN_SMC);
 Brakes brakes = Brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
 
@@ -474,6 +477,18 @@ static void publish_ps_ctrl_brake_report( void )
 
     // Set override flag
     data->override = local_override;
+
+    // Set enabled flag
+    data->enabled = (uint8_t) controlEnabled;
+
+    // Set pedal input
+    data->pedal_input = brake_pressure_can;
+
+    // Set pedal command
+    data->pedal_command = pedal_command_raw;
+
+    // Set pedal command
+    data->pedal_output = pressure;
 
     // publish to control CAN bus
     CAN.sendMsgBuf(
@@ -534,8 +549,8 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
 
     rx_frame_ps_ctrl_brake_command.timestamp = GET_TIMESTAMP_MS();
 
-    unsigned int pedal_command = control_data->pedal_command;
-    pressure_req = map(pedal_command, 0, 65535, 48, 230); // map to voltage range
+    pedal_command_raw = control_data->pedal_command;
+    pressure_req = map(pedal_command_raw, 0, 65535, 48, 230); // map to voltage range
     pressure_req = pressure_req / 100;
 }
 
@@ -545,7 +560,7 @@ static void process_psvc_chassis_state1( const uint8_t * const rx_frame_buffer )
         (psvc_chassis_state1_data_s*) rx_frame_buffer;
 
     // brake pressure as reported from the C-CAN bus
-    int brake_pressure = chassis_data->brake_pressure;
+    brake_pressure_can = chassis_data->brake_pressure;
 
     // take a reading from the brake pressure sensors
     brakes.updatePressure();
@@ -627,7 +642,7 @@ void brakeEnter()
     smc.solenoidsClose();
 
     // close SLRRs, they are normally open for failsafe conditions
-    brakes.depowerSLR(); 
+    brakes.depowerSLR();
     DEBUG_PRINT("entered brake state");
 }
 
@@ -661,7 +676,7 @@ void brakeUpdate()
 *   It is NOT recommended to modify any of the existing control ranges, or
 *   gains, without expert knowledge.
 *******************************************************************************/
-	    
+
         digitalWrite( PIN_BRAKE_SWITCH, HIGH );
         smc.solenoidsClose();
         // calculate a delta t
@@ -713,8 +728,8 @@ void brakeUpdate()
 
 
         }
-    } 
-    else if( pressure_req <= ZERO_PRESSURE ) 
+    }
+    else if( pressure_req <= ZERO_PRESSURE )
     {
         smc.solenoidsOpen();
         brakes.depowerSLA();
@@ -768,12 +783,12 @@ static void check_rx_timeouts( void )
 // the setup routine runs once when you press reset:
 void setup( void )
 {
-    // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range 
+    // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range
     TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
     TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
 
     // set the min/max duty cycle scalers used for 3.921 KHz PWM frequency.
-    // These represent the minimum duty cycles that begin to actuate the proportional solenoids 
+    // These represent the minimum duty cycles that begin to actuate the proportional solenoids
     // and the maximum dudty cycle where the solenoids have reached their stops.
     SLADutyMax = 105;
     SLADutyMin = 50;
