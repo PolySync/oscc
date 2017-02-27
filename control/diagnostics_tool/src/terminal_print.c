@@ -63,12 +63,12 @@ static int last_lines = 0;
 
 
 // *****************************************************
-// static declarations
+// static definitions
 // *****************************************************
 
 
 //
-static void printNewLine( const char * name )
+static void print_new_line( const char * name )
 {
     printf( "%s\n", name );
 }
@@ -82,7 +82,7 @@ static void printNewLine( const char * name )
 
 
 //
-void addLine( char * line )
+void add_line( char * line )
 {
     strcpy( lines[ num_lines ], line );
 
@@ -91,7 +91,7 @@ void addLine( char * line )
 
 
 //
-void printLines()
+void print_lines()
 {
     int i;
 
@@ -108,7 +108,7 @@ void printLines()
 
     for( i = 0; i < num_lines; i++ )
     {
-        printNewLine( lines[ i ] );
+        print_new_line( lines[ i ] );
 
         last_lines++;
     }

@@ -47,17 +47,17 @@
 #define MAX_LINES 30
 
 
-#define LINE_SIZE 100
+#define LINE_SIZE 200
 
 
 
 
 //
-void addLine( char * line );
+void add_line( char * line );
 
 
 //
-void printLines();
+void print_lines();
 
 
 
