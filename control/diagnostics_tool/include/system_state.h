@@ -41,7 +41,14 @@
 
 
 
+
+#include <stdint.h>
+
 #include "control_protocol_can.h"
+#include "steering_module_state.h"
+#include "throttle_module_state.h"
+#include "brake_module_state.h"
+#include "gateway_module_state.h"
 
 
 
@@ -91,6 +98,9 @@ typedef struct
     brake_module_state_s brake_module_state;
     //
     //
+    gateway_module_state_s gateway_module_state;
+    //
+    //
     uint8_t overall_system_state;
     //
     //
@@ -102,6 +112,10 @@ typedef struct
 
 //
 int update_system_state();
+
+
+//
+void print_system_state();
 
 
 
