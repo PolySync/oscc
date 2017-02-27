@@ -39,7 +39,6 @@
 #include <unistd.h>
 #include <string.h>
 
-
 #include "macros.h"
 #include "control_protocol_can.h"
 #include "can_monitor.h"
@@ -64,17 +63,25 @@
 #define NODE_SLEEP_TICK_INTERVAL (1000)
 
 
+/**
+ * @brief Interval at which to print information to terminal. [milliseconds]
+ *
+ * Specifies the amount of time to wait before printing information to terminal.
+ *
+ * This prevents terminal flickering.
+ *
+ */
+#define PRINT_TERMINAL_TIMEOUT (100)
+
+
+
 
 // *****************************************************
 // static global data
 // *****************************************************
 
 
-
-/**
- * @brief Help print string.
- *
- */
+//
 static const char HELP_STRING[] =
 "\nOSCC Diagnostics\n\n"
 "usage\n"
@@ -91,29 +98,40 @@ static const char HELP_STRING[] =
 " run diagnostics and print out system state [optional]\n\n";
 
 
-/**
- * @brief Error thrown from SIGINT.
- *
- */
+//
 static int err_thrown = NOERR;
 
 
+//
 static int diagnostics_flag = 0;
 
 
+//
 static int can_channel;
 
 
+//
 static char * can_ids;
 
 
+//
 static int can_id_list[ CAN_MSG_ARRAY_SIZE ];
 
 
+//
 static int num_can_ids = 0;
 
 
+//
 static canHandle can_handle;
+
+
+//
+unsigned long long last_print_timestamp = 0;
+
+
+//
+static int print_can_dump = 0;
 
 
 
@@ -158,7 +176,7 @@ static int init_can()
 {
     int ret = NOERR;
 
-    can_handle = canOpenChannel( can_channel, canOPEN_EXCLUSIVE );
+    can_handle = canOpenChannel( can_channel, 0 );//canOPEN_EXCLUSIVE );
 
     if ( can_handle < 0 )
     {
@@ -218,6 +236,47 @@ static int check( char* id, canStatus stat )
 
 
 //
+static int read_from_buffer( canHandle handle )
+{
+    // local vars
+    int ret = NOERR;
+    canStatus retval = canOK;
+
+    long can_id;
+    unsigned int msg_dlc;
+    unsigned int msg_flag;
+    unsigned long tstamp;
+
+    unsigned char buffer[ 8 ];
+
+
+    retval = canRead( handle,
+            &can_id,
+            buffer,
+            &msg_dlc,
+            &msg_flag,
+            &tstamp );
+
+
+    if( retval == canOK )
+    {
+        ret = handle_can_rx( can_id, msg_dlc, msg_flag, tstamp, buffer );
+    }
+    else if( (retval == canERR_NOMSG) || (retval == canERR_TIMEOUT) )
+    {
+        // Do nothing
+    }
+    else
+    {
+        ret = ERROR;
+    }
+
+
+    return ret;
+}
+
+
+//
 static void sig_handler( int signo )
 {
     if ( signo == SIGINT )
@@ -232,19 +291,33 @@ static int update_loop()
 {
     int ret = NOERR;
 
-    //ret = can_monitor_buffer( can_handle );
+    ret = read_from_buffer( can_handle );
 
-    //print_can_array( can_id_list, num_can_ids );
 
-    printLines();
+    if( get_timestamp() - last_print_timestamp > PRINT_TERMINAL_TIMEOUT )
+    {
+        if( print_can_dump )
+        {
+            print_can_array( can_id_list, num_can_ids );
+        }
+
+        if( diagnostics_flag )
+        {
+            update_system_state();
+
+            print_system_state();
+        }
+
+        print_lines();
+
+        last_print_timestamp = get_timestamp();
+    }
 
     // sleep for 1 ms to avoid loading the CPU
     (void) usleep( NODE_SLEEP_TICK_INTERVAL );
 
     return ret;
 }
-
-
 
 
 //
@@ -256,12 +329,14 @@ static int handle_get_opt( int argc, char **argv )
 
     int c_option = 0;
 
-    while( ( c = getopt ( argc, argv, "i:dhc:" ) ) != -1 )
+    while( ( c = getopt ( argc, argv, "idhc:" ) ) != -1 )
     {
         switch ( c )
         {
             case 'i':
                 can_ids = optarg;
+
+                print_can_dump = 1;
 
                 break;
 
@@ -308,8 +383,7 @@ static int handle_get_opt( int argc, char **argv )
 }
 
 
-
-
+//
 static void process_can_ids()
 {
     char * split_ids = strtok( can_ids, " " );
@@ -349,10 +423,12 @@ int main( int argc, char **argv )
 
     if( ret == NOERR )
     {
-        //ret = init_can();
+        ret = init_can();
     }
 
     process_can_ids();
+
+    init_can_msg_array();
 
     while( ret == NOERR && err_thrown == NOERR )
     {
