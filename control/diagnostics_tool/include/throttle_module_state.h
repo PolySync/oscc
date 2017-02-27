@@ -42,6 +42,11 @@
 
 
 
+#include <stdint.h>
+
+
+
+
 /**
  * @brief Throttle module state information.
  *

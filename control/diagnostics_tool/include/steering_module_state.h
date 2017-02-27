@@ -42,6 +42,8 @@
 
 
 
+#include <stdint.h>
+
 #include "can_monitor.h"
 
 

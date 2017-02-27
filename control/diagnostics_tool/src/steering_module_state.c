@@ -60,8 +60,8 @@ static int analyze_command_frame(
     int module_state = STATE_OK;
 
     ps_ctrl_steering_command_msg * steering_command =
-            (*ps_ctrl_steering_command_msg)
-                    steering_command_frame.can_frame_contents.buffer;
+            (ps_ctrl_steering_command_msg*)
+                    steering_command_frame->frame_contents.buffer;
 
     //state->control_state = steering_command->enabled;
 
@@ -83,8 +83,8 @@ static int analyze_report_frame(
     int module_state = STATE_OK;
 
     ps_ctrl_steering_report_msg * steering_report =
-            (*ps_ctrl_steering_report_msg)
-                    steering_report_frame.can_frame_contents.buffer;
+            (ps_ctrl_steering_report_msg*)
+                    steering_report_frame->frame_contents.buffer;
 
     state->control_state = steering_report->enabled;
 

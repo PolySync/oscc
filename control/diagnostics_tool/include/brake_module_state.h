@@ -42,6 +42,11 @@
 
 
 
+#include <stdint.h>
+
+
+
+
 /**
  * @brief Brake module state information.
  *

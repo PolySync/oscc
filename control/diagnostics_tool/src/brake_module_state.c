@@ -48,7 +48,7 @@
 
 
 // *****************************************************
-// static declarations
+// static definitions
 // *****************************************************
 
 
@@ -60,9 +60,8 @@ static int analyze_command_frame(
     int module_state = STATE_OK;
 
     ps_ctrl_brake_command_msg * brake_command =
-            (*ps_ctrl_brake_command_msg)
-                    brake_command_frame.can_frame_contents.buffer;
-
+            (ps_ctrl_brake_command_msg*)
+                    brake_command_frame->frame_contents.buffer;
 
 
     return module_state;
@@ -77,8 +76,8 @@ static int analyze_report_frame(
     int module_state = STATE_OK;
 
     ps_ctrl_brake_report_msg * brake_report =
-            (*ps_ctrl_brake_report_msg)
-                    brake_report_frame.can_frame_contents.buffer;
+            (ps_ctrl_brake_report_msg*)
+                    brake_report_frame->frame_contents.buffer;
 
     state->control_state = brake_report->enabled;
 
@@ -101,7 +100,7 @@ static int analyze_report_frame(
 
 
 // *****************************************************
-// declarations
+// public definitions
 // *****************************************************
 
 

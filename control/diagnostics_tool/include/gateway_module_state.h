@@ -42,6 +42,11 @@
 
 
 
+#include <stdint.h>
+
+
+
+
 /**
  * @brief Gateway module state information.
  *
@@ -65,10 +70,10 @@ typedef struct
 
 
 int analyze_gateway_state(
-        brake_module_state_s * const state,
-        const can_frame_s * heartbeat_msg_frame,
-        const can_frame_s * chassis_state1_frame,
-        const can_frame_s * chassis_state2_frame );
+        gateway_module_state_s * const state,
+        const can_frame_s * const heartbeat_msg_frame,
+        const can_frame_s * const chassis_state1_frame,
+        const can_frame_s * const chassis_state2_frame );
 
 
 

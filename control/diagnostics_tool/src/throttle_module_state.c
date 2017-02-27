@@ -48,7 +48,7 @@
 
 
 // *****************************************************
-// static declarations
+// static definitions
 // *****************************************************
 
 
@@ -60,8 +60,8 @@ static int analyze_command_frame(
     int module_state = STATE_OK;
 
     ps_ctrl_throttle_command_msg * throttle_command =
-            (*ps_ctrl_throttle_command_msg)
-                    throttle_command_frame.can_frame_contents.buffer;
+            (ps_ctrl_throttle_command_msg*)
+                    throttle_command_frame->frame_contents.buffer;
 
 
 
@@ -77,8 +77,8 @@ static int analyze_report_frame(
     int module_state = STATE_OK;
 
     ps_ctrl_throttle_report_msg * throttle_report =
-            (*ps_ctrl_throttle_report_msg)
-                    throttle_report_frame.can_frame_contents.buffer;
+            (ps_ctrl_throttle_report_msg*)
+                    throttle_report_frame->frame_contents.buffer;
 
     state->control_state = throttle_report->enabled;
 
@@ -100,7 +100,7 @@ static int analyze_report_frame(
 
 
 // *****************************************************
-// declarations
+// public definitions
 // *****************************************************
 
 
