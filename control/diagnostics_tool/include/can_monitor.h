@@ -41,7 +41,7 @@
 
 
 
-//#include "commander.h"
+#include <canlib.h>
 
 
 
@@ -117,11 +117,21 @@ void init_can_msg_array();
 
 
 //
+const can_frame_s * const get_can_msg_array_index_reference(
+        const long can_id );
+
+
+//
 void print_can_array( int * can_id_print_list, int num_can_ids );
 
 
 //
-int can_read_buffer( canHandle handle );
+int handle_can_rx(
+        const long can_id,
+        const unsigned int msg_dlc,
+        const unsigned int msg_flag,
+        const unsigned long tstamp,
+        const unsigned char * const buffer );
 
 
 
