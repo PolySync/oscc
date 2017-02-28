@@ -318,10 +318,20 @@ static int get_setpoint( struct commander_setpoint_s* setpoint )
 
         if ( return_code == NOERR )
         {
-            setpoint->setpoint =
-                joystick_normalize_trigger_position( axis_position,
-                                                     setpoint->min_position,
-                                                     setpoint->max_position );
+            if ( setpoint->axis == JOYSTICK_AXIS_STEER )
+            {
+                setpoint->setpoint =
+                    joystick_normalize_axis_position( axis_position,
+                                                      setpoint->min_position,
+                                                      setpoint->max_position );
+            }
+            else
+            {
+                setpoint->setpoint =
+                    joystick_normalize_trigger_position( axis_position,
+                                                         setpoint->min_position,
+                                                         setpoint->max_position );
+            }
         }
     }
     return ( return_code );
@@ -638,7 +648,7 @@ static int command_steering( )
 
         float rate_degrees = 
                 (float) fabs( constrained_angle - commander->last_steering_rate );
-        
+
         commander->last_steering_rate = constrained_angle;
 
         uint16_t constrained_rate = (uint16_t) m_constrain(
@@ -646,7 +656,7 @@ static int command_steering( )
                 (float) STEERING_COMMAND_MAX_VELOCITY_MIN + 1.0f,
                 (float) STEERING_COMMAND_MAX_VELOCITY_MAX );
 
-        printf( "steering: %d %d\n", constrained_angle, constrained_rate );
+        printf( "steering: %d\t%d\n", constrained_angle, constrained_rate );
 
         return_code = oscc_interface_command_steering( constrained_angle,
                                                        constrained_rate );
