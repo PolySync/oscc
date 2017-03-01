@@ -70,7 +70,7 @@
 /**
  * @brief node update and publish interval. [microseconds]
  *
- * Defines the update and publish rate of the node.
+ * Defines the update and publish rate of the node
  *
  * 50,000 us == 50 ms == 20 Hertz
  *
@@ -81,9 +81,9 @@
 /**
  * @brief Node sleep interval. [microseconds]
  *
- * Specifies the amount of time to sleep for during each wait/sleep cycle.
+ * Specifies the amount of time to sleep for during each wait/sleep cycle
  *
- * This prevents our node from overloading the host.
+ * This prevents our node from overloading the host
  *
  */
 #define NODE_SLEEP_TICK_INTERVAL (1000)
@@ -95,7 +95,7 @@
 // *****************************************************
 
 /**
- * @brief Error thrown from SIGINT.
+ * @brief Error thrown from SIGINT
  *
  */
 static int error_thrown = NOERR;
@@ -216,10 +216,11 @@ static int update( )
 int main( int argc, char **argv )
 {
     int return_code = NOERR;
-    
+
     int channel;
-    
+
     errno = 0;
+
     if ( argc != 2 || ( channel = atoi( argv[1] ), errno ) != 0 ) 
     {
         printf( "usage %s channel\n", argv[0] );

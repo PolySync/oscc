@@ -28,7 +28,7 @@
 
 /**
  * @file commander.c
- * @brief Commander Interface Source.
+ * @brief Commander Interface Source
  *
  */
 
@@ -50,142 +50,143 @@
 // *****************************************************
 
 /**
- * @brief Throttle axis index.
+ * @brief Throttle axis index
  *
  */
 #define JOYSTICK_AXIS_THROTTLE (5)
 
 
 /**
- * @brief Brake axis index.
+ * @brief Brake axis index
  *
  */
 #define JOYSTICK_AXIS_BRAKE (2)
 
 
 /**
- * @brief Steering axis index.
+ * @brief Steering axis index
  *
  */
 #define JOYSTICK_AXIS_STEER (3)
 
 
 /**
- * @brief Enable controls button index.
+ * @brief Enable controls button index
  *
  */
 #define JOYSTICK_BUTTON_ENABLE_CONTROLS (7)
 
 /**
- * @brief Disable controls button index.
+ * @brief Disable controls button index
  *
  */
 #define JOYSTICK_BUTTON_DISABLE_CONTROLS (6)
 
 /**
- * @brief Maximum allowed throttle pedal position value. [normalized]
+ * @brief Maximum allowed throttle pedal position value [normalized]
  *
  */
 #define MAX_THROTTLE_PEDAL (0.3)
 
 
 /**
- * @brief Maximum allowed brake pedal position value. [normalized]
+ * @brief Maximum allowed brake pedal position value 
+ *        [normalized]
  *
  */
 #define MAX_BRAKE_PEDAL (0.8)
 
 
 /**
- * @brief Minimum brake value to be considered enabled. [normalized]
+ * @brief Minimum brake value to be considered enabled [normalized] 
  *
- * Throttle is disabled when brake value is greate than this value.
+ * Throttle is disabled when brake value is greate than this value
  *
  */
 #define BRAKES_ENABLED_MIN (0.05)
 
 
 /**
- * @brief Minimum allowed steering wheel angle value. [radians]
+ * @brief Minimum allowed steering wheel angle value [radians]
  *
- * Negative value means turning to the right.
+ * Negative value means turning to the right
  *
  */
 #define MIN_STEERING_WHEEL_ANGLE (-M_PI * 2.0)
 
 
 /**
- * @brief Maximum allowed steering wheel angle value. [radians]
+ * @brief Maximum allowed steering wheel angle value [radians]
  *
- * Positive value means turning to the left.
+ * Positive value means turning to the left
  *
  */
 #define MAX_STEERING_WHEEL_ANGLE (M_PI * 2.0)
 
 
 /**
- * @brief Steering command angle minimum valid value. [int16_t]
+ * @brief Steering command angle minimum valid value [int16_t]
  *
  */
 #define STEERING_COMMAND_ANGLE_MIN (-4700)
 
 
 /**
- * @brief Steering command angle maximum valid value. [int16_t]
+ * @brief Steering command angle maximum valid value [int16_t]
  *
  */
 #define STEERING_COMMAND_ANGLE_MAX (4700)
 
 
 /**
- * @brief Steering command angle scale factor.
+ * @brief Steering command angle scale factor
  *
  */
 #define STEERING_COMMAND_ANGLE_FACTOR (10)
 
 
 /**
- * @brief Steering command steering wheel velocity minimum valid value. [uint8_t]
+ * @brief Steering command steering wheel velocity minimum valid value [uint8_t]
  *
  */
 #define STEERING_COMMAND_MAX_VELOCITY_MIN (20)
 
 
 /**
- * @brief Steering command steering wheel velocity maximum valid value. [uint8_t]
+ * @brief Steering command steering wheel velocity maximum valid value [uint8_t]
  *
  */
 #define STEERING_COMMAND_MAX_VELOCITY_MAX (254)
 
 
 /**
- * @brief Steering command steering wheel velocity scale factor.
+ * @brief Steering command steering wheel velocity scale factor
  * 
  * This factor can be increased to provide smoother, but
  * slightly less responsive, steering control. It is recommended
  * to smooth at the higher level, with this factor, before
- * trying to smooth at the lower level.
+ * trying to smooth at the lower level
  *
  */
 #define STEERING_COMMAND_MAX_VELOCITY_FACTOR (0.25)
 
 
 /**
- * @brief Exponential filter factor for braking commands.
+ * @brief Exponential filter factor for braking commands
  *
  */
 #define BRAKES_FILTER_FACTOR (0.2)
 
 
 /**
- * @brief Exponential filter factor for throttle commands.
+ * @brief Exponential filter factor for throttle commands
  *
  */
 #define THROTTLE_FILTER_FACTOR (0.2)
 
 
 /**
- * @brief Exponential filter factor for steering commands.
+ * @brief Exponential filter factor for steering commands
  *
  */
 #define STEERING_FILTER_FACTOR (0.1)
@@ -202,10 +203,10 @@
 
 
 /**
- * @brief Convert radians to degrees.
+ * @brief Convert radians to degrees
  *
  */
-#define m_degrees(rad) ((rad)*(180.0/M_PI))
+#define m_degrees(rad) ( ( rad ) * ( 180.0 / M_PI ) )
 
 
 // *****************************************************
@@ -213,9 +214,9 @@
 // *****************************************************
 
 /**
- * @brief Commander data.
+ * @brief Commander data
  *
- * Serves as a top-level container for the application's data structures.
+ * Serves as a top-level container for the application's data structures
  *
  */
 struct commander_data_s
@@ -234,11 +235,11 @@ struct commander_data_s
 /**
  * @brief Commander setpoint
  *
- * The commandere setpoint is a structure that contains all the
+ * The commander setpoint is a structure that contains all the
  * relevant information to retrieve data from an external source
  * and range check it for validity.  The range-limits for this
  * instance represent the values that are typically available
- * from a joystick.
+ * from a joystick
  * 
  */
 struct commander_setpoint_s
@@ -259,7 +260,7 @@ struct commander_setpoint_s
 // *****************************************************
 
 /**
- * @brief Commander data.
+ * @brief Commander data
  *
  * Static definitions of the variables that store the relevant
  * information about what the current variables are
@@ -297,7 +298,7 @@ static struct commander_setpoint_s steering_setpoint =
 // 
 // Purpose:     Retrieve the data from the joystick based on which axis is
 //              selected and normalize that value along the scale that is
-//              provided.
+//              provided
 // 
 // Returns:     int - ERROR or NOERR
 // 
@@ -345,7 +346,7 @@ static int get_setpoint( struct commander_setpoint_s* setpoint )
 // Purpose:     Examine the positions of the brake and throttle to determine
 //              if they are in a safe position to enable control
 // 
-// Returns:     int - ERROR or NOERR
+// Returns:     int - ERROR, NOERR or UNAVAILABLE
 // 
 // Parameters:  void
 //
@@ -402,9 +403,9 @@ static int commander_set_safe( )
 // *****************************************************
 // Function:    calc_exponential_average 
 // 
-// Purpose:     Calculate an exponential average based on previous values.
+// Purpose:     Calculate an exponential average based on previous values
 // 
-// Returns:     double - the exponentially averaged result.
+// Returns:     double - the exponentially averaged result
 // 
 // Parameters:  average - previous average
 //              setpoint - new setpoint to incorperate into average
@@ -486,7 +487,7 @@ static int commander_enable_controls( )
 // Function:    get_button
 // 
 // Purpose:     Wrapper function to get the status of a given button on the
-//              joystick.
+//              joystick
 // 
 // Returns:     int - ERROR or NOERR
 // 

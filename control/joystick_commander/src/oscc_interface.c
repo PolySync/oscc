@@ -54,7 +54,7 @@
  *        messages that are used to control the brakes, steering
  *        and throttle.  In addition, there are additional
  *        variables to store the CAN parameters, handle and
- *        channel
+ *        channel.
  *  
  *        The entire structure is packed at the single byte
  *        level because of the need to send it on the wire to
@@ -307,7 +307,7 @@ int oscc_interface_enable( )
 // Returns:     int - ERROR or NOERR
 // 
 // Parameters:  brake_setpoint - unsigned 16 bit value that contains the
-//              brake value to set.
+//              brake value to set
 //              The value is range limited between 0 and 52428
 //
 // *****************************************************
@@ -335,7 +335,7 @@ int oscc_interface_command_brakes( uint16_t brake_setpoint )
 // Returns:     int - ERROR or NOERR
 // 
 // Parameters:  throttle_setpoint - unsigned 16 bit value that contains the
-//              throttle value to set.
+//              throttle value to set
 //              The value is range limited between 0 and 19660
 //
 // *****************************************************
@@ -478,7 +478,7 @@ int oscc_interface_disable_steering( )
 // 
 // Purpose:     Send a series of CAN messages to disable all of the OSCC
 //              modules.  Mostly a wrapper around the existing specific
-//              disable functions.
+//              disable functions
 // 
 // Returns:     int - ERROR or NOERR
 // 

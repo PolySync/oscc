@@ -60,7 +60,7 @@
 #define BUTTON_PRESSED_DELAY (5000)
 
 /**
- * @brief Invalid \ref joystick_device_s.handle value.
+ * @brief Invalid \ref joystick_device_s.handle value
  *
  */
 #define JOYSTICK_DEVICE_HANDLE_INVALID ( NULL )
@@ -85,7 +85,7 @@
 
 
 /**
- * @brief Joystick GUID.
+ * @brief Joystick GUID
  *
  * Implementation-dependent GUID
  *
@@ -99,7 +99,7 @@ typedef struct
 
 
 /**
- * @brief Joystick device.
+ * @brief Joystick device
  *
  */
 typedef struct
