@@ -162,7 +162,7 @@ const byte PIN_PFL  = 14;      // pressure front left sensor
 const double ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
 const double MIN_PACC = 2.3;              // minumum accumulator pressure to maintain
 const double MAX_PACC = 2.4;              // max accumulator pressure to maintain
-const double PEDAL_THRESH = 0.6;          // Pressure for pedal interference
+const double PEDAL_THRESH = 0.7;          // Pressure for pedal interference
 
 int SLADutyMax,
     SLADutyMin,
@@ -725,8 +725,8 @@ void brakeUpdate()
                 brakes.powerSLA(calculateSLADutyCycle(pressurePID_output));
             }
 
-
-
+            // check pressures on master cylinder (pressure from pedal)
+            smc.checkPedal();
         }
     }
     else if( pressure_req <= ZERO_PRESSURE )
@@ -841,9 +841,6 @@ void loop()
     publish_timed_tx_frames();
 
     check_rx_timeouts();
-
-    // check pressures on master cylinder (pressure from pedal)
-    smc.checkPedal();
 
     brakeStateMachine.update();
 }
