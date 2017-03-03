@@ -534,7 +534,7 @@ static int get_button( unsigned long button, unsigned int* const state )
 static int command_brakes( )
 {
     int return_code = ERROR;
-    uint16_t constrained_value = 0;
+    unsigned int constrained_value = 0;
 
     if ( commander != NULL )
     {
@@ -552,7 +552,7 @@ static int command_brakes( )
                 0.0f,
                 MAX_BRAKE_PEDAL );
 
-            constrained_value = (uint16_t) m_constrain(
+            constrained_value = ( unsigned int ) m_constrain(
                 (float) ( normalized_value * (float) UINT16_MAX ),
                 (float) 0.0f,
                 (float) UINT16_MAX );
@@ -602,7 +602,7 @@ static int command_throttle( )
                 0.0f,
                 MAX_THROTTLE_PEDAL );
 
-        uint16_t constrained_value = (uint16_t) m_constrain(
+        unsigned int constrained_value = ( unsigned int )m_constrain(
                 (float) (normalized_value * (float) UINT16_MAX),
                 (float) 0.0f,
                 (float) UINT16_MAX );
@@ -642,7 +642,7 @@ static int command_steering( )
         const float angle_degrees = (float) m_degrees(
             (float) commander->steering_setpoint_average );
 
-        const int16_t constrained_angle = (int16_t) m_constrain(
+        const int constrained_angle = ( int ) m_constrain(
                 (float) (angle_degrees * (float) STEERING_COMMAND_ANGLE_FACTOR),
                 (float) STEERING_COMMAND_ANGLE_MIN,
                 (float) STEERING_COMMAND_ANGLE_MAX );
@@ -652,7 +652,7 @@ static int command_steering( )
 
         commander->last_steering_rate = constrained_angle;
 
-        uint16_t constrained_rate = (uint16_t) m_constrain(
+        unsigned int constrained_rate = ( unsigned int ) m_constrain(
                 (float) (rate_degrees / (float) STEERING_COMMAND_MAX_VELOCITY_FACTOR),
                 (float) STEERING_COMMAND_MAX_VELOCITY_MIN + 1.0f,
                 (float) STEERING_COMMAND_MAX_VELOCITY_MAX );

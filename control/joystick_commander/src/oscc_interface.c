@@ -306,18 +306,17 @@ int oscc_interface_enable( )
 // 
 // Returns:     int - ERROR or NOERR
 // 
-// Parameters:  brake_setpoint - unsigned 16 bit value that contains the
-//              brake value to set
+// Parameters:  brake_setpoint - unsigned value
 //              The value is range limited between 0 and 52428
 //
 // *****************************************************
-int oscc_interface_command_brakes( uint16_t brake_setpoint )
+int oscc_interface_command_brakes( unsigned int brake_setpoint )
 {
     int return_code = ERROR;
 
     if ( oscc != NULL )
     {
-        oscc->brake_cmd.pedal_command = brake_setpoint;
+        oscc->brake_cmd.pedal_command = ( uint16_t )brake_setpoint;
 
         return_code = oscc_can_write( PS_CTRL_MSG_ID_BRAKE_COMMAND,
                                       (void *) &oscc->brake_cmd,
@@ -334,18 +333,17 @@ int oscc_interface_command_brakes( uint16_t brake_setpoint )
 // 
 // Returns:     int - ERROR or NOERR
 // 
-// Parameters:  throttle_setpoint - unsigned 16 bit value that contains the
-//              throttle value to set
+// Parameters:  throttle_setpoint - unsigned value
 //              The value is range limited between 0 and 19660
 //
 // *****************************************************
-int oscc_interface_command_throttle( uint16_t throttle_setpoint )
+int oscc_interface_command_throttle( unsigned int throttle_setpoint )
 {
     int return_code = ERROR;
 
     if ( oscc != NULL )
     {
-        oscc->throttle_cmd.pedal_command = throttle_setpoint;
+        oscc->throttle_cmd.pedal_command = ( uint16_t )throttle_setpoint;
 
         return_code = oscc_can_write( PS_CTRL_THROTTLE_COMMAND_ID,
                                       (void *) &oscc->throttle_cmd,
@@ -363,21 +361,21 @@ int oscc_interface_command_throttle( uint16_t throttle_setpoint )
 // 
 // Returns:     int - ERROR or NOERR
 // 
-// Parameters:  angle - signed 16 bit value: the steering angle in degrees
-//              rate - unsigned 16 bit value; the steering rate in degrees/sec
+// Parameters:  angle - signed value: the steering angle in degrees
+//              rate - unsigned value; the steering rate in degrees/sec
 // 
 //              angle is range limited between -4700 to 4700
 //              rate is range limited between 20 to 254
 //
 // *****************************************************
-int oscc_interface_command_steering( int16_t angle, uint16_t rate )
+int oscc_interface_command_steering( int angle, unsigned int rate )
 {
     int return_code = ERROR;
 
     if ( oscc != NULL )
     {
-        oscc->steering_cmd.steering_wheel_angle_command = angle;
-        oscc->steering_cmd.steering_wheel_max_velocity = rate;
+        oscc->steering_cmd.steering_wheel_angle_command = ( int16_t )angle;
+        oscc->steering_cmd.steering_wheel_max_velocity = ( uint16_t )rate;
 
         return_code = oscc_can_write( PS_CTRL_MSG_ID_STEERING_COMMAND,
                                       (void *) &oscc->steering_cmd,

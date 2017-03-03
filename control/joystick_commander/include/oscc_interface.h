@@ -150,7 +150,7 @@ int oscc_interface_disable_steering( );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_command_brakes( uint16_t brake_setpoint );
+int oscc_interface_command_brakes( unsigned int brake_setpoint );
 
 
 /**
@@ -164,7 +164,7 @@ int oscc_interface_command_brakes( uint16_t brake_setpoint );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_command_throttle( uint16_t throttle_setpoint );
+int oscc_interface_command_throttle( unsigned int throttle_setpoint );
 
 
 /**
@@ -184,7 +184,7 @@ int oscc_interface_command_throttle( uint16_t throttle_setpoint );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_command_steering( int16_t angle, uint16_t rate );
+int oscc_interface_command_steering( int angle, unsigned int rate );
 
 /**
  * @brief OSCC status message - the primary status from the
