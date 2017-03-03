@@ -50,91 +50,61 @@
 // *****************************************************
 
 /**
- * @brief Throttle axis index
+ * @brief Joystick axis indices
  *
  */
 #define JOYSTICK_AXIS_THROTTLE (5)
-
-
-/**
- * @brief Brake axis index
- *
- */
 #define JOYSTICK_AXIS_BRAKE (2)
-
-
-/**
- * @brief Steering axis index
- *
- */
 #define JOYSTICK_AXIS_STEER (3)
 
 
 /**
- * @brief Enable controls button index
+ * @brief Joystick button indices
  *
  */
 #define JOYSTICK_BUTTON_ENABLE_CONTROLS (7)
-
-/**
- * @brief Disable controls button index
- *
- */
 #define JOYSTICK_BUTTON_DISABLE_CONTROLS (6)
 
 /**
- * @brief Maximum allowed throttle pedal position value [normalized]
+ * @brief Throttle pedal position values [normalized]
  *
  */
+#define MIN_THROTTLE_PEDAL (0.0)
 #define MAX_THROTTLE_PEDAL (0.3)
 
 
 /**
- * @brief Maximum allowed brake pedal position value 
- *        [normalized]
+ * @brief Brake pedal position values [normalized]
  *
  */
+#define MIN_BRAKE_PEDAL (0.0)
 #define MAX_BRAKE_PEDAL (0.8)
 
 
 /**
  * @brief Minimum brake value to be considered enabled [normalized] 
  *
- * Throttle is disabled when brake value is greate than this value
+ * Throttle is disabled when brake value is greater than this value
  *
  */
 #define BRAKES_ENABLED_MIN (0.05)
 
 
 /**
- * @brief Minimum allowed steering wheel angle value [radians]
+ * @brief Steering wheel angle values [radians]
  *
  * Negative value means turning to the right
  *
  */
 #define MIN_STEERING_WHEEL_ANGLE (-M_PI * 2.0)
-
-
-/**
- * @brief Maximum allowed steering wheel angle value [radians]
- *
- * Positive value means turning to the left
- *
- */
 #define MAX_STEERING_WHEEL_ANGLE (M_PI * 2.0)
 
 
 /**
- * @brief Steering command angle minimum valid value [int16_t]
+ * @brief Steering command angles [int16_t]
  *
  */
 #define STEERING_COMMAND_ANGLE_MIN (-4700)
-
-
-/**
- * @brief Steering command angle maximum valid value [int16_t]
- *
- */
 #define STEERING_COMMAND_ANGLE_MAX (4700)
 
 
@@ -146,16 +116,10 @@
 
 
 /**
- * @brief Steering command steering wheel velocity minimum valid value [uint8_t]
+ * @brief Steering command steering wheel velocities [uint8_t]
  *
  */
 #define STEERING_COMMAND_MAX_VELOCITY_MIN (20)
-
-
-/**
- * @brief Steering command steering wheel velocity maximum valid value [uint8_t]
- *
- */
 #define STEERING_COMMAND_MAX_VELOCITY_MAX (254)
 
 
@@ -172,23 +136,11 @@
 
 
 /**
- * @brief Exponential filter factor for braking commands
+ * @brief Exponential filter factors
  *
  */
 #define BRAKES_FILTER_FACTOR (0.2)
-
-
-/**
- * @brief Exponential filter factor for throttle commands
- *
- */
 #define THROTTLE_FILTER_FACTOR (0.2)
-
-
-/**
- * @brief Exponential filter factor for steering commands
- *
- */
 #define STEERING_FILTER_FACTOR (0.1)
 
 /**
@@ -252,7 +204,6 @@ struct commander_setpoint_s
 
     const double max_position;
 };
-
 
 
 // *****************************************************
@@ -341,7 +292,7 @@ static int get_setpoint( struct commander_setpoint_s* setpoint )
 
 
 // *****************************************************
-// Function:    commander_is_joystick_safe
+// Function:    is_joystick_safe
 // 
 // Purpose:     Examine the positions of the brake and throttle to determine
 //              if they are in a safe position to enable control
@@ -351,7 +302,7 @@ static int get_setpoint( struct commander_setpoint_s* setpoint )
 // Parameters:  void
 //
 // *****************************************************
-static int commander_is_joystick_safe( )
+static int is_joystick_safe( )
 {
     int return_code = ERROR;
 
@@ -468,7 +419,7 @@ static int commander_enable_controls( )
 {
     int return_code = ERROR;
 
-    printf( "Enabling controls\n" );
+    printf( "Enable controls\n" );
 
     if ( commander != NULL )
     {
@@ -706,7 +657,7 @@ int commander_init( int channel )
 
             while ( return_code != ERROR )
             {
-                return_code = commander_is_joystick_safe( );
+                return_code = is_joystick_safe( );
 
                 if ( return_code == UNAVAILABLE )
                 {
@@ -779,8 +730,6 @@ int commander_update( )
 
     if ( commander != NULL )
     {
-        commander_set_safe( );
-
         oscc_interface_update_status( &commander->driver_override );
 
         return_code = joystick_update( );
@@ -805,7 +754,6 @@ int commander_update( )
                 if ( ( disable_button_pressed != 0 ) ||
                      ( commander->driver_override == 1 ) )
                 {
-                    printf( "Global disable: ");
                     return_code = commander_disable_controls( );
 
                     commander->driver_override = 0;
