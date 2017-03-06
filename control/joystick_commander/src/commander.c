@@ -230,10 +230,10 @@ static struct commander_data_s* commander = NULL;
  *
  */
 static struct commander_setpoint_s brake_setpoint =
-    { 0.0, JOYSTICK_AXIS_BRAKE, 0.0, MAX_BRAKE_PEDAL };
+    { 0.0, JOYSTICK_AXIS_BRAKE, MIN_BRAKE_PEDAL, MAX_BRAKE_PEDAL };
 
 static struct commander_setpoint_s throttle_setpoint =
-    { 0.0, JOYSTICK_AXIS_THROTTLE, 0.0, MAX_THROTTLE_PEDAL };
+    { 0.0, JOYSTICK_AXIS_THROTTLE, MIN_THROTTLE_PEDAL, MAX_THROTTLE_PEDAL };
 
 static struct commander_setpoint_s steering_setpoint =
     { 0.0, JOYSTICK_AXIS_STEER, MIN_STEERING_WHEEL_ANGLE, MAX_STEERING_WHEEL_ANGLE };
