@@ -535,29 +535,33 @@ int oscc_interface_update_status( int* override )
         {
             return_code = NOERR;
 
+            int local_override = 0;
+
+            if ( can_id == PS_CTRL_MSG_ID_BRAKE_REPORT )
+            {
+                ps_ctrl_brake_report_msg* report =
+                    ( ps_ctrl_brake_report_msg* )buffer;
+
+                local_override = (int) report->override;
+            }
+            else if ( can_id == PS_CTRL_MSG_ID_THROTTLE_REPORT )
+            {
+                ps_ctrl_throttle_report_msg* report =
+                    ( ps_ctrl_throttle_report_msg* )buffer;
+
+                local_override = (int) report->override;
+            }
+            else if ( can_id == PS_CTRL_MSG_ID_STEERING_REPORT )
+            {
+                ps_ctrl_steering_report_msg* report =
+                    ( ps_ctrl_steering_report_msg* )buffer;
+
+                local_override = (int) report->override;
+            }
+
             if ( ( *override ) == 0 )
             {
-                if ( can_id == PS_CTRL_MSG_ID_BRAKE_REPORT )
-                {
-                    ps_ctrl_brake_report_msg* report =
-                        ( ps_ctrl_brake_report_msg* )buffer;
-
-                    *override = (int) report->override;
-                }
-                else if ( can_id == PS_CTRL_MSG_ID_THROTTLE_REPORT )
-                {
-                    ps_ctrl_throttle_report_msg* report =
-                        ( ps_ctrl_throttle_report_msg* )buffer;
-
-                    *override = (int) report->override;
-                }
-                else if ( can_id == PS_CTRL_MSG_ID_STEERING_REPORT )
-                {
-                    ps_ctrl_steering_report_msg* report =
-                        ( ps_ctrl_steering_report_msg* )buffer;
-
-                    *override = (int) report->override;
-                }
+                *override = local_override;
             }
         }
         else if( ( status == canERR_NOMSG ) || ( status == canERR_TIMEOUT ) )

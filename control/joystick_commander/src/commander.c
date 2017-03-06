@@ -728,55 +728,56 @@ int commander_update( )
     unsigned int disable_button_pressed = 0;
     unsigned int enable_button_pressed = 0;
 
-    if ( commander != NULL )
-    {
-        oscc_interface_update_status( &commander->driver_override );
+    int oscc_override = 0;
 
+    oscc_interface_update_status( &oscc_override );
+
+    if ( oscc_override == 1 )
+    {
+        printf( "Driver Override Detected\n" );
+        return_code = commander_disable_controls( );
+    }
+    else
+    {
         return_code = joystick_update( );
 
         if ( return_code == NOERR )
         {
             return_code = get_button( JOYSTICK_BUTTON_DISABLE_CONTROLS,
-                                      &disable_button_pressed );
+                                          &disable_button_pressed );
 
             if ( return_code == NOERR )
             {
-                return_code = get_button( JOYSTICK_BUTTON_ENABLE_CONTROLS,
-                                          &enable_button_pressed );
-
-                if ( ( enable_button_pressed != 0 ) &&
-                     ( disable_button_pressed != 0 ) )
+                if ( disable_button_pressed != 0 )
                 {
-                    enable_button_pressed = 0;
-                    disable_button_pressed = 1;
-                }
-
-                if ( ( disable_button_pressed != 0 ) ||
-                     ( commander->driver_override == 1 ) )
-                {
+                    printf( "Disabling Controls\n" );
                     return_code = commander_disable_controls( );
-
-                    commander->driver_override = 0;
-                }
-                else if ( enable_button_pressed != 0 )
-                {
-                    return_code = commander_enable_controls( );
                 }
                 else
                 {
-                    if ( return_code == NOERR )
-                    {
-                        return_code = command_brakes( );
-                    }
+                    return_code = get_button( JOYSTICK_BUTTON_ENABLE_CONTROLS,
+                                              &enable_button_pressed );
 
                     if ( return_code == NOERR )
                     {
-                        return_code = command_throttle( );
-                    }
+                        if ( enable_button_pressed != 0 )
+                        {
+                            return_code = commander_enable_controls( );
+                        }
+                        else
+                        {
+                            return_code = command_brakes( );
 
-                    if ( return_code == NOERR )
-                    {
-                        return_code = command_steering( );
+                            if ( return_code == NOERR )
+                            {
+                                return_code = command_throttle( );
+                            }
+
+                            if ( return_code == NOERR )
+                            {
+                                return_code = command_steering( );
+                            }
+                        }
                     }
                 }
             }
