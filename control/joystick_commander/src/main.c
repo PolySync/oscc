@@ -68,25 +68,27 @@
 // *****************************************************
 
 /**
- * @brief node update and publish interval. [microseconds]
+ * @brief update interval. [microseconds]
  *
- * Defines the update and publish rate of the node
+ * Defines the update rate of the low frequency commander tasks
  *
  * 50,000 us == 50 ms == 20 Hertz
  *
  */
-#define NODE_UPDATE_INTERVAL (50000)
+#define COMMANDER_UPDATE_INTERVAL (50000)
 
 
 /**
- * @brief Node sleep interval. [microseconds]
+ * @brief sleep interval. [microseconds]
  *
  * Specifies the amount of time to sleep for during each wait/sleep cycle
  *
- * This prevents our node from overloading the host
+ * Defines the update rate for the high frequency commander tasks
+ *
+ * Prevents overloading the host CPU
  *
  */
-#define NODE_SLEEP_TICK_INTERVAL (1000)
+#define SLEEP_TICK_INTERVAL (1000)
 
 
 
@@ -99,7 +101,6 @@
  *
  */
 static int error_thrown = NOERR;
-static unsigned long long update_time;
 
 
 // *****************************************************
@@ -181,34 +182,6 @@ void signal_handler( int signal_number )
 
 
 // *****************************************************
-// Function:    update
-// 
-// Purpose:     Function to check if enough time has elapsed to update the
-//              commander functionality
-// 
-// Returns:     int - error code
-// 
-// Parameters:  void
-// 
-// *****************************************************
-static int update( )
-{
-    int error_code = NOERR;
-    
-    unsigned long long elapsed_time = get_elapsed_time( update_time );
-
-    if ( elapsed_time >= NODE_UPDATE_INTERVAL )
-    {
-        update_time += NODE_UPDATE_INTERVAL;
-
-        error_code = commander_update( );
-    }
-    
-    return error_code;
-}
-
-
-// *****************************************************
 // public definitions
 // *****************************************************
 
@@ -216,6 +189,8 @@ static int update( )
 int main( int argc, char **argv )
 {
     int return_code = NOERR;
+    unsigned long long update_timestamp = get_timestamp();
+    unsigned long long elapsed_time = 0;
 
     int channel;
 
@@ -233,16 +208,22 @@ int main( int argc, char **argv )
 
     if ( return_code == NOERR )
     {
-        update_time = get_timestamp();
-
         while ( return_code == NOERR && error_thrown == NOERR )
         {
-            return_code = update( );
+            return_code = commander_high_frequency_update( );
 
-            // avoid loading the CPU
-            (void) usleep( NODE_SLEEP_TICK_INTERVAL );
+            elapsed_time = get_elapsed_time( update_timestamp );
+
+            if ( elapsed_time > COMMANDER_UPDATE_INTERVAL )
+            {
+                update_timestamp = get_timestamp();
+                return_code = commander_low_frequency_update( );
+            }
+
+            // Delay 1 ms to avoid loading the CPU and to time calls
+            // to commander_high_frequency_update
+            (void) usleep( SLEEP_TICK_INTERVAL );
         }
-
         commander_close( );
     }
     

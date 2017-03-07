@@ -61,11 +61,10 @@ int commander_init( int channel );
 void commander_close( );
 
 /**
- * @brief Commander update.  Checks the status of the joystick
- *        and the the OSCC modules and updates the current
- *        values, including brakes, throttle and steering. Also
- *        checks the state of the driver override to disable the
- *        OSCC modules.
+ * @brief Commander low-frequency update.  Checks the status of the
+ *        joystick and the the OSCC modules and updates the current
+ *        values, including brakes, throttle and steering.  Is expected
+ *        to execute every 50ms.
  *
  * @param [void]
  *
@@ -74,7 +73,21 @@ void commander_close( );
  * \li \ref ERROR (0) if failure.
  *
  */
-int commander_update( );
+int commander_low_frequency_update( );
+
+/**
+ * @brief Commander high-frequency update. Checks the state of the
+ *        driver override to disable the OSCC modules. Is expected to
+ *        execute every 1ms
+ *
+ * @param [void]
+ *
+ * @return ERROR code:
+ * \li \ref NOERR (1) if success.
+ * \li \ref ERROR (0) if failure.
+ *
+ */
+int commander_high_frequency_update( );
 
 
 #endif	/* COMMANDER_H */

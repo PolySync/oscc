@@ -112,7 +112,7 @@
  * @brief Steering command angle scale factor
  *
  */
-#define STEERING_COMMAND_ANGLE_FACTOR (10)
+#define STEERING_COMMAND_ANGLE_FACTOR ( 10.0 )
 
 
 /**
@@ -166,25 +166,6 @@
 // *****************************************************
 
 /**
- * @brief Commander data
- *
- * Serves as a top-level container for the application's data structures
- *
- */
-struct commander_data_s
-{
-    int driver_override;
-
-    double brake_setpoint_average;
-
-    double throttle_setpoint_average;
-
-    double steering_setpoint_average;
-
-    double last_steering_rate;
-};
-
-/**
  * @brief Commander setpoint
  *
  * The commander setpoint is a structure that contains all the
@@ -210,18 +191,10 @@ struct commander_setpoint_s
 // static global data
 // *****************************************************
 
-/**
- * @brief Commander data
- *
- * Static definitions of the variables that store the relevant
- * information about what the current variables are
- * 
- * The validity of the commander pointer is how to determine if
- * the commander is available for use
- *
- */
-static struct commander_data_s commander_data = { 0, 0.0, 0.0, 0.0, 0.0 };
-static struct commander_data_s* commander = NULL;
+#define COMMANDER_ENABLED ( 1 )
+#define COMMANDER_DISABLED ( 0 )
+
+static int commander_enabled = COMMANDER_DISABLED;
 
 /**
  * @brief Setpoint Data
@@ -343,7 +316,7 @@ static int commander_set_safe( )
 {
     int return_code = ERROR;
 
-    if ( commander != NULL )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = oscc_interface_set_defaults();
     }
@@ -391,7 +364,7 @@ static int commander_disable_controls( )
 
     printf( "Disable controls\n" );
 
-    if ( commander != NULL )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = commander_set_safe( );
 
@@ -421,7 +394,7 @@ static int commander_enable_controls( )
 
     printf( "Enable controls\n" );
 
-    if ( commander != NULL )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = commander_set_safe( );
 
@@ -486,20 +459,20 @@ static int command_brakes( )
 {
     int return_code = ERROR;
     unsigned int constrained_value = 0;
+    static double brake_average = 0.0;
 
-    if ( commander != NULL )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = get_setpoint( &brake_setpoint );
 
         if ( return_code == NOERR )
         {
-            commander->brake_setpoint_average =
-                calc_exponential_average( commander->brake_setpoint_average,
-                                          brake_setpoint.setpoint,
-                                          BRAKES_FILTER_FACTOR );
+            brake_average = calc_exponential_average( brake_average,
+                                                      brake_setpoint.setpoint,
+                                                      BRAKES_FILTER_FACTOR );
 
             const float normalized_value = (float) m_constrain(
-                (float) commander->brake_setpoint_average,
+                (float) brake_average,
                 0.0f,
                 MAX_BRAKE_PEDAL );
 
@@ -532,7 +505,7 @@ static int command_throttle( )
 {
     int return_code = ERROR;
 
-    if ( commander != NULL )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = get_setpoint( &throttle_setpoint );
 
@@ -580,28 +553,30 @@ static int command_throttle( )
 static int command_steering( )
 {
     int return_code = ERROR;
+    static double steering_average = 0.0;
+    static double last_steering_rate = 0.0;
 
-    if ( commander != NULL )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = get_setpoint( &steering_setpoint );
 
-        commander->steering_setpoint_average =
-            calc_exponential_average( commander->steering_setpoint_average,
+        steering_average =
+            calc_exponential_average( steering_average,
                                       steering_setpoint.setpoint,
                                       STEERING_FILTER_FACTOR );
 
-        const float angle_degrees = (float) m_degrees(
-            (float) commander->steering_setpoint_average );
+        const float angle_degrees =
+            (float) m_degrees( (float) steering_average );
 
         const int constrained_angle = ( int ) m_constrain(
-                (float) (angle_degrees * (float) STEERING_COMMAND_ANGLE_FACTOR),
+                (float) (angle_degrees * STEERING_COMMAND_ANGLE_FACTOR),
                 (float) STEERING_COMMAND_ANGLE_MIN,
                 (float) STEERING_COMMAND_ANGLE_MAX );
 
-        float rate_degrees = 
-                (float) fabs( constrained_angle - commander->last_steering_rate );
+        float rate_degrees =
+            (float) fabs( constrained_angle - last_steering_rate );
 
-        commander->last_steering_rate = constrained_angle;
+        last_steering_rate = constrained_angle;
 
         unsigned int constrained_rate = ( unsigned int ) m_constrain(
                 (float) (rate_degrees / (float) STEERING_COMMAND_MAX_VELOCITY_FACTOR),
@@ -637,15 +612,9 @@ int commander_init( int channel )
 {
     int return_code = ERROR;
 
-    if ( commander == NULL )
+    if ( commander_enabled == COMMANDER_DISABLED )
     {
-        commander = &commander_data;
-
-        commander->driver_override = 0;
-        commander->brake_setpoint_average = 0.0;
-        commander->throttle_setpoint_average = 0.0;
-        commander->steering_setpoint_average = 0.0;
-        commander->last_steering_rate = 0.0;
+        commander_enabled = COMMANDER_ENABLED;
 
         return_code = oscc_interface_init( channel );
 
@@ -690,7 +659,7 @@ int commander_init( int channel )
 // *****************************************************
 void commander_close( )
 {
-    if ( commander != NULL )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         commander_disable_controls( );
 
@@ -700,88 +669,100 @@ void commander_close( )
 
         joystick_close( );
 
-        commander = NULL;
+        commander_enabled = COMMANDER_DISABLED;
     }
 }
 
 
 // *****************************************************
-// Function:    command_update
+// Function:    commander_low_frequency_update
 // 
-// Purpose:     Designed to be run periodically, the commander update object
-//              polls the joystick, converts the joystick input into values
-//              that reflect what the vehicle should do and sends them to the
-//              OSCC interface
-// 
-//              The update function first checks the OSCC interface for any
-//              driver overrides that come in from the OSCC interface
-// 
+// Purpose:     Should be run every 50ms
+//              The commander low-frequency update function polls the joystick,
+//              converts the joystick input into values that reflect what the
+//              vehicle should do and sends them to the OSCC interface
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
-int commander_update( )
+int commander_low_frequency_update( )
 {
-    int return_code = ERROR;
+    unsigned int button_pressed = 0;
 
-    unsigned int disable_button_pressed = 0;
-    unsigned int enable_button_pressed = 0;
+    int return_code = joystick_update( );
 
-    int oscc_override = 0;
-
-    oscc_interface_update_status( &oscc_override );
-
-    if ( oscc_override == 1 )
+    if ( return_code == NOERR )
     {
-        printf( "Driver Override Detected\n" );
-        return_code = commander_disable_controls( );
-    }
-    else
-    {
-        return_code = joystick_update( );
+        return_code = get_button( JOYSTICK_BUTTON_DISABLE_CONTROLS,
+                                  &button_pressed );
 
         if ( return_code == NOERR )
         {
-            return_code = get_button( JOYSTICK_BUTTON_DISABLE_CONTROLS,
-                                          &disable_button_pressed );
-
-            if ( return_code == NOERR )
+            if ( button_pressed != 0 )
             {
-                if ( disable_button_pressed != 0 )
-                {
-                    printf( "Disabling Controls\n" );
-                    return_code = commander_disable_controls( );
-                }
-                else
-                {
-                    return_code = get_button( JOYSTICK_BUTTON_ENABLE_CONTROLS,
-                                              &enable_button_pressed );
+                printf( "Disabling Controls\n" );
+                return_code = commander_disable_controls( );
+            }
+            else
+            {
+                button_pressed = 0;
+                return_code = get_button( JOYSTICK_BUTTON_ENABLE_CONTROLS,
+                                          &button_pressed );
 
-                    if ( return_code == NOERR )
+                if ( return_code == NOERR )
+                {
+                    if ( button_pressed != 0 )
                     {
-                        if ( enable_button_pressed != 0 )
+                        return_code = commander_enable_controls( );
+                    }
+                    else
+                    {
+                        return_code = command_brakes( );
+
+                        if ( return_code == NOERR )
                         {
-                            return_code = commander_enable_controls( );
+                            return_code = command_throttle( );
                         }
-                        else
+
+                        if ( return_code == NOERR )
                         {
-                            return_code = command_brakes( );
-
-                            if ( return_code == NOERR )
-                            {
-                                return_code = command_throttle( );
-                            }
-
-                            if ( return_code == NOERR )
-                            {
-                                return_code = command_steering( );
-                            }
+                            return_code = command_steering( );
                         }
                     }
                 }
             }
         }
+    }
+    return return_code;
+}
+
+
+// *****************************************************
+// Function:    commander_high_frequency_update
+//
+// Purpose:     Should be run every 1ms (one millisecond)
+//              Run the high-frequency commander tasks
+//              Checks the vehicle for override information
+//
+// Returns:     int - ERROR or NOERR
+//
+// Parameters:  void
+//
+// *****************************************************
+int commander_high_frequency_update( )
+{
+    int return_code = ERROR;
+
+    int oscc_override = 0;
+
+    return_code = oscc_interface_update_status( &oscc_override );
+
+    if ( oscc_override == 1 )
+    {
+        printf( "Driver Override Detected\n" );
+        return_code = commander_disable_controls( );
     }
     return return_code;
 }
