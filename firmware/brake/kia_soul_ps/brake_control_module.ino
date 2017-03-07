@@ -21,8 +21,6 @@
 // 2004-2009 Prius brake actuator
 
 
-
-
 #include <SPI.h>
 #include <FiniteStateMachine.h>
 #include "mcp_can.h"
@@ -808,6 +806,12 @@ void setup( void )
 
     // close rear slrs. These should open only for emergencies and to release brake pressure
     brakes.depowerSLR();
+
+    // Clear any pressure in the accumulator
+    brakes.powerSLA(250);
+    delay(3000);
+
+    // initialize for braking
     brakes.depowerSLA();
 
     init_serial();
