@@ -249,29 +249,53 @@ struct Accumulator {
     // turn relay on or off
     void pumpOn()
     {
-      digitalWrite(_controlPin, HIGH);
+        digitalWrite(_controlPin, HIGH);
     }
 
 
     void pumpOff()
     {
-      digitalWrite(_controlPin, LOW);
+        digitalWrite(_controlPin, LOW);
     }
 
-    // maintain accumulator pressure
+    // *****************************************************
+    // Function:    maintainPressure()
+    //
+    // Purpose:     This function checks the voltage input from the accumulator
+    //              pressure sensor to determine if the accumulator pump should
+    //              be powered on or powered off. The accumulator should maintain
+    //              enough pressure to emergency break at any point.
+    //
+    //              Because analog voltage sensors are being read, a filter is applied
+    //              to the reading to ensure that voltage drops/spikes don't effect
+    //              the reading.
+    //
+    //
+    // Returns:     void
+    //
+    // Parameters:  None
+    //
+    // *****************************************************
     void maintainPressure()
     {
-      _pressure = convertToVoltage(analogRead(_sensorPin));
+        static const float filter_alpha = 0.05;
+        static float _pressure = 0.0;
 
-      if( _pressure < MIN_PACC )
-      {
-          pumpOn();
-      }
+        // This is going to get filtered
+        float sensor_1 = convertToVoltage(analogRead(_sensorPin));
 
-      if( _pressure > MAX_PACC )
-      {
-          pumpOff();
-      }
+        _pressure = ( filter_alpha * sensor_1 ) +
+            ( ( 1.0 - filter_alpha ) * _pressure );
+
+        if( _pressure < MIN_PACC )
+        {
+            pumpOn();
+        }
+
+        if( _pressure > MAX_PACC )
+        {
+            pumpOff();
+        }
     }
 };
 
