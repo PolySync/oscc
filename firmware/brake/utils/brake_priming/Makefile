@@ -14,7 +14,7 @@ endif
 PROJECT_DIR := $(shell pwd)
 
 #
-ARDMK_DIR = $(PROJECT_DIR)/../../arduino_make
+ARDMK_DIR = $(PROJECT_DIR)/../../../arduino_make
 
 #
 ifeq ($(OSFLAG), LINUX)
@@ -34,7 +34,7 @@ ifeq ($(OSFLAG), OSX)
 endif
 
 #
-USER_LIB_PATH = $(PROJECT_DIR)/../../arduino_libraries
+USER_LIB_PATH = $(PROJECT_DIR)/../../../arduino_libraries
 
 #
 MONITOR_BAUDRATE = 115200
