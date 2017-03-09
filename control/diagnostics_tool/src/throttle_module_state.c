@@ -1,29 +1,29 @@
 /************************************************************************/
-/* The MIT License (MIT) */
-/* ===================== */
-
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
-
-/* Permission is hereby granted, free of charge, to any person */
-/* obtaining a copy of this software and associated documentation */
-/* files (the “Software”), to deal in the Software without */
-/* restriction, including without limitation the rights to use, */
-/* copy, modify, merge, publish, distribute, sublicense, and/or sell */
-/* copies of the Software, and to permit persons to whom the */
-/* Software is furnished to do so, subject to the following */
-/* conditions: */
-
-/* The above copyright notice and this permission notice shall be */
-/* included in all copies or substantial portions of the Software. */
-
-/* THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES */
-/* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND */
-/* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT */
-/* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, */
-/* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING */
-/* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR */
-/* OTHER DEALINGS IN THE SOFTWARE. */
+/* The MIT License (MIT)                                                */
+/* =====================                                                */
+/*                                                                      */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
+/*                                                                      */
+/* Permission is hereby granted, free of charge, to any person          */
+/* obtaining a copy of this software and associated documentation       */
+/* files (the “Software”), to deal in the Software without              */
+/* restriction, including without limitation the rights to use,         */
+/* copy, modify, merge, publish, distribute, sublicense, and/or sell    */
+/* copies of the Software, and to permit persons to whom the            */
+/* Software is furnished to do so, subject to the following             */
+/* conditions:                                                          */
+/*                                                                      */
+/* The above copyright notice and this permission notice shall be       */
+/* included in all copies or substantial portions of the Software.      */
+/*                                                                      */
+/* THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,      */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES      */
+/* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND             */
+/* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT          */
+/* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,         */
+/* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING         */
+/* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR        */
+/* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
 
@@ -55,14 +55,9 @@
 //
 static int analyze_command_frame(
         throttle_module_state_s * const state,
-        const can_frame_s * const throttle_command_frame )
+        const ps_ctrl_throttle_command_msg * const throttle_command )
 {
     int module_state = STATE_OK;
-
-    ps_ctrl_throttle_command_msg * throttle_command =
-            (ps_ctrl_throttle_command_msg*)
-                    throttle_command_frame->frame_contents.buffer;
-
 
 
     return module_state;
@@ -72,13 +67,9 @@ static int analyze_command_frame(
 //
 static int analyze_report_frame(
         throttle_module_state_s * const state,
-        const can_frame_s * const throttle_report_frame )
+        const ps_ctrl_throttle_report_msg * const throttle_report )
 {
     int module_state = STATE_OK;
-
-    ps_ctrl_throttle_report_msg * throttle_report =
-            (ps_ctrl_throttle_report_msg*)
-                    throttle_report_frame->frame_contents.buffer;
 
     state->control_state = throttle_report->enabled;
 
@@ -112,9 +103,15 @@ int analyze_throttle_state(
 {
     int ret = NOERR;
 
-    analyze_command_frame( state, throttle_command_frame ); // TODO : do we need this?
+    analyze_command_frame( 
+            state, 
+            (ps_ctrl_throttle_command_msg*)
+                    throttle_command_frame->frame_contents.buffer ); // TODO : do we need this?
 
-    state->module_state = analyze_report_frame( state, throttle_report_frame );
+    state->module_state = analyze_report_frame( 
+            state, 
+            (ps_ctrl_throttle_report_msg*)
+                    throttle_report_frame->frame_contents.buffer );
 
     return ret;
 }
