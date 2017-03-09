@@ -1,29 +1,29 @@
 /************************************************************************/
-/* The MIT License (MIT) */
-/* ===================== */
-
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
-
-/* Permission is hereby granted, free of charge, to any person */
-/* obtaining a copy of this software and associated documentation */
-/* files (the “Software”), to deal in the Software without */
-/* restriction, including without limitation the rights to use, */
-/* copy, modify, merge, publish, distribute, sublicense, and/or sell */
-/* copies of the Software, and to permit persons to whom the */
-/* Software is furnished to do so, subject to the following */
-/* conditions: */
-
-/* The above copyright notice and this permission notice shall be */
-/* included in all copies or substantial portions of the Software. */
-
-/* THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES */
-/* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND */
-/* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT */
-/* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, */
-/* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING */
-/* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR */
-/* OTHER DEALINGS IN THE SOFTWARE. */
+/* The MIT License (MIT)                                                */
+/* =====================                                                */
+/*                                                                      */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
+/*                                                                      */
+/* Permission is hereby granted, free of charge, to any person          */
+/* obtaining a copy of this software and associated documentation       */
+/* files (the “Software”), to deal in the Software without              */
+/* restriction, including without limitation the rights to use,         */
+/* copy, modify, merge, publish, distribute, sublicense, and/or sell    */
+/* copies of the Software, and to permit persons to whom the            */
+/* Software is furnished to do so, subject to the following             */
+/* conditions:                                                          */
+/*                                                                      */
+/* The above copyright notice and this permission notice shall be       */
+/* included in all copies or substantial portions of the Software.      */
+/*                                                                      */
+/* THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,      */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES      */
+/* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND             */
+/* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT          */
+/* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,         */
+/* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING         */
+/* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR        */
+/* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
 /**
@@ -38,6 +38,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "macros.h"
 #include "terminal_print.h"
@@ -80,15 +81,12 @@ static int update_can_array_contents(
     can_frame_contents->msg_dlc = msg_dlc;
 
     can_frame_contents->msg_flag = msg_flag;
-
-    for( i = 0; i < 8; i ++ )
+    
+    if( memcmp( can_frame_contents->buffer, buffer, 8 ) != 0 )
     {
-        if( can_frame_contents->buffer[ i ] != buffer[ i ] )
-        {
-            msg_contents_changed = 1;
-
-            can_frame_contents->buffer[ i ] = buffer[ i ];
-        }
+        msg_contents_changed = 1;
+        
+        memcpy( can_frame_contents->buffer, buffer, 8 ); 
     }
 
     return msg_contents_changed;
@@ -196,6 +194,23 @@ static void update_can_array_timestamp(
 }
 
 
+//
+static void print_info_can_array_index( int index )
+{
+    char print_array[ 500 ];
+    
+    sprintf( print_array,
+        "can id: %ld, msg freq: %u, timestamp freq: %u, last arrival deltaT: %u, last timestamp deltaT: %u",
+        can_msg_array[ index ].can_id,
+        can_msg_array[ index ].msg_frequency,
+        can_msg_array[ index ].msg_timestamp_frequency,
+        can_msg_array[ index ].last_msg_deltaT,
+        can_msg_array[ index ].last_msg_timestamp_deltaT );
+
+    add_line( print_array );
+}
+
+
 
 
 // *****************************************************
@@ -204,7 +219,7 @@ static void update_can_array_timestamp(
 
 
 //
-unsigned long long get_timestamp()
+unsigned long long get_timestamp()  // milliseconds
 {
     gettimeofday( &tv, NULL );
 
@@ -253,8 +268,6 @@ void print_can_array( int * can_id_print_list, int num_can_ids )
 
     int print_all_ids = 0;
 
-    char print_array[ 500 ];
-
     if( num_can_ids == 0 )
     {
         print_all_ids = 1;
@@ -267,15 +280,7 @@ void print_can_array( int * can_id_print_list, int num_can_ids )
     {
         if( print_all_ids && can_msg_array[ i ].can_id > 0 )
         {
-            sprintf( print_array,
-                    "can id: %ld, msg freq: %u, timestamp freq: %u, last arrival deltaT: %u, last timestamp deltaT: %u",
-                    can_msg_array[ i ].can_id,
-                    can_msg_array[ i ].msg_frequency,
-                    can_msg_array[ i ].msg_timestamp_frequency,
-                    can_msg_array[ i ].last_msg_deltaT,
-                    can_msg_array[ i ].last_msg_timestamp_deltaT );
-
-            add_line( print_array );
+            print_info_can_array_index( i );
         }
         else
         {
@@ -283,15 +288,7 @@ void print_can_array( int * can_id_print_list, int num_can_ids )
             {
                 if( can_id_print_list[ j ] == can_msg_array[ i ].can_id )
                 {
-                    sprintf( print_array,
-                            "can id: %ld, msg freq: %u, timestamp freq: %u, last arrival deltaT: %u, last timestamp deltaT: %u",
-                            can_msg_array[ i ].can_id,
-                            can_msg_array[ i ].msg_frequency,
-                            can_msg_array[ i ].msg_timestamp_frequency,
-                            can_msg_array[ i ].last_msg_deltaT,
-                            can_msg_array[ i ].last_msg_timestamp_deltaT );
-
-                    add_line( print_array );
+                    print_info_can_array_index( i );
                 }
             }
         }
