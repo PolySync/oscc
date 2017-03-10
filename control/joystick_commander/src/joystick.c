@@ -220,37 +220,46 @@ static int joystick_get_num_devices( )
 
 
 // *****************************************************
-// Function:    joystick_calc_log_range
-// 
+// Function:    joystick_curve_fit
+//
 // Purpose:     Calculate the logarithmic range for the joystick position
-// 
-// Returns:     double - the range value
-// 
-// Parameters:  a1 - 
-//              a2 - 
-//              b1 - 
-//              b2 - 
+//
+//              Create the formula:
+//              output = ( output_range / ( input_range )^2 ) * ( input )^2
+//
+//              Which is equal to:
+//              output = output_range * ( input / input_range )^2
+//
+// Returns:     double - the curve fit value
+//
+// Parameters:  input_min - input range min
+//              input_max - input range max
+//              output_min - output range min
+//              output_max - output range max
 //              position - current joystick position
-// 
+//
 // *****************************************************
-static double joystick_calc_log_range( double a1,
-                                       double a2,
-                                       double b1,
-                                       double b2,
-                                       double position )
+static double joystick_curve_fit( double input_min,
+                                  double input_max,
+                                  double output_min,
+                                  double output_max,
+                                  double position )
 {
-    const double x1 = 1.0;           // cannot include zero in range
-    const double y1 = 1.0;           // cannot include zero in range
-    const double x2 = a2 - a1 + 1.0; // add one to make sure the range doesn't include zero
-    const double y2 = b2 - b1 + 1.0; // add one to make sure the range doesn't include zero
-    
-    const double b = log( y1 / y2 ) / ( x1 - x2 );
-    const double a = y1 / exp( b * x1 );
-    
-    double result = a * exp( b * (position - a1 + 1.0) );
-    result += ( b1 - 1.0 );         // normalize back to correct range
+    const double input_range = input_max - input_min;
+    const double output_range = output_max - output_min;
 
-    return ( result ); 
+    double input = position - input_min;
+    double output = 0.0;
+
+    input /= input_range;   // input / input_range
+    input *= input;         // ( input / input_range )^2
+
+    // output = output_range * ( input / input_range )^2
+    output = output_range * input;
+
+    output += output_min;   // normalize to output range
+
+    return ( output );
 }
 
 
@@ -505,28 +514,25 @@ double joystick_normalize_axis_position( const int position,
                                          const double range_min,
                                          const double range_max )
 {
-    const double s = (double) position;
-    
-    double a1, a2, b1, b2;
-    
+    const double input_min = 0.0;
+    const double output_min = 0.0;
+
+    double input_max = ( double )JOYSTICK_AXIS_POSITION_MAX;
+    double output_max = range_min;
+
     if ( position < 0 )
     {
-        a1 = 0;
-        a2 = JOYSTICK_AXIS_POSITION_MIN;
-        b1 = 0;
-        b2 = range_max;
+        input_max = ( double )JOYSTICK_AXIS_POSITION_MIN;
+        output_max = range_max;
     }
-    else
-    {
-        a1 = JOYSTICK_AXIS_POSITION_MAX;
-        a2 = 0;
-        b1 = range_min;
-        b2 = 0;
-    }
-    
-    // exponentially map value s in the range of a1 and a2, to t(return) in
-    // the range b1 and b2
-    return joystick_calc_log_range( a1, a2, b1, b2, s );
+
+    const double output = joystick_curve_fit( input_min,
+                                              input_max,
+                                              output_min,
+                                              output_max,
+                                              ( double )position );
+
+    return ( output );
 }
 
 
@@ -547,14 +553,14 @@ double joystick_normalize_trigger_position( const int position,
                                             const double range_min,
                                             const double range_max )
 {
-    const double s = (double) position;
-    const double a1 = (double) JOYSTICK_AXIS_POSITION_MIN;
-    const double a2 = (double) JOYSTICK_AXIS_POSITION_MAX;
-    
-    const double b1 = range_min;
-    const double b2 = range_max;
-    
-    return joystick_calc_log_range( a1, a2, b1, b2, s );
+    const double output = joystick_curve_fit(
+        ( double )JOYSTICK_AXIS_POSITION_MIN,
+        ( double )JOYSTICK_AXIS_POSITION_MAX,
+        range_min,
+        range_max,
+        ( double )position );
+
+    return ( output );
 }
 
 
