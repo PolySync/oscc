@@ -264,7 +264,7 @@ struct Accumulator {
     // Purpose:     This function checks the voltage input from the accumulator
     //              pressure sensor to determine if the accumulator pump should
     //              be powered on or powered off. The accumulator should maintain
-    //              enough pressure to emergency break at any point.
+    //              enough pressure to emergency brake at any point.
     //
     //              Because analog voltage sensors are being read, a filter is applied
     //              to the reading to ensure that voltage drops/spikes don't effect
