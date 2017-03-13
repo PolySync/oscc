@@ -329,15 +329,56 @@ struct SMC {
 
     SMC( byte sensor1Pin, byte sensor2Pin, byte controlPin );
 
-    void checkPedal()
+    // *****************************************************
+    // Function:    check_brake_pedal
+    //
+    // Purpose:     This function checks the voltage input from the brake pedal
+    //              sensors to determine if the driver is attempting to brake
+    //              the vehicle.  This must be done over time by taking
+    //              periodic samples of the input voltage, calculating the
+    //              difference between the two and then passing that difference
+    //              through a basic exponential filter to smooth the input.
+    //
+    //              The required response time for the filter is 250 ms, which at
+    //              50ms per sample is 5 samples.  As such, the alpha for the
+    //              exponential filter is 0.5 to make the input go "close to" zero
+    //              in 5 samples.
+    //
+    //              The implementation is:
+    //                  s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
+    //
+    //              If the filtered input exceeds the max voltage, it is an
+    //              indicator that the driver is pressing on the brake pedal
+    //              and the control should be disabled.
+    //
+    // Returns:     void
+    //
+    // Parameters:  None
+    //
+    // *****************************************************
+    void check_brake_pedal( )
     {
-        // read pressures at sensors
-        _pressure1 = convertToVoltage(analogRead(_sensor1Pin));
-        _pressure2 = convertToVoltage(analogRead(_sensor2Pin));
+        static const float filter_alpha = 0.05;
+        static const float max_pedal_voltage = PEDAL_THRESH;
 
-        // if current pedal pressure is greater than limit (because of
-        // driver override by pressing the brake pedal), disable.
-        if (_pressure1 > PEDAL_THRESH || _pressure2 > PEDAL_THRESH )
+        static float filtered_input_1 = 0.0;
+        static float filtered_input_2 = 0.0;
+
+        float sensor_1 = ( float )( analogRead( _sensor1Pin ) );
+        float sensor_2 = ( float )( analogRead( _sensor2Pin ) );
+
+        // Convert the input to be on a 5V scale
+        sensor_1 *= ( 5.0 / 1023.0 );
+        sensor_2 *= ( 5.0 / 1023.0 );
+
+        filtered_input_1 = ( filter_alpha * sensor_1 ) +
+                                ( ( 1.0 - filter_alpha ) * filtered_input_1 );
+
+        filtered_input_2 = ( filter_alpha * sensor_2 ) +
+                                ( ( 1.0 - filter_alpha ) * filtered_input_2 );
+
+        if ( ( filtered_input_1 > max_pedal_voltage ) ||
+             ( filtered_input_2 > max_pedal_voltage ) )
         {
             pressure_req = ZERO_PRESSURE;
             local_override = 1;
@@ -488,7 +529,7 @@ static void init_can( void )
 static void publish_ps_ctrl_brake_report( void )
 {
     // cast data
-    ps_ctrl_brake_report_msg * const data =
+    ps_ctrl_brake_report_msg * data =
             (ps_ctrl_brake_report_msg*) tx_frame_ps_ctrl_brake_report.data;
 
     // set frame ID
@@ -578,7 +619,7 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
 
 static void process_psvc_chassis_state1( const uint8_t * const rx_frame_buffer )
 {
-    const psvc_chassis_state1_data_s * const chassis_data =
+    const psvc_chassis_state1_data_s * chassis_data =
         (psvc_chassis_state1_data_s*) rx_frame_buffer;
 
     // brake pressure as reported from the C-CAN bus
@@ -871,7 +912,7 @@ void loop()
     check_rx_timeouts();
 
     // check pressures on master cylinder (pressure from pedal)
-    smc.checkPedal();
+    smc.check_brake_pedal();
 
     brakeStateMachine.update();
 }
