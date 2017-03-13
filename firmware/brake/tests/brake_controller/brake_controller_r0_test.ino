@@ -660,7 +660,7 @@ void waitEnter()
 void waitUpdate()
 {
     // keep accumulator pressurized
-    accumulator.maintainPressure();
+    //accumulator.maintainPressure();
 
     // TODO: Is this check needed? Don't we force transition elsewhere?
     if( pressure_req > ZERO_PRESSURE + .01 )
@@ -687,7 +687,7 @@ void brakeEnter() {
 void brakeUpdate()
 {
     // maintain accumulator pressure
-    accumulator.maintainPressure();
+    //accumulator.maintainPressure();
 
     // calculate a delta t
     lastMicros = currMicros;
