@@ -1147,7 +1147,7 @@ void brake_state_machine_update( )
             wait_state_update();
         }
     }
-    else
+    else if ( brakes.current_state == BRAKE_CONTROL_BRAKE_STATE )
     {
         if ( brakes.requested_state == BRAKE_CONTROL_WAIT_STATE )
         {
@@ -1161,6 +1161,12 @@ void brake_state_machine_update( )
         {
             brake_state_update();
         }
+    }
+    else
+    {
+        brakes.current_state = BRAKE_CONTROL_WAIT_STATE;
+        brakes.requested_state = BRAKE_CONTROL_WAIT_STATE;
+        wait_state_enter();
     }
 }
 
