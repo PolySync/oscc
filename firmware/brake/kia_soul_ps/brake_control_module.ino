@@ -1015,7 +1015,7 @@ void brake_state_enter( )
 // *****************************************************
 void brake_state_update( )
 {
-    static int16_t delta_t = 10;
+    static int16_t delta_t = 0;
     static int16_t curr_micros = 0;
     static int16_t last_micros = 0;
 
