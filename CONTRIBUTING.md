@@ -184,7 +184,7 @@ Any changes to the OSCC modules must undergo a series of tests that conclude wit
 - The OSCC method uses GitHub based `status checks` that a branch must go through before it can be considered for a merge
 - The steps involved are as follows:
   - When creating a branch on the source base, the branch must be a *protected branch* from the main development branch, `devel`
-  - Code changes are make and pushed them back to the repository
+  - Code changes are made and then pushed back to the repository
   - At this point, there are status checks for each of the following:
     1. The code compiles without errors or warnings (automated check)
     2. The code complies with the [coding standard](#oscc-coding-standard) (automated check)
@@ -494,7 +494,8 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 
 ### 3. Comments
 
-1. Comments shall not contain C or C++ style comment markers
+1. Comments shall not mix C and C++ style comment markers
+   1. C and C++ style comment markers are both allowed
 
 ### 4. Identifiers
 
