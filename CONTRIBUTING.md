@@ -13,6 +13,8 @@
 - [Building](#building)
 - [Documentation](#documentation)
 - [Helpful Links](#helpful-links)
+- [Release Process](#release-process)
+  - [System Acceptane Testing](#system-acceptance-testing)
 - [OSCC Coding standard](#oscc-coding-standard)
   - [1. Directives](#1-directives)
   - [2. Rules](#2-rules)
@@ -79,6 +81,7 @@ Below is a sample of how additional vehicle directories should be created.
   - Include a link to the pull request in the ticket
 - The PolySync team will review all pull requests on a weekly basis
 - **Code contributed should include unit tests**- that demonstrate the code functions as expected
+- For more details, please see the "Release Process" section below
 
 ### Contributing a Diagram
 
@@ -157,6 +160,243 @@ To build the various components in the system, please see the README.md
 - [Arduino FAQ](https://www.arduino.cc/en/Main/FAQ)
 - [Throttle/Steering/CAN Gateway board](https://www.arduino.cc/en/Main/ArduinoBoardUno)
 - [Braking board](https://www.arduino.cc/en/Main/arduinoBoardMega2560)
+
+---
+
+# Release Process
+
+Any changes to the OSCC modules must undergo a series of tests that conclude with a "stress test" on the vehicle itself.  What is included here is the process by which code modifications are incorporated into the main source branch (devel) and what the system tests constitute.  One of the key problems that this process is intended to solve is that any source code change must be tested on the vehicle before it can be merged with the "devel" branch.  
+
+**Merging code before it is tested is dangerous to users and must be avoided at all costs.**
+
+
+## Code modification process
+
+### Traditional Method
+
+- The traditional method in git is to issue a Pull Request or PR against a branch to prompt a code review
+  - After getting the code approved and cleaning any merge conflicts, a repository maintainer performs a merge to incorporate the branch changes in the main code stream
+  - This method does not work for OSCC; it allows code changes that affect how the system operates to be incorporated into the main development branch without a demonstration that the changes result in safe vehicle operation
+  - It is imperative that any code changes to OSCC go through integration and system test **before** any code is merged into the baseline
+
+### OSCC Method
+
+- The OSCC method uses GitHub based `status checks` that a branch must go through before it can be considered for a merge
+- The steps involved are as follows:
+  - When creating a branch on the source base, the branch must be a *protected branch* from the main development branch, `devel`
+  - Code changes are made and then pushed back to the repository
+  - At this point, there are status checks for each of the following:
+    1. The code compiles without errors or warnings (automated check)
+    2. The code complies with the [coding standard](#oscc-coding-standard) (automated check)
+    3. The code passes a code review
+		1. Two reviewer approvals are required for the code review to have passed
+		2. The code review focuses on code structure and analysis of the logic as opposed to coding standard compliance
+		3. If there are code changes that cannot be evaluated using the coding standard compliance checker, those changes require a code review for compliance to the standard
+    4. The regression test suite completes successfully
+    5. The [system acceptance tests](#system-acceptance-testing) completes successfully (system acceptance test listed below, some parts automated)
+  - Once all the status checks have passed, resolve any merge conflicts and merge the changed branch with devel
+
+## System Acceptance Testing
+
+The OSCC System Acceptance Test Suite is the final hurdle before a branch can be merged into the main development branch. The OSCC System Acceptance Test Suite involves running the changed code on the vehicle (nominally the Kia Soul with the OSCC modules installed.)
+
+The following are tests that will be executed.  The expected results define compliance with the OSCC System Acceptance Test Suite.
+
+### Definitions
+
+1. Throttle, Gas Pedal, Accelerator - The mechanism by which the driver specifies how fast the vehicle should go, typically a pedal for a human driver
+2. Brake - The mechanism by which the driver specifies how fast to stop, typically a pedal for a human driver
+3. Steering - The mechanism by which the driver specifies how far to turn the wheels of the vehicle, typically this is a steering wheel for a human driver.  It should be noted here that the item being controlled is the steering wheel angle, with the direct result of changing the vehicle direction
+
+
+
+### Testing with OSCC Disabled
+
+For these tests, the vehicle is being controlled by a human driver.
+
+1. *Initial Condition* - OSCC Disabled
+2. Normal Acceleration - Normal Braking
+3. Hard Acceleration - Hard Braking, attempt to engage the Anti-Lock Brakes (ABL)
+4. Swerve
+5. Turn left
+6. Turn right
+7. *Expected Results:* - normal driving operation
+
+### Testing with OSCC Enabled
+
+For these tests, the vehicle is being controlled by a remote control computer or joystick and can be automated if necessary or possible.
+
+#### Driveability
+
+1. Normal Acceleration - Normal Brake
+	1. *Initial Conditions:* - Vehicle is in drive with brake applied
+	2. Release brake
+	3. Apply throttle at *?50%?*
+	4. Delay 3 seconds
+	5. Apply throttle at *?throttle_min%?*
+	6. Apply brake at *?50%?*
+	7. Wait for the vehicle to come to a complete stop
+	8. Maintain brake pressure
+	9. *Expected Results:* - Normal acceleration and braking with the vehicle stopped when the test is complete
+
+2. Hard Acceleration - Hard Brake (engage ABL, if possible)
+	1. *Initial Conditions:* - Vehicle is in drive with brake applied
+	2. Release brake
+	3. Apply throttle at *?throttle_max%?*
+	4. Delay 3 seconds
+	5. Apply throttle at *?throttle_min%?*
+	6. Apply brake at *?brake_max%?*- this step should attempt to engage the Anti-Lock Braking system
+	7. Wait for the vehicle to come to a complete stop
+	8. Maintain brake pressure
+	9. *Expected Results:* - Max acceleration and braking with the vehicle stopped when the test is complete
+
+3. Swerve - left to right and right to left
+	1. *Initial Conditions:* - Vehicle is in drive with the brake applied
+	2. Release brake
+	3. Apply throttle at *?30%?*
+	4. Maintain speed during maneuvers
+	5. Turn steering to *?30 degrees?* right
+	6. Delay 0.5 seconds
+	7. Turn steering to *?30 degrees?* left
+	8. Delay 0.5 seconds
+	9. Turn steering to *?0 degrees?*
+	10. Delay 1 second
+	11. Turn steering to *?30 degrees?* left
+	12. Delay 0.5 seconds
+	13. Turn steering to *?30 degrees?* right
+	14. Delay 0.5 seconds
+	15. Turn steering to *?0 degrees?*
+	16. Delay 1 second
+	17. Apply throttle at *?throttle_min%?*
+	18. Apply brake at *?50%?*
+	19. Wait for the vehicle to come to a complete stop
+	20. Maintain brake pressure
+	21. *Expected Results:* - Vehicle has swerved out of and back into the original path
+
+4. Perform left turn
+	1. *Initial Conditions:* - Vehicle is in drive with the brake applied
+	2. Release brake
+	3. Apply throttle at *?30%?*
+	4. Maintain speed during maneuvers
+	5. Turn steering to *?30 degrees?* left
+	6. Delay 3 seconds
+	7. Turn steering to *?0 degrees?*
+	8. Delay 1 second
+	9. Apply throttle at *?throttle_min%?*
+	10. Apply brake at *?50%?*
+	11. Wait for the vehicle to come to a complete stop
+	12. Maintain brake pressure
+	13. *Expected Results:* - Vehicle has performed a left turn
+
+5. Perform right turn
+	1. *Initial Conditions:* - Vehicle is in drive with the brake applied
+	2. Release brake
+	3. Apply throttle at *?30%?*
+	4. Maintain speed during maneuvers
+	5. Turn steering to *?30 degrees?* right
+	6. Delay 3 seconds
+	7. Turn steering to *0 degrees*
+	8. Delay 1 second
+	9. Apply throttle at *?throttle_min%?*
+	10. Apply brake at *?50%?*
+	11. Wait for the vehicle to come to a complete stop
+	12. Maintain brake pressure
+	13. *Expected Results:* - Vehicle has performed a right turn
+
+6. Drive in a circle with traction control enabled
+	1. *Initial Conditions:* - Vehicle is in drive with the brake applied, traction control enabled
+	2. Release brake
+	3. Apply throttle at *?30%?*
+	4. Maintain speed during maneuvers
+	5. Turn steering to *?max degrees?* right
+	6. Delay 15 seconds
+	7. Turn steering to *?0 degrees?*
+	8. Apply throttle at *?throttle_min%?*
+	9. Apply brake at *?50%?*
+	10. Wait for the vehicle to come to a complete stop
+	11. Maintain brake pressure
+	12. *Expected Results:* - Vehicle has performed a right turn
+
+7. Accelerate to the right and left with traction control disabled
+	1. *Initial Conditions:* - Vehicle is in drive with the brake applied, traction control disabled
+	2. Release brake
+	3. Apply throttle at *?30%?*
+	4. Maintain speed during maneuvers
+	5. Turn steering to *?max degrees?* left
+	6. Delay 15 seconds
+	7. Turn steering to *?0 degrees?*
+	8. Apply throttle at *?throttle_min%?*
+	9. Apply brake at *?50%?*
+	10. Wait for the vehicle to come to a complete stop
+	11. Maintain brake pressure
+	12. *Expected Results:* - Vehicle has performed a right turn
+
+#### Driver Disable Detection
+1. Driver lightly taps gas pedal
+	1. *Initial Conditions:* - OSCC is enabled, vehicle in drive, brake applied via remote
+	2. Release brake
+	3. Driver applies the gas pedal at *?10%?*
+	4. *Expected Results:* - OSCC disengages when driver presses gas pedal
+
+2. Driver stomps on gas pedal hard
+	1. *Initial Conditions:* - OSCC is enabled, vehicle in drive, brake applied via remote
+	2. Release brake
+	3. Driver applies the gas pedal at *?max-throttle?*
+	4. *Expected Results:* - OSCC disengages when driver presses gas pedal
+
+3. Driver lightly taps brake pedal
+	1. *Initial Conditions:* - OSCC is enabled, vehicle in drive, brake applied via remote
+	2. Release brake
+	3. Driver taps the brakes as they might to disable cruise control *?5%?*
+	4. *Expected Results:* - OSCC disengages when driver taps the brakes
+
+4. Driver stomps on the brakes
+	1. *Initial Conditions:* - OSCC is enabled, vehicle in drive, brake applied via remote
+	2. Release brake
+	3. Driver depresses the brakes in an attempt to engage the ABL *?95%?*
+	4. *Expected Results:* - OSCC disengages when driver taps the brakes
+
+5. Driver lightly turns the wheel left and right
+	1. *Initial Conditions:* - OSCC is enabled, vehicle in park
+	2. Driver turns the wheel slowly to the left
+	3. Reenable OSCC
+	4. Driver turns the wheel slowly to the right
+	5. *Expected Results:* - OSCC disengages when driver turns the steering wheel
+
+6. Driver yanks the wheel to the left and right
+	1. *Initial Conditions:* - OSCC is enabled, vehicle in park
+	2. Driver turns the wheel quickly to the left
+	3. Reenable OSCC
+	4. Driver turns the wheel quickly to the right
+	5. *Expected Results:* - OSCC disengages when driver turns the steering wheel
+
+#### Diagnostic Operation
+1. Detect DAC to ADC failure case on the throttle and steering boards
+	1. The points of this test is to demonstrate that diagnostic detects a failure of the DAC
+	2. The method of this determination is still TBD
+
+2. Detect PWM to ADC failure case on the PWM for the brake board
+	1. The points of this test is to demonstrate that diagnostic detects a failure of the PWM
+	2. The method of this determination is still TBD
+
+3. Detect ADC failure - Steering mismatch
+	1. The points of this test is to demonstrate that diagnostic detects a failure of the ADC
+	2. The method of this determination is still TBD
+
+4. Detect ADC failure - throttle mismatch
+	1. The points of this test is to demonstrate that diagnostic detects a failure of the ADC
+	2. The method of this determination is still TBD
+
+5. Losing CAN communication causes disable
+	1. *Initial Conditions* - OSCC is enabled, vehcle in park
+	2. Disconnect CAN network from OSCC modules
+	3. *Expected Results:* OSCC should disable in ~250ms
+
+6. Delayed CAN communication causes disable
+	1. *Initial Conditions* - OSCC is enabled, vehcle in park, OSCC CAN gateway loaded with test FW
+	2. Connect to the CAN gateway module and send a request to "drop a packet."
+	3. This causes the custom FW, to stop sending CAN update for 500ms at which point it will start again
+	4. *Expected Results:* OSCC should disable in ~250ms
 
 ---
 
@@ -254,7 +494,8 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 
 ### 3. Comments
 
-1. Comments shall not contain C or C++ style comment markers
+1. Comments shall not mix C and C++ style comment markers
+   1. C and C++ style comment markers are both allowed
 
 ### 4. Identifiers
 
