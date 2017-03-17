@@ -1,5 +1,5 @@
 /************************************************************************/
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* This file is part of Open Source Car Control (OSCC).                 */
 /*                                                                      */
@@ -17,7 +17,7 @@
 /* along with OSCC.  If not, see <http://www.gnu.org/licenses/>.        */
 /************************************************************************/
 
-// Brake control ECU firmware
+// Brake pressure release ECU firmware
 // 2004-2009 Prius brake actuator
 
 
