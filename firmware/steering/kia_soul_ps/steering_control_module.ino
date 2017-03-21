@@ -124,6 +124,10 @@ static current_control_state current_ctrl_state;
 static PID pid_params;
 
 
+//
+static uint8_t torque_sum;
+
+
 // *****************************************************
 // static declarations
 // *****************************************************
@@ -390,13 +394,13 @@ bool check_driver_steering_override( )
     // input. That is, it will require a harder input for the steering wheel
     // to automatically disable. If these values are lowered then the steering
     // override will be less selective; this may result in drastic movements
-    // of the joystick controller triggering steering override. 
+    // of the joystick controller triggering steering override.
     // It is expected behavior that if a user uses the joystick controller to
     // purposefully "fight" the direction of steering wheel movement that this
     // will cause a steering override with the below parameters. That is if
     // the steering wheel is drastically "jerked" back and forth, opposing the
     // direction of steering wheel movement and purposefully trying to cause
-    // an unstable situation, the steering override is expected to be 
+    // an unstable situation, the steering override is expected to be
     // triggered.
     static const float torque_filter_alpha = 0.5;
     static const float steering_wheel_max_torque = 3000.0;
@@ -409,11 +413,11 @@ bool check_driver_steering_override( )
     float torque_sensor_a = ( float )( analogRead( SIGNAL_INPUT_A ) << 2 );
     float torque_sensor_b = ( float )( analogRead( SIGNAL_INPUT_B ) << 2 );
 
-    filtered_torque_a = 
+    filtered_torque_a =
         ( torque_filter_alpha * torque_sensor_a ) +
             ( ( 1.0 - torque_filter_alpha ) * filtered_torque_a );
 
-    filtered_torque_b = 
+    filtered_torque_b =
         ( torque_filter_alpha * torque_sensor_b ) +
             ( ( 1.0 - torque_filter_alpha ) * filtered_torque_b );
 
@@ -493,6 +497,12 @@ static void publish_ps_ctrl_steering_report( )
     {
         data->override = 1;
     }
+
+    data->angle_command = current_ctrl_state.commanded_steering_angle;
+
+    data->torque = torque_sum;
+
+    data->enabled = (uint8_t) current_ctrl_state.control_enabled;
 
     CAN.sendMsgBuf( tx_frame_ps_ctrl_steering_report.id,
                     0,
@@ -762,7 +772,7 @@ void loop( )
         }
         else if ( current_ctrl_state.control_enabled == true )
         {
-                        
+
 /*******************************************************************************
 *   WARNING
 *
@@ -778,7 +788,7 @@ void loop( )
 *   It is NOT recommended to modify any of the existing control ranges, or
 *   gains, without expert knowledge.
 *******************************************************************************/
-            
+
             // Calculate steering angle rates (degrees/microsecond)
             double steering_angle_rate =
                 ( current_ctrl_state.current_steering_angle -
@@ -816,6 +826,8 @@ void loop( )
             struct torque_spoof_t torque_spoof;
 
             calculate_torque_spoof( control, &torque_spoof );
+
+            torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
 
             dac.outputA( torque_spoof.low );
             dac.outputB( torque_spoof.high );
