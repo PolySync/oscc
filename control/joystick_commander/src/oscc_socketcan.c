@@ -47,6 +47,7 @@
 #include <net/if.h>
 #include <sys/socket.h>
 #include <linux/can.h>
+#include <errno.h>
 
 #include "macros.h"
 #include "control_protocol_can.h"
@@ -334,7 +335,7 @@ int oscc_interface_init( int channel )
 
     oscc_interface_set_defaults();
 
-    snprintf( buffer, 16, "can%1d", channel );
+    snprintf( buffer, 16, "vcan%1d", channel );
 
     printf( "Opening CAN channel: %s\n", buffer );
 
@@ -652,6 +653,11 @@ int oscc_interface_update_status( int* override )
             }
         }
         else if ( result == 0 )
+        {
+            // Do Nothing
+            return_code = NOERR;
+        }
+        else if ( errno == EAGAIN  || errno == EWOULDBLOCK )
         {
             // Do Nothing
             return_code = NOERR;
