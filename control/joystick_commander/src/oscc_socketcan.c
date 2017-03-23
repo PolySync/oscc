@@ -336,7 +336,7 @@ int oscc_interface_init( int channel )
 
     snprintf( buffer, 16, "can%1d", channel );
 
-    printf( "Opening CAN channel: %s", buffer );
+    printf( "Opening CAN channel: %s\n", buffer );
 
     return_code = oscc_init_can( buffer );
 

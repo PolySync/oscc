@@ -35,7 +35,7 @@
 
 
 
-#include <canlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <math.h>
