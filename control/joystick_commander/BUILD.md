@@ -1,6 +1,6 @@
 # Building joystick-commander
 
-The joystick commander uses a cmake system to build.
+The joystick commander uses cmake to build.
 
 It defaults to a socketcan based interface for the build, but has the option to support the Kvaser linuxcan module also.
 
@@ -21,7 +21,7 @@ make
 
 This will build the joystick_commander in the `build` directory.
 
-Once the build is complete, if the socketcan library has bee configured correctly (`sudo ip link set can0 type can bitrate 500000`) the joystick_commander is available for use.
+Once the build is complete, if the socketcan library has been configured correctly (`sudo ip link set can0 type can bitrate 500000`) the joystick_commander is available for use.
 
 ## Building against linuxcan
 
