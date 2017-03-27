@@ -44,10 +44,10 @@
 
 
 
-#define MAX_LINES 30
+#define MAX_LINES ( 30 )
 
 
-#define LINE_SIZE 200
+#define LINE_SIZE ( 200 )
 
 
 

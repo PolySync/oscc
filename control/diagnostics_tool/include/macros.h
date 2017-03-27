@@ -45,21 +45,21 @@
  * @brief Error macro.
  *
  */
-#define ERROR 0
+#define ERROR ( 0 )
 
 
 /**
  * @brief Macro indicating no error.
  *
  */
-#define NOERR 1
+#define NOERR ( 1 )
 
 
 /**
  * @brief Macro indicating a warning but not an error.
  *
  */
-#define UNAVAILABLE 2
+#define UNAVAILABLE ( 2 )
 
 
 

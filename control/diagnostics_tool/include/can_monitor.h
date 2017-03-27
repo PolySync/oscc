@@ -46,7 +46,7 @@
 
 
 
-#define CAN_MSG_ARRAY_SIZE 100
+#define CAN_MSG_ARRAY_SIZE ( 100 )
 
 
 
@@ -109,11 +109,11 @@ typedef struct
 
 
 //
-unsigned long long get_timestamp();
+unsigned long long get_timestamp( );
 
 
 //
-void init_can_msg_array();
+void init_can_msg_array( );
 
 
 //

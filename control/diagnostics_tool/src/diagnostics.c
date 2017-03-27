@@ -59,7 +59,7 @@
  * This prevents our node from overloading the host.
  *
  */
-#define NODE_SLEEP_TICK_INTERVAL (1000)
+#define NODE_SLEEP_TICK_INTERVAL ( 1000 )
 
 
 /**
@@ -70,7 +70,7 @@
  * This prevents terminal flickering.
  *
  */
-#define PRINT_TERMINAL_TIMEOUT (100)
+#define PRINT_TERMINAL_TIMEOUT ( 100 )
 
 
 
@@ -432,10 +432,7 @@ int main( int argc, char **argv )
     while( ret == NOERR && err_thrown == NOERR )
     {
         // do update loop
-        if( ret == NOERR && err_thrown == NOERR )
-        {
-            ret = update_loop();
-        }
+        ret = update_loop();
     }
 
     return 0;
