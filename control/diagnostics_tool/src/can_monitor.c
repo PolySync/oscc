@@ -217,7 +217,7 @@ static void print_info_can_array_index( int index )
 
 
 //
-unsigned long long get_timestamp()  // milliseconds
+unsigned long long get_timestamp( )  // milliseconds
 {
     gettimeofday( &tv, NULL );
 
@@ -227,7 +227,7 @@ unsigned long long get_timestamp()  // milliseconds
 
 
 //
-void init_can_msg_array()
+void init_can_msg_array( )
 {
     int i;
 

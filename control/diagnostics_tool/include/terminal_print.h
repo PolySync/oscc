@@ -57,7 +57,7 @@ void add_line( char * line );
 
 
 //
-void print_lines();
+void print_lines( );
 
 
 
