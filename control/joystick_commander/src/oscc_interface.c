@@ -562,7 +562,6 @@ int oscc_interface_update_status( int* override )
             {
                 //do nothing
                 //TODO if the can_id equals something other than the given control message ID's, what do we want the default behavior to be?
-        }
             }
 
             if ( ( *override ) == 0 )
