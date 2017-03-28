@@ -119,7 +119,7 @@ static int oscc_can_write( long id, void* msg, unsigned int dlc )
 }
 
 // *****************************************************
-// Function:    oscc_interface_init_can
+// Function:    oscc_init_can
 // 
 // Purpose:     Initialize the OSCC communication layer with known values
 // 
@@ -221,7 +221,7 @@ int oscc_interface_set_defaults( )
     steering->steering_wheel_angle_command = 0;
     steering->steering_wheel_max_velocity = 0;
 
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -239,7 +239,7 @@ int oscc_interface_init( int channel )
 {
     int return_code = ERROR;
 
-    oscc_interface_set_defaults();
+    oscc_interface_set_defaults( );
 
     return_code = oscc_init_can( channel );
 
@@ -247,7 +247,7 @@ int oscc_interface_init( int channel )
     {
         oscc = &oscc_interface_data;
     }
-    return ( return_code );
+    return return_code;
 }
 
 // *****************************************************
@@ -295,7 +295,7 @@ int oscc_interface_enable( )
         oscc->steering_cmd.enabled = 1;
     }
 
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -322,7 +322,7 @@ int oscc_interface_command_brakes( unsigned int brake_setpoint )
                                       (void *) &oscc->brake_cmd,
                                       sizeof( ps_ctrl_brake_command_msg ) );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -350,7 +350,7 @@ int oscc_interface_command_throttle( unsigned int throttle_setpoint )
                                       sizeof( ps_ctrl_throttle_command_msg ) );
     }
 
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -381,7 +381,7 @@ int oscc_interface_command_steering( int angle, unsigned int rate )
                                       (void *) &oscc->steering_cmd,
                                       sizeof( ps_ctrl_steering_command_msg ) );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -409,7 +409,7 @@ int oscc_interface_disable_brakes( )
 
         return_code = oscc_interface_command_brakes( 0 );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -437,7 +437,7 @@ int oscc_interface_disable_throttle( )
 
         return_code = oscc_interface_command_throttle( 0 );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -467,7 +467,7 @@ int oscc_interface_disable_steering( )
 
         return_code = oscc_interface_command_steering( 0, 0 );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -496,7 +496,7 @@ int oscc_interface_disable( )
             return_code = oscc_interface_disable_steering( );
         }
     }
-    return ( return_code );
+    return return_code;
 }
 
 

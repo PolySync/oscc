@@ -75,7 +75,7 @@
  * 50,000 us == 50 ms == 20 Hertz
  *
  */
-#define COMMANDER_UPDATE_INTERVAL (50000)
+#define COMMANDER_UPDATE_INTERVAL ( 50000 )
 
 
 /**
@@ -88,7 +88,7 @@
  * Prevents overloading the host CPU
  *
  */
-#define SLEEP_TICK_INTERVAL (1000)
+#define SLEEP_TICK_INTERVAL ( 1000 )
 
 
 
@@ -139,7 +139,7 @@ static unsigned long long get_timestamp( )
     microseconds += (unsigned long long)
         ( ( (unsigned long long) timespec.tv_nsec ) / 1000 );
 
-    return ( microseconds );
+    return microseconds;
 }
 
 
@@ -216,7 +216,7 @@ int main( int argc, char **argv )
 
             if ( elapsed_time > COMMANDER_UPDATE_INTERVAL )
             {
-                update_timestamp = get_timestamp();
+                update_timestamp = get_timestamp( );
                 return_code = commander_low_frequency_update( );
             }
 
