@@ -5,10 +5,10 @@
 
 
 
-#define CAN_1_CS 9              // chip select pin for CAN1
+#define CAN_1_CS ( 9 )              // chip select pin for CAN1
 
 
-#define CAN_2_CS 10             // chip select pin for CAN2
+#define CAN_2_CS ( 10 )             // chip select pin for CAN2
 
 
 static MCP_CAN CAN_1( CAN_1_CS );
@@ -59,24 +59,24 @@ static void init_CAN_2( void )
 
 
 // recieve a CAN frame sent from some module on a CAN bus.
-void test_CAN_1_recieve() {
+void test_CAN_1_recieve( ) {
 
     // local vars
     can_frame_s rx_frame;
 
 
-    if( CAN_1.checkReceive() == CAN_MSGAVAIL )
+    if( CAN_1.checkReceive( ) == CAN_MSGAVAIL )
     {
         memset( &rx_frame, 0, sizeof(rx_frame) );
 
         // read frame
         CAN_1.readMsgBufID(
-                (INT32U*) &rx_frame.id,
-                (INT8U*) &rx_frame.dlc,
-                (INT8U*) rx_frame.data );
-        Serial.println(rx_frame.id);
-        Serial.println(rx_frame.data[0]);
-        delay(250);
+                ( INT32U* ) &rx_frame.id,
+                ( INT8U* ) &rx_frame.dlc,
+                ( INT8U* ) rx_frame.data );
+        Serial.println( rx_frame.id );
+        Serial.println( rx_frame.data[ 0 ] );
+        delay( 250 );
     }
 
 }
@@ -84,28 +84,28 @@ void test_CAN_1_recieve() {
 
 
 // recieve a CAN frame sent from some module on a CAN bus.
-void test_CAN_2_recieve() {
+void test_CAN_2_recieve( ) {
 
     // local vars
     can_frame_s rx_frame;
 
-    Serial.flush(); 
+    Serial.flush( ); 
 
-    while( !Serial.available() )
+    while( !Serial.available( ) )
     {
 
-        if( CAN_2.checkReceive() == CAN_MSGAVAIL )
+        if( CAN_2.checkReceive( ) == CAN_MSGAVAIL )
         {
-            memset( &rx_frame, 0, sizeof(rx_frame) );
+            memset( &rx_frame, 0, sizeof( rx_frame ) );
 
             // read frame
             CAN_2.readMsgBufID(
-                    (INT32U*) &rx_frame.id,
-                    (INT8U*) &rx_frame.dlc,
-                    (INT8U*) rx_frame.data );
-            Serial.println(rx_frame.id);
-            Serial.println(rx_frame.data[0]);
-            delay(250);
+                    ( INT32U* ) &rx_frame.id,
+                    ( INT8U* ) &rx_frame.dlc,
+                    ( INT8U* ) rx_frame.data );
+            Serial.println( rx_frame.id );
+            Serial.println( rx_frame.data[ 0 ] );
+            delay( 250 );
         }
     }
 
@@ -113,52 +113,52 @@ void test_CAN_2_recieve() {
 
 
 // send a CAN frame, to be recieved by some module on a CAN bus.
-void test_CAN_1_send() {
+void test_CAN_1_send( ) {
 
     int cantxValue = 66;
 
-    Serial.print("cantxValue: ");
-    Serial.println(cantxValue);
+    Serial.print( "cantxValue: " );
+    Serial.println( cantxValue );
     //Create data packet for CAN message
-    unsigned char canMsg[8] = {cantxValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    unsigned char canMsg[ 8 ] = { cantxValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     // send data:  id = 0x123, standrad frame, data len = 8, stmp: data buf
-    CAN_1.sendMsgBuf(0x07B, 0, 8, canMsg); 
-    delay(250);
+    CAN_1.sendMsgBuf( 0x07B, 0, 8, canMsg ); 
+    delay( 250 );
 }
 
 
 // send a CAN frame, to be recieved by some module on a CAN bus.
-void test_CAN_2_send() {
+void test_CAN_2_send( ) {
 
     int cantxValue = 66;
 
-    Serial.flush(); 
+    Serial.flush( ); 
 
-    while( !Serial.available() )
+    while( !Serial.available( ) )
     {
-        Serial.print("cantxValue: ");
-        Serial.println(cantxValue);
+        Serial.print( "cantxValue: " );
+        Serial.println( cantxValue );
         //Create data packet for CAN message
-        unsigned char canMsg[8] = {cantxValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        unsigned char canMsg[ 8 ] = { cantxValue, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
         // send data:  id = 0x123, standrad frame, data len = 8, stmp: data buf
-        CAN_2.sendMsgBuf(0x07B, 0, 8, canMsg); 
-        delay(250);
+        CAN_2.sendMsgBuf( 0x07B, 0, 8, canMsg ); 
+        delay( 250 );
     }
 }
 
-void setup() {
+void setup( ) {
 
-    init_serial();
-    init_CAN_1();
-    //init_CAN_2();
+    init_serial( );
+    init_CAN_1( );
+    //init_CAN_2( );
 
 }
 
 void loop() {
 
-    test_CAN_1_send();
-    //test_CAN_2_send();
-    test_CAN_1_recieve();
-    //test_CAN_2_recieve();
+    test_CAN_1_send( );
+    //test_CAN_2_send( );
+    test_CAN_1_recieve( );
+    //test_CAN_2_recieve( );
 
 }
