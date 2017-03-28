@@ -6,19 +6,19 @@
 
 
 
-#define SIGNAL_INPUT_A A0     // input pin for sensing sensor 1 output
+#define SIGNAL_INPUT_A ( A0 )     // input pin for sensing sensor 1 output
 
-#define SIGNAL_INPUT_B A1     // input pin for sensing sensor 2 output
+#define SIGNAL_INPUT_B ( A1 )     // input pin for sensing sensor 2 output
 
-#define SPOOF_SIGNAL_A A2     // input pin for sensing DAC 1 output
+#define SPOOF_SIGNAL_A ( A2 )     // input pin for sensing DAC 1 output
 
-#define SPOOF_SIGNAL_B A3     // input pin for sensing DAC 2 output
+#define SPOOF_SIGNAL_B ( A3 )     // input pin for sensing DAC 2 output
 
-#define SPOOF_ENGAGE 6        // signal interrupt (relay) for spoofed signals
+#define SPOOF_ENGAGE ( 6 )        // signal interrupt (relay) for spoofed signals
 
-#define DAC_CS 9              // chip select pin for DAC
+#define DAC_CS ( 9 )              // chip select pin for DAC
 
-#define CAN_CS 10             // chip select pin for CAN
+#define CAN_CS ( 10 )             // chip select pin for CAN
 
 
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 ); // DAC model, SS pin, LDAC pin
@@ -36,7 +36,7 @@ static void init_serial( void )
 static void init_can ( void ) 
 {
     // wait until we have initialized
-    while( CAN.begin(CAN_BAUD) != CAN_OK )
+    while( CAN.begin( CAN_BAUD ) != CAN_OK )
     {   
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
@@ -67,7 +67,7 @@ void test_DACS( )
     // energize the relay so we can read the values at the terminal
     digitalWrite( SPOOF_ENGAGE, HIGH );
 
-    for ( dac_value = 0; dac_value < 4096; dac_value = dac_value + 15 )
+    for ( dac_value = 0; dac_value < 4096; dac_value += 15 )
     {
         dac_expected_output = ( 5.0 / 4096.0 ) * dac_value;
 
@@ -108,9 +108,9 @@ void test_DACS( )
 // LEDS in an alternating pattering using the the switch relay.
 void test_interrupt_relay( ) 
 {
-    Serial.flush(); 
+    Serial.flush( ); 
 
-    while( !Serial.available() )
+    while( !Serial.available( ) )
     {
         digitalWrite( SPOOF_ENGAGE, LOW );       // start off with the relay in it's depowered state
         delay( 500 );                            // wait half a second
@@ -151,19 +151,19 @@ void test_CAN_recieve( )
     // local vars
     can_frame_s rx_frame;
 
-    if( CAN.checkReceive() == CAN_MSGAVAIL )
+    if( CAN.checkReceive( ) == CAN_MSGAVAIL )
     {
-        memset( &rx_frame, 0, sizeof(rx_frame) );
+        memset( &rx_frame, 0, sizeof( rx_frame ) );
 
         // read frame
         CAN.readMsgBufID(
-                (INT32U*) &rx_frame.id,
-                (INT8U*) &rx_frame.dlc,
-                (INT8U*) rx_frame.data );
+                ( INT32U* ) &rx_frame.id,
+                ( INT8U* ) &rx_frame.dlc,
+                ( INT8U* ) rx_frame.data );
 
         Serial.print( "canRxValue:" );
         Serial.println( rx_frame.id );
-        delay(250);
+        delay( 250 );
     }
 }
 
@@ -194,7 +194,7 @@ void test_signal_sense( )
 
 void test_torque_spoof( ) 
 {
-    // send spoofed torque, slowly sweep stering back and forth.
+    // send spoofed torque, slowly sweep steering back and forth.
 }
 
 
@@ -207,18 +207,18 @@ void test_hard_power_off( )
 
 void setup( ) 
 {
-    init_serial();
-    init_can();
+    init_serial( );
+    init_can( );
 }
 
 
 void loop() 
 {
-    //test_DACS();
-    //test_interrupt_relay();
-    //test_CAN_send();
-    //test_CAN_recieve();
-    test_signal_sense();
+    //test_DACS( );
+    //test_interrupt_relay( );
+    //test_CAN_send( );
+    //test_CAN_recieve( );
+    test_signal_sense( );
 
 }
 

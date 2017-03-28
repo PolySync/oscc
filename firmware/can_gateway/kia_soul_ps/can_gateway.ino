@@ -411,7 +411,7 @@ static void process_kia_status1( const can_frame_s * const rx_frame )
     s32 = ( int32_t ) kia_data->steering_angle;
     control_data->steering_wheel_angle = ( int16_t ) s32;
 
-#warning "TODO - steering wheel angle convertion and rate calculation"
+#warning "TODO - steering wheel angle conversion and rate calculation"
 }
 
 
@@ -442,7 +442,7 @@ static void process_kia_status2( const can_frame_s * const rx_frame )
     // validate wheel speed
     SET_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_WHEEL_SPEED_VALID );
 
-#warning "TODO - wheel speed unit convertion"
+#warning "TODO - wheel speed unit conversion"
     // convert left front wheel speed
     s32 = ( int32_t ) kia_data->wheel_speed_lf;
     control_data->wheel_speed_lf = ( int16_t ) s32;
@@ -488,7 +488,7 @@ static void process_kia_status3( const can_frame_s * const rx_frame )
     // validate brake pressure
     SET_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_BRAKE_PRESSURE_VALID );
 
-#warning "TODO - brake pressure unit convertion"
+#warning "TODO - brake pressure unit conversion"
     // convert
     s16 = ( int16_t ) kia_data->master_cylinder_pressure;
     control_data->brake_pressure = ( int16_t ) s16;
