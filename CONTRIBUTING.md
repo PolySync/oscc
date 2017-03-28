@@ -74,7 +74,7 @@ Below is a sample of how additional vehicle directories should be created.
 
 ### Contributing Code
 
-- Code should conform to the coding standard (see below)
+- Code should conform to the [coding standard](#oscc-coding-standard)
 - Push your changes to a topic branch in your branch of the repository
 - Submit a pull request to the repository in the PolySync organization
 - Update your github issue to mark that you have submitted code and are ready for it to be reviewed (Status: Ready for Merge)
