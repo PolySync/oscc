@@ -26,6 +26,9 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
+#ifndef CURRENT_CONTROL_H
+#define CURRENT_CONTROL_H
+
 /**
  * @brief Current control state.
  *
@@ -91,3 +94,5 @@ typedef struct
     //
     //
 } current_control_state;
+
+#endif /* CURRENT_CONTROL_H */
