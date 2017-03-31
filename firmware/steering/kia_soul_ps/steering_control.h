@@ -161,7 +161,10 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof );
 // Parameters:  None
 //
 // *****************************************************
-void publish_ps_ctrl_steering_report( );
+void publish_ps_ctrl_steering_report( can_frame_s tx_frame_ps_ctrl_steering_report,
+                                    current_control_state current_ctrl_state, 
+                                    uint8_t torque_sum,
+                                    MCP_CAN CAN );
 
 
 // *****************************************************
@@ -172,7 +175,10 @@ void publish_ps_ctrl_steering_report( );
 // Parameters:  None
 //
 // *****************************************************
-void publish_timed_tx_frames( );
+void publish_timed_tx_frames( can_frame_s tx_frame_ps_ctrl_steering_report,
+                            current_control_state current_ctrl_state,
+                            uint8_t torque_sum,
+                            MCP_CAN CAN );
 
 // *****************************************************
 // Function:    process_ps_ctrl_steering_command
@@ -183,7 +189,10 @@ void publish_timed_tx_frames( );
 //
 // *****************************************************
 void process_ps_ctrl_steering_command(
-    const ps_ctrl_steering_command_msg * const control_data );
+        const ps_ctrl_steering_command_msg * const control_data,
+            DAC_MCP49xx dac,
+            current_control_state current_ctrl_state,
+            can_frame_s rx_frame_ps_ctrl_steering_command );
 
 // *****************************************************
 // Function:    process_psvc_chassis_state1
@@ -195,7 +204,8 @@ void process_ps_ctrl_steering_command(
 //
 // *****************************************************
 void process_psvc_chassis_state1(
-    const psvc_chassis_state1_data_s * const chassis_data );
+    const psvc_chassis_state1_data_s * const chassis_data,
+            current_control_state current_ctrl_state );
 
 // *****************************************************
 // Function:    handle_ready_rx_frames
@@ -205,7 +215,10 @@ void process_psvc_chassis_state1(
 // Parameters:  None
 //
 // *****************************************************
-void handle_ready_rx_frames( );
+void handle_ready_rx_frames( DAC_MCP49xx dac,
+            current_control_state current_ctrl_state,
+            MCP_CAN CAN,
+            can_frame_s rx_frame_ps_ctrl_steering_command );
 
 // *****************************************************
 // Function:    check_rx_timeouts
@@ -215,6 +228,7 @@ void handle_ready_rx_frames( );
 // Parameters:  None
 //
 // *****************************************************
-void check_rx_timeouts( );
+void check_rx_timeouts( DAC_MCP49xx dac, current_control_state current_ctrl_state,
+                        can_frame_s rx_frame_ps_ctrl_steering_command );
 
 #endif /* STEERING_CONTROL_H */

@@ -326,7 +326,10 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof )
 // Parameters:  None
 //
 // *****************************************************
-void publish_ps_ctrl_steering_report( )
+void publish_ps_ctrl_steering_report( can_frame_s tx_frame_ps_ctrl_steering_report,
+                                    current_control_state current_ctrl_state, 
+                                    uint8_t torque_sum,
+                                    MCP_CAN CAN )
 {
     tx_frame_ps_ctrl_steering_report.id =
         ( uint32_t ) ( PS_CTRL_MSG_ID_STEERING_REPORT );
@@ -377,14 +380,20 @@ void publish_ps_ctrl_steering_report( )
 // Parameters:  None
 //
 // *****************************************************
-void publish_timed_tx_frames( )
+void publish_timed_tx_frames( can_frame_s tx_frame_ps_ctrl_steering_report,
+                            current_control_state current_ctrl_state,
+                            uint8_t torque_sum,
+                            MCP_CAN CAN )
 {
     uint32_t delta =
         timer_delta_ms( tx_frame_ps_ctrl_steering_report.timestamp );
 
     if ( delta >= PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL )
     {
-        publish_ps_ctrl_steering_report();
+        publish_ps_ctrl_steering_report( tx_frame_ps_ctrl_steering_report,
+                                        current_ctrl_state,
+                                        torque_sum,
+                                        CAN );
     }
 }
 
@@ -400,7 +409,10 @@ void publish_timed_tx_frames( )
 //
 // *****************************************************
 void process_ps_ctrl_steering_command(
-    const ps_ctrl_steering_command_msg * const control_data )
+    const ps_ctrl_steering_command_msg * const control_data,
+            DAC_MCP49xx dac,
+            current_control_state current_ctrl_state,
+            can_frame_s rx_frame_ps_ctrl_steering_command )
 {
     current_ctrl_state.commanded_steering_angle =
         control_data->steering_wheel_angle_command / 9.0;
@@ -413,14 +425,14 @@ void process_ps_ctrl_steering_command(
             ( current_ctrl_state.emergency_stop == false ) )
     {
         current_ctrl_state.control_enabled = true;
-        enable_control( );
+        enable_control( dac, current_ctrl_state );
     }
 
     if ( ( control_data->enabled == 0 ) &&
             ( current_ctrl_state.control_enabled == true ) )
     {
         current_ctrl_state.control_enabled = false;
-        disable_control( );
+        disable_control( dac, current_ctrl_state );
     }
 
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
@@ -439,7 +451,8 @@ void process_ps_ctrl_steering_command(
 //
 // *****************************************************
 void process_psvc_chassis_state1(
-    const psvc_chassis_state1_data_s * const chassis_data )
+    const psvc_chassis_state1_data_s * const chassis_data,
+            current_control_state current_ctrl_state )
 {
     float raw_angle = (float)chassis_data->steering_wheel_angle;
     current_ctrl_state.current_steering_angle = raw_angle * 0.0076294;
@@ -460,7 +473,10 @@ void process_psvc_chassis_state1(
 // Parameters:  None
 //
 // *****************************************************
-void handle_ready_rx_frames( )
+void handle_ready_rx_frames( DAC_MCP49xx dac,
+            current_control_state current_ctrl_state,
+            MCP_CAN CAN,
+            can_frame_s rx_frame_ps_ctrl_steering_command )
 {
     if ( CAN.checkReceive() == CAN_MSGAVAIL )
     {
@@ -475,13 +491,17 @@ void handle_ready_rx_frames( )
         if ( rx_frame.id == PS_CTRL_MSG_ID_STEERING_COMMAND )
         {
             process_ps_ctrl_steering_command(
-                ( const ps_ctrl_steering_command_msg * const )rx_frame.data );
+                ( const ps_ctrl_steering_command_msg * const )rx_frame.data,
+                    dac,
+                    current_ctrl_state,
+                    rx_frame_ps_ctrl_steering_command );
         }
 
         if ( rx_frame.id == KIA_STATUS1_MESSAGE_ID )
         {
             process_psvc_chassis_state1(
-                ( const psvc_chassis_state1_data_s * const )rx_frame.data );
+                ( const psvc_chassis_state1_data_s * const )rx_frame.data,
+                current_ctrl_state );
         }
     }
 }
@@ -498,7 +518,8 @@ void handle_ready_rx_frames( )
 // Parameters:  None
 //
 // *****************************************************
-void check_rx_timeouts( )
+void check_rx_timeouts( DAC_MCP49xx dac, current_control_state current_ctrl_state,
+                        can_frame_s rx_frame_ps_ctrl_steering_command )
 {
     uint32_t delta =
         timer_delta_ms( rx_frame_ps_ctrl_steering_command.timestamp );
@@ -506,7 +527,7 @@ void check_rx_timeouts( )
     if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
         DEBUG_PRINT( "Control disabled: Timeout" );
-        disable_control();
+        disable_control( dac, current_ctrl_state );
     }
 }
 

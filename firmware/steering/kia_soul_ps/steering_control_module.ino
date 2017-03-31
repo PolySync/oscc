@@ -213,7 +213,10 @@ void setup( )
 
     init_can( );
 
-    publish_ps_ctrl_steering_report( );
+    publish_ps_ctrl_steering_report( tx_frame_ps_ctrl_steering_report,
+                                    current_ctrl_state,
+                                    torque_sum,
+                                    CAN );
 
     current_ctrl_state.control_enabled = false;
 
@@ -258,13 +261,19 @@ void loop( )
 {
 
     // checks for CAN frames, if yes, updates state variables
-    handle_ready_rx_frames( );
+    handle_ready_rx_frames( dac,
+                            current_ctrl_state,
+                            CAN,
+                            rx_frame_ps_ctrl_steering_command );
 
     // publish all report CAN frames
-    publish_timed_tx_frames( );
+    publish_timed_tx_frames( tx_frame_ps_ctrl_steering_report,
+                            current_ctrl_state,
+                            torque_sum,
+                            CAN );
 
     // check all timeouts
-    check_rx_timeouts( );
+    check_rx_timeouts( dac, current_ctrl_state, rx_frame_ps_ctrl_steering_command );
 
     uint32_t current_timestamp_us;
 
@@ -281,7 +290,7 @@ void loop( )
         if ( override == true )
         {
             current_ctrl_state.override_flag.wheel = 1;
-            disable_control( );
+            disable_control( dac, current_ctrl_state );
         }
         else if ( current_ctrl_state.control_enabled == true )
         {
