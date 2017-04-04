@@ -17,15 +17,6 @@
 /* along with OSCC.  If not, see <http://www.gnu.org/licenses/>.        */
 /************************************************************************/
 
-// Throttle control ECU firmware
-// Firmware for control of 2014 Kia Soul throttle system
-// Component
-//    Arduino Mega
-//    Seeed Studio CAN-BUS Shield, v1.2 (MCP2515)
-//    Sainsmart 4 relay module
-//    6 channel mosfet Board
-// E Livingston, 2016
-
 #include <SPI.h>
 #include "mcp_can.h"
 #include "can_frame.h"
@@ -43,9 +34,9 @@
 // show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
     #warning "PSYNC_DEBUG_FLAG defined"
-    #define DEBUG_PRINT( x )  Serial.println( x )
+    #define DEBUG_PRINT(X)  Serial.println(X)
 #else
-    #define DEBUG_PRINT( x )
+    #define DEBUG_PRINT(X)
 #endif
 
 
@@ -53,37 +44,29 @@
 // Constants
 // *****************************************************
 
-// the following are guesses, these need to be debugged/researched
-const float ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
-const float PRESSURE_STEP = 0.2;         // The amount that the 'a' and 'd' commands change the
-                                         // voltage each time they are pressed.
-const float MIN_ACCUMULATOR_PRESSURE = 2.3;              // minumum accumulator pressure to maintain
-const float MAX_ACCUMULATOR_PRESSURE = 2.4;              // max accumulator pressure to maintain
+const float MIN_ACCUMULATOR_PRESSURE = 2.1;              // min accumulator pressure to maintain
+const float MAX_ACCUMULATOR_PRESSURE = 2.3;              // max accumulator pressure to maintain
 const float PEDAL_THRESHOLD = 0.6;       // Pressure for pedal interference
 
 // *****************************************************
 // static global data/macros
 // *****************************************************
 
-#define CAN_SHIELD_CHIP_SELECT_PIN ( 53 )
+#define CAN_SHIELD_CHIP_SELECT_PIN (53)
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT ( 150 )
+#define PS_CTRL_RX_WARN_TIMEOUT (150)
 
-#define BRAKE_PID_WINDUP_GUARD ( 500 )
-
-#define BRAKE_CONTROL_WAIT_STATE ( 0 )
-#define BRAKE_CONTROL_BRAKE_STATE ( 1 )
+#define BRAKE_PID_WINDUP_GUARD (500)
 
 // The min/max duty cycle scalars used for 3.921 KHz PWM frequency.
 // These represent the minimum duty cycles that begin to actuate the
 // proportional solenoids and the maximum duty cycle where the solenoids
 // have reached their stops.
-#define ACCUMULATOR_MAX_DUTY_CYCLE ( 105.0 )
-#define ACCUMULATOR_MIN_DUTY_CYCLE ( 50.0 )
-#define RELEASE_MAX_DUTY_CYCLE ( 100.0 )
-#define RELEASE_MIN_DUTY_CYCLE ( 50.0 )
-
+#define SLA_DUTY_CYCLE_MAX (105.0)
+#define SLA_DUTY_CYCLE_MIN (50.0)
+#define SLR_DUTY_CYCLE_MAX (100.0)
+#define SLR_DUTY_CYCLE_MIN (50.0)
 
 // ******************************************************************
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids )
@@ -133,20 +116,21 @@ struct master_cylinder_data_s
     float pressure2;
 };
 
+struct interpolate_range_s
+{
+    float input_min;
+    float input_max;
+    float output_min;
+    float output_max;
+};
+
 // brake structure
 struct brake_data_s
 {
-    float pressure_left;    // last known right-side pressure
-    float pressure_right;   // last known left-side pressure
-
     float pressure;
-    float pressure_request;
 
-    int16_t accumulator_duty_cycle;
-    int16_t release_duty_cycle;
-
-    uint8_t requested_state;
-    uint8_t current_state;
+    bool enable;
+    bool enable_request;
 
     uint32_t rx_timestamp;
 
@@ -162,9 +146,9 @@ struct brake_data_s
 // *****************************************************
 
 // construct the CAN shield object
-MCP_CAN CAN( CAN_SHIELD_CHIP_SELECT_PIN );  // Set CS pin for the CAN shield
+MCP_CAN CAN(CAN_SHIELD_CHIP_SELECT_PIN);  // Set CS pin for the CAN shield
 
-static PID pid_params;
+PID pid_params;
 
 
 // *****************************************************
@@ -192,14 +176,9 @@ struct master_cylinder_data_s master_cylinder =
 
 struct brake_data_s brakes =
 {
-    0.0,                        // pressure_left
-    0.0,                        // pressure_right
     0.0,                        // pressure
-    0.0,                        // pressure_request
-    0,                          // accumulator_duty_cycle
-    0,                          // release_duty_cycle
-    BRAKE_CONTROL_WAIT_STATE,   // requested_state
-    BRAKE_CONTROL_WAIT_STATE,   // current_state
+    false,                      // enable
+    false,                      // enable_request
     0,                          // rx_timestamp
     0,                          // driver_override
     0,                          // can_pressure
@@ -222,7 +201,7 @@ struct brake_data_s brakes =
 // Parameters:  None
 // 
 // *****************************************************
-static void init_serial( void )
+void init_serial( void )
 {
     Serial.begin( SERIAL_BAUD );
 
@@ -241,7 +220,7 @@ static void init_serial( void )
 // Parameters:  None
 // 
 // *****************************************************
-static void init_can( void )
+void init_can( void )
 {
     while ( CAN.begin( CAN_BAUD ) != CAN_OK )
     {
@@ -250,6 +229,37 @@ static void init_can( void )
     }
 
     DEBUG_PRINT( "init_can: pass" );
+}
+
+
+// *****************************************************
+// Function:    interpolate
+//
+// Purpose:     Perform a linear interpolation
+//              This functions specifically performs a linear interpolation of
+//              form y = mx + b.
+//              1) Normalize the input in the range from 0 to 1
+//              2) Scale the output over the range defined by the output min
+//                 and max values
+//              3) Transform the final result between the output range
+//
+// Returns:     float output
+//
+// Parameters:  [in] interpolation
+//
+// *****************************************************
+float interpolate( float input, struct interpolate_range_s* range )
+{
+    float output = input;
+
+    if ( range != NULL )
+    {
+        output = ( input - range->input_min );
+        output /= ( range->input_max - range->input_min );
+        output *= ( range->output_max - range->output_min );
+        output += range->output_min;
+    }
+    return ( output );
 }
 
 // *****************************************************
@@ -263,7 +273,7 @@ static void init_can( void )
 // Parameters:  [in] timestamp - the last time sample
 // 
 // *****************************************************
-static uint32_t timer_delta_ms( uint32_t last_time )
+uint32_t timer_delta_ms( uint32_t last_time )
 {
     uint32_t delta = 0;
     uint32_t current_time = millis( );
@@ -279,92 +289,6 @@ static uint32_t timer_delta_ms( uint32_t last_time )
     return ( delta );
 }
 
-
-// *****************************************************
-// Function:    calculate_accumulator_duty_cycle
-// 
-// Purpose:     Calculate pressure value
-// 
-// Returns:     void
-// 
-// Parameters:  float PID_output - the output of the PID loop
-//              input is range limited between -2.0 to 2.0
-// 
-// *****************************************************
-void calculate_accumulator_duty_cycle( float pid_output )
-{
-    float scaled = abs( pid_output ) * 512.0;
-
-    if ( scaled > 1024.0 )
-    {
-        scaled = 1024.0;
-    }
-
-    scaled *= ( ACCUMULATOR_MAX_DUTY_CYCLE - ACCUMULATOR_MIN_DUTY_CYCLE ) / 1024.0;
-
-    scaled += ACCUMULATOR_MIN_DUTY_CYCLE;
-
-    brakes.accumulator_duty_cycle = ( int16_t )scaled;
-}
-
-// *****************************************************
-// Function:    calculate_release_duty_cycle
-// 
-// Purpose:     Calculate pressure value
-// 
-// Returns:     void
-// 
-// Parameters:  float PID_output - the output of the PID loop
-//              input is range limited between -2.0 to 2.0
-// 
-// *****************************************************
-void calculate_release_duty_cycle( float pid_output )
-{
-    float scaled = abs( pid_output ) * 512.0;
-
-    if ( scaled > 1024.0 )
-    {
-        scaled = 1024.0;
-    }
-
-    scaled *= ( RELEASE_MAX_DUTY_CYCLE - RELEASE_MIN_DUTY_CYCLE ) / 1024.0;
-
-    scaled += RELEASE_MIN_DUTY_CYCLE;
-
-    brakes.release_duty_cycle = ( int16_t )scaled;
-}
-
-// *****************************************************
-// Function:    pressure_to_voltage
-// 
-// Purpose:     Convert pressure to voltage
-// 
-// Returns:     float - voltage
-// 
-// Parameters:  int16_t - pressure in MPa
-// 
-// *****************************************************
-float pressure_to_voltage( int16_t pressure )
-{
-    float voltage = ( ( float )pressure + 217.1319446 ) / 505.5662053;
-    return voltage;
-}
-
-// *****************************************************
-// Function:    voltage_to_pressure
-// 
-// Purpose:     Convert voltage to pressure
-// 
-// Returns:     int16_t - pressure in MPa
-// 
-// Parameters:  float - volts
-// 
-// *****************************************************
-int16_t voltage_to_pressure( float voltage )
-{
-    int16_t pressure = ( int16_t )( ( voltage * 505.5662053 ) - 217.1319446 );
-    return pressure;
-}
 
 // *****************************************************
 // Function:    raw_adc_to_voltage
@@ -437,8 +361,7 @@ void accumulator_maintain_pressure( )
 
     float pressure = raw_adc_to_voltage( raw_accumulator_data );
 
-    accumulator.pressure =
-        ( accumulator_alpha * pressure ) +
+    accumulator.pressure = ( accumulator_alpha * pressure ) +
         ( ( 1.0 - accumulator_alpha ) * accumulator.pressure );
 
     if ( accumulator.pressure < MIN_ACCUMULATOR_PRESSURE )
@@ -532,37 +455,6 @@ void master_cylinder_init( )
 
 
 // *****************************************************
-// Function:    brake_request_wait_state
-// 
-// Purpose:     Set the requested state variable to WAIT
-// 
-// Returns:     void
-// 
-// Parameters:  void
-// 
-// *****************************************************
-void brake_request_wait_state( )
-{
-    brakes.requested_state = BRAKE_CONTROL_WAIT_STATE;
-}
-
-// *****************************************************
-// Function:    brake_request_brake_state
-// 
-// Purpose:     Set the requested state variable to BRAKE
-// 
-// Returns:     void
-// 
-// Parameters:  void
-// 
-// *****************************************************
-void brake_request_brake_state( )
-{
-    brakes.requested_state = BRAKE_CONTROL_BRAKE_STATE;
-}
-
-
-// *****************************************************
 // Function:    brake_lights_off
 // 
 // Purpose:     Turn the brake lights off
@@ -592,6 +484,92 @@ void brake_lights_on( )
     digitalWrite( PIN_BRAKE_LIGHT, HIGH );
 }
 
+
+// *****************************************************
+// Function:    brake_command_actuator_solenoids
+// 
+// Purpose:     Sets the PWM that controls the "actuator" solenoids to the
+//              the specified value
+// 
+// Returns:     void
+// 
+// Parameters:  int16_t - duty_cycle - value to send to the PWM
+// 
+// *****************************************************
+void brake_command_actuator_solenoids( int16_t duty_cycle )
+{
+    analogWrite( PIN_SLAFL, duty_cycle );
+    analogWrite( PIN_SLAFR, duty_cycle );
+}
+
+
+// *****************************************************
+// Function:    brake_command_release_solenoids
+// 
+// Purpose:     Sets the PWM that controls the "release" solenoids to the
+//              the specified value
+// 
+// Returns:     void
+// 
+// Parameters:  int16_t - duty_cycle - value to send to the PWM
+// 
+// *****************************************************
+void brake_command_release_solenoids( int16_t duty_cycle )
+{
+    analogWrite( PIN_SLRFL, duty_cycle );
+    analogWrite( PIN_SLRFR, duty_cycle );
+}
+
+
+// *****************************************************
+// Function:    brake_enable
+// 
+// Purpose:     Enable brakes
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void brake_enable( )
+{
+    if ( brakes.enable == false )
+    {
+        master_cylinder_close( );
+        brake_command_release_solenoids( 0 );
+        brakes.enable = true;
+    }
+}
+
+
+// *****************************************************
+// Function:    brake_disable
+// 
+// Purpose:     Disable the brakes
+// 
+// Returns:     void
+// 
+// Parameters:  None
+// 
+// *****************************************************
+void brake_disable( )
+{
+    if ( brakes.enable == true )
+    {
+        brake_command_actuator_solenoids( 0 );
+
+        brake_command_release_solenoids( 255 );
+
+        brake_lights_off( );
+        delay( 15 );
+
+        master_cylinder_open( );
+
+        brake_command_release_solenoids( 0 );
+
+        brakes.enable = false;
+    }
+}
 
 
 // *****************************************************
@@ -624,7 +602,6 @@ void brake_lights_on( )
 void brake_check_driver_override( )
 {
     static const float filter_alpha = 0.05;
-    static const float max_pedal_voltage = PEDAL_THRESHOLD;
 
     static float filtered_input_1 = 0.0;
     static float filtered_input_2 = 0.0;
@@ -641,12 +618,11 @@ void brake_check_driver_override( )
     filtered_input_2 = ( filter_alpha * sensor_2 ) +
         ( ( 1.0 - filter_alpha ) * filtered_input_2 );
 
-    if ( ( filtered_input_1 > max_pedal_voltage ) ||
-         ( filtered_input_2 > max_pedal_voltage ) )
+    if ( ( filtered_input_1 > PEDAL_THRESHOLD ) ||
+         ( filtered_input_2 > PEDAL_THRESHOLD ) )
     {
-        brakes.pressure_request = ZERO_PRESSURE;
         brakes.driver_override = 1;
-        brake_request_wait_state( );
+        brakes.enable_request = false;
     }
     else
     {
@@ -654,71 +630,6 @@ void brake_check_driver_override( )
     }
 }
 
-
-// *****************************************************
-// Function:    brake_turn_on_accumulator_solenoids
-// 
-// Purpose:     Turn on brake actuator solenoids
-// 
-// Returns:     void
-// 
-// Parameters:  void
-// 
-// *****************************************************
-void brake_turn_on_accumulator_solenoids( )
-{
-    analogWrite( PIN_SLAFL, brakes.accumulator_duty_cycle );
-    analogWrite( PIN_SLAFR, brakes.accumulator_duty_cycle );
-}
-
-
-// *****************************************************
-// Function:    brake_turn_off_accumulator_solenoids
-// 
-// Purpose:     Turn off brake actuator solenoids
-// 
-// Returns:     void
-// 
-// Parameters:  None
-// 
-// *****************************************************
-void brake_turn_off_accumulator_solenoids( )
-{
-    analogWrite( PIN_SLAFL, 0 );
-    analogWrite( PIN_SLAFR, 0 );
-}
-
-// *****************************************************
-// Function:    brake_turn_on_release_solenoids
-// 
-// Purpose:     Turn on brake actuator solenoids
-// 
-// Returns:     void
-// 
-// Parameters:  void
-// 
-// *****************************************************
-void brake_turn_on_release_solenoids( )
-{
-    analogWrite( PIN_SLRFL, brakes.release_duty_cycle );
-    analogWrite( PIN_SLRFR, brakes.release_duty_cycle );    
-}
-
-// *****************************************************
-// Function:    brake_turn_off_release_solenoids
-// 
-// Purpose:     Turn off brake release solenoids
-// 
-// Returns:     void
-// 
-// Parameters:  None
-// 
-// *****************************************************
-void brake_turn_off_release_solenoids( )
-{
-    digitalWrite( PIN_SLRFL, 0 );
-    digitalWrite( PIN_SLRFR, 0 );
-}
 
 // *****************************************************
 // Function:    brake_update_pressure
@@ -735,10 +646,10 @@ void brake_update_pressure( )
     uint16_t raw_left_pressure = analogRead( PIN_PFL );
     uint16_t raw_right_pressure = analogRead( PIN_PFR );
 
-    brakes.pressure_left = raw_adc_to_voltage( raw_left_pressure );
-    brakes.pressure_right = raw_adc_to_voltage( raw_right_pressure );
+    float pressure_left = raw_adc_to_voltage( raw_left_pressure );
+    float pressure_right = raw_adc_to_voltage( raw_right_pressure );
 
-    brakes.pressure = ( brakes.pressure_left + brakes.pressure_right ) / 2;
+    brakes.pressure = ( pressure_left + pressure_right ) / 2;
 }
 
 // *****************************************************
@@ -780,13 +691,13 @@ void brake_init( )
 // Parameters:  None
 // 
 // *****************************************************
-static void publish_ps_ctrl_brake_report( )
+void publish_ps_ctrl_brake_report( )
 {
     ps_ctrl_brake_report_msg report;
 
     report.override = ( uint8_t )brakes.driver_override;
 
-    if ( brakes.current_state == BRAKE_CONTROL_BRAKE_STATE )
+    if ( brakes.enable == true )
     {
         report.enabled = 1;
     }
@@ -816,7 +727,7 @@ static void publish_ps_ctrl_brake_report( )
 // Parameters:  None
 // 
 // *****************************************************
-static void publish_timed_tx_frames( void )
+void publish_timed_tx_frames( void )
 {
     static uint32_t tx_timestamp = 0;
 
@@ -842,30 +753,23 @@ static void publish_timed_tx_frames( void )
 // Parameters:  control_data -  pointer to a brake command control message
 // 
 // *****************************************************
-static void process_ps_ctrl_brake_command(
+void process_ps_ctrl_brake_command(
     const ps_ctrl_brake_command_msg * const control_data )
 {
     if ( control_data->enabled == 1 )
     {
-        brake_request_brake_state();
+        brakes.enable_request = true;
     }
 
     if ( control_data->enabled == 0 )
     {
-        brake_request_wait_state();
+        brakes.enable_request = false;
     }
 
     brakes.pedal_command = control_data->pedal_command;
 
-    float pedal_command = ( float )brakes.pedal_command;
-
-    // Scale 0->65535 input to 0.48->2.3 output
-    pedal_command *= ( 2.3 - 0.48 ) / 65535.0;
-
-    brakes.pressure_request = pedal_command + 0.48;
-
-    DEBUG_PRINT( "pressure_request: " );
-    DEBUG_PRINT( brakes.pressure_request );
+    DEBUG_PRINT( "pedal_command: " );
+    DEBUG_PRINT( brakes.pedal_command );
 }
 
 
@@ -880,12 +784,10 @@ static void process_ps_ctrl_brake_command(
 //                             the brake pressure
 // 
 // *****************************************************
-static void process_psvc_chassis_state1(
+void process_psvc_chassis_state1(
     const psvc_chassis_state1_data_s * const chassis_data )
 {
     brakes.can_pressure = chassis_data->brake_pressure;
-
-    brake_update_pressure( );
 }
 
 
@@ -933,240 +835,93 @@ void handle_ready_rx_frames( )
 
 
 // *****************************************************
-// Function:    wait_state_enter
+// Function:    brake_update
 // 
-// Purpose:     Enter wait state
-// 
-// Returns:     void
-// 
-// Parameters:  None
-// 
-// *****************************************************
-void wait_state_enter( )
-{
-    master_cylinder_open( );
-    brake_turn_off_accumulator_solenoids( );
-    brake_turn_off_release_solenoids( );
-
-    DEBUG_PRINT( "Entered wait state" );
-}
-
-
-// *****************************************************
-// Function:    wait_state_update
-// 
-// Purpose:     Update wait state
+// Purpose:     Update function for the brake module
 // 
 // Returns:     void
 // 
 // Parameters:  None
 // 
 // *****************************************************
-void wait_state_update( )
+void brake_update( )
 {
-    accumulator_maintain_pressure( );
-}
-
-
-// *****************************************************
-// Function:    wait_state_exit
-// 
-// Purpose:     Exit wait state
-// 
-// Returns:     void
-// 
-// Parameters:  None
-// 
-// *****************************************************
-void wait_state_exit( )
-{
-}
-
-
-// *****************************************************
-// Function:    brake_enter
-// 
-// Purpose:     Enter brake state
-// 
-// Returns:     void
-// 
-// Parameters:  None
-// 
-// *****************************************************
-void brake_state_enter( )
-{
-    master_cylinder_close( );
-
-    brake_turn_off_release_solenoids( );
-
-    DEBUG_PRINT( "entered brake state" );
-}
-
-
-// *****************************************************
-// Function:    brake_state_update
-// 
-// Purpose:     Update function for the brake state
-// 
-// Returns:     void
-// 
-// Parameters:  None
-// 
-// *****************************************************
-void brake_state_update( )
-{
-    static int16_t delta_t = 0;
-    static int16_t curr_micros = 0;
-    static int16_t last_micros = 0;
-
-    static float pressure_last = 0;
-    static float pressure_rate_target = 0;
-    static float pressure_rate = 0;
-
-    accumulator_maintain_pressure( );
+    static float pressure_target = 0.0;
+    static float pressure = 0.0;
 
     brake_update_pressure( );
 
-    // ************************************************************************
+    // ********************************************************************
     //
     // WARNING
     //
-    // The ranges selected to do brake control are carefully tested to ensure
-    // that the pressure actuated is not outside of the range of what the brake
-    // module can handle. By changing any of this code you risk attempting to
-    // actuate a pressure outside of the brake modules valid range. Actuating a
-    // pressure outside of the modules valid range will, at best, cause it to
-    // go into an unrecoverable fault state. This is characterized by the
-    // accumulator "continuously pumping" without accumulating any actual
-    // pressure, or being "over pressured." Clearing this fault state requires
-    // expert knowledge of the braking module.
+    // The ranges selected to do brake control are carefully tested to
+    // ensure that the pressure actuated is not outside of the range of
+    // what the brake module can handle. By changing any of this code you
+    // risk attempting to actuate a pressure outside of the brake modules
+    // valid range. Actuating a pressure outside of the modules valid
+    // range will, at best, cause it to go into an unrecoverable fault
+    // state. This is characterized by the accumulator "continuously
+    // pumping" without accumulating any actual pressure, or being
+    // "over pressured." Clearing this fault state requires expert
+    // knowledge of the braking module.
     //
-    // It is NOT recommended to modify any of the existing control ranges, or
-    // gains, without expert knowledge.
+    // It is NOT recommended to modify any of the existing control ranges,
+    // or gains, without expert knowledge.
     //
     // ************************************************************************
 
-    if ( brakes.pressure_request > ZERO_PRESSURE )
+    static struct interpolate_range_s pressure_ranges =
+        { 0.0, UINT16_MAX, 0.48, 2.3 };
+
+    pressure = brakes.pressure;
+
+    pressure_target = interpolate( brakes.pedal_command, &pressure_ranges );
+
+    int16_t ret = pid_update( &pid_params, pressure_target, pressure, 0.050 );
+
+    if ( ret == PID_SUCCESS )
     {
-        brake_lights_on();
+        float pid_output = pid_params.control;
 
-        master_cylinder_close();
-
-        last_micros = curr_micros;
-        curr_micros = micros( );
-        delta_t = curr_micros - last_micros;
-
-        // calculate pressure rate in pressure/microsecond
-        pressure_rate = ( brakes.pressure - pressure_last ) / delta_t;
-        pressure_rate_target = brakes.pressure_request - brakes.pressure;
-
-        int16_t ret = pid_update( &pid_params, pressure_rate_target, pressure_rate, 0.050 );
-
-        if ( ret == PID_SUCCESS )
+        if ( pid_output < 0.0 )
         {
-            float pressure_pid_output = pid_params.control;
+            static struct interpolate_range_s slr_ranges =
+                { 0.0, 0.5, SLR_DUTY_CYCLE_MIN, SLR_DUTY_CYCLE_MAX };
 
-            pressure_pid_output = m_constrain( (float) (pressure_pid_output),
-                                               (float) -2.0f,
-                                               (float) 2.0f );
+            int16_t slr_duty_cycle = 0;
 
-            if ( pressure_pid_output < -0.1 )
+            // pressure is too high
+            brake_command_actuator_solenoids( 0 );
+
+            pid_output = -pid_output;
+            slr_duty_cycle = (int16_t)interpolate( pid_output, &slr_ranges );
+
+            brake_command_release_solenoids( slr_duty_cycle );
+        }
+        else if ( pid_output > 0.0 )
+        {
+            static struct interpolate_range_s sla_ranges =
+                { 0.0, 0.5, SLA_DUTY_CYCLE_MIN, SLA_DUTY_CYCLE_MAX };
+
+            int16_t sla_duty_cycle = 0;
+
+            brake_lights_on();
+
+            // pressure is too low
+            brake_command_release_solenoids( 0 );
+
+            sla_duty_cycle = (int16_t)interpolate( pid_output, &sla_ranges );
+
+            brake_command_actuator_solenoids( sla_duty_cycle );
+        }
+        else    // pid_outout == 0.0
+        {
+            if ( brakes.pedal_command == 0 )
             {
-                // pressure is too high
-                calculate_release_duty_cycle( pressure_pid_output );
-
-                brake_turn_off_accumulator_solenoids( );
-                brake_turn_on_release_solenoids( );
-            }
-
-            if ( pressure_pid_output > 0.1 )
-            {
-                // pressure is too low
-                calculate_accumulator_duty_cycle( pressure_pid_output );
-
-                brake_turn_off_release_solenoids( );
-                brake_turn_on_accumulator_solenoids( );
+                brake_lights_off();
             }
         }
-    }
-    else if ( brakes.pressure_request <= ZERO_PRESSURE )
-    {
-        master_cylinder_open();
-        brake_turn_off_accumulator_solenoids( );
-        brake_turn_off_release_solenoids( );
-
-        brake_lights_off();
-    }
-}
-
-
-// *****************************************************
-// Function:    brake_exit
-// 
-// Purpose:     Exit brake state
-// 
-// Returns:     void
-// 
-// Parameters:  None
-// 
-// *****************************************************
-void brake_state_exit( )
-{
-    master_cylinder_open( );
-
-    brake_turn_off_accumulator_solenoids( );
-
-    brake_lights_off( );
-}
-
-
-// *****************************************************
-// Function:    brake_update
-// 
-// Purpose:     Braking state machine
-// 
-// Returns:     void
-// 
-// Parameters:  None
-// 
-// *****************************************************
-void brake_state_machine_update( )
-{
-    if ( brakes.current_state == BRAKE_CONTROL_WAIT_STATE )
-    {
-        if ( brakes.requested_state == BRAKE_CONTROL_BRAKE_STATE )
-        {
-            brakes.current_state = BRAKE_CONTROL_BRAKE_STATE;
-
-            wait_state_exit();
-            brake_state_enter();
-            brake_state_update();
-        }
-        else
-        {
-            wait_state_update();
-        }
-    }
-    else if ( brakes.current_state == BRAKE_CONTROL_BRAKE_STATE )
-    {
-        if ( brakes.requested_state == BRAKE_CONTROL_WAIT_STATE )
-        {
-            brakes.current_state = BRAKE_CONTROL_WAIT_STATE;
-
-            brake_state_exit();
-            wait_state_enter();
-            wait_state_update();
-        }
-        else
-        {
-            brake_state_update();
-        }
-    }
-    else
-    {
-        brakes.current_state = BRAKE_CONTROL_WAIT_STATE;
-        brakes.requested_state = BRAKE_CONTROL_WAIT_STATE;
-        wait_state_enter();
     }
 }
 
@@ -1182,14 +937,14 @@ void brake_state_machine_update( )
 // Parameters:  None
 // 
 // *****************************************************
-static void check_rx_timeouts( )
+void check_rx_timeouts( )
 {
     // local vars
     uint32_t delta = timer_delta_ms( brakes.rx_timestamp );
 
     if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
-        brake_request_wait_state();
+        brakes.enable_request = false;
     }
 }
 
@@ -1226,14 +981,9 @@ void setup( void )
     master_cylinder_open( );
 
     // close release solenoids
-    brake_turn_off_release_solenoids( );
+    brake_command_release_solenoids( 0 );
 
-    // clear any accumulator pressure
-    brake_turn_on_accumulator_solenoids( );
-
-    delay(3000);
-
-    brake_turn_off_accumulator_solenoids( );
+    brake_command_actuator_solenoids( 0 );
 
     // Initialize serial devices (RS232 and CAN)
     init_serial( );
@@ -1248,9 +998,9 @@ void setup( void )
     // Initialize PID params
     pid_zeroize( &pid_params, BRAKE_PID_WINDUP_GUARD );
 
-    pid_params.derivative_gain = 0.50;
     pid_params.proportional_gain = 10.0;
     pid_params.integral_gain = 1.5;
+    pid_params.derivative_gain = 0.50;
 
     // debug log
     DEBUG_PRINT( "init: pass" );
@@ -1267,7 +1017,7 @@ void setup( void )
 // Purpose:     Handle and publish CAN frames
 //              Check for receive timeouts
 //              Check for driver brake override
-//              Update the brake state machine
+//              Update the brakes
 // 
 // Returns:     void
 // 
@@ -1280,9 +1030,26 @@ void loop( )
 
     publish_timed_tx_frames( );
 
+    accumulator_maintain_pressure( );
+
     check_rx_timeouts( );
 
     brake_check_driver_override( );
 
-    brake_state_machine_update( );
+    if ( brakes.enable != brakes.enable_request )
+    {
+        if ( brakes.enable_request == true )
+        {
+            brake_enable();
+        }
+        else
+        {
+            brake_disable();
+        }
+    }
+
+    if ( brakes.enable == true )
+    {
+        brake_update( );
+    }
 }
