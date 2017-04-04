@@ -30,6 +30,7 @@
 #include "DAC_MCP49xx.h"
 #include "steering_control.h"
 #include "test_steering_control.h"
+#include "globals.h"
 
 
 // *****************************************************
@@ -45,36 +46,6 @@
     #define DEBUG_PRINT( x )
     #define STATIC static
 #endif
-
-// *****************************************************
-// static structures
-// *****************************************************
-
-
-DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
-
-// Construct the CAN shield object
-MCP_CAN CAN( CAN_CS );                          // Set CS pin for the CAN shield
-
-
-//
-STATIC can_frame_s rx_frame_ps_ctrl_steering_command;
-
-
-//
-STATIC can_frame_s tx_frame_ps_ctrl_steering_report;
-
-
-//
-STATIC current_control_state current_ctrl_state;
-
-
-//
-STATIC PID pid_params;
-
-
-//
-STATIC uint8_t torque_sum;
 
 
 // *****************************************************
@@ -165,10 +136,7 @@ void setup( )
     pid_params.proportional_gain = current_ctrl_state.SA_Kp;
     pid_params.integral_gain = current_ctrl_state.SA_Ki;
 
-    publish_ps_ctrl_steering_report( tx_frame_ps_ctrl_steering_report,
-                                    current_ctrl_state,
-                                    torque_sum,
-                                    CAN );
+    publish_ps_ctrl_steering_report( );
 
     current_ctrl_state.control_enabled = false;
 
@@ -214,19 +182,13 @@ void setup( )
 void loop( )
 {
     // checks for CAN frames, if yes, updates state variables
-    handle_ready_rx_frames( dac,
-                            current_ctrl_state,
-                            CAN,
-                            rx_frame_ps_ctrl_steering_command );
+    handle_ready_rx_frames( );
 
     // publish all report CAN frames
-    publish_timed_tx_frames( tx_frame_ps_ctrl_steering_report,
-                            current_ctrl_state,
-                            torque_sum,
-                            CAN );
+    publish_timed_tx_frames( );
 
     // check all timeouts
-    check_rx_timeouts( dac, current_ctrl_state, rx_frame_ps_ctrl_steering_command );
+    check_rx_timeouts( );
 
     uint32_t current_timestamp_us;
 
@@ -243,7 +205,7 @@ void loop( )
         if ( override == true )
         {
             current_ctrl_state.override_flag.wheel = 1;
-            disable_control( dac, current_ctrl_state );
+            disable_control( );
         }
         else if ( current_ctrl_state.control_enabled == true )
         {
