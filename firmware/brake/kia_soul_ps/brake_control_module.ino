@@ -198,7 +198,7 @@ struct brake_data_s brakes =
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void init_serial( void )
@@ -217,7 +217,7 @@ void init_serial( void )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void init_can( void )
@@ -245,7 +245,8 @@ void init_can( void )
 //
 // Returns:     float output
 //
-// Parameters:  [in] interpolation
+// Parameters:  input - value in the input range
+//              range - structure that defines the input and output ranges
 //
 // *****************************************************
 float interpolate( float input, struct interpolate_range_s* range )
@@ -270,7 +271,7 @@ float interpolate( float input, struct interpolate_range_s* range )
 // 
 // Returns:     uint32_t the time delta between the two inputs
 // 
-// Parameters:  [in] timestamp - the last time sample
+// Parameters:  last_time - the last time sample
 // 
 // *****************************************************
 uint32_t timer_delta_ms( uint32_t last_time )
@@ -298,7 +299,7 @@ uint32_t timer_delta_ms( uint32_t last_time )
 // 
 // Returns:     float - pressure
 // 
-// Parameters:  int16_t - raw ADC reading 
+// Parameters:  input - raw ADC reading 
 // 
 // *****************************************************
 float raw_adc_to_voltage( int16_t input )
@@ -319,7 +320,7 @@ float raw_adc_to_voltage( int16_t input )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void accumulator_turn_pump_off( )
@@ -334,7 +335,7 @@ void accumulator_turn_pump_off( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void accumulator_turn_pump_on( )
@@ -350,7 +351,7 @@ void accumulator_turn_pump_on( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void accumulator_maintain_pressure( )
@@ -405,7 +406,7 @@ void accumulator_init( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void master_cylinder_open( )
@@ -420,7 +421,7 @@ void master_cylinder_open( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void master_cylinder_close( )
@@ -431,15 +432,13 @@ void master_cylinder_close( )
 
 // *****************************************************
 // Function:    master_cylinder_init
-// 
+//
 // Purpose:     Initializes the master cylinder solenoid
-// 
+//
 // Returns:     void
-// 
-// Parameters:  uint8_t sensor1_pin
-//              uint8_t sensor2_pin
-//              uint8_t control_pin
-// 
+//
+// Parameters:  void
+//
 // *****************************************************
 void master_cylinder_init( )
 {
@@ -528,7 +527,7 @@ void brake_command_release_solenoids( int16_t duty_cycle )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void brake_enable( )
@@ -549,7 +548,7 @@ void brake_enable( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void brake_disable( )
@@ -596,7 +595,7 @@ void brake_disable( )
 //
 // Returns:     void
 //
-// Parameters:  None
+// Parameters:  void
 //
 // *****************************************************
 void brake_check_driver_override( )
@@ -638,7 +637,7 @@ void brake_check_driver_override( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void brake_update_pressure( )
@@ -688,7 +687,7 @@ void brake_init( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void publish_ps_ctrl_brake_report( )
@@ -724,7 +723,7 @@ void publish_ps_ctrl_brake_report( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void publish_timed_tx_frames( void )
@@ -800,7 +799,7 @@ void process_psvc_chassis_state1(
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void handle_ready_rx_frames( )
@@ -841,7 +840,7 @@ void handle_ready_rx_frames( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void brake_update( )
@@ -934,7 +933,7 @@ void brake_update( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void check_rx_timeouts( )
@@ -963,7 +962,7 @@ void check_rx_timeouts( )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void setup( void )
@@ -980,14 +979,10 @@ void setup( void )
     accumulator_turn_pump_off( );
     master_cylinder_open( );
 
-    // close release solenoids
     brake_command_release_solenoids( 0 );
-
     brake_command_actuator_solenoids( 0 );
 
-    // Initialize serial devices (RS232 and CAN)
     init_serial( );
-
     init_can( );
 
     publish_ps_ctrl_brake_report( );
@@ -1002,7 +997,6 @@ void setup( void )
     pid_params.integral_gain = 1.5;
     pid_params.derivative_gain = 0.50;
 
-    // debug log
     DEBUG_PRINT( "init: pass" );
 }
 
@@ -1021,7 +1015,7 @@ void setup( void )
 // 
 // Returns:     void
 // 
-// Parameters:  None
+// Parameters:  void
 // 
 // *****************************************************
 void loop( )
@@ -1053,3 +1047,4 @@ void loop( )
         brake_update( );
     }
 }
+
