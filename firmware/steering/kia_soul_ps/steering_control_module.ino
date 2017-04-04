@@ -29,6 +29,7 @@
 #include "common.h"
 #include "DAC_MCP49xx.h"
 #include "steering_control.h"
+#include "test_steering_control.h"
 
 
 // *****************************************************
@@ -160,6 +161,10 @@ void setup( )
 
     init_can( );
 
+	pid_params.derivative_gain = current_ctrl_state.SA_Kd;
+    pid_params.proportional_gain = current_ctrl_state.SA_Kp;
+    pid_params.integral_gain = current_ctrl_state.SA_Ki;
+
     publish_ps_ctrl_steering_report( tx_frame_ps_ctrl_steering_report,
                                     current_ctrl_state,
                                     torque_sum,
@@ -177,10 +182,6 @@ void setup( )
 
     current_ctrl_state.override_flag.voltage_spike_b = 0;
 
-    pid_params.derivative_gain = current_ctrl_state.SA_Kd;
-    pid_params.proportional_gain = current_ctrl_state.SA_Kp;
-    pid_params.integral_gain = current_ctrl_state.SA_Ki;
-
     // Initialize the Rx timestamps to avoid timeout warnings on start up
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 
@@ -188,6 +189,8 @@ void setup( )
 
     // debug log
     DEBUG_PRINT( "init: pass" );
+
+    test_pid_values( pid_params, current_ctrl_state );
 }
 
 
@@ -210,7 +213,6 @@ void setup( )
 // *****************************************************
 void loop( )
 {
-
     // checks for CAN frames, if yes, updates state variables
     handle_ready_rx_frames( dac,
                             current_ctrl_state,
