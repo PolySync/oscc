@@ -30,7 +30,7 @@
 
 #ifdef PSYNC_DEBUG_FLAG
     #define DEBUG_PRINT( x )  Serial.println( x )
-    #define STATIC 
+    #define STATIC
 #else
     #define DEBUG_PRINT( x )
     #define STATIC static
@@ -149,10 +149,11 @@ int16_t average_samples( int16_t num_samples, int16_t* averages )
 //
 // Returns:     void
 //
-// Parameters:  None
+// Parameters:  [in] dac - the dac structure
+//				[in] current_ctrl_state - the control state structure
 //
 // *****************************************************
-void enable_control( DAC_MCP49xx dac, current_control_state current_ctrl_state )
+void enable_control( DAC_MCP49xx &dac, current_control_state &current_ctrl_state )
 {
     static int16_t num_samples = 20;
     int16_t averages[ 2 ] = { 0, 0 };
@@ -184,10 +185,11 @@ void enable_control( DAC_MCP49xx dac, current_control_state current_ctrl_state )
 //
 // Returns:     void
 //
-// Parameters:  None
+// Parameters:  [in] dac - the dac structure
+//				[in] current_ctrl_state - the control state structure
 //
 // *****************************************************
-void disable_control( DAC_MCP49xx dac, current_control_state current_ctrl_state )
+void disable_control( DAC_MCP49xx &dac, current_control_state &current_ctrl_state )
 {
     if ( current_ctrl_state.control_enabled == true )
     {
@@ -323,13 +325,16 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof )
 //
 // Returns:     void
 //
-// Parameters:  None
+// Parameters:  [in] tx_frame_ps_ctrl_steering_report
+//				[in] current_ctrl_state
+//				[in] torque_sum
+//				[in] CAN
 //
 // *****************************************************
-void publish_ps_ctrl_steering_report( can_frame_s tx_frame_ps_ctrl_steering_report,
-                                    current_control_state current_ctrl_state, 
-                                    uint8_t torque_sum,
-                                    MCP_CAN CAN )
+void publish_ps_ctrl_steering_report( can_frame_s &tx_frame_ps_ctrl_steering_report,
+                                    current_control_state &current_ctrl_state,
+                                    uint8_t &torque_sum,
+                                    MCP_CAN &CAN )
 {
     tx_frame_ps_ctrl_steering_report.id =
         ( uint32_t ) ( PS_CTRL_MSG_ID_STEERING_REPORT );
@@ -377,13 +382,16 @@ void publish_ps_ctrl_steering_report( can_frame_s tx_frame_ps_ctrl_steering_repo
 //
 // Returns:     void
 //
-// Parameters:  None
+// Parameters:  [in] tx_frame_ps_ctrl_steering_report
+//				[in] current_ctrl_state
+//				[in] torque_sum
+//				[in] CAN
 //
 // *****************************************************
-void publish_timed_tx_frames( can_frame_s tx_frame_ps_ctrl_steering_report,
-                            current_control_state current_ctrl_state,
-                            uint8_t torque_sum,
-                            MCP_CAN CAN )
+void publish_timed_tx_frames( can_frame_s &tx_frame_ps_ctrl_steering_report,
+                            current_control_state &current_ctrl_state,
+                            uint8_t &torque_sum,
+                            MCP_CAN &CAN )
 {
     uint32_t delta =
         timer_delta_ms( tx_frame_ps_ctrl_steering_report.timestamp );
@@ -405,14 +413,17 @@ void publish_timed_tx_frames( can_frame_s tx_frame_ps_ctrl_steering_report,
 //
 // Returns:     void
 //
-// Parameters:  control_data -  pointer to a steering command control message
+// Parameters:  [in] control_data -  pointer to a steering command control message
+//				[in] dac - DAC structure
+//				[in] current_ctrl_state - current control state structure
+//				[in] rx_frame_ps_ctrl_steering_command - steering command
 //
 // *****************************************************
 void process_ps_ctrl_steering_command(
     const ps_ctrl_steering_command_msg * const control_data,
-            DAC_MCP49xx dac,
-            current_control_state current_ctrl_state,
-            can_frame_s rx_frame_ps_ctrl_steering_command )
+            DAC_MCP49xx &dac,
+            current_control_state &current_ctrl_state,
+            can_frame_s &rx_frame_ps_ctrl_steering_command )
 {
     current_ctrl_state.commanded_steering_angle =
         control_data->steering_wheel_angle_command / 9.0;
@@ -446,13 +457,14 @@ void process_ps_ctrl_steering_command(
 //
 // Returns:     void
 //
-// Parameters:  chassis_data - pointer to a chassis state message that contains
-//                             the steering angle
+// Parameters:  [in] chassis_data - pointer to a chassis state message that contains
+//                             		the steering angle
+//				[in] current_ctrl_state - the current control state structure
 //
 // *****************************************************
 void process_psvc_chassis_state1(
     const psvc_chassis_state1_data_s * const chassis_data,
-            current_control_state current_ctrl_state )
+            current_control_state &current_ctrl_state )
 {
     float raw_angle = (float)chassis_data->steering_wheel_angle;
     current_ctrl_state.current_steering_angle = raw_angle * 0.0076294;
@@ -470,13 +482,16 @@ void process_psvc_chassis_state1(
 //
 // Returns:     void
 //
-// Parameters:  None
+// Parameters:  [in] dac - the dac structure
+//				[in] current_ctrl_state - current control state structure
+//				[in] CAN - CAN structure
+//				[in] rx_frame_ps_ctrl_steering_command - steering command
 //
 // *****************************************************
-void handle_ready_rx_frames( DAC_MCP49xx dac,
-            current_control_state current_ctrl_state,
-            MCP_CAN CAN,
-            can_frame_s rx_frame_ps_ctrl_steering_command )
+void handle_ready_rx_frames( DAC_MCP49xx &dac,
+            current_control_state &current_ctrl_state,
+            MCP_CAN &CAN,
+            can_frame_s &rx_frame_ps_ctrl_steering_command )
 {
     if ( CAN.checkReceive() == CAN_MSGAVAIL )
     {
@@ -515,11 +530,14 @@ void handle_ready_rx_frames( DAC_MCP49xx dac,
 //
 // Returns:     void
 //
-// Parameters:  None
+// Parameters:  [in] dac - the dac structure
+//				[in] current_ctrl_state - current control state structure
+//				[in] rx_frame_ps_ctrl_steering_command - steering command
 //
 // *****************************************************
-void check_rx_timeouts( DAC_MCP49xx dac, current_control_state current_ctrl_state,
-                        can_frame_s rx_frame_ps_ctrl_steering_command )
+void check_rx_timeouts( DAC_MCP49xx &dac,
+						current_control_state &current_ctrl_state,
+                        can_frame_s &rx_frame_ps_ctrl_steering_command )
 {
     uint32_t delta =
         timer_delta_ms( rx_frame_ps_ctrl_steering_command.timestamp );
