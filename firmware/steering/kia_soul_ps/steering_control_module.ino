@@ -39,64 +39,11 @@
 
 #ifdef PSYNC_DEBUG_FLAG
     #define DEBUG_PRINT( x )  Serial.println( x )
-    #define STATIC 
+    #define STATIC
 #else
     #define DEBUG_PRINT( x )
     #define STATIC static
 #endif
-/*
-// set CAN_CS to pin 10 for CAN
-#define CAN_CS                          ( 10 )
-
-// ms
-#define PS_CTRL_RX_WARN_TIMEOUT         ( 250 )
-
-// set up pins for interface with DAC (MCP4922)
-#define DAC_CS                          ( 9 )       // Chip select pin
-
-// Windup guard for steering PID controller
-#define STEERING_WINDUP_GUARD           ( 1500 )
-
-// Signal to ADC from car
-#define SIGNAL_INPUT_A                  ( A0 )
-
-// Green wire from the torque sensor, low values
-#define SIGNAL_INPUT_B                  ( A1 )
-
-// Spoof signal from DAC out to car
-#define SPOOF_SIGNAL_A                  ( A2 )
-
-// Blue wire from the torque sensor, high values
-#define SPOOF_SIGNAL_B                  ( A3 )
-
-// Signal interrupt (relay) for spoofed torque values
-#define SPOOF_ENGAGE                    ( 6 )
-
-// Threshhold to detect when a person is turning the steering wheel
-#define STEERING_WHEEL_CUTOFF_THRESHOLD ( 3000 )
-
-// Threshhold to detect when there is a discrepancy between DAC and ADC values
-#define VOLTAGE_THRESHOLD               ( 0.096 )     // mV
-
-#define SAMPLE_A                        ( 0 )
-
-#define SAMPLE_B                        ( 1 )
-
-#define FAILURE                         ( 0 )
-
-#define SUCCESS                         ( 1 )
-*/
-
-// *****************************************************
-// local defined data structures
-// *****************************************************
-/*
-struct torque_spoof_t
-{
-    uint16_t low;
-    uint16_t high;
-};*/
-
 
 // *****************************************************
 // static structures
@@ -230,6 +177,10 @@ void setup( )
 
     current_ctrl_state.override_flag.voltage_spike_b = 0;
 
+    pid_params.derivative_gain = current_ctrl_state.SA_Kd;
+    pid_params.proportional_gain = current_ctrl_state.SA_Kp;
+    pid_params.integral_gain = current_ctrl_state.SA_Ki;
+
     // Initialize the Rx timestamps to avoid timeout warnings on start up
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 
@@ -328,10 +279,6 @@ void loop( )
                 constrain( ( double )steering_angle_rate_target,
                            ( double )-current_ctrl_state.steering_angle_rate_max,
                            ( double )current_ctrl_state.steering_angle_rate_max );
-
-            pid_params.derivative_gain = current_ctrl_state.SA_Kd;
-            pid_params.proportional_gain = current_ctrl_state.SA_Kp;
-            pid_params.integral_gain = current_ctrl_state.SA_Ki;
 
             pid_update(
                     &pid_params,
