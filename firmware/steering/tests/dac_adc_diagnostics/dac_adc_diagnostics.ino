@@ -7,19 +7,19 @@
 
 
 
-#define SIGNAL_INPUT_A A0     // input pin for sensing sensor 1 output
+#define SIGNAL_INPUT_A ( A0 )    // input pin for sensing sensor 1 output
 
-#define SIGNAL_INPUT_B A1     // input pin for sensing sensor 2 output
+#define SIGNAL_INPUT_B ( A1 )    // input pin for sensing sensor 2 output
 
-#define SPOOF_SIGNAL_A A2     // input pin for sensing DAC 1 output
+#define SPOOF_SIGNAL_A ( A2 )    // input pin for sensing DAC 1 output
 
-#define SPOOF_SIGNAL_B A3     // input pin for sensing DAC 2 output
+#define SPOOF_SIGNAL_B ( A3 )    // input pin for sensing DAC 2 output
 
-#define SPOOF_ENGAGE 6        // signal interrupt (relay) for spoofed signals
+#define SPOOF_ENGAGE ( 6 )       // signal interrupt (relay) for spoofed signals
 
-#define DAC_CS 9              // chip select pin for DAC
+#define DAC_CS ( 9 )             // chip select pin for DAC
 
-#define CAN_CS 10             // chip select pin for CAN
+#define CAN_CS ( 10 )            // chip select pin for CAN
 
 
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 ); // DAC model, SS pin, LDAC pin
@@ -37,7 +37,7 @@ static void init_serial( void )
 static void init_can ( void )
 {
     // wait until we have initialized
-    while( CAN.begin(CAN_BAUD) != CAN_OK )
+    while( CAN.begin( CAN_BAUD ) != CAN_OK )
     {
         // wait a little
         delay( CAN_INIT_RETRY_DELAY );
@@ -73,7 +73,7 @@ void test_DACS( )
     // energize the relay so we can read the values at the terminal
     digitalWrite( SPOOF_ENGAGE, HIGH );
 
-    for ( dac_value = 0; dac_value < 4095; dac_value = dac_value + 15 )
+    for ( dac_value = 0; dac_value < 4095; dac_value += 15 )
     {
         dac_val_a = dac_value;
         dac_val_b = 4095.0 - dac_value;
@@ -127,17 +127,17 @@ void test_DACS( )
 
 void setup( )
 {
-    init_serial();
-    init_can();
+    init_serial( );
+    init_can( );
 }
 
 
-void loop()
+void loop( )
 {
-    test_DACS();
-    //test_interrupt_relay();
-    //test_CAN_send();
-    //test_CAN_recieve();
-    //test_signal_sense();
+    test_DACS( );
+    //test_interrupt_relay( );
+    //test_CAN_send( );
+    //test_CAN_recieve( );
+    //test_signal_sense( );
 
 }

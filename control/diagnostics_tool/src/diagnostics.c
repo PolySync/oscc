@@ -59,7 +59,7 @@
  * This prevents our node from overloading the host.
  *
  */
-#define NODE_SLEEP_TICK_INTERVAL (1000)
+#define NODE_SLEEP_TICK_INTERVAL ( 1000 )
 
 
 /**
@@ -70,7 +70,7 @@
  * This prevents terminal flickering.
  *
  */
-#define PRINT_TERMINAL_TIMEOUT (100)
+#define PRINT_TERMINAL_TIMEOUT ( 100 )
 
 
 
@@ -148,7 +148,7 @@ static int print_can_dump = 0;
  * @param [in] commander A pointer to \ref commander_s which specifies the configuration.
  *
  */
-static int update_loop();
+static int update_loop( );
 
 
 /**
@@ -171,7 +171,7 @@ static int check ( char* id, canStatus stat );
 
 
 //
-static int init_can()
+static int init_can( )
 {
     int ret = NOERR;
 
@@ -286,14 +286,14 @@ static void sig_handler( int signo )
 
 
 //
-static int update_loop()
+static int update_loop( )
 {
     int ret = NOERR;
 
     ret = read_from_buffer( can_handle );
 
 
-    if( get_timestamp() - last_print_timestamp > PRINT_TERMINAL_TIMEOUT )
+    if( get_timestamp( ) - last_print_timestamp > PRINT_TERMINAL_TIMEOUT )
     {
         if( print_can_dump )
         {
@@ -302,14 +302,14 @@ static int update_loop()
 
         if( diagnostics_flag )
         {
-            update_system_state();
+            update_system_state( );
 
-            print_system_state();
+            print_system_state( );
         }
 
-        print_lines();
+        print_lines( );
 
-        last_print_timestamp = get_timestamp();
+        last_print_timestamp = get_timestamp( );
     }
 
     // sleep for 1 ms to avoid loading the CPU
@@ -383,7 +383,7 @@ static int handle_get_opt( int argc, char **argv )
 
 
 //
-static void process_can_ids()
+static void process_can_ids( )
 {
     char * split_ids = strtok( can_ids, " " );
 
@@ -422,20 +422,17 @@ int main( int argc, char **argv )
 
     if( ret == NOERR )
     {
-        ret = init_can();
+        ret = init_can( );
     }
 
-    process_can_ids();
+    process_can_ids( );
 
-    init_can_msg_array();
+    init_can_msg_array( );
 
     while( ret == NOERR && err_thrown == NOERR )
     {
         // do update loop
-        if( ret == NOERR && err_thrown == NOERR )
-        {
-            ret = update_loop();
-        }
+        ret = update_loop( );
     }
 
     return 0;

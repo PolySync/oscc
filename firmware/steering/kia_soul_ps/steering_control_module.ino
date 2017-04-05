@@ -158,7 +158,7 @@ static uint32_t timer_delta_ms( uint32_t last_time )
     {
         delta = current_time - last_time;
     }
-    return ( delta );
+    return delta;
 }
 
 
@@ -194,7 +194,7 @@ static uint32_t timer_delta_us( uint32_t last_time, uint32_t* current_time )
         *current_time = local_time;
     }
 
-    return ( delta );
+    return delta;
 }
 
 
@@ -277,7 +277,7 @@ static int16_t average_samples( int16_t num_samples, int16_t* averages )
         averages[ SAMPLE_A ] = ( sums[ SAMPLE_A ] / num_samples ) << 2;
         averages[ SAMPLE_B ] = ( sums[ SAMPLE_B ] / num_samples ) << 2;
     }
-    return ( return_code );
+    return return_code;
 }
 
 // *****************************************************
@@ -427,7 +427,7 @@ bool check_driver_steering_override( )
         override = true;
     }
 
-    return ( override );
+    return override;
 }
 
 
@@ -502,7 +502,7 @@ static void publish_ps_ctrl_steering_report( )
 
     data->torque = torque_sum;
 
-    data->enabled = (uint8_t) current_ctrl_state.control_enabled;
+    data->enabled = ( uint8_t ) current_ctrl_state.control_enabled;
 
     CAN.sendMsgBuf( tx_frame_ps_ctrl_steering_report.id,
                     0,
@@ -529,7 +529,7 @@ static void publish_timed_tx_frames( )
 
     if ( delta >= PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL )
     {
-        publish_ps_ctrl_steering_report();
+        publish_ps_ctrl_steering_report( );
     }
 }
 
@@ -586,7 +586,7 @@ static void process_ps_ctrl_steering_command(
 static void process_psvc_chassis_state1(
     const psvc_chassis_state1_data_s * const chassis_data )
 {
-    float raw_angle = (float)chassis_data->steering_wheel_angle;
+    float raw_angle = ( float )chassis_data->steering_wheel_angle;
     current_ctrl_state.current_steering_angle = raw_angle * 0.0076294;
 
     // Convert from 40 degree range to 470 degree range in 1 degree increments
@@ -611,7 +611,7 @@ void handle_ready_rx_frames( )
     {
         can_frame_s rx_frame;
 
-        memset( &rx_frame, 0, sizeof(rx_frame) );
+        memset( &rx_frame, 0, sizeof( rx_frame ) );
 
         CAN.readMsgBufID( (INT32U*) &rx_frame.id,
                           (INT8U*) &rx_frame.dlc,
@@ -651,7 +651,7 @@ static void check_rx_timeouts( )
     if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
         DEBUG_PRINT( "Control disabled: Timeout" );
-        disable_control();
+        disable_control( );
     }
 }
 
@@ -827,7 +827,7 @@ void loop( )
 
             calculate_torque_spoof( control, &torque_spoof );
 
-            torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
+            torque_sum = ( uint8_t ) ( torque_spoof.low + torque_spoof.high );
 
             dac.outputA( torque_spoof.low );
             dac.outputB( torque_spoof.high );

@@ -74,8 +74,6 @@ static int update_can_array_contents(
         const unsigned char * const buffer,
         can_frame_contents_s * const can_frame_contents )
 {
-    int i;
-
     int msg_contents_changed = 0;
 
     can_frame_contents->msg_dlc = msg_dlc;
@@ -114,9 +112,9 @@ static int update_can_array_msg(
 //
 static int get_can_msg_array_index( const long can_id )
 {
-    int i;
-
     int msg_array_index = -1;
+
+    int i;
 
     for( i = 0; i < CAN_MSG_ARRAY_SIZE; i ++ )
     {
@@ -219,7 +217,7 @@ static void print_info_can_array_index( int index )
 
 
 //
-unsigned long long get_timestamp()  // milliseconds
+unsigned long long get_timestamp( )  // milliseconds
 {
     gettimeofday( &tv, NULL );
 
@@ -229,7 +227,7 @@ unsigned long long get_timestamp()  // milliseconds
 
 
 //
-void init_can_msg_array()
+void init_can_msg_array( )
 {
     int i;
 

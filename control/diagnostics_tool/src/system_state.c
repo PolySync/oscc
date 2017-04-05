@@ -63,7 +63,7 @@ static current_system_state_s system_state;
 
 
 //
-static int update_steering_state()
+static int update_steering_state( )
 {
     int ret = ERROR;
 
@@ -86,7 +86,7 @@ static int update_steering_state()
 
 
 //
-static int update_throttle_state()
+static int update_throttle_state( )
 {
     int ret = ERROR;
 
@@ -109,7 +109,7 @@ static int update_throttle_state()
 
 
 //
-static int update_brake_state()
+static int update_brake_state( )
 {
     int ret = ERROR;
 
@@ -132,7 +132,7 @@ static int update_brake_state()
 
 
 //
-static int update_gateway_state()
+static int update_gateway_state( )
 {
     int ret = ERROR;
 
@@ -168,32 +168,32 @@ static int update_gateway_state()
 
 
 //
-int update_system_state()
+int update_system_state( )
 {
     int ret = NOERR;
 
-    if( update_steering_state() == ERROR )
+    if( update_steering_state( ) == ERROR )
     {
         system_state.steering_module_state.module_state = STATE_FAULT;
 
         ret = ERROR;
     }
 
-    if( update_throttle_state() == ERROR )
+    if( update_throttle_state( ) == ERROR )
     {
         system_state.throttle_module_state.module_state = STATE_FAULT;
 
         ret = ERROR;
     }
 
-    if( update_brake_state() == ERROR )
+    if( update_brake_state( ) == ERROR )
     {
         system_state.brake_module_state.module_state = STATE_FAULT;
 
         ret = ERROR;
     }
 
-    if( update_gateway_state() == ERROR )
+    if( update_gateway_state( ) == ERROR )
     {
         system_state.gateway_module_state.module_state = STATE_FAULT;
 
@@ -201,14 +201,14 @@ int update_system_state()
     }
 
     // TODO : define
-    //update_overall_state();
+    //update_overall_state( );
 
     return ret;
 }
 
 
 //
-void print_system_state()
+void print_system_state( )
 {
     char print_array[ 500 ];
 

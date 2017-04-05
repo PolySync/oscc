@@ -53,32 +53,32 @@
  * @brief Joystick axis indices
  *
  */
-#define JOYSTICK_AXIS_THROTTLE (5)
-#define JOYSTICK_AXIS_BRAKE (2)
-#define JOYSTICK_AXIS_STEER (3)
+#define JOYSTICK_AXIS_THROTTLE ( 5 )
+#define JOYSTICK_AXIS_BRAKE ( 2 )
+#define JOYSTICK_AXIS_STEER ( 3 )
 
 
 /**
  * @brief Joystick button indices
  *
  */
-#define JOYSTICK_BUTTON_ENABLE_CONTROLS (7)
-#define JOYSTICK_BUTTON_DISABLE_CONTROLS (6)
+#define JOYSTICK_BUTTON_ENABLE_CONTROLS ( 7 )
+#define JOYSTICK_BUTTON_DISABLE_CONTROLS ( 6 )
 
 /**
  * @brief Throttle pedal position values [normalized]
  *
  */
-#define MIN_THROTTLE_PEDAL (0.0)
-#define MAX_THROTTLE_PEDAL (0.3)
+#define MIN_THROTTLE_PEDAL ( 0.0 )
+#define MAX_THROTTLE_PEDAL ( 0.3 )
 
 
 /**
  * @brief Brake pedal position values [normalized]
  *
  */
-#define MIN_BRAKE_PEDAL (0.0)
-#define MAX_BRAKE_PEDAL (0.8)
+#define MIN_BRAKE_PEDAL ( 0.0 )
+#define MAX_BRAKE_PEDAL ( 0.8 )
 
 
 /**
@@ -87,7 +87,7 @@
  * Throttle is disabled when brake value is greater than this value
  *
  */
-#define BRAKES_ENABLED_MIN (0.05)
+#define BRAKES_ENABLED_MIN ( 0.05 )
 
 
 /**
@@ -96,16 +96,16 @@
  * Negative value means turning to the right
  *
  */
-#define MIN_STEERING_WHEEL_ANGLE (-M_PI * 2.0)
-#define MAX_STEERING_WHEEL_ANGLE (M_PI * 2.0)
+#define MIN_STEERING_WHEEL_ANGLE ( -M_PI * 2.0 )
+#define MAX_STEERING_WHEEL_ANGLE ( M_PI * 2.0 )
 
 
 /**
  * @brief Steering command angles [int16_t]
  *
  */
-#define STEERING_COMMAND_ANGLE_MIN (-4700)
-#define STEERING_COMMAND_ANGLE_MAX (4700)
+#define STEERING_COMMAND_ANGLE_MIN ( -4700 )
+#define STEERING_COMMAND_ANGLE_MAX ( 4700 )
 
 
 /**
@@ -119,8 +119,8 @@
  * @brief Steering command steering wheel velocities [uint8_t]
  *
  */
-#define STEERING_COMMAND_MAX_VELOCITY_MIN (20)
-#define STEERING_COMMAND_MAX_VELOCITY_MAX (254)
+#define STEERING_COMMAND_MAX_VELOCITY_MIN ( 20 )
+#define STEERING_COMMAND_MAX_VELOCITY_MAX ( 254 )
 
 
 /**
@@ -132,16 +132,16 @@
  * trying to smooth at the lower level
  *
  */
-#define STEERING_COMMAND_MAX_VELOCITY_FACTOR (0.25)
+#define STEERING_COMMAND_MAX_VELOCITY_FACTOR ( 0.25 )
 
 
 /**
  * @brief Exponential filter factors
  *
  */
-#define BRAKES_FILTER_FACTOR (0.2)
-#define THROTTLE_FILTER_FACTOR (0.2)
-#define STEERING_FILTER_FACTOR (0.1)
+#define BRAKES_FILTER_FACTOR ( 0.2 )
+#define THROTTLE_FILTER_FACTOR ( 0.2 )
+#define STEERING_FILTER_FACTOR ( 0.1 )
 
 /**
  * @brief joystick delay interval [microseconds]
@@ -151,14 +151,14 @@
  * 50,000 us == 50 ms == 20 Hertz
  *
  */
-#define JOYSTICK_DELAY_INTERVAL (50000)
+#define JOYSTICK_DELAY_INTERVAL ( 50000 )
 
 
 /**
  * @brief Convert radians to degrees
  *
  */
-#define m_degrees(rad) ( ( rad ) * ( 180.0 / M_PI ) )
+#define m_degrees( rad ) ( ( rad ) * ( 180.0 / M_PI ) )
 
 
 // *****************************************************
@@ -259,7 +259,7 @@ static int get_setpoint( struct commander_setpoint_s* setpoint )
             }
         }
     }
-    return ( return_code );
+    return return_code;
 
 }
 
@@ -318,9 +318,9 @@ static int commander_set_safe( )
 
     if ( commander_enabled == COMMANDER_ENABLED )
     {
-        return_code = oscc_interface_set_defaults();
+        return_code = oscc_interface_set_defaults( );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -343,7 +343,7 @@ static double calc_exponential_average( double average,
     double exponential_average =
         ( setpoint * factor ) + ( ( 1 - factor ) * average );
     
-    return ( exponential_average );
+    return exponential_average;
 }
 
 
@@ -370,7 +370,7 @@ static int commander_disable_controls( )
 
         if ( return_code == NOERR )
         {
-            return_code = oscc_interface_disable();
+            return_code = oscc_interface_disable( );
         }
     }
     return return_code;
@@ -403,7 +403,7 @@ static int commander_enable_controls( )
             return_code = oscc_interface_enable();
         }
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -440,7 +440,7 @@ static int get_button( unsigned long button, unsigned int* const state )
             ( *state ) = 0;
         }
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -471,22 +471,22 @@ static int command_brakes( )
                                                       brake_setpoint.setpoint,
                                                       BRAKES_FILTER_FACTOR );
 
-            const float normalized_value = (float) m_constrain(
-                (float) brake_average,
+            const float normalized_value = ( float ) m_constrain(
+                ( float ) brake_average,
                 0.0f,
                 MAX_BRAKE_PEDAL );
 
             constrained_value = ( unsigned int ) m_constrain(
-                (float) ( normalized_value * (float) UINT16_MAX ),
-                (float) 0.0f,
-                (float) UINT16_MAX );
+                ( float ) ( normalized_value * ( float ) UINT16_MAX ),
+                ( float ) 0.0f,
+                ( float ) UINT16_MAX );
         }
 
         printf( "brake: %d\n", constrained_value );
 
         return_code = oscc_interface_command_brakes( constrained_value );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -521,21 +521,21 @@ static int command_throttle( )
         }
 
         // Redundant, but better safe then sorry
-        const float normalized_value = (float) m_constrain(
-                (float) throttle_setpoint.setpoint,
+        const float normalized_value = ( float ) m_constrain(
+                ( float ) throttle_setpoint.setpoint,
                 0.0f,
                 MAX_THROTTLE_PEDAL );
 
         unsigned int constrained_value = ( unsigned int )m_constrain(
-                (float) (normalized_value * (float) UINT16_MAX),
-                (float) 0.0f,
-                (float) UINT16_MAX );
+                ( float ) ( normalized_value * ( float ) UINT16_MAX ),
+                ( float ) 0.0f,
+                ( float ) UINT16_MAX );
 
         printf( "throttle: %d\n", constrained_value );
 
         return_code = oscc_interface_command_throttle( constrained_value );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -566,29 +566,29 @@ static int command_steering( )
                                       STEERING_FILTER_FACTOR );
 
         const float angle_degrees =
-            (float) m_degrees( (float) steering_average );
+            ( float ) m_degrees( ( float ) steering_average );
 
         const int constrained_angle = ( int ) m_constrain(
-                (float) (angle_degrees * STEERING_COMMAND_ANGLE_FACTOR),
-                (float) STEERING_COMMAND_ANGLE_MIN,
-                (float) STEERING_COMMAND_ANGLE_MAX );
+                ( float ) ( angle_degrees * STEERING_COMMAND_ANGLE_FACTOR ),
+                ( float ) STEERING_COMMAND_ANGLE_MIN,
+                ( float ) STEERING_COMMAND_ANGLE_MAX );
 
         float rate_degrees =
-            (float) fabs( constrained_angle - last_steering_rate );
+            ( float ) fabs( constrained_angle - last_steering_rate );
 
         last_steering_rate = constrained_angle;
 
         unsigned int constrained_rate = ( unsigned int ) m_constrain(
-                (float) (rate_degrees / (float) STEERING_COMMAND_MAX_VELOCITY_FACTOR),
-                (float) STEERING_COMMAND_MAX_VELOCITY_MIN + 1.0f,
-                (float) STEERING_COMMAND_MAX_VELOCITY_MAX );
+                ( float ) ( rate_degrees / ( float ) STEERING_COMMAND_MAX_VELOCITY_FACTOR ),
+                ( float ) STEERING_COMMAND_MAX_VELOCITY_MIN + 1.0f,
+                ( float ) STEERING_COMMAND_MAX_VELOCITY_MAX );
 
         printf( "steering: %d\t%d\n", constrained_angle, constrained_rate );
 
         return_code = oscc_interface_command_steering( constrained_angle,
                                                        constrained_rate );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -630,7 +630,7 @@ int commander_init( int channel )
 
                 if ( return_code == UNAVAILABLE )
                 {
-                    (void) usleep( JOYSTICK_DELAY_INTERVAL );
+                    ( void ) usleep( JOYSTICK_DELAY_INTERVAL );
                 }
                 else if ( return_code == ERROR )
                 {
@@ -643,7 +643,7 @@ int commander_init( int channel )
             }
         }
     }
-    return ( return_code );
+    return return_code;
 }
 
 // *****************************************************

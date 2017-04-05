@@ -111,11 +111,11 @@ typedef struct
 
 
 //
-int update_system_state();
+int update_system_state( );
 
 
 //
-void print_system_state();
+void print_system_state( );
 
 
 

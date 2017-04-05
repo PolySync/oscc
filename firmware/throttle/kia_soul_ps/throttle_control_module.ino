@@ -40,9 +40,9 @@
 // show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
     #warning "PSYNC_DEBUG_FLAG defined"
-    #define DEBUG_PRINT(x)  Serial.println(x)
+    #define DEBUG_PRINT( x )  Serial.println( x )
 #else
-    #define DEBUG_PRINT(x)
+    #define DEBUG_PRINT( x )
 #endif
 
 // set CAN_CS to pin 10 for CAN
@@ -96,7 +96,7 @@ struct torque_spoof_t
 DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
 
 // construct the CAN shield object
-MCP_CAN CAN(CAN_CS);                            // Set CS pin for the CAN shield
+MCP_CAN CAN( CAN_CS );                          // Set CS pin for the CAN shield
 
 //
 static uint32_t last_update_ms;
@@ -304,11 +304,11 @@ static void publish_ps_ctrl_throttle_report( void )
 {
     // cast data
     ps_ctrl_throttle_report_msg * const data =
-            (ps_ctrl_throttle_report_msg*) tx_frame_ps_ctrl_throttle_report.data;
+            ( ps_ctrl_throttle_report_msg* ) tx_frame_ps_ctrl_throttle_report.data;
 
     // set frame ID
     tx_frame_ps_ctrl_throttle_report.id =
-            (uint32_t) (PS_CTRL_MSG_ID_THROTTLE_REPORT);
+            ( uint32_t ) ( PS_CTRL_MSG_ID_THROTTLE_REPORT );
 
     // set DLC
     tx_frame_ps_ctrl_throttle_report.dlc = 8;
@@ -324,7 +324,7 @@ static void publish_ps_ctrl_throttle_report( void )
         data->override = 1;
     }
 
-    data->enabled = (uint8_t) current_ctrl_state.control_enabled;
+    data->enabled = ( uint8_t ) current_ctrl_state.control_enabled;
 
     data->pedal_input = signal_L + signal_H;
     // Set Pedal Command (PC)
@@ -367,7 +367,7 @@ static void process_ps_ctrl_throttle_command(
 
     // cast control frame data
     const ps_ctrl_throttle_command_msg * const control_data =
-            (ps_ctrl_throttle_command_msg*) rx_frame_buffer;
+            ( ps_ctrl_throttle_command_msg* ) rx_frame_buffer;
 
     // enable control from the PolySync interface
     if( ( control_data->enabled == 1 ) &&
@@ -432,7 +432,7 @@ static void check_rx_timeouts( void )
     // get time since last receive
     get_update_time_delta_ms(
 			rx_frame_ps_ctrl_throttle_command.timestamp,
-			GET_TIMESTAMP_MS(),
+			GET_TIMESTAMP_MS( ),
 			&delta );
 
     // check rx timeout
@@ -508,7 +508,7 @@ void setup( )
 /* ================ LOOP ================ */
 /* ====================================== */
 
-void loop()
+void loop( )
 {
 
     // update the global system update timestamp, ms

@@ -57,7 +57,7 @@
  * @brief Button press debounce delay. [microseconds]
  *
  */
-#define BUTTON_PRESSED_DELAY (5000)
+#define BUTTON_PRESSED_DELAY ( 5000 )
 
 /**
  * @brief Invalid \ref joystick_device_s.handle value
@@ -152,7 +152,7 @@ static int joystick_init_subsystem( )
             return_code = ERROR;
         }
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -187,7 +187,7 @@ static int joystick_get_guid_at_index( unsigned long device_index )
                                    joystick_guid.ascii_string,
                                    sizeof( joystick_guid.ascii_string ) );
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -207,15 +207,15 @@ static int joystick_get_num_devices( )
 
     if ( joystick != NULL )
     {
-        num_joysticks = SDL_NumJoysticks();
+        num_joysticks = SDL_NumJoysticks( );
 
         if ( num_joysticks < 0 )
         {
-            printf( "ERROR: SDL_NumJoysticks - %s\n", SDL_GetError() );
+            printf( "ERROR: SDL_NumJoysticks - %s\n", SDL_GetError( ) );
             num_joysticks = ERROR;
         }
     }
-    return ( num_joysticks );
+    return num_joysticks;
 }
 
 
@@ -259,7 +259,7 @@ static double joystick_curve_fit( double input_min,
 
     output += output_min;   // normalize to output range
 
-    return ( output );
+    return output;
 }
 
 
@@ -271,7 +271,7 @@ static double joystick_curve_fit( double input_min,
 
 
 // *****************************************************
-// Function:    joystick_init_subsystem
+// Function:    joystick_init
 // 
 // Purpose:     Initialize the joystick subsystem
 // 
@@ -284,18 +284,18 @@ int joystick_init( )
 {
     int return_code = NOERR;
 
-    return_code = joystick_init_subsystem();
+    return_code = joystick_init_subsystem( );
 
     if ( return_code == ERROR )
     {
-        printf("init subsystem error\n");
+        printf( "init subsystem error\n" );
     }
     else
     {
         joystick = &joystick_data;
         joystick->handle = JOYSTICK_DEVICE_HANDLE_INVALID;
 
-        const int num_joysticks = joystick_get_num_devices();
+        const int num_joysticks = joystick_get_num_devices( );
 
         if ( num_joysticks > 0 )
         {
@@ -318,7 +318,7 @@ int joystick_init( )
             printf( "No joystick/devices available on the host\n" );
         }
     }
-
+    return return_code;
 }
 
 
@@ -342,7 +342,7 @@ int joystick_open( unsigned long device_index )
 
         if ( joystick->handle == JOYSTICK_DEVICE_HANDLE_INVALID )
         {
-            printf( "ERROR: SDL_JoystickOpen - %s\n", SDL_GetError() );
+            printf( "ERROR: SDL_JoystickOpen - %s\n", SDL_GetError( ) );
         }
         else
         {
@@ -362,12 +362,12 @@ int joystick_open( unsigned long device_index )
                                        sizeof( joystick_guid.ascii_string ) );
         }
     }
-    return ( return_code );
+    return return_code;
 }
 
 
 // *****************************************************
-// Function:    jstick_close
+// Function:    joystick_close
 // 
 // Purpose:     Close the joystick for use
 // 
@@ -392,7 +392,7 @@ void joystick_close( )
         joystick = NULL;
     }
     // Release the joystick subsystem
-    SDL_Quit();
+    SDL_Quit( );
 }
 
 
@@ -414,7 +414,7 @@ int joystick_update( )
     {
         if ( joystick->handle != JOYSTICK_DEVICE_HANDLE_INVALID )
         {
-            SDL_JoystickUpdate();
+            SDL_JoystickUpdate( );
 
             if ( SDL_JoystickGetAttached( joystick->handle ) == SDL_FALSE )
             {
@@ -426,7 +426,7 @@ int joystick_update( )
             }
         }
     }
-    return ( return_code );
+    return return_code;
 }
 
 
@@ -450,8 +450,8 @@ int joystick_get_axis( unsigned long axis_index, int * const position )
         return_code = NOERR;
 
         const Sint16 pos = SDL_JoystickGetAxis( joystick->handle,
-                                                (int) axis_index );
-        ( *position ) = (int) pos;
+                                                ( int ) axis_index );
+        ( *position ) = ( int ) pos;
     }
 
     return return_code;
@@ -479,7 +479,7 @@ int joystick_get_button( unsigned long button_index,
         return_code = NOERR;
 
         const Uint8 m_state = SDL_JoystickGetButton( joystick->handle,
-                                                     (int) button_index );
+                                                     ( int ) button_index );
 
         if ( m_state == 1 )
         {
@@ -532,7 +532,7 @@ double joystick_normalize_axis_position( const int position,
                                               output_max,
                                               ( double )position );
 
-    return ( output );
+    return output;
 }
 
 
@@ -560,7 +560,5 @@ double joystick_normalize_trigger_position( const int position,
         range_max,
         ( double )position );
 
-    return ( output );
+    return output;
 }
-
-
