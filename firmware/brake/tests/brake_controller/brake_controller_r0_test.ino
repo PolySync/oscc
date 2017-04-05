@@ -28,8 +28,10 @@
 // show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
     #warning "PSYNC_DEBUG_FLAG defined"
-    #define DEBUG_PRINT(x)  Serial.println(x)
+    #define DEBUG_PRINTLN(x)  Serial.println(x)
+    #define DEBUG_PRINT(x) Serial.print(x)
 #else
+    #define DEBUG_PRINTLN(x)
     #define DEBUG_PRINT(x)
 #endif
 
@@ -67,6 +69,11 @@ static can_frame_s tx_frame_ps_ctrl_brake_report;
 //
 static PID pidParams;
 
+int16_t PACC_reading;
+int16_t PFL_reading;
+int16_t PFR_reading;
+int16_t PMC1_reading;
+int16_t PMC2_reading;
 
 
 
@@ -223,22 +230,28 @@ struct Accumulator {
       digitalWrite(_controlPin, LOW);
     }
 
+    void readPumpPressure( )
+    {
+        PACC_reading = analogRead( _sensorPin );
+    }
+
     // maintain accumulator pressure
     void maintainPressure()
     {
-      _pressure = convertToVoltage(analogRead(_sensorPin));
+        readPumpPressure();
 
+        _pressure = convertToVoltage( PACC_reading );
 
-      if( _pressure < MIN_PACC )
-      {
-          pumpOn();
-          Serial.println(_pressure);
-      }
+        if( _pressure < MIN_PACC )
+        {
+            pumpOn();
+            Serial.println(_pressure);
+        }
 
-      if( _pressure > MAX_PACC )
-      {
-          pumpOff();
-      }
+        if( _pressure > MAX_PACC )
+        {
+            pumpOff();
+        }
     }
 };
 
@@ -275,14 +288,19 @@ struct SMC {
     void checkPedal()
     {
         // read pressures at sensors
-        _pressure1 = convertToVoltage(analogRead(_sensor1Pin));
-        _pressure2 = convertToVoltage(analogRead(_sensor2Pin));
+        PMC1_reading = analogRead( _sensor1Pin );
+        PMC2_reading = analogRead( _sensor2Pin );
+
+        _pressure1 = convertToVoltage( PMC1_reading );
+        _pressure2 = convertToVoltage( PMC2_reading );
 
         // if current pedal pressure is greater than limit, disable
         if (_pressure1 > PEDAL_THRESH || _pressure2 > PEDAL_THRESH )
         {
-            DEBUG_PRINT("Brake Pedal Detected");
-            DEBUG_PRINT(_pressure1);
+#if 0
+            DEBUG_PRINT("Brake Pedal Detected: ");
+            DEBUG_PRINTLN(_pressure1);
+#endif
             pressure_req = .48;
             local_override = 1;
             brakeStateMachine.transitionTo(Wait);
@@ -383,8 +401,11 @@ struct Brakes {
     // take a pressure reading
     void updatePressure()
     {
-      _pressureLeft = convertToVoltage( analogRead(_sensorPinLeft) );
-      _pressureRight = convertToVoltage( analogRead(_sensorPinRight) );
+        PFL_reading = analogRead( _sensorPinLeft );
+        PFR_reading = analogRead(_sensorPinRight);
+
+        _pressureLeft = convertToVoltage( PFL_reading );
+        _pressureRight = convertToVoltage( PFR_reading );
     }
 };
 
@@ -433,7 +454,7 @@ static void init_serial( void )
 #endif
 
     // Debug log
-    DEBUG_PRINT( "init_serial: pass" );
+    DEBUG_PRINTLN( "init_serial: pass" );
 }
 
 
@@ -448,7 +469,7 @@ static void init_can( void )
     }
 
     // Debug log
-    DEBUG_PRINT( "init_can: pass" );
+    DEBUG_PRINTLN( "init_can: pass" );
 }
 
 
@@ -463,31 +484,31 @@ void processSerialByte() {
 
     if (incomingSerialByte == 'p') {                  // reset
         pressure_req = .48;
-        DEBUG_PRINT("reset pressure request");
+        DEBUG_PRINTLN("reset pressure request");
     }
     if (incomingSerialByte == 'q') {                  // reset
         smc.solenoidsOpen();
-        DEBUG_PRINT("opened SMCs");
+        DEBUG_PRINTLN("opened SMCs");
     }
     if (incomingSerialByte == 'e') {                  // reset
         smc.solenoidsClose();
-        DEBUG_PRINT("closed SMCs");
+        DEBUG_PRINTLN("closed SMCs");
     }
     if (incomingSerialByte == 'z') {                  // reset
         brakes.depowerSLR();
-        DEBUG_PRINT("depower SLRs");
+        DEBUG_PRINTLN("depower SLRs");
     }
     if (incomingSerialByte == 'c') {                  // reset
         brakes.powerSLR(255);
-        DEBUG_PRINT("power SLRs");
+        DEBUG_PRINTLN("power SLRs");
     }
     if (incomingSerialByte == 'n') {                  // reset
         brakes.powerSLA(255);
-        DEBUG_PRINT("power SLAs");
+        DEBUG_PRINTLN("power SLAs");
     }
     if (incomingSerialByte == 'm') {                  // reset
         brakes.depowerSLA();
-        DEBUG_PRINT("depower SLAs");
+        DEBUG_PRINTLN("depower SLAs");
     }
     if (incomingSerialByte == 'u') {                  // reset
         Serial.println(accumulator._pressure);
@@ -508,7 +529,7 @@ void processSerialByte() {
 static void publish_ps_ctrl_brake_report( void )
 {
     // cast data
-    ps_ctrl_brake_report_msg * const data =
+    ps_ctrl_brake_report_msg * data =
             (ps_ctrl_brake_report_msg*) tx_frame_ps_ctrl_brake_report.data;
 
     // set frame ID
@@ -537,7 +558,6 @@ static void publish_timed_tx_frames( void )
 {
     // local vars
     uint32_t delta = 0;
-
 
     // get time since last publish
     get_update_time_delta_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
@@ -581,7 +601,7 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
     pressure_req = map(pedal_command, 0, 65535, 48, 230); // map to voltage range
     pressure_req = pressure_req / 100;
     DEBUG_PRINT("pressure_req: ");
-    DEBUG_PRINT(pressure_req);
+    DEBUG_PRINTLN(pressure_req);
 
 
 }
@@ -598,10 +618,21 @@ static void process_psvc_chassis_state1( const uint8_t * const rx_frame_buffer )
     brakes.updatePressure();
 
     // average the pressure of the rear and front lines
-    float pressure = ( brakes._pressureLeft + brakes._pressureRight ) / 2;
-    DEBUG_PRINT(pressure);
-    DEBUG_PRINT(",");
-    DEBUG_PRINT(brake_pressure);
+//    float pressure = ( brakes._pressureLeft + brakes._pressureRight ) / 2;
+//    DEBUG_PRINT(pressure);
+//    DEBUG_PRINT(",");
+    DEBUG_PRINT( "CAN," );
+    DEBUG_PRINT( brake_pressure );
+    DEBUG_PRINT( ",PACC," );
+    DEBUG_PRINT( PACC_reading );
+    DEBUG_PRINT( ",PFL," );
+    DEBUG_PRINT( PFL_reading );
+    DEBUG_PRINT( ",PFR," );
+    DEBUG_PRINT( PFR_reading );
+    DEBUG_PRINT( ",PMC1," );
+    DEBUG_PRINT( PMC1_reading );
+    DEBUG_PRINT( ",PMC2," );
+    DEBUG_PRINTLN( PMC2_reading );
 }
 
 
@@ -654,7 +685,7 @@ void waitEnter()
     brakes.depowerSLA();
     brakes.depowerSLR();
 
-    DEBUG_PRINT( "Entered wait state" );
+    DEBUG_PRINTLN( "Entered wait state" );
 }
 
 void waitUpdate()
@@ -681,7 +712,7 @@ void brakeEnter() {
     // close SLRRs, they are normally open for failsafe conditions
     brakes.depowerSLR();
 
-    DEBUG_PRINT("entered brake state");
+    DEBUG_PRINTLN("entered brake state");
 }
 
 void brakeUpdate()
@@ -753,7 +784,7 @@ void brakeUpdate()
         // if driver is not braking, transition to wait state
         if( pressure_req <= ZERO_PRESSURE)
         {
-            DEBUG_PRINT("pressure request below threshold");
+            DEBUG_PRINTLN("pressure request below threshold");
             brakeStateMachine.transitionTo( Wait );
         }
     }
@@ -829,7 +860,7 @@ void setup( void )
 
     init_serial();
 
-    //init_can();
+    init_can();
 
     //publish_ps_ctrl_brake_report();
 
@@ -843,7 +874,7 @@ void setup( void )
     pid_zeroize( &pidParams,  BRAKE_PID_WINDUP_GUARD );
 
     // debug log
-    DEBUG_PRINT( "init: pass" );
+    DEBUG_PRINTLN( "init: pass" );
 
 }
 
@@ -853,12 +884,14 @@ void loop()
     // update the global system update timestamp, ms
     //last_update_ms = GET_TIMESTAMP_MS();
 
-    //handle_ready_rx_frames();
-
-    //publish_timed_tx_frames();
-
     // check pressures on master cylinder (pressure from pedal)
-    //smc.checkPedal();
+    smc.checkPedal();
+
+    accumulator.readPumpPressure();
+
+    handle_ready_rx_frames();
+
+    publish_timed_tx_frames();
 
     // read and parse incoming serial commands
     if( Serial.available() > 0 )
