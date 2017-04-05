@@ -59,7 +59,6 @@ void init_serial( )
     DEBUG_PRINT( "init_serial: pass" );
 }
 
-
 // *****************************************************
 // Function:    init_can
 //
@@ -111,7 +110,6 @@ uint32_t timer_delta_ms( uint32_t last_time )
     return ( delta );
 }
 
-
 // *****************************************************
 // Function:    timer_delta_us
 //
@@ -146,7 +144,6 @@ uint32_t timer_delta_us( uint32_t last_time, uint32_t* current_time )
 
     return ( delta );
 }
-
 
 /* ====================================== */
 /* ============== CONTROL =============== */
@@ -206,7 +203,7 @@ void enable_control( )
 
     int16_t status = average_samples( num_samples, averages );
 
-    if ( SUCCESS == status )
+    if ( status == SUCCESS )
     {
         // Write measured torque values to DAC to avoid a signal
         // discontinuity when the SCM takes over
@@ -272,7 +269,6 @@ void do_dac_output( struct torque_spoof_t* torque_spoof )
     dac.outputA( torque_spoof->low );
     dac.outputB( torque_spoof->high );
 }
-
 
 // *****************************************************
 // Function:    check_driver_steering_override
@@ -351,7 +347,6 @@ bool check_driver_steering_override( )
     return ( override );
 }
 
-
 // *****************************************************
 // Function:    calculate_torque_spoof
 //
@@ -376,7 +371,6 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof )
 /* ====================================== */
 /* =========== COMMUNICATIONS =========== */
 /* ====================================== */
-
 
 // *****************************************************
 // Function:    publish_ps_ctrl_steering_report
@@ -428,7 +422,6 @@ void publish_ps_ctrl_steering_report( )
                     tx_frame_ps_ctrl_steering_report.data );
 }
 
-
 // *****************************************************
 // Function:    publish_timed_tx_frames
 //
@@ -450,7 +443,6 @@ void publish_timed_tx_frames( )
         publish_ps_ctrl_steering_report( );
     }
 }
-
 
 // *****************************************************
 // Function:    process_ps_ctrl_steering_command
@@ -489,7 +481,6 @@ void process_ps_ctrl_steering_command(
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 }
 
-
 // *****************************************************
 // Function:    process_psvc_chassis_state1
 //
@@ -510,7 +501,6 @@ void process_psvc_chassis_state1(
     // Convert from 40 degree range to 470 degree range in 1 degree increments
     current_ctrl_state.current_steering_angle *= 11.7;
 }
-
 
 // *****************************************************
 // Function:    handle_ready_rx_frames
@@ -549,7 +539,6 @@ void handle_ready_rx_frames( )
     }
 }
 
-
 // *****************************************************
 // Function:    check_rx_timeouts
 //
@@ -572,4 +561,3 @@ void check_rx_timeouts( )
         disable_control( );
     }
 }
-

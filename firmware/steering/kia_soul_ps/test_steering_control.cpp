@@ -68,7 +68,7 @@ bool test_pid_values( PID &pid_params, current_control_state &current_ctrl_state
     	DEBUG_PRINT( "Default PID values have been changed." );
     	DEBUG_PRINT( "This can cause vehicle faults." );
     	DEBUG_PRINT( "Return the values to their default or proceed at your own risk." );
-        DEBUG_PRINT( "***************************************************************" );
+    	DEBUG_PRINT( "***************************************************************" );
     }
     return return_code;
 }

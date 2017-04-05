@@ -47,6 +47,8 @@
     #define STATIC static
 #endif
 
+bool test_code = false;
+
 /* ====================================== */
 /* ================ SETUP =============== */
 /* ====================================== */
@@ -114,7 +116,7 @@ void setup( )
     // debug log
     DEBUG_PRINT( "init: pass" );
 
-    test_pid_values( pid_params, current_ctrl_state );
+    test_code = test_pid_values( pid_params, current_ctrl_state );
 }
 
 
@@ -137,94 +139,101 @@ void setup( )
 // *****************************************************
 void loop( )
 {
-    // checks for CAN frames, if yes, updates state variables
-    handle_ready_rx_frames( );
+	if( test_code == false )
+	{
+		exit( 0 );
+	}
+	else
+	{
+	    // checks for CAN frames, if yes, updates state variables
+	    handle_ready_rx_frames( );
 
-    // publish all report CAN frames
-    publish_timed_tx_frames( );
+	    // publish all report CAN frames
+	    publish_timed_tx_frames( );
 
-    // check all timeouts
-    check_rx_timeouts( );
+	    // check all timeouts
+	    check_rx_timeouts( );
 
-    uint32_t current_timestamp_us;
+	    uint32_t current_timestamp_us;
 
-    uint32_t deltaT = timer_delta_us( current_ctrl_state.timestamp_us,
-                                      &current_timestamp_us );
+	    uint32_t deltaT = timer_delta_us( current_ctrl_state.timestamp_us,
+	                                      &current_timestamp_us );
 
-    if ( deltaT > 50000 )
-    {
+	    if ( deltaT > 50000 )
+	    {
 
-        current_ctrl_state.timestamp_us = current_timestamp_us;
+	        current_ctrl_state.timestamp_us = current_timestamp_us;
 
-        bool override = check_driver_steering_override( );
+	        bool override = check_driver_steering_override( );
 
-        if ( override == true )
-        {
-            current_ctrl_state.override_flag.wheel = 1;
-            disable_control( );
-        }
-        else if ( current_ctrl_state.control_enabled == true )
-        {
+	        if ( override == true )
+	        {
+	            current_ctrl_state.override_flag.wheel = 1;
+	            disable_control( );
+	        }
+	        else if ( current_ctrl_state.control_enabled == true )
+	        {
 
-/*******************************************************************************
-*   WARNING
-*
-*   The ranges selected to do steering control are carefully tested to
-*   ensure that a torque is not requested that the vehicles steering motor
-*   cannot handle. By changing any of this code you risk attempting to actuate
-*   a torque outside of the vehicles valid range. Actuating a torque outside of
-*   the vehicles valid range will, at best, cause the vehicle to go into an
-*   unrecoverable fault state. Clearing this fault state requires one of Kia's
-*   native diagnostics tools, and someone who knows how to clear DTC codes with
-*   said tool.
-*
-*   It is NOT recommended to modify any of the existing control ranges, or
-*   gains, without expert knowledge.
-*******************************************************************************/
+	/*******************************************************************************
+	*   WARNING
+	*
+	*   The ranges selected to do steering control are carefully tested to
+	*   ensure that a torque is not requested that the vehicles steering motor
+	*   cannot handle. By changing any of this code you risk attempting to actuate
+	*   a torque outside of the vehicles valid range. Actuating a torque outside of
+	*   the vehicles valid range will, at best, cause the vehicle to go into an
+	*   unrecoverable fault state. Clearing this fault state requires one of Kia's
+	*   native diagnostics tools, and someone who knows how to clear DTC codes with
+	*   said tool.
+	*
+	*   It is NOT recommended to modify any of the existing control ranges, or
+	*   gains, without expert knowledge.
+	*******************************************************************************/
 
-            // Calculate steering angle rates (degrees/microsecond)
-            double steering_angle_rate =
-                ( current_ctrl_state.current_steering_angle -
-                  current_ctrl_state.steering_angle_last ) / 0.05;
+	            // Calculate steering angle rates (degrees/microsecond)
+	            double steering_angle_rate =
+	                ( current_ctrl_state.current_steering_angle -
+	                  current_ctrl_state.steering_angle_last ) / 0.05;
 
-            double steering_angle_rate_target =
-                ( current_ctrl_state.commanded_steering_angle -
-                  current_ctrl_state.current_steering_angle ) / 0.05;
+	            double steering_angle_rate_target =
+	                ( current_ctrl_state.commanded_steering_angle -
+	                  current_ctrl_state.current_steering_angle ) / 0.05;
 
-            // Save the angle for next iteration
-            current_ctrl_state.steering_angle_last =
-                current_ctrl_state.current_steering_angle;
+	            // Save the angle for next iteration
+	            current_ctrl_state.steering_angle_last =
+	                current_ctrl_state.current_steering_angle;
 
-            steering_angle_rate_target =
-                constrain( ( double )steering_angle_rate_target,
-                           ( double )-current_ctrl_state.steering_angle_rate_max,
-                           ( double )current_ctrl_state.steering_angle_rate_max );
+	            steering_angle_rate_target =
+	                constrain( ( double )steering_angle_rate_target,
+	                           ( double )-current_ctrl_state.steering_angle_rate_max,
+	                           ( double )current_ctrl_state.steering_angle_rate_max );
 
-            pid_update(
-                    &pid_params,
-                    steering_angle_rate_target,
-                    steering_angle_rate,
-                    0.050 );
+	            pid_update(
+	                    &pid_params,
+	                    steering_angle_rate_target,
+	                    steering_angle_rate,
+	                    0.050 );
 
-            double control = pid_params.control;
+	            double control = pid_params.control;
 
-            control = constrain( ( float ) control,
-                                 ( float ) -1500.0f,
-                                 ( float ) 1500.0f );
+	            control = constrain( ( float ) control,
+	                                 ( float ) -1500.0f,
+	                                 ( float ) 1500.0f );
 
-            struct torque_spoof_t torque_spoof;
+	            struct torque_spoof_t torque_spoof;
 
-            calculate_torque_spoof( control, &torque_spoof );
+	            calculate_torque_spoof( control, &torque_spoof );
 
-            torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
+	            torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
 
-            do_dac_output( &torque_spoof );
-        }
-        else
-        {
-            current_ctrl_state.override_flag.wheel = 0;
+	            do_dac_output( &torque_spoof );
+	        }
+	        else
+	        {
+	            current_ctrl_state.override_flag.wheel = 0;
 
-            pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
-        }
-    }
+	            pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
+	        }
+	    }
+	}
 }
