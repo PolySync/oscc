@@ -37,6 +37,52 @@
     #define STATIC static
 #endif
 
+DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
+
+// Construct the CAN shield object
+MCP_CAN CAN( CAN_CS );                          // Set CS pin for the CAN shield
+
+// *****************************************************
+// Function:    init_serial
+//
+// Purpose:     Initializes the serial port communication
+//
+// Returns:     void
+//
+// Parameters:  None
+//
+// *****************************************************
+void init_serial( )
+{
+    Serial.begin( SERIAL_BAUD );
+
+    DEBUG_PRINT( "init_serial: pass" );
+}
+
+
+// *****************************************************
+// Function:    init_can
+//
+// Purpose:     Initializes the CAN communication
+//              Function must iterate while the CAN module initializes
+//
+// Returns:     void
+//
+// Parameters:  None
+//
+// *****************************************************
+void init_can ( void )
+{
+    while ( CAN.begin( CAN_BAUD ) != CAN_OK )
+    {
+        DEBUG_PRINT( "init_can: retrying" );
+
+        delay( CAN_INIT_RETRY_DELAY );
+    }
+
+    DEBUG_PRINT( "init_can: pass" );
+}
+
 // *****************************************************
 // Function:    timer_delta_ms
 //
@@ -209,6 +255,22 @@ void disable_control( )
     digitalWrite( SPOOF_ENGAGE, LOW );
 
     DEBUG_PRINT( "Control disabled" );
+}
+
+// *****************************************************
+// Function:    do_dac_output
+//
+// Purpose:     Set dac output to torque spoof values
+//
+// Returns:     void
+//
+// Parameters:  [in] torque_spoof - the spoofed torque struct
+//
+// *****************************************************
+void do_dac_output( struct torque_spoof_t* torque_spoof )
+{
+    dac.outputA( torque_spoof->low );
+    dac.outputB( torque_spoof->high );
 }
 
 

@@ -47,53 +47,9 @@
     #define STATIC static
 #endif
 
-
-// *****************************************************
-// Function:    init_serial
-//
-// Purpose:     Initializes the serial port communication
-//
-// Returns:     void
-//
-// Parameters:  None
-//
-// *****************************************************
-STATIC void init_serial( )
-{
-    Serial.begin( SERIAL_BAUD );
-
-    DEBUG_PRINT( "init_serial: pass" );
-}
-
-
-// *****************************************************
-// Function:    init_can
-//
-// Purpose:     Initializes the CAN communication
-//              Function must iterate while the CAN module initializes
-//
-// Returns:     void
-//
-// Parameters:  None
-//
-// *****************************************************
-STATIC void init_can ( void )
-{
-    while ( CAN.begin( CAN_BAUD ) != CAN_OK )
-    {
-        DEBUG_PRINT( "init_can: retrying" );
-
-        delay( CAN_INIT_RETRY_DELAY );
-    }
-
-    DEBUG_PRINT( "init_can: pass" );
-}
-
 /* ====================================== */
 /* ================ SETUP =============== */
 /* ====================================== */
-
-
 
 // *****************************************************
 // Function:    setup
@@ -262,8 +218,7 @@ void loop( )
 
             torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
 
-            dac.outputA( torque_spoof.low );
-            dac.outputB( torque_spoof.high );
+            do_dac_output( &torque_spoof );
         }
         else
         {

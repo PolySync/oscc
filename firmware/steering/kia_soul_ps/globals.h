@@ -45,29 +45,14 @@
 #define EXTERN extern
 #endif
 
-EXTERN DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
-
-// Construct the CAN shield object
-EXTERN MCP_CAN CAN( CAN_CS );                          // Set CS pin for the CAN shield
-
-
-//
 EXTERN can_frame_s rx_frame_ps_ctrl_steering_command;
 
-
-//
 EXTERN can_frame_s tx_frame_ps_ctrl_steering_report;
 
-
-//
 EXTERN current_control_state current_ctrl_state;
 
-
-//
 EXTERN PID pid_params;
 
-
-//
 EXTERN uint8_t torque_sum;
 
 struct torque_spoof_t

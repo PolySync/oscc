@@ -73,6 +73,26 @@
 #define SUCCESS                         ( 1 )
 
 // *****************************************************
+// Function:    init_serial
+//
+// Returns:     void
+//
+// Parameters:  None
+//
+// *****************************************************
+void init_serial( );
+
+// *****************************************************
+// Function:    init_can
+//
+// Returns:     void
+//
+// Parameters:  None
+//
+// *****************************************************
+void init_can ( void );
+
+// *****************************************************
 // Function:    timer_delta_ms
 //
 // Returns:     uint32_t the time delta between the two inputs
@@ -124,6 +144,16 @@ void enable_control( );
 //
 // *****************************************************
 void disable_control( );
+
+// *****************************************************
+// Function:    do_dac_output
+//
+// Returns:     void
+//
+// Parameters:  [in] torque_spoof - the spoofed torque struct
+//
+// *****************************************************
+void do_dac_output( struct torque_spoof_t* torque_spoof );
 
 // *****************************************************
 // Function:    check_driver_steering_override
