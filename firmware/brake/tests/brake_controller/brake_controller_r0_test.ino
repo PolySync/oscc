@@ -63,7 +63,7 @@ static can_frame_s rx_frame_ps_ctrl_brake_command;
 
 
 //
-//static can_frame_s tx_frame_ps_ctrl_brake_report;
+static can_frame_s tx_frame_ps_ctrl_brake_report;
 
 
 //
@@ -83,25 +83,25 @@ int16_t PMC2_reading;
 
 
 // uses last_update_ms, corrects for overflow condition
-//static void get_update_time_delta_ms(
-//                const uint32_t * const time_in,
-//                        uint32_t * const delta_out )
-//{
-//    // check for overflow
-//    if( last_update_ms < (*time_in) )
-//    {
-//            // time remainder, prior to the overflow
-//            (*delta_out) = (UINT32_MAX - (*time_in));
-//
-//            // add time since zero
-//            (*delta_out) += last_update_ms;
-//        }
-//    else
-//    {
-//            // normal delta
-//            (*delta_out) = (last_update_ms - (*time_in));
-//        }
-//}
+static void get_update_time_delta_ms(
+                const uint32_t * const time_in,
+                        uint32_t * const delta_out )
+{
+    // check for overflow
+    if( last_update_ms < (*time_in) )
+    {
+            // time remainder, prior to the overflow
+            (*delta_out) = (UINT32_MAX - (*time_in));
+
+            // add time since zero
+            (*delta_out) += last_update_ms;
+        }
+    else
+    {
+            // normal delta
+            (*delta_out) = (last_update_ms - (*time_in));
+        }
+}
 
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids )
 // pins are not perfectly sequential because the clock frequency of certain pins is different.
@@ -239,7 +239,6 @@ struct Accumulator {
     void maintainPressure()
     {
         readPumpPressure();
-//        PACC_reading = analogRead( _sensorPin );
 
         _pressure = convertToVoltage( PACC_reading );
 
@@ -298,8 +297,10 @@ struct SMC {
         // if current pedal pressure is greater than limit, disable
         if (_pressure1 > PEDAL_THRESH || _pressure2 > PEDAL_THRESH )
         {
-//            DEBUG_PRINT("Brake Pedal Detected: ");
-//            DEBUG_PRINTLN(_pressure1);
+#if 0
+            DEBUG_PRINT("Brake Pedal Detected: ");
+            DEBUG_PRINTLN(_pressure1);
+#endif
             pressure_req = .48;
             local_override = 1;
             brakeStateMachine.transitionTo(Wait);
@@ -525,50 +526,49 @@ void processSerialByte() {
 
 
 //
-//static void publish_ps_ctrl_brake_report( void )
-//{
-//    // cast data
-//    ps_ctrl_brake_report_msg * const data =
-//            (ps_ctrl_brake_report_msg*) tx_frame_ps_ctrl_brake_report.data;
-//
-//    // set frame ID
-//    tx_frame_ps_ctrl_brake_report.id = (uint32_t) (PS_CTRL_MSG_ID_BRAKE_REPORT);
-//
-//    // set DLC
-//    tx_frame_ps_ctrl_brake_report.dlc = 8; //TODO
-//
-//    // Set override flag
-//    data->override = local_override;
-//
-//    // publish to control CAN bus
-//    CAN.sendMsgBuf(
-//            tx_frame_ps_ctrl_brake_report.id,
-//            0, // standard ID (not extended)
-//            tx_frame_ps_ctrl_brake_report.dlc,
-//            tx_frame_ps_ctrl_brake_report.data );
-//
-//    // update last publish timestamp, ms
-//    tx_frame_ps_ctrl_brake_report.timestamp = last_update_ms;
-//}
+static void publish_ps_ctrl_brake_report( void )
+{
+    // cast data
+    ps_ctrl_brake_report_msg * data =
+            (ps_ctrl_brake_report_msg*) tx_frame_ps_ctrl_brake_report.data;
+
+    // set frame ID
+    tx_frame_ps_ctrl_brake_report.id = (uint32_t) (PS_CTRL_MSG_ID_BRAKE_REPORT);
+
+    // set DLC
+    tx_frame_ps_ctrl_brake_report.dlc = 8; //TODO
+
+    // Set override flag
+    data->override = local_override;
+
+    // publish to control CAN bus
+    CAN.sendMsgBuf(
+            tx_frame_ps_ctrl_brake_report.id,
+            0, // standard ID (not extended)
+            tx_frame_ps_ctrl_brake_report.dlc,
+            tx_frame_ps_ctrl_brake_report.data );
+
+    // update last publish timestamp, ms
+    tx_frame_ps_ctrl_brake_report.timestamp = last_update_ms;
+}
 
 
 //
-//static void publish_timed_tx_frames( void )
-//{
-//    // local vars
-//    uint32_t delta = 0;
-//
-//
-//    // get time since last publish
-//    get_update_time_delta_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
-//
-//    // check publish interval
-//    if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
-//    {
-//        // publish frame, update timestamp
-//        publish_ps_ctrl_brake_report();
-//    }
-//}
+static void publish_timed_tx_frames( void )
+{
+    // local vars
+    uint32_t delta = 0;
+
+    // get time since last publish
+    get_update_time_delta_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
+
+    // check publish interval
+    if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
+    {
+        // publish frame, update timestamp
+        publish_ps_ctrl_brake_report();
+    }
+}
 
 uint16_t map_uint16(uint16_t x, uint16_t in_min, uint16_t in_max, uint16_t out_min, uint16_t out_max);
 
@@ -891,7 +891,7 @@ void loop()
 
     handle_ready_rx_frames();
 
-    //publish_timed_tx_frames();
+    publish_timed_tx_frames();
 
     // read and parse incoming serial commands
     if( Serial.available() > 0 )
