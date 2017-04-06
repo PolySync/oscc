@@ -44,9 +44,14 @@
 // Constants
 // *****************************************************
 
-const float MIN_ACCUMULATOR_PRESSURE = 2.1;              // min accumulator pressure to maintain
-const float MAX_ACCUMULATOR_PRESSURE = 2.3;              // max accumulator pressure to maintain
-const float PEDAL_THRESHOLD = 0.6;       // Pressure for pedal interference
+// All pressures are in tenths of a bar (decibars) to match
+// the values coming from the vehicle
+//const float MIN_ACCUMULATOR_PRESSURE = 2.1;              // min accumulator pressure to maintain
+const float MIN_ACCUMULATOR_PRESSURE = 777.6;   // min pressure to maintain (decibars)
+//const float MAX_ACCUMULATOR_PRESSURE = 2.3;               // max accumulator pressure to maintain (bar)
+const float MAX_ACCUMULATOR_PRESSURE = 878.3;   // max pressure to maintain (decibars)
+//const float PEDAL_THRESHOLD = 0.6;       // Pressure for pedal interference
+const float PEDAL_THRESHOLD = 43.2;             // Pedal pressure for driver override
 
 // *****************************************************
 // static global data/macros
@@ -56,6 +61,7 @@ const float PEDAL_THRESHOLD = 0.6;       // Pressure for pedal interference
 
 // ms
 #define PS_CTRL_RX_WARN_TIMEOUT (150)
+#define BRAKE_CONTROL_LOOP_INTERVAL (10)
 
 #define BRAKE_PID_WINDUP_GUARD (500)
 
@@ -241,7 +247,7 @@ void init_can( void )
 //              1) Normalize the input in the range from 0 to 1
 //              2) Scale the output over the range defined by the output min
 //                 and max values
-//              3) Transform the final result between the output range
+//              3) Translate the final result into the output range
 //
 // Returns:     float output
 //
@@ -292,20 +298,35 @@ uint32_t timer_delta_ms( uint32_t last_time )
 
 
 // *****************************************************
-// Function:    raw_adc_to_voltage
+// Function:    raw_adc_to_pressure
 // 
 // Purpose:     Convert the raw ADC reading (0 - 1023)
-//              to a pressure (0 - 5V)
+//              to a pressure between 1.2 - 90.0 bar
+//
+//              Pressures are measured in tenths of a bar (decibars)
+//              to match the values used on the vehicle; the range is
+//              actually 12.0 - 900.0 decibars
+//
+//              pressure = m( raw adc ) + b
+//
+//              Empirically determined:
+//              m = 2.4
+//              b = -252.1
+//
+//              pressure = 2.4 * ( raw adc bits ) - 252.1
 // 
 // Returns:     float - pressure
 // 
 // Parameters:  input - raw ADC reading 
 // 
 // *****************************************************
-float raw_adc_to_voltage( int16_t input )
+float raw_adc_to_pressure( uint16_t input )
 {
-    float voltage = ( ( float )input * ( 5.0 / 1023.0 ) );
-    return voltage;
+    float pressure = ( float )input;
+    pressure *= 2.4;
+    pressure -= 252.1;
+
+    return ( pressure );
 }
 
 
@@ -358,11 +379,12 @@ void accumulator_maintain_pressure( )
 {
     const float accumulator_alpha = 0.05;
 
-    int16_t raw_accumulator_data = analogRead( PIN_PACC );
+    uint16_t raw_accumulator_data = analogRead( PIN_PACC );
 
-    float pressure = raw_adc_to_voltage( raw_accumulator_data );
+    float pressure = raw_adc_to_pressure( raw_accumulator_data );
 
-    accumulator.pressure = ( accumulator_alpha * pressure ) +
+    accumulator.pressure =
+        ( accumulator_alpha * pressure ) +
         ( ( 1.0 - accumulator_alpha ) * accumulator.pressure );
 
     if ( accumulator.pressure < MIN_ACCUMULATOR_PRESSURE )
@@ -492,10 +514,10 @@ void brake_lights_on( )
 // 
 // Returns:     void
 // 
-// Parameters:  int16_t - duty_cycle - value to send to the PWM
+// Parameters:  uint16_t - duty_cycle - value to send to the PWM
 // 
 // *****************************************************
-void brake_command_actuator_solenoids( int16_t duty_cycle )
+void brake_command_actuator_solenoids( uint16_t duty_cycle )
 {
     analogWrite( PIN_SLAFL, duty_cycle );
     analogWrite( PIN_SLAFR, duty_cycle );
@@ -510,10 +532,10 @@ void brake_command_actuator_solenoids( int16_t duty_cycle )
 // 
 // Returns:     void
 // 
-// Parameters:  int16_t - duty_cycle - value to send to the PWM
+// Parameters:  uint16_t - duty_cycle - value to send to the PWM
 // 
 // *****************************************************
-void brake_command_release_solenoids( int16_t duty_cycle )
+void brake_command_release_solenoids( uint16_t duty_cycle )
 {
     analogWrite( PIN_SLRFL, duty_cycle );
     analogWrite( PIN_SLRFR, duty_cycle );
@@ -608,8 +630,8 @@ void brake_check_driver_override( )
     float sensor_1 = ( float )( analogRead( PIN_PMC1 ) );
     float sensor_2 = ( float )( analogRead( PIN_PMC2 ) );
 
-    sensor_1 = raw_adc_to_voltage( sensor_1 );
-    sensor_2 = raw_adc_to_voltage( sensor_2 );
+    sensor_1 = raw_adc_to_pressure( ( uint16_t )sensor_1 );
+    sensor_2 = raw_adc_to_pressure( ( uint16_t )sensor_2 );
 
     filtered_input_1 = ( filter_alpha * sensor_1 ) +
         ( ( 1.0 - filter_alpha ) * filtered_input_1 );
@@ -645,8 +667,8 @@ void brake_update_pressure( )
     uint16_t raw_left_pressure = analogRead( PIN_PFL );
     uint16_t raw_right_pressure = analogRead( PIN_PFR );
 
-    float pressure_left = raw_adc_to_voltage( raw_left_pressure );
-    float pressure_right = raw_adc_to_voltage( raw_right_pressure );
+    float pressure_left = raw_adc_to_pressure( raw_left_pressure );
+    float pressure_right = raw_adc_to_pressure( raw_right_pressure );
 
     brakes.pressure = ( pressure_left + pressure_right ) / 2;
 }
@@ -871,13 +893,13 @@ void brake_update( )
     // ************************************************************************
 
     static struct interpolate_range_s pressure_ranges =
-        { 0.0, UINT16_MAX, 0.48, 2.3 };
+        { 0.0, UINT16_MAX, 12.0, 878.3 };
 
     pressure = brakes.pressure;
 
     pressure_target = interpolate( brakes.pedal_command, &pressure_ranges );
 
-    int16_t ret = pid_update( &pid_params, pressure_target, pressure, 0.050 );
+    int16_t ret = pid_update( &pid_params, pressure_target, pressure, 0.01 );
 
     if ( ret == PID_SUCCESS )
     {
@@ -888,13 +910,18 @@ void brake_update( )
             static struct interpolate_range_s slr_ranges =
                 { 0.0, 0.5, SLR_DUTY_CYCLE_MIN, SLR_DUTY_CYCLE_MAX };
 
-            int16_t slr_duty_cycle = 0;
+            uint16_t slr_duty_cycle = 0;
 
             // pressure is too high
             brake_command_actuator_solenoids( 0 );
 
             pid_output = -pid_output;
-            slr_duty_cycle = (int16_t)interpolate( pid_output, &slr_ranges );
+            slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
+
+            if ( slr_duty_cycle > ( uint16_t )SLR_DUTY_CYCLE_MAX )
+            {
+                slr_duty_cycle = ( uint16_t )SLR_DUTY_CYCLE_MAX;
+            }
 
             brake_command_release_solenoids( slr_duty_cycle );
         }
@@ -903,14 +930,19 @@ void brake_update( )
             static struct interpolate_range_s sla_ranges =
                 { 0.0, 0.5, SLA_DUTY_CYCLE_MIN, SLA_DUTY_CYCLE_MAX };
 
-            int16_t sla_duty_cycle = 0;
+            uint16_t sla_duty_cycle = 0;
 
             brake_lights_on();
 
             // pressure is too low
             brake_command_release_solenoids( 0 );
 
-            sla_duty_cycle = (int16_t)interpolate( pid_output, &sla_ranges );
+            sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
+
+            if ( sla_duty_cycle > ( uint16_t )SLA_DUTY_CYCLE_MAX )
+            {
+                sla_duty_cycle = ( uint16_t )SLA_DUTY_CYCLE_MAX;
+            }
 
             brake_command_actuator_solenoids( sla_duty_cycle );
         }
@@ -993,9 +1025,9 @@ void setup( void )
     // Initialize PID params
     pid_zeroize( &pid_params, BRAKE_PID_WINDUP_GUARD );
 
-    pid_params.proportional_gain = 10.0;
-    pid_params.integral_gain = 1.5;
-    pid_params.derivative_gain = 0.50;
+    pid_params.proportional_gain = 1.0;
+    pid_params.integral_gain = 0.5;
+    pid_params.derivative_gain = 0.5;
 
     DEBUG_PRINT( "init: pass" );
 }
@@ -1044,7 +1076,15 @@ void loop( )
 
     if ( brakes.enable == true )
     {
-        brake_update( );
+        static uint32_t control_loop_time = 0;
+
+        uint32_t loop_delta_t = timer_delta_ms( control_loop_time );
+
+        if ( loop_delta_t > BRAKE_CONTROL_LOOP_INTERVAL )
+        {
+            control_loop_time = millis();
+            brake_update( );
+        }
     }
 }
 
