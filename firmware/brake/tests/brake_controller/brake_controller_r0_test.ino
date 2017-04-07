@@ -838,7 +838,7 @@ void process_serial_byte( uint8_t incoming_byte )
 
             break;
 
-        case '.':
+        case ',':
 
             brake_command_release_solenoids( 0 );
 
