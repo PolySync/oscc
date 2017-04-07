@@ -2,7 +2,7 @@
 /* The MIT License (MIT)                                                */
 /* =====================                                                */
 /*                                                                      */
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation       */
@@ -26,75 +26,55 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/* 
- * File:   PID.h
- *
- */
 
-#ifndef PID_H
-#define PID_H
+/**
+* @file throttle_module_state.h
+* @brief Throttle module state.
+*
+**/
+
+
+
+
+#ifndef THROTTLE_MODULE_STATE_H
+#define THROTTLE_MODULE_STATE_H
+
+
+
+
+#include <stdint.h>
 
 
 
 
 /**
- * @brief Math macro: constrain(amount, low, high).
+ * @brief Throttle module state information.
+ *
+ * Contains state information for the throttle module.
  *
  */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-
-/**
- * @brief Error in PID calculation.
- *
- */
-#define PID_ERROR 1
-
-/**
- * @brief Success in PID calculation.
- *
- */
-#define PID_SUCCESS 0
-
-
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
-
-typedef struct 
+typedef struct
 {
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_input;
-    double int_error;
-    double control;
-    double prev_steering_angle;
-} PID;
+    //
+    //
+    uint8_t module_state;
+    //
+    //
+    uint8_t control_state;
+    //
+    //
+    uint8_t override_triggered;
+} throttle_module_state_s;
 
 
 
 
-int pid_update( PID* pid, double setpoint, double input, double dt );
-
-
-void pid_zeroize( PID* pid, double integral_windup_guard );
-
-
-
-
-#ifdef __cplusplus
-}
-#endif
- 
+int analyze_throttle_state(
+        throttle_module_state_s * const state,
+        const can_frame_s * const throttle_command_frame,
+        const can_frame_s * const throttle_report_frame );
 
 
 
-#endif /* PID_H */
 
-
+#endif /* THROTTLE_MODULE_STATE_H */

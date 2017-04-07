@@ -2,7 +2,7 @@
 /* The MIT License (MIT)                                                */
 /* =====================                                                */
 /*                                                                      */
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation       */
@@ -26,75 +26,93 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/* 
- * File:   PID.h
- *
- */
-
-#ifndef PID_H
-#define PID_H
-
-
-
 
 /**
- * @brief Math macro: constrain(amount, low, high).
- *
- */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-
-/**
- * @brief Error in PID calculation.
- *
- */
-#define PID_ERROR 1
-
-/**
- * @brief Success in PID calculation.
- *
- */
-#define PID_SUCCESS 0
+* @file brake_module_state.c
+* @brief brake module Source.
+*
+*/
 
 
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "macros.h"
+#include "can_monitor.h"
+#include "system_state.h"
+#include "brake_module_state.h"
 
 
 
 
-typedef struct 
+// *****************************************************
+// static definitions
+// *****************************************************
+
+
+//
+static int analyze_command_frame(
+        brake_module_state_s * const state,
+        const ps_ctrl_brake_command_msg * const brake_command )
 {
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_input;
-    double int_error;
-    double control;
-    double prev_steering_angle;
-} PID;
+    int module_state = STATE_OK;
 
 
-
-
-int pid_update( PID* pid, double setpoint, double input, double dt );
-
-
-void pid_zeroize( PID* pid, double integral_windup_guard );
-
-
-
-
-#ifdef __cplusplus
+    return module_state;
 }
-#endif
- 
+
+
+//
+static int analyze_report_frame(
+        brake_module_state_s * const state,
+        const ps_ctrl_brake_report_msg * const brake_report )
+{
+    int module_state = STATE_OK;
+
+    state->control_state = brake_report->enabled;
+
+    state->override_triggered = brake_report->override;
+
+    if( brake_report->fault_wdc == 1 ||
+        brake_report->fault_1 == 1 ||
+        brake_report->fault_2 == 1 ||
+        brake_report->fault_brake == 1 ||
+        brake_report->fault_connector == 1 )
+    {
+        module_state = STATE_FAULT;
+    }
+
+
+    return module_state;
+}
 
 
 
-#endif /* PID_H */
+
+// *****************************************************
+// public definitions
+// *****************************************************
 
 
+//
+int analyze_brake_state(
+        brake_module_state_s * const state,
+        const can_frame_s * const brake_command_frame,
+        const can_frame_s * const brake_report_frame )
+{
+    int ret = NOERR;
+
+    analyze_command_frame( 
+            state, 
+            (ps_ctrl_brake_command_msg*)
+                    brake_command_frame->frame_contents.buffer ); // TODO : do we need this?
+
+    state->module_state = analyze_report_frame( 
+            state, 
+            (ps_ctrl_brake_report_msg*) 
+                    brake_report_frame->frame_contents.buffer );
+
+    return ret;
+}

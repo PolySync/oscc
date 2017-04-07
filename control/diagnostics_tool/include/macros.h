@@ -2,7 +2,7 @@
 /* The MIT License (MIT)                                                */
 /* =====================                                                */
 /*                                                                      */
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation       */
@@ -26,75 +26,42 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/* 
- * File:   PID.h
+/**
+ * @file macros.h
+ * @brief Global macros for joystick project.
  *
  */
 
-#ifndef PID_H
-#define PID_H
+
+
+
+#ifndef MACROS_H
+#define MACROS_H
 
 
 
 
 /**
- * @brief Math macro: constrain(amount, low, high).
+ * @brief Error macro.
  *
  */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define ERROR 0
+
 
 /**
- * @brief Error in PID calculation.
+ * @brief Macro indicating no error.
  *
  */
-#define PID_ERROR 1
+#define NOERR 1
+
 
 /**
- * @brief Success in PID calculation.
+ * @brief Macro indicating a warning but not an error.
  *
  */
-#define PID_SUCCESS 0
+#define UNAVAILABLE 2
 
 
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
-
-typedef struct 
-{
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_input;
-    double int_error;
-    double control;
-    double prev_steering_angle;
-} PID;
-
-
-
-
-int pid_update( PID* pid, double setpoint, double input, double dt );
-
-
-void pid_zeroize( PID* pid, double integral_windup_guard );
-
-
-
-
-#ifdef __cplusplus
-}
-#endif
- 
-
-
-
-#endif /* PID_H */
-
-
+#endif /* MACROS_H */

@@ -6,13 +6,13 @@
 PROJECT_DIR := $(shell pwd)
 
 #
-ARDMK_DIR = $(PROJECT_DIR)/../../arduino_make
+ARDMK_DIR = $(PROJECT_DIR)/../../../arduino_make
 
 #
 ARDUINO_DIR = /usr/share/arduino
 
 #
-USER_LIB_PATH = $(PROJECT_DIR)/../../arduino_libraries
+USER_LIB_PATH = $(PROJECT_DIR)/../../../arduino_libraries
 
 #
 BOARD_TAG = mega2560

@@ -2,7 +2,7 @@
 /* The MIT License (MIT)                                                */
 /* =====================                                                */
 /*                                                                      */
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation       */
@@ -26,75 +26,114 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/* 
- * File:   PID.h
+/**
+ * @file can_read.h
+ * @brief Can read interface.
  *
  */
 
-#ifndef PID_H
-#define PID_H
+
+
+
+#ifndef CAN_READ_H
+#define CAN_READ_H
+
+
+
+
+#include <canlib.h>
+
+
+
+
+#define CAN_MSG_ARRAY_SIZE 100
 
 
 
 
 /**
- * @brief Math macro: constrain(amount, low, high).
+ * @brief CAN message data.
+ *
+ * Serves as a container for incoming CAN message body.
  *
  */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-
-/**
- * @brief Error in PID calculation.
- *
- */
-#define PID_ERROR 1
-
-/**
- * @brief Success in PID calculation.
- *
- */
-#define PID_SUCCESS 0
-
-
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
-
-typedef struct 
+typedef struct
 {
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_input;
-    double int_error;
-    double control;
-    double prev_steering_angle;
-} PID;
+    //
+    //
+    unsigned int msg_dlc;
+    //
+    //
+    unsigned int msg_flag;
+    //
+    //
+    unsigned long tstamp;
+    //
+    //
+    unsigned char buffer[ 8 ];
+} can_frame_contents_s;
+
+
+/**
+ * @brief CAN message data.
+ *
+ * Serves as a container for incoming CAN messages.
+ *
+ */
+typedef struct
+{
+    //
+    //
+    long can_id;
+    //
+    //
+    unsigned long long last_arrival_timestamp;
+    //
+    //
+    unsigned int msg_frequency;
+    //
+    //
+    unsigned int last_msg_deltaT;
+    //
+    //
+    unsigned int msg_timestamp_frequency;
+    //
+    //
+    unsigned int last_msg_timestamp_deltaT;
+    //
+    //
+    can_frame_contents_s frame_contents;
+} can_frame_s;
 
 
 
 
-int pid_update( PID* pid, double setpoint, double input, double dt );
+//
+unsigned long long get_timestamp();
 
 
-void pid_zeroize( PID* pid, double integral_windup_guard );
+//
+void init_can_msg_array();
+
+
+//
+const can_frame_s * const get_can_msg_array_index_reference(
+        const long can_id );
+
+
+//
+void print_can_array( int * can_id_print_list, int num_can_ids );
+
+
+//
+int handle_can_rx(
+        const long can_id,
+        const unsigned int msg_dlc,
+        const unsigned int msg_flag,
+        const unsigned long tstamp,
+        const unsigned char * const buffer );
 
 
 
 
-#ifdef __cplusplus
-}
-#endif
- 
-
-
-
-#endif /* PID_H */
-
-
+#endif /* CAN_READ_H */

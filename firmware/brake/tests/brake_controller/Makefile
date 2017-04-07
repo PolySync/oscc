@@ -1,21 +1,21 @@
 ##########################################################
-# Makefile for Steering Control Module
+# Makefile for Brake Actuator Module
 ##########################################################
 
 #
 PROJECT_DIR := $(shell pwd)
 
 #
-ARDMK_DIR = $(PROJECT_DIR)/../../arduino_make
+ARDMK_DIR = $(PROJECT_DIR)/../../../arduino_make
 
 #
 ARDUINO_DIR = /usr/share/arduino
 
 #
-USER_LIB_PATH = $(PROJECT_DIR)/../../arduino_libraries
+USER_LIB_PATH = $(PROJECT_DIR)/../../../arduino_libraries
 
 #
-BOARD_TAG = uno
+BOARD_TAG = mega2560
 
 #
 MONITOR_BAUDRATE = 115200
@@ -33,7 +33,8 @@ CFLAGS_STD = -std=gnu11
 CXXFLAGS_STD = -std=gnu++11
 
 #
-CXXFLAGS += -pedantic -Wall -Wextra
+#CXXFLAGS += -pedantic -Wall -Wextra
+CXXFLAGS += -Wall -Wextra
 
 #
 CFLAGS_STD += -DPSYNC_DEBUG_FLAG

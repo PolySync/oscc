@@ -1,7 +1,7 @@
 # The MIT License (MIT)
 # =====================
 
-# Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved.
+# Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved.
 
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -42,7 +42,7 @@ endif
 PROJECT_DIR := $(shell pwd)
 
 #
-ARDMK_DIR = $(PROJECT_DIR)/../../arduino_make
+ARDMK_DIR = $(PROJECT_DIR)/../../../arduino_make
 
 ifeq ($(OSFLAG), LINUX)
     ARDUINO_DIR = /usr/share/arduino
@@ -50,6 +50,8 @@ ifeq ($(OSFLAG), LINUX)
     BOARD_TAG = mega2560
 
     AVRDUDE = /usr/bin/avrdude
+
+    MONITOR_PORT = /dev/ttyACM*
 endif
 ifeq ($(OSFLAG), OSX)
     ARDUINO_DIR=/Applications/Arduino.app/Contents/Java/
@@ -58,19 +60,18 @@ ifeq ($(OSFLAG), OSX)
     BOARD_SUB = atmega2560
 
     AVRDUDE = /usr/local/bin/avrdude
+
+    MONITOR_PORT = /dev/cu.usb*
 endif
 
 #
-USER_LIB_PATH = $(PROJECT_DIR)/../../arduino_libraries
+USER_LIB_PATH = $(PROJECT_DIR)/../../../arduino_libraries
 
 #
 MONITOR_BAUDRATE = 115200
 
 #
 AVR_TOOLS_DIR =
-
-#
-AVRDUDE = /usr/bin/avrdude
 
 #
 CFLAGS_STD = -std=gnu11
@@ -86,8 +87,6 @@ CXXFLAGS += -Wall -Wextra
 CFLAGS_STD += -DPSYNC_DEBUG_FLAG
 #CXXFLAGS += -DPSYNC_DEBUG_FLAG
 
-#
-MONITOR_PORT = /dev/ttyACM*
 
 #
 CURRENT_DIR = $(shell basename $(CURDIR))

@@ -33,20 +33,28 @@
  *
  */
 
+ typedef struct /* Tracks override flags for pedal and voltages */
+ {
+     uint16_t wheel; /* Tracks whether pedal is pressed */
+     uint16_t voltage; /* Tracks any DAC/ADC voltage discrepancies */
+     uint16_t voltage_spike_a; /* Used to filter any DAC/ADC voltage spikes */
+     uint16_t voltage_spike_b; /* Used to filter any DAC/ADC voltage spikes */
+ } override_flags;
+
 typedef struct
 {
     //
     //
     bool control_enabled; /* Is control currently enabled flag */
-	//
-	//
-	bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
-	//
-	//
-	double current_steering_angle; /* Current steering angle as reported by car */
-	//
-	//
-	double commanded_steering_angle; /* Commanded steering angle as specified by higher level controller */
+    //
+    //
+    bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
+    //
+    //
+    double current_steering_angle; /* Current steering angle as reported by car */
+    //
+    //
+    double commanded_steering_angle; /* Commanded steering angle as specified by higher level controller */
     //
     //
     double PID_input; /* Input to PID controller */
@@ -58,20 +66,43 @@ typedef struct
     double PID_setpoint; /* Setpoint for PID controller */
     //
     //
-    double SA_Kp = 0.32; /* Proportional gain for PID controller */
+/*******************************************************************************
+*   WARNING
+*
+*   The PID gains (SA_Kp, SA_Ki, SA_Kd) are carefully tested to ensure that a
+*   torque is not requested that the vehicles steering motor cannot handle.
+*   By changing any of this code you risk attempting to actuate
+*   a torque outside of the vehicles valid range. Actuating a torque outside of
+*   the vehicles valid range will, at best, cause the vehicle to go into an
+*   unrecoverable fault state. Clearing this fault state requires one of Kia's
+*   native diagnostics tools, and someone who knows how to clear DTC codes with
+*   said tool.
+*
+*   It is NOT recommended to modify any of the existing control ranges, or
+*   gains, without expert knowledge.
+*******************************************************************************/
+    double SA_Kp = 0.3; /* Proportional gain for PID controller */
     //
     //
-    double SA_Ki = 2.0; /* Integral gain for PID controller */
+    double SA_Ki = 1.3; /* Integral gain for PID controller */
     //
-    //    
+    //
     double SA_Kd = 0.03; /* Derivative gain for PID controller */
     //
     //
     double steering_angle_rate_max = 1000.0; /* Maximum rate of change of steering wheel angle */
     //
-    //    
+    //
     double steering_angle_last; /* Last steering angle recorded */
     //
     //
     uint32_t timestamp_us; /* Keeps track of last control loop time in us */
+    //
+    //
+    override_flags override_flag;
+    //
+    //
+    uint16_t test_countdown; /* Iterator for DAC/ADC Voltage check */
+    //
+    //
 } current_control_state;

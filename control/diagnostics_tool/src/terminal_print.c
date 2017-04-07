@@ -2,7 +2,7 @@
 /* The MIT License (MIT)                                                */
 /* =====================                                                */
 /*                                                                      */
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation       */
@@ -26,75 +26,92 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/* 
- * File:   PID.h
- *
- */
-
-#ifndef PID_H
-#define PID_H
-
 
 
 
 /**
- * @brief Math macro: constrain(amount, low, high).
+ * @file terminal_print.c
+ * @brief Debug printer functions.
  *
  */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-
-/**
- * @brief Error in PID calculation.
- *
- */
-#define PID_ERROR 1
-
-/**
- * @brief Success in PID calculation.
- *
- */
-#define PID_SUCCESS 0
 
 
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdio.h>
+#include <string.h>
+
+#include "terminal_print.h"
 
 
 
 
-typedef struct 
+// *****************************************************
+// static global veriables
+// *****************************************************
+
+
+static char lines[ MAX_LINES ][ LINE_SIZE ];
+
+
+static int num_lines = 0;
+
+
+static int last_lines = 0;
+
+
+
+
+// *****************************************************
+// static definitions
+// *****************************************************
+
+
+//
+static void print_new_line( const char * name )
 {
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_input;
-    double int_error;
-    double control;
-    double prev_steering_angle;
-} PID;
-
-
-
-
-int pid_update( PID* pid, double setpoint, double input, double dt );
-
-
-void pid_zeroize( PID* pid, double integral_windup_guard );
-
-
-
-
-#ifdef __cplusplus
+    printf( "%s\n", name );
 }
-#endif
- 
 
 
 
-#endif /* PID_H */
+
+// *****************************************************
+// public definitions
+// *****************************************************
 
 
+//
+void add_line( char * line )
+{
+    strcpy( lines[ num_lines ], line );
+
+    num_lines++;
+}
+
+
+//
+void print_lines()
+{
+    int i;
+
+    for( i = 0; i < last_lines; i++ )
+    {
+        fputs( "\033[A\033[2K", stdout );
+
+        rewind( stdout );
+
+        ftruncate( 1, 0 );
+    }
+
+    last_lines = 0;
+
+    for( i = 0; i < num_lines; i++ )
+    {
+        print_new_line( lines[ i ] );
+
+        last_lines++;
+    }
+
+    num_lines = 0;
+}

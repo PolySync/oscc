@@ -2,7 +2,7 @@
 /* The MIT License (MIT) */
 /* ===================== */
 
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 
 /* Permission is hereby granted, free of charge, to any person */
 /* obtaining a copy of this software and associated documentation */
@@ -39,13 +39,6 @@
 
 
 /**
- * @brief Invalid \ref joystick_device_s.handle value.
- *
- */
-#define JOYSTICK_DEVICE_HANDLE_INVALID ( NULL )
-
-
-/**
  * @brief Lowest joystick axis value.
  *
  */
@@ -72,138 +65,57 @@
  */
 #define JOYSTICK_BUTTON_STATE_PRESSED ( 1 )
 
-/**
- * @brief Joystick Identifier Data
- *
- */
-#define JOYSTICK_ID_DATA_SIZE ( 16 )
-
-/**
- * @brief Joystick Description String
- *
- */
-#define JOYSTICK_ID_STRING_SIZE ( 64 )
 
 
 
 
 /**
- * @brief Joystick GUID.
- *
- * Implementation-dependent GUID
- *
- */
-typedef struct
-{
-    unsigned char data[ JOYSTICK_ID_DATA_SIZE ];
-    char ascii_string[ JOYSTICK_ID_STRING_SIZE ];
-
-} joystick_guid_s;
-
-
-/**
- * @brief Joystick device.
- *
- */
-typedef struct
-{
-    void *handle;
-    joystick_guid_s guid;
-
-} joystick_device_s;
-
-
-
-
-/**
- * @brief Initialize joystick subsystem.
+ * @brief Initialization function for the joystick
  *
  * @return ERROR code
  * \li \ref NOERR (1) if success.
  * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_init_subsystem( );
-
-
-/**
- * @brief Release joystick subsystem.
- *
- * @return void
- *
- */
-void jstick_release_subsystem( );
-
-
-/**
- * @brief Get number of joystick devices.
- *
- * @return
- * \li -1 on error
- * \li >=0 device count
- *
- */
-int jstick_get_num_devices( void );
-
-
-/**
- * @brief Get joystick GUID.
- *
- * @param [in] device_index Device index in the subsystem.
- * @param [out] guid A pointer to \ref joystick_guid_s which receives the GUID value.
- *
- * @return ERROR code
- * \li \ref NOERR (1) if success.
- * \li \ref ERROR (0) if failure.
- *
- */
-int jstick_get_guid_at_index( const unsigned long device_index,
-                              joystick_guid_s * const guid );
+int joystick_init( );
 
 
 /**
  * @brief Open joystick device.
  *
  * @param [in] device_index Device index in the subsystem.
- * @param [out] jstick A pointer to \ref joystick_device_s which receives the configuration.
  *
  * @return ERROR code:
  * \li \ref NOERR (1) if success.
  * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_open( const unsigned long device_index,
-                 joystick_device_s * const jstick );
+int joystick_open( unsigned long device_index );
 
 
 /**
  * @brief Close joystick device.
  *
- * @param [out] jstick A pointer to \ref joystick_device_s which is to be closed.
- *
  * @return void
  *
  */
-void jstick_close( joystick_device_s * const jstick );
+void joystick_close( );
 
 
 /**
  * @brief Update joystick device.
- *
- * @param [out] jstick A pointer to \ref joystick_device_s which receives the update.
  *
  * @return ERROR code:
  * \li \ref NOERR (1) if success.
  * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_update( joystick_device_s * const jstick );
+int joystick_update( );
 
 
 /**
  * @brief Get joystick axis value.
  *
- * @param [in] jstick A pointer to \ref joystick_device_s which specifies the configuration.
  * @param [in] axis_index Axis index.
  * @param [out] position Current axis value.
  *
@@ -212,15 +124,12 @@ int jstick_update( joystick_device_s * const jstick );
  * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_get_axis( joystick_device_s * const jstick,
-                     const unsigned long axis_index,
-                     int * const position );
+int joystick_get_axis( const unsigned long axis_index, int * const position );
 
 
 /**
  * @brief Get joystick button state.
  *
- * @param [in] jstick A pointer to \ref joystick_device_s which specifies the configuration.
  * @param [in] button_index Button index.
  * @param [out] state Current button state.
  *
@@ -229,9 +138,8 @@ int jstick_get_axis( joystick_device_s * const jstick,
  * \li \ref ERROR (0) if failure.
  *
  */
-int jstick_get_button( joystick_device_s * const jstick,
-                       const unsigned long button_index,
-                       unsigned int * const state );
+int joystick_get_button( const unsigned long button_index,
+                         unsigned int * const state );
 
 
 /**
@@ -244,9 +152,9 @@ int jstick_get_button( joystick_device_s * const jstick,
  * @return joystick position mapped to the range of min:max.
  *
  */
-double jstick_normalize_axis_position( const int position,
-                                       const double range_min,
-                                       const double range_max );
+double joystick_normalize_axis_position( const int position,
+                                         const double range_min,
+                                         const double range_max );
 
 
 /**
@@ -259,12 +167,9 @@ double jstick_normalize_axis_position( const int position,
  * @return position mapped to the range of min:max.
  *
  */
-double jstick_normalize_trigger_position(
-        const int position,
-        const double range_min,
-        const double range_max );
-
-
+double joystick_normalize_trigger_position( const int position,
+                                            const double range_min,
+                                            const double range_max );
 
 
 #endif	/* JOYSTICK_H */

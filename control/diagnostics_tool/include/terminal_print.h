@@ -2,7 +2,7 @@
 /* The MIT License (MIT)                                                */
 /* =====================                                                */
 /*                                                                      */
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 /*                                                                      */
 /* Permission is hereby granted, free of charge, to any person          */
 /* obtaining a copy of this software and associated documentation       */
@@ -26,75 +26,40 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/* 
- * File:   PID.h
- *
- */
-
-#ifndef PID_H
-#define PID_H
-
 
 
 
 /**
- * @brief Math macro: constrain(amount, low, high).
- *
- */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-
-/**
- * @brief Error in PID calculation.
- *
- */
-#define PID_ERROR 1
-
-/**
- * @brief Success in PID calculation.
- *
- */
-#define PID_SUCCESS 0
+* @file terminal_print.h
+* @brief Debug printer functions.
+*
+**/
 
 
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef TERMINAL_PRINT_H
+#define TERMINAL_PRINT_H
 
 
 
 
-typedef struct 
-{
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_input;
-    double int_error;
-    double control;
-    double prev_steering_angle;
-} PID;
+#define MAX_LINES 30
+
+
+#define LINE_SIZE 200
 
 
 
 
-int pid_update( PID* pid, double setpoint, double input, double dt );
+//
+void add_line( char * line );
 
 
-void pid_zeroize( PID* pid, double integral_windup_guard );
-
-
-
-
-#ifdef __cplusplus
-}
-#endif
- 
+//
+void print_lines();
 
 
 
-#endif /* PID_H */
 
-
+#endif /* TERMINAL_PRINT_H */
