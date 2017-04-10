@@ -176,8 +176,8 @@ Please see [LICENSE.md](LICENSE.md) for more details.
 Contact Information
 -------------------
 
-Please direct questions regarding OSCC and/or licensing to help@polysync.io.
+Please direct questions regarding OSCC and/or licensing to the OSCC GitHub Issues section: https://github.com/PolySync/OSCC/issues.
 
 *Distributed as-is; no warranty is given.*
 
-Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved.
+Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved.
