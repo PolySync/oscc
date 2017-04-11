@@ -25,38 +25,39 @@
 /* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR        */
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
+#include <SPI.h>
+#include "mcp_can.h"
+#include "can_frame.h"
+#include "control_protocol_can.h"
+#include "current_control_state.h"
+#include "PID.h"
+#include "common.h"
+#include "DAC_MCP49xx.h"
+#include "steering_control.h"
+#include "test_steering_control.h"
 
-/**
- * @brief common.
- *
- * Holds high level macros which are common to most or all firmware projects.
- *
- */
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
-
-
-//
-#define CAN_BAUD (CAN_500KBPS)
-
-//
-#define SERIAL_BAUD (115200)
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
-//
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
-
-//
-#define GET_TIMESTAMP_US() ((uint32_t) micros())
-
-//
-#define SLEEP_MS(x) delay(x)
-
-#ifdef PSYNC_DEBUG_FLAG
-    #define DEBUG_PRINT( x )  Serial.println( x )
-    #define STATIC
+#ifdef GLOBAL_DEFINED
+#define EXTERN
 #else
-    #define DEBUG_PRINT( x )
-    #define STATIC static
+#define EXTERN extern
 #endif
+
+EXTERN can_frame_s rx_frame_ps_ctrl_steering_command;
+
+EXTERN can_frame_s tx_frame_ps_ctrl_steering_report;
+
+EXTERN current_control_state current_ctrl_state;
+
+EXTERN PID pid_params;
+
+EXTERN uint8_t torque_sum;
+
+struct torque_spoof_t
+{
+    uint16_t low;
+    uint16_t high;
+};
+#endif /* GLOBALS_H */

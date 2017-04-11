@@ -25,6 +25,10 @@
 /* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR        */
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
+#include "steering_constants.h"
+
+#ifndef CURRENT_CONTROL_H
+#define CURRENT_CONTROL_H
 
 /**
  * @brief Current control state.
@@ -35,7 +39,7 @@
 
  typedef struct /* Tracks override flags for pedal and voltages */
  {
-     uint16_t wheel; /* Tracks whether pedal is pressed */
+     uint16_t wheel; /* Tracks whether steering wheel is turned */
      uint16_t voltage; /* Tracks any DAC/ADC voltage discrepancies */
      uint16_t voltage_spike_a; /* Used to filter any DAC/ADC voltage spikes */
      uint16_t voltage_spike_b; /* Used to filter any DAC/ADC voltage spikes */
@@ -81,13 +85,13 @@ typedef struct
 *   It is NOT recommended to modify any of the existing control ranges, or
 *   gains, without expert knowledge.
 *******************************************************************************/
-    double SA_Kp = 0.3; /* Proportional gain for PID controller */
+    double SA_Kp = SA_K_PROPORTIONAL; /* Proportional gain for PID controller */
     //
     //
-    double SA_Ki = 1.3; /* Integral gain for PID controller */
+    double SA_Ki = SA_K_INTEGRAL; /* Integral gain for PID controller */
     //
     //
-    double SA_Kd = 0.03; /* Derivative gain for PID controller */
+    double SA_Kd = SA_K_DERIVATIVE; /* Derivative gain for PID controller */
     //
     //
     double steering_angle_rate_max = 1000.0; /* Maximum rate of change of steering wheel angle */
@@ -106,3 +110,5 @@ typedef struct
     //
     //
 } current_control_state;
+
+#endif /* CURRENT_CONTROL_H */
