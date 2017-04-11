@@ -19,33 +19,13 @@
 // Steering control ECU firmware
 // 2014 Kia Soul Motor Driven Power Steering (MDPS) system
 
-
-#include <SPI.h>
-#include "mcp_can.h"
-#include "can_frame.h"
-#include "control_protocol_can.h"
-#include "current_control_state.h"
-#include "PID.h"
-#include "common.h"
-#include "DAC_MCP49xx.h"
-#include "steering_control.h"
-#include "test_steering_control.h"
 #include "globals.h"
-
 
 // *****************************************************
 // static global types/macros
 // *****************************************************
 
 #define PSYNC_DEBUG_FLAG ( true )
-
-#ifdef PSYNC_DEBUG_FLAG
-    #define DEBUG_PRINT( x )  Serial.println( x )
-    #define STATIC
-#else
-    #define DEBUG_PRINT( x )
-    #define STATIC static
-#endif
 
 bool test_code = false;
 
@@ -90,9 +70,9 @@ void setup( )
 
     init_can( );
 
-	pid_params.derivative_gain = current_ctrl_state.SA_Kd;
-    pid_params.proportional_gain = current_ctrl_state.SA_Kp;
-    pid_params.integral_gain = current_ctrl_state.SA_Ki;
+    pid_params.proportional_gain = SA_K_PROPORTIONAL;
+    pid_params.integral_gain = SA_K_INTEGRAL;
+    pid_params.derivative_gain = SA_K_DERIVATIVE;
 
     publish_ps_ctrl_steering_report( );
 

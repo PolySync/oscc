@@ -18,15 +18,6 @@
 
 // Source for steering control ECU firmware
 // 2014 Kia Soul Motor Driven Power Steering (MDPS) system
-#include <SPI.h>
-#include "mcp_can.h"
-#include "can_frame.h"
-#include "control_protocol_can.h"
-#include "current_control_state.h"
-#include "PID.h"
-#include "common.h"
-#include "DAC_MCP49xx.h"
-#include "steering_control.h"
 #include "globals.h"
 
 #ifdef PSYNC_DEBUG_FLAG

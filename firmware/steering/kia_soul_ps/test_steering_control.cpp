@@ -27,6 +27,7 @@
 #include "common.h"
 #include "DAC_MCP49xx.h"
 #include "steering_control.h"
+#include "globals.h"
 #include "test_steering_control.h"
 
 #define PSYNC_DEBUG_FLAG ( true )
@@ -43,7 +44,7 @@
 // Function:    test_pid_values
 //
 // Purpose:     Test that the PID values for steering control haven't
-//				been changed by the user
+//              been changed by the user
 //
 // Returns:     void
 //
@@ -52,23 +53,23 @@
 // *****************************************************
 bool test_pid_values( PID &pid_params, current_control_state &current_ctrl_state )
 {
-	bool return_code = false;
+    bool return_code = false;
 
-    if ( pid_params.proportional_gain == current_ctrl_state.SA_Kp &&
-    	 pid_params.integral_gain == current_ctrl_state.SA_Ki &&
-    	 pid_params.derivative_gain == current_ctrl_state.SA_Kd )
+    if ( pid_params.proportional_gain == SA_K_PROPORTIONAL &&
+         pid_params.integral_gain == SA_K_INTEGRAL &&
+         pid_params.derivative_gain == SA_K_DERIVATIVE )
     {
-    	return_code = true;
+        return_code = true;
     }
 
     if( return_code == false )
     {
-    	DEBUG_PRINT( "***************************************************************" );
-    	DEBUG_PRINT( "****************************WARNING****************************" );
-    	DEBUG_PRINT( "Default PID values have been changed." );
-    	DEBUG_PRINT( "This can cause vehicle faults." );
-    	DEBUG_PRINT( "Return the values to their default or proceed at your own risk." );
-    	DEBUG_PRINT( "***************************************************************" );
+        DEBUG_PRINT( "***************************************************************" );
+        DEBUG_PRINT( "****************************WARNING****************************" );
+        DEBUG_PRINT( "Default PID values have been changed." );
+        DEBUG_PRINT( "This can cause vehicle faults." );
+        DEBUG_PRINT( "Return the values to their default before continuing." );
+        DEBUG_PRINT( "***************************************************************" );
     }
     return return_code;
 }

@@ -26,37 +26,10 @@
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
 
-/**
- * @brief common.
- *
- * Holds high level macros which are common to most or all firmware projects.
- *
- */
+//constants for steering control
 
+#define SA_K_PROPORTIONAL (0.3)
 
+#define SA_K_INTEGRAL (1.3)
 
-//
-#define CAN_BAUD (CAN_500KBPS)
-
-//
-#define SERIAL_BAUD (115200)
-
-//
-#define CAN_INIT_RETRY_DELAY (50)
-
-//
-#define GET_TIMESTAMP_MS() ((uint32_t) millis())
-
-//
-#define GET_TIMESTAMP_US() ((uint32_t) micros())
-
-//
-#define SLEEP_MS(x) delay(x)
-
-#ifdef PSYNC_DEBUG_FLAG
-    #define DEBUG_PRINT( x )  Serial.println( x )
-    #define STATIC
-#else
-    #define DEBUG_PRINT( x )
-    #define STATIC static
-#endif
+#define SA_K_DERIVATIVE (0.03)

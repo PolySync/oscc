@@ -25,6 +25,7 @@
 /* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR        */
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
+#include "steering_constants.h"
 
 #ifndef CURRENT_CONTROL_H
 #define CURRENT_CONTROL_H
@@ -69,13 +70,13 @@ typedef struct
     double PID_setpoint; /* Setpoint for PID controller */
     //
     //
-    double SA_Kp = 0.3; /* Proportional gain for PID controller */
+    double SA_Kp = SA_K_PROPORTIONAL; /* Proportional gain for PID controller */
     //
     //
-    double SA_Ki = 1.3; /* Integral gain for PID controller */
+    double SA_Ki = SA_K_INTEGRAL; /* Integral gain for PID controller */
     //
     //
-    double SA_Kd = 0.03; /* Derivative gain for PID controller */
+    double SA_Kd = SA_K_DERIVATIVE; /* Derivative gain for PID controller */
     //
     //
     double steering_angle_rate_max = 1000.0; /* Maximum rate of change of steering wheel angle */

@@ -25,11 +25,10 @@
 /* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR        */
 /* OTHER DEALINGS IN THE SOFTWARE.                                      */
 /************************************************************************/
-
 #ifndef TEST_STEERING_CONTROL_H
 #define TEST_STEERING_CONTROL_H
 
 bool test_pid_values( PID &pid_params,
-					  current_control_state & current_ctrl_state );
+                      current_control_state & current_ctrl_state );
 
 #endif /* TEST_STEERING_CONTROL_H */
