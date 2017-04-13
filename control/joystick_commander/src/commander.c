@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdint.h>
 
 #include "macros.h"
 #include "joystick.h"
@@ -82,7 +83,7 @@
 
 
 /**
- * @brief Minimum brake value to be considered enabled [normalized] 
+ * @brief Minimum brake value to be considered enabled [normalized]
  *
  * Throttle is disabled when brake value is greater than this value
  *
@@ -125,7 +126,7 @@
 
 /**
  * @brief Steering command steering wheel velocity scale factor
- * 
+ *
  * This factor can be increased to provide smoother, but
  * slightly less responsive, steering control. It is recommended
  * to smooth at the higher level, with this factor, before
@@ -173,7 +174,7 @@
  * and range check it for validity.  The range-limits for this
  * instance represent the values that are typically available
  * from a joystick
- * 
+ *
  */
 struct commander_setpoint_s
 {
@@ -219,13 +220,13 @@ static struct commander_setpoint_s steering_setpoint =
 
 // *****************************************************
 // Function:    get_setpoint
-// 
+//
 // Purpose:     Retrieve the data from the joystick based on which axis is
 //              selected and normalize that value along the scale that is
 //              provided
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  setpoint - the setpoint structure containing the range limits
 //                         the joystick axis, and the storage location for the
 //                         requested value
@@ -266,12 +267,12 @@ static int get_setpoint( struct commander_setpoint_s* setpoint )
 
 // *****************************************************
 // Function:    is_joystick_safe
-// 
+//
 // Purpose:     Examine the positions of the brake and throttle to determine
 //              if they are in a safe position to enable control
-// 
+//
 // Returns:     int - ERROR, NOERR or UNAVAILABLE
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
@@ -304,11 +305,11 @@ static int is_joystick_safe( )
 
 // *****************************************************
 // Function:    commander_set_safe
-// 
+//
 // Purpose:     Put the OSCC module in a safe position
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
@@ -325,16 +326,16 @@ static int commander_set_safe( )
 
 
 // *****************************************************
-// Function:    calc_exponential_average 
-// 
+// Function:    calc_exponential_average
+//
 // Purpose:     Calculate an exponential average based on previous values
-// 
+//
 // Returns:     double - the exponentially averaged result
-// 
+//
 // Parameters:  average - previous average
 //              setpoint - new setpoint to incorperate into average
 //              factor - factor of exponential average
-// 
+//
 // *****************************************************
 static double calc_exponential_average( double average,
                                         double setpoint,
@@ -342,19 +343,19 @@ static double calc_exponential_average( double average,
 {
     double exponential_average =
         ( setpoint * factor ) + ( ( 1 - factor ) * average );
-    
+
     return ( exponential_average );
 }
 
 
 // *****************************************************
 // Function:    commander_disable_controls
-// 
+//
 // Purpose:     Helper function to put the system in a safe state before
 //              disabling the OSCC module vehicle controls
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
@@ -379,12 +380,12 @@ static int commander_disable_controls( )
 
 // *****************************************************
 // Function:    commander_enable_controls
-// 
+//
 // Purpose:     Helper function to put the system in a safe state before
 //              enabling the OSCC module vehicle controls
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
@@ -409,12 +410,12 @@ static int commander_enable_controls( )
 
 // *****************************************************
 // Function:    get_button
-// 
+//
 // Purpose:     Wrapper function to get the status of a given button on the
 //              joystick
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  button - which button on the joystick to check
 //              state - pointer to an unsigned int to store the state of the
 //                      button
@@ -446,12 +447,12 @@ static int get_button( unsigned long button, unsigned int* const state )
 
 // *****************************************************
 // Function:    command_brakes
-// 
+//
 // Purpose:     Determine the setpoint being commanded by the joystick and
 //              send that value to the OSCC Module
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
@@ -492,12 +493,12 @@ static int command_brakes( )
 
 // *****************************************************
 // Function:    command_throttle
-// 
+//
 // Purpose:     Determine the setpoint being commanded by the joystick and
 //              send that value to the OSCC Module
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
@@ -541,12 +542,12 @@ static int command_throttle( )
 
 // *****************************************************
 // Function:    command_steering
-// 
+//
 // Purpose:     Determine the setpoint being commanded by the joystick and
 //              send that value to the OSCC Module
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
@@ -599,11 +600,11 @@ static int command_steering( )
 
 // *****************************************************
 // Function:    commander_init
-// 
+//
 // Purpose:     Externally visible function to initialize the commander object
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  channel - for now, the CAN channel to use when interacting
 //              with the OSCC modules
 //
@@ -648,12 +649,12 @@ int commander_init( int channel )
 
 // *****************************************************
 // Function:    command_close
-// 
+//
 // Purpose:     Shuts down all of the other modules that the commander uses
 //              and closes the commander object
-// 
+//
 // Returns:     int - ERROR or NOERR
-// 
+//
 // Parameters:  void
 //
 // *****************************************************
@@ -676,7 +677,7 @@ void commander_close( )
 
 // *****************************************************
 // Function:    commander_low_frequency_update
-// 
+//
 // Purpose:     Should be run every 50ms
 //              The commander low-frequency update function polls the joystick,
 //              converts the joystick input into values that reflect what the
