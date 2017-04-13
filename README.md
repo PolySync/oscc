@@ -51,21 +51,15 @@ Check out [Arduino CMake](https://github.com/queezythegreat/arduino-cmake) for m
 
 **Building the Firmware**
 
-Navigate to the platform directory for which you wish to compile firmware. For example, if compiling
-the firmware for a Kia Soul:
+Navigate to the firmware directory and make a build directory:
 
 ```
-cd $OSCC-PROJECT-DIR/firmware/kia_soul
-```
-
-Make a build directory and go into it.
-
-```
+cd $OSCC-PROJECT-DIR/firmware
 mkdir build
 cd build
 ```
 
-To generate Makefiles, tell CMake which firmware to build:
+To generate Makefiles, tell CMake which firmware to build. For example, if compiling the firmware for a Kia Soul:
 
 ```
 cmake -DBUILD_KIA_SOUL=ON ..
