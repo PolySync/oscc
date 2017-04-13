@@ -71,6 +71,13 @@ To generate Makefiles, tell CMake which firmware to build:
 cmake -DBUILD_KIA_SOUL=ON ..
 ```
 
+By default, your firmware will have debug symbols which is good for debugging but increases
+the size of the firmware significantly. To compile without debug symbols, use the following instead:
+
+```
+cmake -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release ..
+```
+
 This will generate the necessary files for building.
 
 Now you can build with `make`:
