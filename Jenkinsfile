@@ -10,14 +10,8 @@ node('arduino') {
       ])
     }
     stage('Build') {
-      parallel 'steering firmware': {
-        sh 'cd firmware/steering/kia_soul_ps && make'
-      }, 'throttle firmware': {
-        sh 'cd firmware/throttle/kia_soul_ps && make'
-      }, 'brake firmware': {
-        sh 'cd firmware/brake/kia_soul_ps && make'
-      }, 'CAN gateway firmware': {
-        sh 'cd firmware/can_gateway/kia_soul_ps && make'
+      parallel 'kia soul firmware': {
+        sh 'cd firmware && mkdir build && cd build && cmake .. -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release && make'
       }
       echo 'Build Complete!'
     }
