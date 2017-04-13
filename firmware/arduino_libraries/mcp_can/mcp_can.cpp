@@ -20,6 +20,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-
   1301  USA
 */
+#include <SPI.h>
 #include "mcp_can.h"
 
 #define spi_readwrite SPI.transfer
