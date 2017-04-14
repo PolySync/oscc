@@ -11,9 +11,12 @@
 #include <FiniteStateMachine.h>
 #include "mcp_can.h"
 #include "can_frame.h"
-#include "common.h"
 #include "control_protocol_can.h"
 #include "PID.h"
+#include "serial.h"
+#include "can.h"
+#include "time.h"
+#include "debug.h"
 
 
 
@@ -23,17 +26,6 @@
 // *****************************************************
 
 
-#define PSYNC_DEBUG_FLAG
-
-// show us if debugging
-#ifdef PSYNC_DEBUG_FLAG
-    #warning "PSYNC_DEBUG_FLAG defined"
-    #define DEBUG_PRINTLN(x)  Serial.println(x)
-    #define DEBUG_PRINT(x) Serial.print(x)
-#else
-    #define DEBUG_PRINTLN(x)
-    #define DEBUG_PRINT(x)
-#endif
 
 
 // chip select pin for CAN Shield
@@ -81,27 +73,6 @@ int16_t PMC2_reading;
 // static declarations
 // *
 
-
-// uses last_update_ms, corrects for overflow condition
-static void get_update_time_delta_ms(
-                const uint32_t * const time_in,
-                        uint32_t * const delta_out )
-{
-    // check for overflow
-    if( last_update_ms < (*time_in) )
-    {
-            // time remainder, prior to the overflow
-            (*delta_out) = (UINT32_MAX - (*time_in));
-
-            // add time since zero
-            (*delta_out) += last_update_ms;
-        }
-    else
-    {
-            // normal delta
-            (*delta_out) = (last_update_ms - (*time_in));
-        }
-}
 
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids )
 // pins are not perfectly sequential because the clock frequency of certain pins is different.
@@ -442,36 +413,6 @@ Brakes brakes = Brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_S
 
 
 
-//
-static void init_serial( void )
-{
-    // Disable serial
-    Serial.end();
-
-    // Init if debugging
-#ifdef PSYNC_DEBUG_FLAG
-    Serial.begin( SERIAL_BAUD );
-#endif
-
-    // Debug log
-    DEBUG_PRINTLN( "init_serial: pass" );
-}
-
-
-//
-static void init_can( void )
-{
-    // Wait until we have initialized
-    while( CAN.begin(CAN_BAUD) != CAN_OK )
-    {
-        // wait a little
-        delay( CAN_INIT_RETRY_DELAY );
-    }
-
-    // Debug log
-    DEBUG_PRINTLN( "init_can: pass" );
-}
-
 
 // A function to parse incoming serial bytes
 void processSerialByte() {
@@ -560,7 +501,7 @@ static void publish_timed_tx_frames( void )
     uint32_t delta = 0;
 
     // get time since last publish
-    get_update_time_delta_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
+    get_update_time_delta_ms( tx_frame_ps_ctrl_brake_report.timestamp, last_update_ms, &delta );
 
     // check publish interval
     if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
@@ -860,7 +801,7 @@ void setup( void )
 
     init_serial();
 
-    init_can();
+    init_can(CAN);
 
     //publish_ps_ctrl_brake_report();
 

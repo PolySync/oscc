@@ -25,8 +25,11 @@
 #include "can_frame.h"
 #include "control_protocol_can.h"
 #include "current_control_state.h"
-#include "common.h"
 #include "DAC_MCP49xx.h"
+#include "serial.h"
+#include "can.h"
+#include "time.h"
+#include "debug.h"
 
 
 
@@ -35,15 +38,6 @@
 // static global types/macros
 // *****************************************************
 
-#define PSYNC_DEBUG_FLAG
-
-// show us if debugging
-#ifdef PSYNC_DEBUG_FLAG
-    #warning "PSYNC_DEBUG_FLAG defined"
-    #define DEBUG_PRINT(x)  Serial.println(x)
-#else
-    #define DEBUG_PRINT(x)
-#endif
 
 // set CAN_CS to pin 10 for CAN
 #define CAN_CS                          ( 10 )
@@ -117,76 +111,6 @@ static current_control_state current_ctrl_state;
 // *****************************************************
 
 
-// corrects for overflow condition
-static void get_update_time_delta_ms(
-		const uint32_t time_in,
-		const uint32_t last_update_time_ms,
-		uint32_t * const delta_out )
-{
-    // check for overflow
-    if( last_update_time_ms < time_in )
-    {
-		// time remainder, prior to the overflow
-		( *delta_out ) = ( UINT32_MAX - time_in );
-
-        // add time since zero
-        ( *delta_out ) += last_update_time_ms;
-    }
-    else
-    {
-        // normal delta
-        ( *delta_out ) = ( last_update_time_ms - time_in );
-    }
-}
-
-
-// uses last_update_ms, corrects for overflow condition
-static void get_update_time_ms(
-        const uint32_t * const time_in,
-        uint32_t * const delta_out )
-{
-    // check for overflow
-    if( last_update_ms < ( *time_in ) )
-    {
-        // time remainder, prior to the overflow
-        ( *delta_out ) = ( UINT32_MAX - ( *time_in ) );
-
-        // add time since zero
-        ( *delta_out ) += last_update_ms;
-    }
-    else
-    {
-        // normal delta
-        ( *delta_out ) = ( last_update_ms - ( *time_in ) );
-    }
-}
-
-
-//
-static void init_serial( void )
-{
-    Serial.begin( SERIAL_BAUD );
-
-    // debug log
-    DEBUG_PRINT( "init_serial: pass" );
-}
-
-
-static void init_can ( void )
-{
-    // wait until we have initialized
-    while( CAN.begin( CAN_BAUD ) != CAN_OK )
-    {
-        // wait a little
-        delay( CAN_INIT_RETRY_DELAY );
-    }
-
-    // debug log
-    DEBUG_PRINT( "init_can: pass" );
-
-}
-
-
 // set up values for use in the throttle control system
 uint16_t signal_L;              // Current measured accel sensor values
 uint16_t signal_H;
@@ -203,31 +127,31 @@ can_frame_s can_frame;          // CAN message structs
 // A function to enable SCM to take control
 void enable_control( )
 {
-	// Do a quick average to smooth out the noisy data
-	static uint16_t n_samples = 20;  // Total number of samples to average over
-	long sum_sensA_samples = 0;
-	long sum_sensB_samples = 0;
+    // Do a quick average to smooth out the noisy data
+    static uint16_t n_samples = 20;  // Total number of samples to average over
+    long sum_sensA_samples = 0;
+    long sum_sensB_samples = 0;
 
-	for ( int i = 0; i < n_samples; i++ )
-	{
-		sum_sensA_samples += analogRead( SIGNAL_INPUT_A );
-		sum_sensB_samples += analogRead( SIGNAL_INPUT_B );
-	}
+    for ( int i = 0; i < n_samples; i++ )
+    {
+        sum_sensA_samples += analogRead( SIGNAL_INPUT_A );
+        sum_sensB_samples += analogRead( SIGNAL_INPUT_B );
+    }
 
-	uint16_t avg_sensA_sample = ( sum_sensA_samples / n_samples ) << 2;
-	uint16_t avg_sensB_sample = ( sum_sensB_samples / n_samples ) << 2;
+    uint16_t avg_sensA_sample = ( sum_sensA_samples / n_samples ) << 2;
+    uint16_t avg_sensB_sample = ( sum_sensB_samples / n_samples ) << 2;
 
-	// Write measured torque values to DAC to avoid a signal discontinuity when
+    // Write measured torque values to DAC to avoid a signal discontinuity when
     // the SCM takes over
     dac.outputA( avg_sensA_sample );
     dac.outputB( avg_sensB_sample );
 
-	// Enable the signal interrupt relays
-	digitalWrite( SPOOF_ENGAGE, HIGH );
+    // Enable the signal interrupt relays
+    digitalWrite( SPOOF_ENGAGE, HIGH );
 
-	current_ctrl_state.control_enabled = true;
+    current_ctrl_state.control_enabled = true;
 
-	DEBUG_PRINT( "Control enabled" );
+    DEBUG_PRINTLN( "Control enabled" );
 
 }
 
@@ -235,31 +159,31 @@ void enable_control( )
 // A function to disable SCM control
 void disable_control( )
 {
-	// Do a quick average to smooth out the noisy data
-	static uint16_t n_samples = 20;  // Total number of samples to average over
-	long sum_sensA_samples = 0;
-	long sum_sensB_samples = 0;
+    // Do a quick average to smooth out the noisy data
+    static uint16_t n_samples = 20;  // Total number of samples to average over
+    long sum_sensA_samples = 0;
+    long sum_sensB_samples = 0;
 
-	for ( int i = 0; i < n_samples; i++ )
-	{
-		sum_sensA_samples += analogRead( SIGNAL_INPUT_A ) << 2;
-		sum_sensB_samples += analogRead( SIGNAL_INPUT_B ) << 2;
-	}
+    for ( int i = 0; i < n_samples; i++ )
+    {
+        sum_sensA_samples += analogRead( SIGNAL_INPUT_A ) << 2;
+        sum_sensB_samples += analogRead( SIGNAL_INPUT_B ) << 2;
+    }
 
-	uint16_t avg_sensA_sample = sum_sensA_samples / n_samples;
-	uint16_t avg_sensB_sample = sum_sensB_samples / n_samples;
+    uint16_t avg_sensA_sample = sum_sensA_samples / n_samples;
+    uint16_t avg_sensB_sample = sum_sensB_samples / n_samples;
 
-	// Write measured torque values to DAC to avoid a signal discontinuity when
+    // Write measured torque values to DAC to avoid a signal discontinuity when
     // the SCM relinquishes control
     dac.outputA( avg_sensA_sample );
     dac.outputB( avg_sensB_sample );
 
-	// Disable the signal interrupt relays
-	digitalWrite( SPOOF_ENGAGE, LOW );
+    // Disable the signal interrupt relays
+    digitalWrite( SPOOF_ENGAGE, LOW );
 
-	current_ctrl_state.control_enabled = false;
+    current_ctrl_state.control_enabled = false;
 
-	DEBUG_PRINT( "Control disabled" );
+    DEBUG_PRINTLN( "Control disabled" );
 
 }
 
@@ -349,7 +273,7 @@ static void publish_timed_tx_frames( void )
     uint32_t delta = 0;
 
     // get time since last publish
-    get_update_time_ms( &tx_frame_ps_ctrl_throttle_report.timestamp, &delta );
+    get_update_time_delta_ms( tx_frame_ps_ctrl_throttle_report.timestamp, last_update_ms, &delta );
 
     // check publish interval
     if( delta >= PS_CTRL_THROTTLE_REPORT_PUBLISH_INTERVAL )
@@ -389,7 +313,7 @@ static void process_ps_ctrl_throttle_command(
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
     current_ctrl_state.pedal_position_target = control_data->pedal_command / 24;
-    DEBUG_PRINT( current_ctrl_state.pedal_position_target );
+    DEBUG_PRINTLN( current_ctrl_state.pedal_position_target );
 
 }
 
@@ -431,9 +355,9 @@ static void check_rx_timeouts( void )
 
     // get time since last receive
     get_update_time_delta_ms(
-			rx_frame_ps_ctrl_throttle_command.timestamp,
-			GET_TIMESTAMP_MS(),
-			&delta );
+                       rx_frame_ps_ctrl_throttle_command.timestamp,
+                       GET_TIMESTAMP_MS(),
+                       &delta );
 
     // check rx timeout
     if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
@@ -441,7 +365,7 @@ static void check_rx_timeouts( void )
         // disable control from the PolySync interface
         if( current_ctrl_state.control_enabled == true )
         {
-            DEBUG_PRINT( "Control disabled: Timeout" );
+            DEBUG_PRINTLN( "Control disabled: Timeout" );
             disable_control( );
         }
     }
@@ -474,9 +398,11 @@ void setup( )
     // Initialize relay board
     digitalWrite( SPOOF_ENGAGE, LOW );
 
-    init_serial( );
+    #ifdef DEBUG
+        init_serial( );
+    #endif
 
-    init_can( );
+    init_can(CAN);
 
     publish_ps_ctrl_throttle_report( );
 
@@ -499,7 +425,7 @@ void setup( )
     last_update_ms = GET_TIMESTAMP_MS( );
 
     // debug log
-    DEBUG_PRINT( "init: pass" );
+    DEBUG_PRINTLN( "init: pass" );
 
 }
 

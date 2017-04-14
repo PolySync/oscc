@@ -48,9 +48,11 @@
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "kia_obd_can.h"
-#include "common.h"
 #include "control_protocol_can.h"
-
+#include "serial.h"
+#include "can.h"
+#include "time.h"
+#include "debug.h"
 
 
 
@@ -59,15 +61,6 @@
 // *****************************************************
 
 
-#define PSYNC_DEBUG_FLAG
-
-// show us if debugging
-#ifdef PSYNC_DEBUG_FLAG
-    #warning "PSYNC_DEBUG_FLAG defined"
-    #define DEBUG_PRINT(x)  Serial.println(x)
-#else
-    #define DEBUG_PRINT(x)
-#endif
 
 
 //
@@ -193,75 +186,6 @@ static can_frame_s rx_frame_kia_status4;
 // static definitions
 // *****************************************************
 
-// uses last_update_ms, corrects for overflow condition
-static void get_update_time_delta_ms(
-        const uint32_t * const time_in,
-        uint32_t * const delta_out )
-{
-    // check for overflow
-    if( last_update_ms < (*time_in) )
-    {
-        // time remainder, prior to the overflow
-        (*delta_out) = (UINT32_MAX - (*time_in));
-
-        // add time since zero
-        (*delta_out) += last_update_ms;
-    }
-    else
-    {
-        // normal delta
-        (*delta_out) = (last_update_ms - (*time_in));
-    }
-}
-
-
-//
-static void init_serial( void )
-{
-    // disable serial
-    Serial.end();
-
-    // init if debugging
-#ifdef PSYNC_DEBUG_FLAG
-    Serial.begin( SERIAL_BAUD );
-#endif
-
-    // debug log
-    DEBUG_PRINT( "init_serial: pass" );
-}
-
-
-//
-static void init_obd_can( void )
-{
-    // wait until we have initialized
-    // watchdog will reset if we take too long
-    while( obd_can.begin( CAN_BAUD ) != CAN_OK )
-    {
-        // wait a little
-        delay( CAN_INIT_RETRY_DELAY );
-    }
-
-    // debug log
-    DEBUG_PRINT( "init_obd_can: pass" );
-}
-
-
-//
-static void init_control_can( void )
-{
-    // wait until we have initialized
-    // watchdog will reset if we take too long
-    while( control_can.begin( CAN_BAUD ) != CAN_OK )
-    {
-        // wait a little
-        delay( CAN_INIT_RETRY_DELAY );
-    }
-
-    // debug log
-    DEBUG_PRINT( "init_control_can: pass" );
-}
-
 
 //
 static void publish_heartbeat_frame( void )
@@ -281,7 +205,7 @@ static void publish_heartbeat_frame( void )
 
     // set firmware version
     data->firmware_version = PSVC_VGM_FIRMWARE_VERSION;
-	
+
     // publish to control CAN bus
     control_can.sendMsgBuf(
             tx_frame_heartbeat.id,
@@ -344,7 +268,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    get_update_time_delta_ms( &tx_frame_heartbeat.timestamp, &delta );
+    get_update_time_delta_ms( tx_frame_heartbeat.timestamp, last_update_ms, &delta );
 
     // check publish interval
     if( delta >= PSVC_HEARTBEAT_MSG_TX_PUBLISH_INTERVAL )
@@ -354,7 +278,7 @@ static void publish_timed_tx_frames( void )
     }
 
     // get time since last publish
-    get_update_time_delta_ms( &tx_frame_chassis_state1.timestamp, &delta );
+    get_update_time_delta_ms( tx_frame_chassis_state1.timestamp, last_update_ms, &delta );
 
     // check publish interval
     if( delta >= PSVC_CHASSIS_STATE1_MSG_TX_PUBLISH_INTERVAL )
@@ -364,7 +288,7 @@ static void publish_timed_tx_frames( void )
     }
 
     // get time since last publish
-    get_update_time_delta_ms( &tx_frame_chassis_state2.timestamp, &delta );
+    get_update_time_delta_ms( tx_frame_chassis_state2.timestamp, last_update_ms, &delta );
 
     // check publish interval
     if( delta >= PSVC_CHASSIS_STATE2_MSG_TX_PUBLISH_INTERVAL )
@@ -589,7 +513,7 @@ static void check_rx_timeouts( void )
 
 
     // get time since last receive
-    get_update_time_delta_ms( &rx_frame_kia_status1.timestamp, &delta );
+    get_update_time_delta_ms( rx_frame_kia_status1.timestamp, last_update_ms, &delta );
 
     // check Rx timeout
     if( delta >= KIA_CCAN_STATUS1_RX_WARN_TIMEOUT )
@@ -603,7 +527,7 @@ static void check_rx_timeouts( void )
     }
 
     // get time since last receive
-    get_update_time_delta_ms( &rx_frame_kia_status2.timestamp, &delta );
+    get_update_time_delta_ms( rx_frame_kia_status2.timestamp, last_update_ms, &delta );
 
     // check Rx timeout
     if( delta >= KIA_CCAN_STATUS2_RX_WARN_TIMEOUT )
@@ -616,7 +540,7 @@ static void check_rx_timeouts( void )
     }
 
     // get time since last receive
-    get_update_time_delta_ms( &rx_frame_kia_status3.timestamp, &delta );
+    get_update_time_delta_ms( rx_frame_kia_status3.timestamp, last_update_ms, &delta );
 
     // check Rx timeout
     if( delta >= KIA_CCAN_STATUS3_RX_WARN_TIMEOUT )
@@ -629,7 +553,7 @@ static void check_rx_timeouts( void )
     }
 
     // get time since last receive
-    get_update_time_delta_ms( &rx_frame_kia_status4.timestamp, &delta );
+    get_update_time_delta_ms( rx_frame_kia_status4.timestamp, last_update_ms, &delta );
 
     // check Rx timeout
     if( delta >= KIA_CCAN_STATUS4_RX_WARN_TIMEOUT )
@@ -683,16 +607,18 @@ void setup( void )
     wdt_reset();
 
     // init serial
-    init_serial();
+    #ifdef DEBUG
+        init_serial();
+    #endif
 
     // init OBD CAN
-    init_obd_can();
+    init_can(obd_can);
 
     // reset watchdog
     wdt_reset();
 
     // init control CAN
-    init_control_can();
+    init_can(control_can);
 
     // reset watchdog
     wdt_reset();
@@ -733,7 +659,7 @@ void setup( void )
     SET_STATE( PSVC_HEARTBEAT_STATE_OK );
 
     // debug log
-    DEBUG_PRINT( "init: pass" );
+    DEBUG_PRINTLN( "init: pass" );
 }
 
 

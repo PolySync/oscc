@@ -26,8 +26,11 @@
 #include "control_protocol_can.h"
 #include "current_control_state.h"
 #include "PID.h"
-#include "common.h"
 #include "DAC_MCP49xx.h"
+#include "serial.h"
+#include "can.h"
+#include "time.h"
+#include "debug.h"
 
 
 
@@ -36,13 +39,6 @@
 // static global types/macros
 // *****************************************************
 
-#define PSYNC_DEBUG_FLAG ( true )
-
-#ifdef PSYNC_DEBUG_FLAG
-    #define DEBUG_PRINT( x )  Serial.println( x )
-#else
-    #define DEBUG_PRINT( x )
-#endif
 
 // set CAN_CS to pin 10 for CAN
 #define CAN_CS                          ( 10 )
@@ -133,112 +129,6 @@ static uint8_t torque_sum;
 // *****************************************************
 
 
-// *****************************************************
-// Function:    timer_delta_ms
-//
-// Purpose:     Calculate the milliseconds between the current time and the
-//              input and correct for the timer overflow condition
-//
-// Returns:     uint32_t the time delta between the two inputs
-//
-// Parameters:  [in] timestamp - the last time sample
-//
-// *****************************************************
-static uint32_t timer_delta_ms( uint32_t last_time )
-{
-    uint32_t delta = 0;
-    uint32_t current_time = millis( );
-
-    if ( current_time < last_time )
-    {
-        // Timer overflow
-        delta = ( UINT32_MAX - last_time ) + current_time;
-    }
-    else
-    {
-        delta = current_time - last_time;
-    }
-    return ( delta );
-}
-
-
-// *****************************************************
-// Function:    timer_delta_us
-//
-// Purpose:     Calculate the microseconds between the current time and the
-//              input and correct for the timer overflow condition
-//
-// Returns:     uint32_t the time delta between the two inputs
-//
-// Parameters:  [in] last_sample - the last time sample
-//              [in] current_sample - pointer to store the current time
-//
-// *****************************************************
-static uint32_t timer_delta_us( uint32_t last_time, uint32_t* current_time )
-{
-    uint32_t delta = 0;
-    uint32_t local_time = micros( );
-
-    if ( local_time < last_time )
-    {
-        // Timer overflow
-        delta = ( UINT32_MAX - last_time ) + local_time;
-    }
-    else
-    {
-        delta = local_time - last_time;
-    }
-
-    if ( current_time != NULL )
-    {
-        *current_time = local_time;
-    }
-
-    return ( delta );
-}
-
-
-// *****************************************************
-// Function:    init_serial
-//
-// Purpose:     Initializes the serial port communication
-//
-// Returns:     void
-//
-// Parameters:  None
-//
-// *****************************************************
-static void init_serial( )
-{
-    Serial.begin( SERIAL_BAUD );
-
-    DEBUG_PRINT( "init_serial: pass" );
-}
-
-
-// *****************************************************
-// Function:    init_can
-//
-// Purpose:     Initializes the CAN communication
-//              Function must iterate while the CAN module initializes
-//
-// Returns:     void
-//
-// Parameters:  None
-//
-// *****************************************************
-static void init_can ( void )
-{
-    while ( CAN.begin( CAN_BAUD ) != CAN_OK )
-    {
-        DEBUG_PRINT( "init_can: retrying" );
-
-        delay( CAN_INIT_RETRY_DELAY );
-    }
-
-    DEBUG_PRINT( "init_can: pass" );
-}
-
 
 
 /* ====================================== */
@@ -311,7 +201,7 @@ void enable_control( )
 
         current_ctrl_state.control_enabled = true;
 
-        DEBUG_PRINT( "Control enabled" );
+        DEBUG_PRINTLN( "Control enabled" );
     }
 }
 
@@ -349,7 +239,7 @@ void disable_control( )
     // Disable the signal interrupt relays
     digitalWrite( SPOOF_ENGAGE, LOW );
 
-    DEBUG_PRINT( "Control disabled" );
+    DEBUG_PRINTLN( "Control disabled" );
 }
 
 
@@ -525,7 +415,7 @@ static void publish_ps_ctrl_steering_report( )
 static void publish_timed_tx_frames( )
 {
     uint32_t delta =
-        timer_delta_ms( tx_frame_ps_ctrl_steering_report.timestamp );
+        timer_delta_ms( tx_frame_ps_ctrl_steering_report.timestamp, NULL );
 
     if ( delta >= PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL )
     {
@@ -646,11 +536,11 @@ void handle_ready_rx_frames( )
 static void check_rx_timeouts( )
 {
     uint32_t delta =
-        timer_delta_ms( rx_frame_ps_ctrl_steering_command.timestamp );
+        timer_delta_ms( rx_frame_ps_ctrl_steering_command.timestamp, NULL );
 
     if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
-        DEBUG_PRINT( "Control disabled: Timeout" );
+        DEBUG_PRINTLN( "Control disabled: Timeout" );
         disable_control();
     }
 }
@@ -696,9 +586,11 @@ void setup( )
     // Initialize relay board by clearing the Spoof Engage
     digitalWrite( SPOOF_ENGAGE, LOW );
 
-    init_serial( );
+    #ifdef DEBUG
+        init_serial( );
+    #endif
 
-    init_can( );
+    init_can(CAN);
 
     publish_ps_ctrl_steering_report( );
 
@@ -720,7 +612,7 @@ void setup( )
     pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
 
     // debug log
-    DEBUG_PRINT( "init: pass" );
+    DEBUG_PRINTLN( "init: pass" );
 }
 
 

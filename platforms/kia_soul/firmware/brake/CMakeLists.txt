@@ -6,21 +6,23 @@ generate_arduino_firmware(
     kia-soul-brake
     SKETCH src/brake_control_module.ino
     SRCS
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/DAC_MCP49xx/DAC_MCP49xx.cpp
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/FiniteStateMachine/FiniteStateMachine.cpp
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/mcp_can/mcp_can.cpp
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/PID/PID.c)
+    ${CMAKE_SOURCE_DIR}/common/libs/FiniteStateMachine/FiniteStateMachine.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/PID/PID.c
+    ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp)
 
 target_include_directories(
     kia-soul-brake
     PRIVATE
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/can_frame
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/common
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/control_protocol_can
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/DAC_MCP49xx
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/FiniteStateMachine
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/mcp_can
-    ${CMAKE_SOURCE_DIR}/common/arduino_libraries/PID)
+    ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_SOURCE_DIR}/common/libs/FiniteStateMachine
+    ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
+    ${CMAKE_SOURCE_DIR}/common/libs/PID
+    ${CMAKE_SOURCE_DIR}/common/libs/serial
+    ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/time)
 
 add_subdirectory(tests)
 add_subdirectory(utils)

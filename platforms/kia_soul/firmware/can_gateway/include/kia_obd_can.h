@@ -36,7 +36,7 @@
 
 
 #ifndef KIA_OBD_CAN_H
-#define	KIA_OBD_CAN_H
+#define    KIA_OBD_CAN_H
 
 
 #ifdef __cplusplus
@@ -182,4 +182,4 @@ typedef struct
 #endif
 
 
-#endif	/* KIA_OBD_CAN_H */
+#endif    /* KIA_OBD_CAN_H */

@@ -25,9 +25,12 @@
 #include "FiniteStateMachine.h"
 #include "mcp_can.h"
 #include "can_frame.h"
-#include "common.h"
 #include "control_protocol_can.h"
 #include "PID.h"
+#include "serial.h"
+#include "can.h"
+#include "time.h"
+#include "debug.h"
 
 
 
@@ -36,16 +39,6 @@
 // static global data
 // *****************************************************
 
-
-#define PSYNC_DEBUG_FLAG
-
-// show us if debugging
-#ifdef PSYNC_DEBUG_FLAG
-    #warning "PSYNC_DEBUG_FLAG defined"
-    #define DEBUG_PRINT(x)  Serial.println(x)
-#else
-    #define DEBUG_PRINT(x)
-#endif
 
 // chip select pin for CAN Shield
 #define CAN_CS 53
@@ -87,51 +80,6 @@ static PID pidParams;
 // *****************************************************
 // static declarations
 // *
-
-
-// corrects for overflow condition
-static void get_update_time_delta_ms(
-		const uint32_t time_in,
-		const uint32_t last_update_time_ms,
-		uint32_t * const delta_out )
-{
-    // check for overflow
-    if( last_update_time_ms < time_in )
-    {
-		// time remainder, prior to the overflow
-		(*delta_out) = (UINT32_MAX - time_in);
-
-        // add time since zero
-        (*delta_out) += last_update_time_ms;
-    }
-    else
-    {
-        // normal delta
-        (*delta_out) = ( last_update_time_ms - time_in );
-    }
-}
-
-
-// uses last_update_ms, corrects for overflow condition
-static void get_update_time_ms(
-                const uint32_t * const time_in,
-                        uint32_t * const delta_out )
-{
-    // check for overflow
-    if( last_update_ms < (*time_in) )
-    {
-            // time remainder, prior to the overflow
-            (*delta_out) = (UINT32_MAX - (*time_in));
-
-            // add time since zero
-            (*delta_out) += last_update_ms;
-        }
-    else
-    {
-            // normal delta
-            (*delta_out) = (last_update_ms - (*time_in));
-        }
-}
 
 
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids )
@@ -499,31 +447,6 @@ Accumulator accumulator( PIN_PACC, PIN_PUMP );
 SMC smc(PIN_PMC1, PIN_PMC2, PIN_SMC);
 Brakes brakes = Brakes( PIN_PFL, PIN_PFR, PIN_SLAFL, PIN_SLAFR, PIN_SLRFL, PIN_SLRFR);
 
-//
-static void init_serial( void )
-{
-    Serial.begin( SERIAL_BAUD );
-
-    // debug log
-    DEBUG_PRINT( "init_serial: pass" );
-}
-
-
-//
-static void init_can( void )
-{
-    // Wait until we have initialized
-    while( CAN.begin( CAN_BAUD ) != CAN_OK )
-    {
-        // wait a little
-        delay( CAN_INIT_RETRY_DELAY );
-        DEBUG_PRINT( "init_can: retrying" );
-    }
-
-    // Debug log
-    DEBUG_PRINT( "init_can: pass" );
-}
-
 
 //
 static void publish_ps_ctrl_brake_report( void )
@@ -573,7 +496,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    get_update_time_ms( &tx_frame_ps_ctrl_brake_report.timestamp, &delta );
+    get_update_time_delta_ms( tx_frame_ps_ctrl_brake_report.timestamp, last_update_ms, &delta );
 
     // check publish interval
     if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
@@ -680,7 +603,7 @@ void waitEnter()
     brakes.depowerSLA();
     brakes.depowerSLR();
 
-    DEBUG_PRINT( "Entered wait state" );
+    DEBUG_PRINTLN( "Entered wait state" );
 }
 
 void waitUpdate()
@@ -706,7 +629,7 @@ void brakeEnter()
 
     // close SLRRs, they are normally open for failsafe conditions
     brakes.depowerSLR();
-    DEBUG_PRINT("entered brake state");
+    DEBUG_PRINTLN("entered brake state");
 }
 
 
@@ -879,9 +802,11 @@ void setup( void )
     // initialize for braking
     brakes.depowerSLA();
 
-    init_serial();
+    #ifdef DEBUG
+        init_serial();
+    #endif
 
-    init_can();
+    init_can(CAN);
 
     publish_ps_ctrl_brake_report();
 
@@ -895,7 +820,7 @@ void setup( void )
     pid_zeroize( &pidParams, BRAKE_PID_WINDUP_GUARD );
 
     // debug log
-    DEBUG_PRINT( "init: pass" );
+    DEBUG_PRINTLN( "init: pass" );
 
 }
 

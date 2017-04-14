@@ -46,8 +46,8 @@ typedef struct
     //
     //
     bool control_enabled; /* Is control currently enabled flag */
-	//
-	//
+    //
+    //
     bool emergency_stop; /* Emergency stop has been acitivated by higher level controller */
     //
     //
