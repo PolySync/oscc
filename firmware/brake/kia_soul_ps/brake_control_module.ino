@@ -830,9 +830,6 @@ void process_ps_ctrl_brake_command(
     }
 
     brakes.pedal_command = control_data->pedal_command;
-
-//    DEBUG_PRINT( "pedal_command: " );
-//    DEBUG_PRINTLN( brakes.pedal_command );
 }
 
 
@@ -971,12 +968,12 @@ void brake_update( )
 
         if ( pid_output < -10.0 )
         {
+            // pressure is too high
             static struct interpolate_range_s slr_ranges =
                 { 0.0, 60.0, SLR_DUTY_CYCLE_MIN, SLR_DUTY_CYCLE_MAX };
 
             uint16_t slr_duty_cycle = 0;
 
-            // pressure is too high
             brake_command_actuator_solenoids( 0 );
 
             pid_output = -pid_output;
@@ -992,9 +989,15 @@ void brake_update( )
             DEBUG_PRINT(",0,");
             DEBUG_PRINT(slr_duty_cycle);
 
+            if ( pressure_target < 20.0 )
+            {
+                brake_lights_off();
+            }
+
         }
         else if ( pid_output > 10.0 )
         {
+            // pressure is too low
             static struct interpolate_range_s sla_ranges =
                 { 10.0, 110.0, SLA_DUTY_CYCLE_MIN, SLA_DUTY_CYCLE_MAX };
 
@@ -1002,7 +1005,6 @@ void brake_update( )
 
             brake_lights_on();
 
-            // pressure is too low
             brake_command_release_solenoids( 0 );
 
             sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
@@ -1018,9 +1020,9 @@ void brake_update( )
             DEBUG_PRINT(sla_duty_cycle);
             DEBUG_PRINT(",0");
         }
-        else    // -18.0 < pid_output < 18.0
+        else    // -10.0 < pid_output < 10.0
         {
-            if ( brakes.pedal_command == 0 )
+            if ( brakes.pedal_command < 100 )
             {
                 brake_lights_off();
             }
