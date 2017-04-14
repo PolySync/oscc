@@ -2,62 +2,39 @@
 #define _OSCC_TIME_H_
 
 
-//
 #define GET_TIMESTAMP_MS() ((uint32_t) millis())
-
-//
 #define GET_TIMESTAMP_US() ((uint32_t) micros())
-
-//
 #define SLEEP_MS(x) delay(x)
 
 
-void get_update_time_delta_ms(
-        const uint32_t time_in,
-        uint32_t last_update_ms,
-        uint32_t * const delta_out );
+// *****************************************************
+// Function:    get_time_delta
+//
+// Purpose:     Calculate the difference between timestamp_a and timestamp_b
+//
+// Returns:     uint32t - difference between timestamp_a and timestamp_b
+//
+// Parameters:  [in] timestamp_a - first timestamp for comparison
+//              [in] timestamp_b - second timestamp for comparison
+//
+// *****************************************************
+uint32_t get_time_delta(
+        const uint32_t timestamp_a,
+        const uint32_t timestamp_b);
 
 
 // *****************************************************
-// Function:    timer_delta_ms
+// Function:    is_timeout
 //
-// Purpose:     Calculate the milliseconds between the current time and the
-//              input and correct for the timer overflow condition
-//
-// Returns:     uint32_t the time delta between the two inputs
-//
-// Parameters:  [in] last_time - the last time sample
-//              [in] current_time - pointer to store the current time
-//
-// *****************************************************
-uint32_t timer_delta_ms( uint32_t last_time, uint32_t* current_time );
-
-
-// *****************************************************
-// Function:    timer_delta_us
-//
-// Purpose:     Calculate the microseconds between the` current time and the
-//              input and correct for the timer overflow condition
-//
-// Returns:     uint32_t the time delta between the two inputs
-//
-// Parameters:  [in] last_time - the last time sample
-//              [in] current_time - pointer to store the current time
-//
-// *****************************************************
-uint32_t timer_delta_us( uint32_t last_time, uint32_t* current_time );
-
-
-// *****************************************************
-// Function:    check_rx_timeouts
-//
-// Purpose:     Check if time since last receive is greater than timeout period
+// Purpose:     Check if a timestamp is greater than a timeout period
 //
 // Returns:     bool - true if a timeout has occurred
 //
-// Parameters:  [in] last_rx_time - time of last receive
+// Parameters:  [in] timestamp - time against which to compare
+//              [in] timeout - timeout period to check against
 //
 // *****************************************************
-bool check_rx_timeouts( uint32_t last_rx_time );
+bool is_timeout( const uint32_t timestamp_a, const uint32_t timestamp_b, const int timeout );
+
 
 #endif

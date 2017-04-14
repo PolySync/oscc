@@ -217,7 +217,7 @@ static void publish_timed_tx_frames( void )
     uint32_t delta = 0;
 
     // get time since last publish
-    get_update_time_delta_ms( tx_frame_ps_ctrl_throttle_report.timestamp, last_update_ms, &delta );
+    delta = get_time_delta( tx_frame_ps_ctrl_throttle_report.timestamp, last_update_ms );
 
     // check publish interval
     if( delta >= PS_CTRL_THROTTLE_REPORT_PUBLISH_INTERVAL )
@@ -274,19 +274,13 @@ void handle_ready_rx_frames( can_frame_s *frame )
 //
 static void check_rx_timeouts( void )
 {
-    // local vars
-    uint32_t delta = 0;
+    bool timeout = is_timeout(
+            rx_frame_ps_ctrl_throttle_command.timestamp,
+            GET_TIMESTAMP_MS( ),
+            PS_CTRL_RX_WARN_TIMEOUT);
 
-    // get time since last receive
-    get_update_time_delta_ms(
-                       rx_frame_ps_ctrl_throttle_command.timestamp,
-                       GET_TIMESTAMP_MS(),
-                       &delta );
-
-    // check rx timeout
-    if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
+    if( timeout == true )
     {
-        // disable control from the PolySync interface
         if( control_state.enabled == true )
         {
             disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );

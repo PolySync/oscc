@@ -305,7 +305,7 @@ static void publish_ps_ctrl_steering_report( )
 static void publish_timed_tx_frames( )
 {
     uint32_t delta =
-        timer_delta_ms( tx_frame_ps_ctrl_steering_report.timestamp, NULL );
+        get_time_delta( tx_frame_ps_ctrl_steering_report.timestamp, GET_TIMESTAMP_MS() );
 
     if ( delta >= PS_CTRL_STEERING_REPORT_PUBLISH_INTERVAL )
     {
@@ -411,13 +411,18 @@ void handle_ready_rx_frames( can_frame_s *frame )
 // *****************************************************
 static void check_rx_timeouts( )
 {
-    uint32_t delta =
-        timer_delta_ms( rx_frame_ps_ctrl_steering_command.timestamp, NULL );
+    bool timeout = is_timeout(
+            rx_frame_ps_ctrl_steering_command.timestamp,
+            GET_TIMESTAMP_MS( ),
+            PS_CTRL_RX_WARN_TIMEOUT);
 
-    if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
+    if( timeout == true )
     {
-        DEBUG_PRINTLN( "Control disabled: Timeout" );
-        disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
+        if( control_state.enabled == true )
+        {
+            disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
+            DEBUG_PRINTLN( "Control disabled: Timeout" );
+        }
     }
 }
 
@@ -526,10 +531,10 @@ void loop( )
     // check all timeouts
     check_rx_timeouts( );
 
-    uint32_t current_timestamp_us;
+    uint32_t current_timestamp_us = GET_TIMESTAMP_US();
 
-    uint32_t deltaT = timer_delta_us( control_state.timestamp_us,
-                                      &current_timestamp_us );
+    uint32_t deltaT = get_time_delta( control_state.timestamp_us,
+                                      current_timestamp_us );
 
     if ( deltaT > 50000 )
     {

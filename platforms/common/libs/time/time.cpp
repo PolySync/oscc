@@ -3,71 +3,41 @@
 #include "time.h"
 
 
-void get_update_time_delta_ms(
-        const uint32_t time_in,
-        const uint32_t last_update_ms,
-        uint32_t * const delta_out )
+uint32_t get_time_delta(
+        const uint32_t timestamp_a,
+        const uint32_t timestamp_b)
 {
+    uint32_t delta = 0;
+
     // check for overflow
-    if( last_update_ms < time_in )
+    if( timestamp_b < timestamp_a )
     {
         // time remainder, prior to the overflow
-        (*delta_out) = (UINT32_MAX - time_in);
+        delta = UINT32_MAX - timestamp_a;
 
         // add time since zero
-        (*delta_out) += last_update_ms;
+        delta += timestamp_b;
     }
     else
     {
         // normal delta
-        (*delta_out) = (last_update_ms - time_in);
+        delta = timestamp_b - timestamp_a;
     }
+
+    return delta;
 }
 
 
-uint32_t timer_delta_ms( uint32_t last_time, uint32_t* current_time )
+bool is_timeout( uint32_t timestamp_a, uint32_t timestamp_b, int timeout )
 {
-    uint32_t delta = 0;
-    uint32_t local_time = millis( );
+    bool ret = false;
 
-    if ( local_time < last_time )
+    uint32_t delta = get_time_delta(timestamp_a, timestamp_b);
+
+    if( delta >= timeout )
     {
-        // Timer overflow
-        delta = ( UINT32_MAX - last_time ) + local_time;
-    }
-    else
-    {
-        delta = local_time - last_time;
+        ret = true;
     }
 
-    if ( current_time != NULL )
-    {
-        *current_time = local_time;
-    }
-
-    return ( delta );
-}
-
-
-uint32_t timer_delta_us( uint32_t last_time, uint32_t* current_time )
-{
-    uint32_t delta = 0;
-    uint32_t local_time = micros( );
-
-    if ( local_time < last_time )
-    {
-        // Timer overflow
-        delta = ( UINT32_MAX - last_time ) + local_time;
-    }
-    else
-    {
-        delta = local_time - last_time;
-    }
-
-    if ( current_time != NULL )
-    {
-        *current_time = local_time;
-    }
-
-    return ( delta );
+    return ret;
 }

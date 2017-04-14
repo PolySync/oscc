@@ -501,7 +501,7 @@ static void publish_timed_tx_frames( void )
     uint32_t delta = 0;
 
     // get time since last publish
-    get_update_time_delta_ms( tx_frame_ps_ctrl_brake_report.timestamp, last_update_ms, &delta );
+    delta = get_time_delta( tx_frame_ps_ctrl_brake_report.timestamp, last_update_ms );
 
     // check publish interval
     if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )

@@ -268,7 +268,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    get_update_time_delta_ms( tx_frame_heartbeat.timestamp, last_update_ms, &delta );
+    delta = get_time_delta( tx_frame_heartbeat.timestamp, last_update_ms );
 
     // check publish interval
     if( delta >= PSVC_HEARTBEAT_MSG_TX_PUBLISH_INTERVAL )
@@ -278,7 +278,7 @@ static void publish_timed_tx_frames( void )
     }
 
     // get time since last publish
-    get_update_time_delta_ms( tx_frame_chassis_state1.timestamp, last_update_ms, &delta );
+    delta = get_time_delta( tx_frame_chassis_state1.timestamp, last_update_ms );
 
     // check publish interval
     if( delta >= PSVC_CHASSIS_STATE1_MSG_TX_PUBLISH_INTERVAL )
@@ -288,7 +288,7 @@ static void publish_timed_tx_frames( void )
     }
 
     // get time since last publish
-    get_update_time_delta_ms( tx_frame_chassis_state2.timestamp, last_update_ms, &delta );
+    delta = get_time_delta( tx_frame_chassis_state2.timestamp, last_update_ms );
 
     // check publish interval
     if( delta >= PSVC_CHASSIS_STATE2_MSG_TX_PUBLISH_INTERVAL )
@@ -488,60 +488,50 @@ static void handle_ready_rx_frames( can_frame_s *frame )
 //
 static void check_rx_timeouts( void )
 {
-    // local vars
-    uint32_t delta = 0;
+    bool timeout = false;
 
+    timeout = is_timeout(
+            rx_frame_kia_status1.timestamp,
+            last_update_ms,
+            KIA_CCAN_STATUS1_RX_WARN_TIMEOUT);
 
-    // get time since last receive
-    get_update_time_delta_ms( rx_frame_kia_status1.timestamp, last_update_ms, &delta );
-
-    // check Rx timeout
-    if( delta >= KIA_CCAN_STATUS1_RX_WARN_TIMEOUT )
+    if( timeout == true )
     {
-        // set timeout warning
         SET_WARNING( PSVC_HEARTBEAT_WARN_KIA_STATUS1_TIMEOUT );
-
-        // invalidate steering wheel angle and rate
         CLEAR_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_STEER_WHEEL_ANGLE_VALID );
         CLEAR_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
     }
 
-    // get time since last receive
-    get_update_time_delta_ms( rx_frame_kia_status2.timestamp, last_update_ms, &delta );
+    timeout = is_timeout(
+            rx_frame_kia_status2.timestamp,
+            last_update_ms,
+            KIA_CCAN_STATUS2_RX_WARN_TIMEOUT);
 
-    // check Rx timeout
-    if( delta >= KIA_CCAN_STATUS2_RX_WARN_TIMEOUT )
+    if( timeout == true )
     {
-        // set timeout warning
         SET_WARNING( PSVC_HEARTBEAT_WARN_KIA_STATUS2_TIMEOUT );
-
-        // invalidate wheel speed
         CLEAR_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_WHEEL_SPEED_VALID );
     }
 
-    // get time since last receive
-    get_update_time_delta_ms( rx_frame_kia_status3.timestamp, last_update_ms, &delta );
+    timeout = is_timeout(
+            rx_frame_kia_status3.timestamp,
+            last_update_ms,
+            KIA_CCAN_STATUS3_RX_WARN_TIMEOUT);
 
-    // check Rx timeout
-    if( delta >= KIA_CCAN_STATUS3_RX_WARN_TIMEOUT )
+    if( timeout == true )
     {
-        // set timeout warning
         SET_WARNING( PSVC_HEARTBEAT_WARN_KIA_STATUS3_TIMEOUT );
-
-        // invalidate brake pressure
         CLEAR_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_BRAKE_PRESSURE_VALID );
     }
 
-    // get time since last receive
-    get_update_time_delta_ms( rx_frame_kia_status4.timestamp, last_update_ms, &delta );
+    timeout = is_timeout(
+            rx_frame_kia_status4.timestamp,
+            last_update_ms,
+            KIA_CCAN_STATUS4_RX_WARN_TIMEOUT);
 
-    // check Rx timeout
-    if( delta >= KIA_CCAN_STATUS4_RX_WARN_TIMEOUT )
+    if( timeout == true )
     {
-        // set timeout warning
         SET_WARNING( PSVC_HEARTBEAT_WARN_KIA_STATUS4_TIMEOUT );
-
-        // clear signals
         CLEAR_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_LEFT_TURN_SIGNAL_ON );
         CLEAR_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_RIGHT_TURN_SIGNAL_ON );
         CLEAR_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_BRAKE_SIGNAL_ON );

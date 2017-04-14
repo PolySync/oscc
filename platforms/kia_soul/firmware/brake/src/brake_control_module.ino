@@ -496,7 +496,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    get_update_time_delta_ms( tx_frame_ps_ctrl_brake_report.timestamp, last_update_ms, &delta );
+    delta = get_time_delta( tx_frame_ps_ctrl_brake_report.timestamp, last_update_ms );
 
     // check publish interval
     if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
@@ -724,17 +724,12 @@ void brakeExit()
 //
 static void check_rx_timeouts( void )
 {
-    // local vars
-    uint32_t delta = 0;
-
-    // get time since last receive
-    get_update_time_delta_ms(
+    bool timeout_occurred = is_timeout(
             rx_frame_ps_ctrl_brake_command.timestamp,
             GET_TIMESTAMP_MS(),
-            &delta );
+            PS_CTRL_RX_WARN_TIMEOUT);
 
-    // check rx timeout
-    if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
+    if( timeout_occurred == true )
     {
         // disable control from the PolySync interface
         if( controlEnabled )
