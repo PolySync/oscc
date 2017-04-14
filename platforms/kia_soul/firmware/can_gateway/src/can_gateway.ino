@@ -459,48 +459,28 @@ static void process_kia_status4( const can_frame_s * const rx_frame )
 
 
 //
-static void handle_ready_rx_frames( void )
+static void handle_ready_rx_frames( can_frame_s *frame )
 {
-    // local vars
-    can_frame_s rx_frame;
-
-
-    // check if OBD CAN frame is ready to be read
-    if( obd_can.checkReceive() == CAN_MSGAVAIL )
+    // check for a supported frame ID
+    if( frame->id == KIA_CCAN_STATUS1_MESSAGE_ID )
     {
-        // zero
-        memset( &rx_frame, 0, sizeof(rx_frame) );
-
-        // update timestamp
-        rx_frame.timestamp = last_update_ms;
-
-        // read frame
-        obd_can.readMsgBufID(
-                (INT32U*) &rx_frame.id,
-                (INT8U*) &rx_frame.dlc,
-                (INT8U*) rx_frame.data );
-
-        // check for a supported frame ID
-        if( rx_frame.id == KIA_CCAN_STATUS1_MESSAGE_ID )
-        {
-            // process status1
-            process_kia_status1( &rx_frame );
-        }
-        else if( rx_frame.id == KIA_CCAN_STATUS2_MESSAGE_ID )
-        {
-            // process status2
-            process_kia_status2( &rx_frame );
-        }
-        else if( rx_frame.id == KIA_CCAN_STATUS3_MESSAGE_ID )
-        {
-            // process status3
-            process_kia_status3( &rx_frame );
-        }
-        else if( rx_frame.id == KIA_CCAN_STATUS4_MESSAGE_ID )
-        {
-            // process status4
-            process_kia_status4( &rx_frame );
-        }
+        // process status1
+        process_kia_status1( frame );
+    }
+    else if( frame->id == KIA_CCAN_STATUS2_MESSAGE_ID )
+    {
+        // process status2
+        process_kia_status2( frame );
+    }
+    else if( frame->id == KIA_CCAN_STATUS3_MESSAGE_ID )
+    {
+        // process status3
+        process_kia_status3( frame );
+    }
+    else if( frame->id == KIA_CCAN_STATUS4_MESSAGE_ID )
+    {
+        // process status4
+        process_kia_status4( frame );
     }
 }
 
@@ -612,13 +592,13 @@ void setup( void )
     #endif
 
     // init OBD CAN
-    init_can(obd_can);
+    init_can( obd_can );
 
     // reset watchdog
     wdt_reset();
 
     // init control CAN
-    init_can(control_can);
+    init_can( control_can );
 
     // reset watchdog
     wdt_reset();
@@ -673,7 +653,13 @@ void loop( void )
     wdt_reset();
 
     // read and process any available OBD CAN Rx frames
-    handle_ready_rx_frames();
+    can_frame_s rx_frame;
+    int ret = check_for_rx_frame( obd_can, &rx_frame );
+
+    if( ret == RX_FRAME_AVAILABLE )
+    {
+        handle_ready_rx_frames( &rx_frame );
+    }
 
     // publish all CAN Tx frames according to their individual Tx rates
     publish_timed_tx_frames();

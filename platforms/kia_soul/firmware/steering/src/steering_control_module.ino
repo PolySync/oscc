@@ -380,32 +380,20 @@ static void process_psvc_chassis_state1(
 //
 // Returns:     void
 //
-// Parameters:  None
+// Parameters:  frame - frame containing received data
 //
 // *****************************************************
-void handle_ready_rx_frames( )
+void handle_ready_rx_frames( can_frame_s *frame )
 {
-    if ( CAN.checkReceive() == CAN_MSGAVAIL )
+    if ( frame->id == PS_CTRL_MSG_ID_STEERING_COMMAND )
     {
-        can_frame_s rx_frame;
-
-        memset( &rx_frame, 0, sizeof(rx_frame) );
-
-        CAN.readMsgBufID( (INT32U*) &rx_frame.id,
-                          (INT8U*) &rx_frame.dlc,
-                          (INT8U*) rx_frame.data );
-
-        if ( rx_frame.id == PS_CTRL_MSG_ID_STEERING_COMMAND )
-        {
-            process_ps_ctrl_steering_command(
-                ( const ps_ctrl_steering_command_msg * const )rx_frame.data );
-        }
-
-        if ( rx_frame.id == KIA_STATUS1_MESSAGE_ID )
-        {
-            process_psvc_chassis_state1(
-                ( const psvc_chassis_state1_data_s * const )rx_frame.data );
-        }
+        process_ps_ctrl_steering_command(
+            ( const ps_ctrl_steering_command_msg * const )frame->data );
+    }
+    else if ( frame->id == KIA_STATUS1_MESSAGE_ID )
+    {
+        process_psvc_chassis_state1(
+            ( const psvc_chassis_state1_data_s * const )frame->data );
     }
 }
 
@@ -478,7 +466,7 @@ void setup( )
         init_serial( );
     #endif
 
-    init_can(CAN);
+    init_can( CAN );
 
     publish_ps_ctrl_steering_report( );
 
@@ -523,9 +511,14 @@ void setup( )
 // *****************************************************
 void loop( )
 {
-
     // checks for CAN frames, if yes, updates state variables
-    handle_ready_rx_frames( );
+    can_frame_s rx_frame;
+    int ret = check_for_rx_frame( CAN, &rx_frame );
+
+    if( ret == RX_FRAME_AVAILABLE )
+    {
+        handle_ready_rx_frames( &rx_frame );
+    }
 
     // publish all report CAN frames
     publish_timed_tx_frames( );

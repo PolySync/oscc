@@ -557,37 +557,17 @@ static void process_psvc_chassis_state1( const uint8_t * const rx_frame_buffer )
 
 
 // a function to parse CAN data into useful variables
-void handle_ready_rx_frames(void) {
-
-    // local vars
-    can_frame_s rx_frame;
-
-    if( CAN.checkReceive() == CAN_MSGAVAIL )
+static void handle_ready_rx_frames( can_frame_s *frame ) {
+    // check for a supported frame ID
+    if( frame->id == PS_CTRL_MSG_ID_BRAKE_COMMAND )
     {
-        memset( &rx_frame, 0, sizeof(rx_frame) );
-
-        // update timestamp
-        rx_frame.timestamp = last_update_ms;
-
-        // read frame
-        CAN.readMsgBufID(
-                (INT32U*) &rx_frame.id,
-                (INT8U*) &rx_frame.dlc,
-                (INT8U*) rx_frame.data );
-
-        // check for a supported frame ID
-        if( rx_frame.id == PS_CTRL_MSG_ID_BRAKE_COMMAND )
-        {
-            // process brake command
-            process_ps_ctrl_brake_command( rx_frame.data );
-        }
-
-        // check for a supported frame ID
-        if( rx_frame.id == KIA_STATUS1_MESSAGE_ID )
-        {
-            // process brake command
-            process_psvc_chassis_state1( rx_frame.data );
-        }
+        // process brake command
+        process_ps_ctrl_brake_command( frame->data );
+    }
+    else if( frame->id == KIA_STATUS1_MESSAGE_ID )
+    {
+        // process brake command
+        process_psvc_chassis_state1( frame->data );
     }
 }
 
@@ -806,7 +786,7 @@ void setup( void )
         init_serial();
     #endif
 
-    init_can(CAN);
+    init_can( CAN );
 
     publish_ps_ctrl_brake_report();
 
@@ -830,7 +810,13 @@ void loop()
     // update the global system update timestamp, ms
     last_update_ms = GET_TIMESTAMP_MS();
 
-    handle_ready_rx_frames();
+    can_frame_s rx_frame;
+    int ret = check_for_rx_frame( CAN, &rx_frame );
+
+    if( ret == RX_FRAME_AVAILABLE )
+    {
+        handle_ready_rx_frames( &rx_frame );
+    }
 
     publish_timed_tx_frames();
 

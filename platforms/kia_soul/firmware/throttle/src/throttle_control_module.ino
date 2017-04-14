@@ -260,32 +260,14 @@ static void process_ps_ctrl_throttle_command(
 }
 
 // A function to parse CAN data into useful variables
-void handle_ready_rx_frames( void )
+void handle_ready_rx_frames( can_frame_s *frame )
 {
-    // local vars
-    can_frame_s rx_frame;
-
-    if( CAN.checkReceive( ) == CAN_MSGAVAIL )
+    // check for a supported frame ID
+    if( frame->id == PS_CTRL_THROTTLE_COMMAND_ID )
     {
-        memset( &rx_frame, 0, sizeof( rx_frame ) );
-
-        // update timestamp
-        rx_frame.timestamp = last_update_ms;
-
-        // read frame
-        CAN.readMsgBufID(
-                ( INT32U* ) &rx_frame.id,
-                ( INT8U* ) &rx_frame.dlc,
-                ( INT8U* ) rx_frame.data );
-
-        // check for a supported frame ID
-        if( rx_frame.id == PS_CTRL_THROTTLE_COMMAND_ID )
-        {
-            // process status1
-            process_ps_ctrl_throttle_command( rx_frame.data );
-        }
+        // process status1
+        process_ps_ctrl_throttle_command( frame->data );
     }
-
 }
 
 
@@ -344,7 +326,7 @@ void setup( )
         init_serial( );
     #endif
 
-    init_can(CAN);
+    init_can( CAN );
 
     publish_ps_ctrl_throttle_report( );
 
@@ -383,7 +365,13 @@ void loop()
     last_update_ms = GET_TIMESTAMP_MS( );
 
     // checks for CAN frames, if yes, updates state variables
-    handle_ready_rx_frames( );
+    can_frame_s rx_frame;
+    int ret = check_for_rx_frame( CAN, &rx_frame );
+
+    if( ret == RX_FRAME_AVAILABLE )
+    {
+        handle_ready_rx_frames( &rx_frame );
+    }
 
     // publish all report CAN frames
     publish_timed_tx_frames( );
