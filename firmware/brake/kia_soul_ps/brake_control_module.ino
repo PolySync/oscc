@@ -34,8 +34,10 @@
 // show us if debugging
 #ifdef PSYNC_DEBUG_FLAG
     #warning "PSYNC_DEBUG_FLAG defined"
-    #define DEBUG_PRINT(X)  Serial.println(X)
+    #define DEBUG_PRINTLN(X)  Serial.println(X)
+    #define DEBUG_PRINT(X)  Serial.print(X)
 #else
+    #define DEBUG_PRINTLN(X)
     #define DEBUG_PRINT(X)
 #endif
 
@@ -46,12 +48,12 @@
 
 // All pressures are in tenths of a bar (decibars) to match
 // the values coming from the vehicle
-//const float MIN_ACCUMULATOR_PRESSURE = 2.1;              // min accumulator pressure to maintain
 const float MIN_ACCUMULATOR_PRESSURE = 777.6;   // min pressure to maintain (decibars)
-//const float MAX_ACCUMULATOR_PRESSURE = 2.3;               // max accumulator pressure to maintain (bar)
 const float MAX_ACCUMULATOR_PRESSURE = 878.3;   // max pressure to maintain (decibars)
-//const float PEDAL_THRESHOLD = 0.6;       // Pressure for pedal interference
 const float PEDAL_THRESHOLD = 43.2;             // Pedal pressure for driver override
+
+const float MIN_BRAKE_PRESSURE = 12.0;
+const float MAX_BRAKE_PRESSURE = 947.9;
 
 // *****************************************************
 // static global data/macros
@@ -60,17 +62,17 @@ const float PEDAL_THRESHOLD = 43.2;             // Pedal pressure for driver ove
 #define CAN_SHIELD_CHIP_SELECT_PIN (53)
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT (150)
-#define BRAKE_CONTROL_LOOP_INTERVAL (10)
+#define PS_CTRL_RX_WARN_TIMEOUT (2500)
+#define BRAKE_CONTROL_LOOP_INTERVAL (5)
 
-#define BRAKE_PID_WINDUP_GUARD (500)
+#define BRAKE_PID_WINDUP_GUARD (30)
 
 // The min/max duty cycle scalars used for 3.921 KHz PWM frequency.
 // These represent the minimum duty cycles that begin to actuate the
 // proportional solenoids and the maximum duty cycle where the solenoids
 // have reached their stops.
 #define SLA_DUTY_CYCLE_MAX (105.0)
-#define SLA_DUTY_CYCLE_MIN (50.0)
+#define SLA_DUTY_CYCLE_MIN (80.0)
 #define SLR_DUTY_CYCLE_MAX (100.0)
 #define SLR_DUTY_CYCLE_MIN (50.0)
 
@@ -211,7 +213,7 @@ void init_serial( void )
 {
     Serial.begin( SERIAL_BAUD );
 
-    DEBUG_PRINT( "init_serial: pass" );
+    DEBUG_PRINTLN( "init_serial: pass" );
 }
 
 
@@ -231,10 +233,10 @@ void init_can( void )
     while ( CAN.begin( CAN_BAUD ) != CAN_OK )
     {
         delay( CAN_INIT_RETRY_DELAY );
-        DEBUG_PRINT( "init_can: retrying" );
+        DEBUG_PRINTLN( "init_can: retrying" );
     }
 
-    DEBUG_PRINT( "init_can: pass" );
+    DEBUG_PRINTLN( "init_can: pass" );
 }
 
 
@@ -296,6 +298,34 @@ uint32_t timer_delta_ms( uint32_t last_time )
     return ( delta );
 }
 
+// *****************************************************
+// Function:    timer_delta_us
+// 
+// Purpose:     Calculate the microseconds between the current time and the
+//              input and correct for the timer overflow condition
+// 
+// Returns:     uint32_t the time delta between the two inputs
+// 
+// Parameters:  last_time - the last time sample
+// 
+// *****************************************************
+uint32_t timer_delta_us( uint32_t last_time )
+{
+    uint32_t delta = 0;
+    uint32_t current_time = micros( );
+
+    if ( current_time < last_time )
+    {
+        delta = ( UINT32_MAX - last_time ) + current_time;
+    }   
+    else
+    {   
+        delta = current_time - last_time;
+    }
+    return ( delta );
+}
+
+
 
 // *****************************************************
 // Function:    raw_adc_to_pressure
@@ -325,6 +355,15 @@ float raw_adc_to_pressure( uint16_t input )
     float pressure = ( float )input;
     pressure *= 2.4;
     pressure -= 252.1;
+
+    if ( pressure < MIN_BRAKE_PRESSURE )
+    {
+        pressure = MIN_BRAKE_PRESSURE;
+    }
+    else if ( pressure > MAX_BRAKE_PRESSURE )
+    {
+        pressure = MAX_BRAKE_PRESSURE;
+    }
 
     return ( pressure );
 }
@@ -434,6 +473,7 @@ void accumulator_init( )
 void master_cylinder_open( )
 {
     analogWrite( PIN_SMC, 0 );
+    DEBUG_PRINTLN( "MC Open" );
 }
 
 // *****************************************************
@@ -449,6 +489,7 @@ void master_cylinder_open( )
 void master_cylinder_close( )
 {
     analogWrite( PIN_SMC, 255 );
+    DEBUG_PRINTLN( "MC Close" );
 }
 
 
@@ -642,6 +683,7 @@ void brake_check_driver_override( )
     if ( ( filtered_input_1 > PEDAL_THRESHOLD ) ||
          ( filtered_input_2 > PEDAL_THRESHOLD ) )
     {
+        DEBUG_PRINTLN( "driver override" );
         brakes.driver_override = 1;
         brakes.enable_request = false;
     }
@@ -789,8 +831,8 @@ void process_ps_ctrl_brake_command(
 
     brakes.pedal_command = control_data->pedal_command;
 
-    DEBUG_PRINT( "pedal_command: " );
-    DEBUG_PRINT( brakes.pedal_command );
+//    DEBUG_PRINT( "pedal_command: " );
+//    DEBUG_PRINTLN( brakes.pedal_command );
 }
 
 
@@ -870,6 +912,14 @@ void brake_update( )
     static float pressure_target = 0.0;
     static float pressure = 0.0;
 
+    static uint32_t control_loop_time = 0;
+
+    float loop_delta_t = (float)timer_delta_us( control_loop_time );
+    control_loop_time = micros();
+
+    loop_delta_t /= 1000.0;
+    loop_delta_t /= 1000.0;
+
     brake_update_pressure( );
 
     // ********************************************************************
@@ -899,16 +949,30 @@ void brake_update( )
 
     pressure_target = interpolate( brakes.pedal_command, &pressure_ranges );
 
-    int16_t ret = pid_update( &pid_params, pressure_target, pressure, 0.01 );
+    int16_t ret = pid_update( &pid_params,
+                              pressure_target,
+                              pressure,
+                              loop_delta_t );
+
+    // Requested pressure
+    DEBUG_PRINT(pressure_target);
+
+    // Pressure at wheels (PFR and PFL)
+    DEBUG_PRINT(",");
+    DEBUG_PRINT(pressure);
+
+    // PID output
+    DEBUG_PRINT(",");
+    DEBUG_PRINT( pid_params.control );
 
     if ( ret == PID_SUCCESS )
     {
         float pid_output = pid_params.control;
 
-        if ( pid_output < 0.0 )
+        if ( pid_output < -10.0 )
         {
             static struct interpolate_range_s slr_ranges =
-                { 0.0, 0.5, SLR_DUTY_CYCLE_MIN, SLR_DUTY_CYCLE_MAX };
+                { 0.0, 60.0, SLR_DUTY_CYCLE_MIN, SLR_DUTY_CYCLE_MAX };
 
             uint16_t slr_duty_cycle = 0;
 
@@ -924,11 +988,15 @@ void brake_update( )
             }
 
             brake_command_release_solenoids( slr_duty_cycle );
+
+            DEBUG_PRINT(",0,");
+            DEBUG_PRINT(slr_duty_cycle);
+
         }
-        else if ( pid_output > 0.0 )
+        else if ( pid_output > 10.0 )
         {
             static struct interpolate_range_s sla_ranges =
-                { 0.0, 0.5, SLA_DUTY_CYCLE_MIN, SLA_DUTY_CYCLE_MAX };
+                { 10.0, 110.0, SLA_DUTY_CYCLE_MIN, SLA_DUTY_CYCLE_MAX };
 
             uint16_t sla_duty_cycle = 0;
 
@@ -945,8 +1013,12 @@ void brake_update( )
             }
 
             brake_command_actuator_solenoids( sla_duty_cycle );
+
+            DEBUG_PRINT(",");
+            DEBUG_PRINT(sla_duty_cycle);
+            DEBUG_PRINT(",0");
         }
-        else    // pid_outout == 0.0
+        else    // -18.0 < pid_output < 18.0
         {
             if ( brakes.pedal_command == 0 )
             {
@@ -954,6 +1026,7 @@ void brake_update( )
             }
         }
     }
+    DEBUG_PRINTLN("");
 }
 
 
@@ -975,6 +1048,7 @@ void check_rx_timeouts( )
 
     if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
+        DEBUG_PRINTLN("timeout");
         brakes.enable_request = false;
     }
 }
@@ -1025,11 +1099,11 @@ void setup( void )
     // Initialize PID params
     pid_zeroize( &pid_params, BRAKE_PID_WINDUP_GUARD );
 
-    pid_params.proportional_gain = 1.0;
-    pid_params.integral_gain = 0.5;
-    pid_params.derivative_gain = 0.5;
+    pid_params.proportional_gain = 0.5;
+    pid_params.integral_gain     = 0.2;
+    pid_params.derivative_gain   = 0.001;
 
-    DEBUG_PRINT( "init: pass" );
+    DEBUG_PRINTLN( "init: pass" );
 }
 
 
@@ -1076,15 +1150,7 @@ void loop( )
 
     if ( brakes.enable == true )
     {
-        static uint32_t control_loop_time = 0;
-
-        uint32_t loop_delta_t = timer_delta_ms( control_loop_time );
-
-        if ( loop_delta_t > BRAKE_CONTROL_LOOP_INTERVAL )
-        {
-            control_loop_time = millis();
-            brake_update( );
-        }
+        brake_update( );
     }
 }
 
