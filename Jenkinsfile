@@ -11,7 +11,7 @@ node('arduino') {
     }
     stage('Build') {
       parallel 'kia soul firmware': {
-        sh 'cd firmware && mkdir build && cd build && cmake .. -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release && make'
+        sh 'cd platforms && mkdir build && cd build && cmake .. -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release && make'
       }
       echo 'Build Complete!'
     }
