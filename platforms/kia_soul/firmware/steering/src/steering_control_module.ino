@@ -24,13 +24,16 @@
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "control_protocol_can.h"
-#include "current_control_state.h"
 #include "PID.h"
 #include "DAC_MCP49xx.h"
 #include "serial.h"
 #include "can.h"
 #include "time.h"
+#include "control.h"
 #include "debug.h"
+
+#include "steering_params.h"
+#include "steering_state.h"
 
 
 
@@ -67,20 +70,6 @@
 // Signal interrupt (relay) for spoofed torque values
 #define SPOOF_ENGAGE                    ( 6 )
 
-// Threshhold to detect when a person is turning the steering wheel
-#define STEERING_WHEEL_CUTOFF_THRESHOLD ( 3000 )
-
-// Threshhold to detect when there is a discrepancy between DAC and ADC values
-#define VOLTAGE_THRESHOLD               ( 0.096 )     // mV
-
-#define SAMPLE_A                        ( 0 )
-
-#define SAMPLE_B                        ( 1 )
-
-#define FAILURE                         ( 0 )
-
-#define SUCCESS                         ( 1 )
-
 
 // *****************************************************
 // local defined data structures
@@ -113,11 +102,19 @@ static can_frame_s tx_frame_ps_ctrl_steering_report;
 
 
 //
-static current_control_state current_ctrl_state;
+static steering_state_s steering_state;
 
 
 //
-static PID pid_params;
+static control_state_s control_state;
+
+
+//
+static kia_soul_steering_params_s steering_params;
+
+
+//
+static PID pid;
 
 
 //
@@ -134,113 +131,6 @@ static uint8_t torque_sum;
 /* ====================================== */
 /* ============== CONTROL =============== */
 /* ====================================== */
-
-// *****************************************************
-// Function:    average_samples
-//
-// Purpose:     Sample the current value being written and smooth it out by
-//              averaging it out over the indicated number of samples
-//              Function takes 260us * num_samples to run
-//
-// Returns:     int16_t - SUCCESS or FAILURE
-//
-// Parameters:  [in]  num_samples - the number of samples to average
-//              [out] averages - array of values to store the averages
-//
-// *****************************************************
-static int16_t average_samples( int16_t num_samples, int16_t* averages )
-{
-    int16_t return_code = FAILURE;
-
-    if ( averages != NULL )
-    {
-        return_code = SUCCESS;
-
-        int32_t sums[ 2 ] = { 0, 0 };
-
-        for ( int16_t i = 0; i < num_samples; i++ )
-        {
-            sums[ SAMPLE_A ] += analogRead( SIGNAL_INPUT_A );
-            sums[ SAMPLE_B ] += analogRead( SIGNAL_INPUT_B );
-        }
-
-        averages[ SAMPLE_A ] = ( sums[ SAMPLE_A ] / num_samples ) << 2;
-        averages[ SAMPLE_B ] = ( sums[ SAMPLE_B ] / num_samples ) << 2;
-    }
-    return ( return_code );
-}
-
-// *****************************************************
-// Function:    enable_control
-//
-// Purpose:     Sample the current value being written and smooth it out by
-//              averaging it out over several samples, write that value to the
-//              DAC, and then enable the control
-//
-// Returns:     void
-//
-// Parameters:  None
-//
-// *****************************************************
-void enable_control( )
-{
-    static int16_t num_samples = 20;
-    int16_t averages[ 2 ] = { 0, 0 };
-
-    int16_t status = average_samples( num_samples, averages );
-
-    if ( SUCCESS == status )
-    {
-        // Write measured torque values to DAC to avoid a signal
-        // discontinuity when the SCM takes over
-        dac.outputA( averages[ SAMPLE_A ] );
-        dac.outputB( averages[ SAMPLE_B ] );
-
-        // Enable the signal interrupt relays
-        digitalWrite( SPOOF_ENGAGE, HIGH );
-
-        current_ctrl_state.control_enabled = true;
-
-        DEBUG_PRINTLN( "Control enabled" );
-    }
-}
-
-
-
-// *****************************************************
-// Function:    disable_control
-//
-// Purpose:     Sample the current value being written and smooth it out by
-//              averaging it out over several samples, write that value to the
-//              DAC, and then enable the control
-//
-// Returns:     void
-//
-// Parameters:  None
-//
-// *****************************************************
-void disable_control( )
-{
-    if ( current_ctrl_state.control_enabled == true )
-    {
-        static int16_t num_samples = 20;
-        int16_t averages[ 2 ] = { 0, 0 };
-
-        average_samples( num_samples, averages );
-
-        // Write measured torque values to DAC to avoid a signal
-        // discontinuity when the SCM takes over
-        dac.outputA( averages[ SAMPLE_A ] );
-        dac.outputB( averages[ SAMPLE_B ] );
-    }
-
-    current_ctrl_state.control_enabled = false;
-
-    // Disable the signal interrupt relays
-    digitalWrite( SPOOF_ENGAGE, LOW );
-
-    DEBUG_PRINTLN( "Control disabled" );
-}
 
 
 // *****************************************************
@@ -373,13 +263,13 @@ static void publish_ps_ctrl_steering_report( )
     ps_ctrl_steering_report_msg * data =
         ( ps_ctrl_steering_report_msg* ) tx_frame_ps_ctrl_steering_report.data;
 
-    data->angle = current_ctrl_state.current_steering_angle;
+    data->angle = steering_state.steering_angle;
 
     tx_frame_ps_ctrl_steering_report.timestamp = millis( );
 
     // set override flag
-    if ( ( current_ctrl_state.override_flag.wheel == 0 ) &&
-            ( current_ctrl_state.override_flag.voltage == 0 ) )
+    if ( ( steering_state.override_flags.wheel == 0 ) &&
+            ( steering_state.override_flags.voltage == 0 ) )
     {
         data->override = 0;
     }
@@ -388,11 +278,11 @@ static void publish_ps_ctrl_steering_report( )
         data->override = 1;
     }
 
-    data->angle_command = current_ctrl_state.commanded_steering_angle;
+    data->angle_command = steering_state.steering_angle_target;
 
     data->torque = torque_sum;
 
-    data->enabled = (uint8_t) current_ctrl_state.control_enabled;
+    data->enabled = (uint8_t) control_state.enabled;
 
     CAN.sendMsgBuf( tx_frame_ps_ctrl_steering_report.id,
                     0,
@@ -437,25 +327,23 @@ static void publish_timed_tx_frames( )
 static void process_ps_ctrl_steering_command(
     const ps_ctrl_steering_command_msg * const control_data )
 {
-    current_ctrl_state.commanded_steering_angle =
+    steering_state.steering_angle_target =
         control_data->steering_wheel_angle_command / 9.0;
 
-    current_ctrl_state.steering_angle_rate_max =
+    steering_params.steering_angle_rate_max =
         control_data->steering_wheel_max_velocity * 9.0;
 
     if ( ( control_data->enabled == 1 ) &&
-            ( current_ctrl_state.control_enabled == false ) &&
-            ( current_ctrl_state.emergency_stop == false ) )
+            ( control_state.enabled == false ) &&
+            ( control_state.emergency_stop == false ) )
     {
-        current_ctrl_state.control_enabled = true;
-        enable_control( );
+        enable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
     }
 
     if ( ( control_data->enabled == 0 ) &&
-            ( current_ctrl_state.control_enabled == true ) )
+            ( control_state.enabled == true ) )
     {
-        current_ctrl_state.control_enabled = false;
-        disable_control( );
+        disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
     }
 
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
@@ -477,10 +365,10 @@ static void process_psvc_chassis_state1(
     const psvc_chassis_state1_data_s * const chassis_data )
 {
     float raw_angle = (float)chassis_data->steering_wheel_angle;
-    current_ctrl_state.current_steering_angle = raw_angle * 0.0076294;
+    steering_state.steering_angle = raw_angle * 0.0076294;
 
     // Convert from 40 degree range to 470 degree range in 1 degree increments
-    current_ctrl_state.current_steering_angle *= 11.7;
+    steering_state.steering_angle *= 11.7;
 }
 
 
@@ -541,7 +429,7 @@ static void check_rx_timeouts( )
     if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
         DEBUG_PRINTLN( "Control disabled: Timeout" );
-        disable_control();
+        disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
     }
 }
 
@@ -594,22 +482,22 @@ void setup( )
 
     publish_ps_ctrl_steering_report( );
 
-    current_ctrl_state.control_enabled = false;
+    control_state.enabled = false;
 
-    current_ctrl_state.emergency_stop = false;
+    control_state.emergency_stop = false;
 
-    current_ctrl_state.override_flag.wheel = 0;
+    steering_state.override_flags.wheel = 0;
 
-    current_ctrl_state.override_flag.voltage = 0;
+    steering_state.override_flags.voltage = 0;
 
-    current_ctrl_state.override_flag.voltage_spike_a = 0;
+    steering_state.override_flags.voltage_spike_a = 0;
 
-    current_ctrl_state.override_flag.voltage_spike_b = 0;
+    steering_state.override_flags.voltage_spike_b = 0;
 
     // Initialize the Rx timestamps to avoid timeout warnings on start up
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 
-    pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
+    pid_zeroize( &pid, STEERING_WINDUP_GUARD );
 
     // debug log
     DEBUG_PRINTLN( "init: pass" );
@@ -647,22 +535,22 @@ void loop( )
 
     uint32_t current_timestamp_us;
 
-    uint32_t deltaT = timer_delta_us( current_ctrl_state.timestamp_us,
+    uint32_t deltaT = timer_delta_us( control_state.timestamp_us,
                                       &current_timestamp_us );
 
     if ( deltaT > 50000 )
     {
 
-        current_ctrl_state.timestamp_us = current_timestamp_us;
+        control_state.timestamp_us = current_timestamp_us;
 
         bool override = check_driver_steering_override( );
 
         if ( override == true )
         {
-            current_ctrl_state.override_flag.wheel = 1;
-            disable_control( );
+            steering_state.override_flags.wheel = 1;
+            disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
         }
-        else if ( current_ctrl_state.control_enabled == true )
+        else if ( control_state.enabled == true )
         {
 
 /*******************************************************************************
@@ -683,33 +571,33 @@ void loop( )
 
             // Calculate steering angle rates (degrees/microsecond)
             double steering_angle_rate =
-                ( current_ctrl_state.current_steering_angle -
-                  current_ctrl_state.steering_angle_last ) / 0.05;
+                ( steering_state.steering_angle -
+                  steering_state.steering_angle_last ) / 0.05;
 
             double steering_angle_rate_target =
-                ( current_ctrl_state.commanded_steering_angle -
-                  current_ctrl_state.current_steering_angle ) / 0.05;
+                ( steering_state.steering_angle_target -
+                  steering_state.steering_angle ) / 0.05;
 
             // Save the angle for next iteration
-            current_ctrl_state.steering_angle_last =
-                current_ctrl_state.current_steering_angle;
+            steering_state.steering_angle_last =
+                steering_state.steering_angle;
 
             steering_angle_rate_target =
                 constrain( ( double )steering_angle_rate_target,
-                           ( double )-current_ctrl_state.steering_angle_rate_max,
-                           ( double )current_ctrl_state.steering_angle_rate_max );
+                           ( double )-steering_params.steering_angle_rate_max,
+                           ( double )steering_params.steering_angle_rate_max );
 
-            pid_params.derivative_gain = current_ctrl_state.SA_Kd;
-            pid_params.proportional_gain = current_ctrl_state.SA_Kp;
-            pid_params.integral_gain = current_ctrl_state.SA_Ki;
+            pid.derivative_gain = steering_params.SA_Kd;
+            pid.proportional_gain = steering_params.SA_Kp;
+            pid.integral_gain = steering_params.SA_Ki;
 
             pid_update(
-                    &pid_params,
+                    &pid,
                     steering_angle_rate_target,
                     steering_angle_rate,
                     0.050 );
 
-            double control = pid_params.control;
+            double control = pid.control;
 
             control = constrain( ( float ) control,
                                  ( float ) -1500.0f,
@@ -726,9 +614,9 @@ void loop( )
         }
         else
         {
-            current_ctrl_state.override_flag.wheel = 0;
+            steering_state.override_flags.wheel = 0;
 
-            pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
+            pid_zeroize( &pid, STEERING_WINDUP_GUARD );
         }
     }
 }

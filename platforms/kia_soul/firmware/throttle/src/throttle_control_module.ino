@@ -24,12 +24,15 @@
 #include "mcp_can.h"
 #include "can_frame.h"
 #include "control_protocol_can.h"
-#include "current_control_state.h"
 #include "DAC_MCP49xx.h"
 #include "serial.h"
 #include "can.h"
 #include "time.h"
+#include "control.h"
 #include "debug.h"
+
+#include "throttle_params.h"
+#include "throttle_state.h"
 
 
 
@@ -62,9 +65,6 @@
 
 // Signal interrupt (relay) for spoofed torque values
 #define SPOOF_ENGAGE                    ( 6 )
-
-// Threshhold to detect when a person is pressing accelerator
-#define PEDAL_THRESHOLD                 ( 1000 )
 
 // Threshhold to detect when there is a discrepancy between DAC and ADC values
 #define VOLTAGE_THRESHOLD               ( 0.096 )     // mV
@@ -102,7 +102,13 @@ static can_frame_s rx_frame_ps_ctrl_throttle_command;
 static can_frame_s tx_frame_ps_ctrl_throttle_report;
 
 //
-static current_control_state current_ctrl_state;
+static throttle_state_s throttle_state;
+
+//
+static kia_soul_throttle_params_s throttle_params;
+
+//
+static control_state_s control_state;
 
 
 
@@ -124,68 +130,6 @@ can_frame_s can_frame;          // CAN message structs
 /* ============== CONTROL =============== */
 /* ====================================== */
 
-// A function to enable SCM to take control
-void enable_control( )
-{
-    // Do a quick average to smooth out the noisy data
-    static uint16_t n_samples = 20;  // Total number of samples to average over
-    long sum_sensA_samples = 0;
-    long sum_sensB_samples = 0;
-
-    for ( int i = 0; i < n_samples; i++ )
-    {
-        sum_sensA_samples += analogRead( SIGNAL_INPUT_A );
-        sum_sensB_samples += analogRead( SIGNAL_INPUT_B );
-    }
-
-    uint16_t avg_sensA_sample = ( sum_sensA_samples / n_samples ) << 2;
-    uint16_t avg_sensB_sample = ( sum_sensB_samples / n_samples ) << 2;
-
-    // Write measured torque values to DAC to avoid a signal discontinuity when
-    // the SCM takes over
-    dac.outputA( avg_sensA_sample );
-    dac.outputB( avg_sensB_sample );
-
-    // Enable the signal interrupt relays
-    digitalWrite( SPOOF_ENGAGE, HIGH );
-
-    current_ctrl_state.control_enabled = true;
-
-    DEBUG_PRINTLN( "Control enabled" );
-
-}
-
-
-// A function to disable SCM control
-void disable_control( )
-{
-    // Do a quick average to smooth out the noisy data
-    static uint16_t n_samples = 20;  // Total number of samples to average over
-    long sum_sensA_samples = 0;
-    long sum_sensB_samples = 0;
-
-    for ( int i = 0; i < n_samples; i++ )
-    {
-        sum_sensA_samples += analogRead( SIGNAL_INPUT_A ) << 2;
-        sum_sensB_samples += analogRead( SIGNAL_INPUT_B ) << 2;
-    }
-
-    uint16_t avg_sensA_sample = sum_sensA_samples / n_samples;
-    uint16_t avg_sensB_sample = sum_sensB_samples / n_samples;
-
-    // Write measured torque values to DAC to avoid a signal discontinuity when
-    // the SCM relinquishes control
-    dac.outputA( avg_sensA_sample );
-    dac.outputB( avg_sensB_sample );
-
-    // Disable the signal interrupt relays
-    digitalWrite( SPOOF_ENGAGE, LOW );
-
-    current_ctrl_state.control_enabled = false;
-
-    DEBUG_PRINTLN( "Control disabled" );
-
-}
 
 void calculate_pedal_spoof( float pedal_target, struct torque_spoof_t* spoof )
 {
@@ -204,14 +148,14 @@ void calculate_pedal_spoof( float pedal_target, struct torque_spoof_t* spoof )
 //
 void check_pedal_override( )
 {
-    if ( ( signal_L + signal_H ) / 2 > PEDAL_THRESHOLD )
+    if ( ( signal_L + signal_H ) / 2 > throttle_params.pedal_threshold )
     {
-        disable_control( );
-        current_ctrl_state.override_flag.pedal = 1;
+        disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
+        throttle_state.override_flags.pedal = 1;
     }
     else
     {
-        current_ctrl_state.override_flag.pedal = 0;
+        throttle_state.override_flags.pedal = 0;
     }
 }
 
@@ -238,8 +182,8 @@ static void publish_ps_ctrl_throttle_report( void )
     tx_frame_ps_ctrl_throttle_report.dlc = 8;
 
     // set override flag
-    if ( ( current_ctrl_state.override_flag.pedal == 0 ) &&
-            ( current_ctrl_state.override_flag.voltage == 0 ) )
+    if ( ( throttle_state.override_flags.pedal == 0 ) &&
+            ( throttle_state.override_flags.voltage == 0 ) )
     {
         data->override = 0;
     }
@@ -248,11 +192,11 @@ static void publish_ps_ctrl_throttle_report( void )
         data->override = 1;
     }
 
-    data->enabled = (uint8_t) current_ctrl_state.control_enabled;
+    data->enabled = (uint8_t) control_state.enabled;
 
     data->pedal_input = signal_L + signal_H;
     // Set Pedal Command (PC)
-    data->pedal_command = current_ctrl_state.pedal_position_target;
+    data->pedal_command = throttle_state.pedal_position_target;
 
     // publish to control CAN bus
     CAN.sendMsgBuf(
@@ -295,25 +239,23 @@ static void process_ps_ctrl_throttle_command(
 
     // enable control from the PolySync interface
     if( ( control_data->enabled == 1 ) &&
-            ( current_ctrl_state.control_enabled == false ) &&
-            ( current_ctrl_state.emergency_stop == false ) )
+            ( control_state.enabled == false ) &&
+            ( control_state.emergency_stop == false ) )
     {
-        current_ctrl_state.control_enabled = true;
-        enable_control( );
+        enable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
     }
 
     // disable control from the PolySync interface
     if( ( control_data->enabled == 0 ) &&
-            ( current_ctrl_state.control_enabled == true ) )
+            ( control_state.enabled == true ) )
     {
-        current_ctrl_state.control_enabled = false;
-        disable_control( );
+        disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
     }
 
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
-    current_ctrl_state.pedal_position_target = control_data->pedal_command / 24;
-    DEBUG_PRINTLN( current_ctrl_state.pedal_position_target );
+    throttle_state.pedal_position_target = control_data->pedal_command / 24;
+    DEBUG_PRINTLN( throttle_state.pedal_position_target );
 
 }
 
@@ -363,10 +305,10 @@ static void check_rx_timeouts( void )
     if( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
         // disable control from the PolySync interface
-        if( current_ctrl_state.control_enabled == true )
+        if( control_state.enabled == true )
         {
+            disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
             DEBUG_PRINTLN( "Control disabled: Timeout" );
-            disable_control( );
         }
     }
 }
@@ -406,17 +348,17 @@ void setup( )
 
     publish_ps_ctrl_throttle_report( );
 
-    current_ctrl_state.control_enabled = false;
+    control_state.enabled = false;
 
-    current_ctrl_state.emergency_stop = false;
+    control_state.emergency_stop = false;
 
-    current_ctrl_state.override_flag.pedal = 0;
+    throttle_state.override_flags.pedal = 0;
 
-    current_ctrl_state.override_flag.voltage = 0;
+    throttle_state.override_flags.voltage = 0;
 
-    current_ctrl_state.override_flag.voltage_spike_a = 0;
+    throttle_state.override_flags.voltage_spike_a = 0;
 
-    current_ctrl_state.override_flag.voltage_spike_b = 0;
+    throttle_state.override_flags.voltage_spike_b = 0;
 
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
@@ -457,13 +399,13 @@ void loop()
     check_pedal_override( );
 
     // now that we've set control status, do throttle if we are in control
-    if ( current_ctrl_state.control_enabled == true )
+    if ( control_state.enabled == true )
     {
 
         struct torque_spoof_t torque_spoof;
 
         calculate_pedal_spoof(
-                current_ctrl_state.pedal_position_target,
+                throttle_state.pedal_position_target,
                 &torque_spoof );
 
         dac.outputA( torque_spoof.high );
