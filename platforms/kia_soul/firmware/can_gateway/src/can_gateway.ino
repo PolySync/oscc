@@ -133,9 +133,6 @@
 // static global data
 // *****************************************************
 
-//
-static uint32_t last_update_ms;
-
 
 //
 static MCP_CAN obd_can( PIN_OBD_CAN_CS );
@@ -214,7 +211,7 @@ static void publish_heartbeat_frame( void )
             tx_frame_heartbeat.data );
 
     // update last publish timestamp, ms
-    tx_frame_heartbeat.timestamp = last_update_ms;
+    tx_frame_heartbeat.timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -235,7 +232,7 @@ static void publish_chassis_state1_frame( void )
             tx_frame_chassis_state1.data );
 
     // update last publish timestamp, ms
-    tx_frame_chassis_state1.timestamp = last_update_ms;
+    tx_frame_chassis_state1.timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -256,7 +253,7 @@ static void publish_chassis_state2_frame( void )
             tx_frame_chassis_state2.data );
 
     // update last publish timestamp, ms
-    tx_frame_chassis_state2.timestamp = last_update_ms;
+    tx_frame_chassis_state2.timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -268,7 +265,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    delta = get_time_delta( tx_frame_heartbeat.timestamp, last_update_ms );
+    delta = get_time_delta( tx_frame_heartbeat.timestamp, GET_TIMESTAMP_MS() );
 
     // check publish interval
     if( delta >= PSVC_HEARTBEAT_MSG_TX_PUBLISH_INTERVAL )
@@ -278,7 +275,7 @@ static void publish_timed_tx_frames( void )
     }
 
     // get time since last publish
-    delta = get_time_delta( tx_frame_chassis_state1.timestamp, last_update_ms );
+    delta = get_time_delta( tx_frame_chassis_state1.timestamp, GET_TIMESTAMP_MS() );
 
     // check publish interval
     if( delta >= PSVC_CHASSIS_STATE1_MSG_TX_PUBLISH_INTERVAL )
@@ -288,7 +285,7 @@ static void publish_timed_tx_frames( void )
     }
 
     // get time since last publish
-    delta = get_time_delta( tx_frame_chassis_state2.timestamp, last_update_ms );
+    delta = get_time_delta( tx_frame_chassis_state2.timestamp, GET_TIMESTAMP_MS() );
 
     // check publish interval
     if( delta >= PSVC_CHASSIS_STATE2_MSG_TX_PUBLISH_INTERVAL )
@@ -492,7 +489,7 @@ static void check_rx_timeouts( void )
 
     timeout = is_timeout(
             rx_frame_kia_status1.timestamp,
-            last_update_ms,
+            GET_TIMESTAMP_MS(),
             KIA_CCAN_STATUS1_RX_WARN_TIMEOUT);
 
     if( timeout == true )
@@ -504,7 +501,7 @@ static void check_rx_timeouts( void )
 
     timeout = is_timeout(
             rx_frame_kia_status2.timestamp,
-            last_update_ms,
+            GET_TIMESTAMP_MS(),
             KIA_CCAN_STATUS2_RX_WARN_TIMEOUT);
 
     if( timeout == true )
@@ -515,7 +512,7 @@ static void check_rx_timeouts( void )
 
     timeout = is_timeout(
             rx_frame_kia_status3.timestamp,
-            last_update_ms,
+            GET_TIMESTAMP_MS(),
             KIA_CCAN_STATUS3_RX_WARN_TIMEOUT);
 
     if( timeout == true )
@@ -526,7 +523,7 @@ static void check_rx_timeouts( void )
 
     timeout = is_timeout(
             rx_frame_kia_status4.timestamp,
-            last_update_ms,
+            GET_TIMESTAMP_MS(),
             KIA_CCAN_STATUS4_RX_WARN_TIMEOUT);
 
     if( timeout == true )
@@ -549,7 +546,6 @@ static void check_rx_timeouts( void )
 void setup( void )
 {
     // zero
-    last_update_ms = 0;
     memset( &tx_frame_heartbeat, 0, sizeof(tx_frame_heartbeat) );
     memset( &tx_frame_chassis_state1, 0, sizeof(tx_frame_chassis_state1) );
     memset( &tx_frame_chassis_state2, 0, sizeof(tx_frame_chassis_state2) );
@@ -619,9 +615,6 @@ void setup( void )
     rx_frame_kia_status3.timestamp = GET_TIMESTAMP_MS();
     rx_frame_kia_status4.timestamp = GET_TIMESTAMP_MS();
 
-    // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS();
-
     // enable status LED
     STATUS_LED_ON();
 
@@ -636,9 +629,6 @@ void setup( void )
 //
 void loop( void )
 {
-    // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS();
-
     // reset watchdog
     wdt_reset();
 

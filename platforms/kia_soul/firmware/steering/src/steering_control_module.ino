@@ -543,7 +543,8 @@ void loop( )
 
         bool override = check_driver_steering_override( );
 
-        if ( override == true )
+        if ( override == true
+             && control_state.enabled == true )
         {
             steering_state.override_flags.wheel = 1;
             disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );

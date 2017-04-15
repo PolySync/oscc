@@ -93,9 +93,6 @@ DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, 9 );     // DAC model, SS pin, LDAC pin
 MCP_CAN CAN(CAN_CS);                            // Set CS pin for the CAN shield
 
 //
-static uint32_t last_update_ms;
-
-//
 static can_frame_s rx_frame_ps_ctrl_throttle_command;
 
 //
@@ -150,8 +147,11 @@ void check_pedal_override( )
 {
     if ( ( signal_L + signal_H ) / 2 > throttle_params.pedal_threshold )
     {
-        disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
-        throttle_state.override_flags.pedal = 1;
+        if( control_state.enabled == true )
+        {
+            disable_control( SIGNAL_INPUT_A, SIGNAL_INPUT_B, SPOOF_ENGAGE, &control_state, &dac );
+            throttle_state.override_flags.pedal = 1;
+        }
     }
     else
     {
@@ -206,7 +206,7 @@ static void publish_ps_ctrl_throttle_report( void )
             tx_frame_ps_ctrl_throttle_report.data );
 
     // update last publish timestamp, ms
-    tx_frame_ps_ctrl_throttle_report.timestamp = last_update_ms;
+    tx_frame_ps_ctrl_throttle_report.timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -217,7 +217,7 @@ static void publish_timed_tx_frames( void )
     uint32_t delta = 0;
 
     // get time since last publish
-    delta = get_time_delta( tx_frame_ps_ctrl_throttle_report.timestamp, last_update_ms );
+    delta = get_time_delta( tx_frame_ps_ctrl_throttle_report.timestamp, GET_TIMESTAMP_MS() );
 
     // check publish interval
     if( delta >= PS_CTRL_THROTTLE_REPORT_PUBLISH_INTERVAL )
@@ -297,7 +297,6 @@ static void check_rx_timeouts( void )
 void setup( )
 {
     // zero
-    last_update_ms = 0;
     memset( &rx_frame_ps_ctrl_throttle_command,
             0,
             sizeof( rx_frame_ps_ctrl_throttle_command ) );
@@ -339,9 +338,6 @@ void setup( )
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
-    // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS( );
-
     // debug log
     DEBUG_PRINTLN( "init: pass" );
 
@@ -354,10 +350,6 @@ void setup( )
 
 void loop()
 {
-
-    // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS( );
-
     // checks for CAN frames, if yes, updates state variables
     can_frame_s rx_frame;
     int ret = check_for_rx_frame( CAN, &rx_frame );

@@ -57,10 +57,6 @@
 // *****************************************************
 
 
-//
-static uint32_t last_update_ms;
-
-
 // construct the CAN shield object
 MCP_CAN CAN(CAN_CS);                                    // Set CS pin for the CAN shield
 
@@ -484,7 +480,7 @@ static void publish_ps_ctrl_brake_report( void )
             tx_frame_ps_ctrl_brake_report.data );
 
     // update last publish timestamp, ms
-    tx_frame_ps_ctrl_brake_report.timestamp = last_update_ms;
+    tx_frame_ps_ctrl_brake_report.timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -496,7 +492,7 @@ static void publish_timed_tx_frames( void )
 
 
     // get time since last publish
-    delta = get_time_delta( tx_frame_ps_ctrl_brake_report.timestamp, last_update_ms );
+    delta = get_time_delta( tx_frame_ps_ctrl_brake_report.timestamp, GET_TIMESTAMP_MS() );
 
     // check publish interval
     if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
@@ -757,7 +753,6 @@ void setup( void )
     SLRDutyMin = 50;
 
     // zero
-    last_update_ms = 0;
     memset( &rx_frame_ps_ctrl_brake_command, 0, sizeof(rx_frame_ps_ctrl_brake_command) );
 
     digitalWrite( PIN_BRAKE_SWITCH, LOW );
@@ -788,9 +783,6 @@ void setup( void )
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_ps_ctrl_brake_command.timestamp = GET_TIMESTAMP_MS();
 
-    // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS();
-
     // Initialize PID params
     pid_zeroize( &pidParams, BRAKE_PID_WINDUP_GUARD );
 
@@ -801,10 +793,6 @@ void setup( void )
 
 void loop()
 {
-
-    // update the global system update timestamp, ms
-    last_update_ms = GET_TIMESTAMP_MS();
-
     can_frame_s rx_frame;
     int ret = check_for_rx_frame( CAN, &rx_frame );
 
