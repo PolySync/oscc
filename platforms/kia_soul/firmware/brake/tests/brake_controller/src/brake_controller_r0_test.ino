@@ -8,9 +8,8 @@
 // E Livingston, 2016
 
 #include <SPI.h>
-#include <FiniteStateMachine.h>
+#include "FiniteStateMachine.h"
 #include "mcp_can.h"
-#include "can_frame.h"
 #include "control_protocol_can.h"
 #include "PID.h"
 #include "serial.h"

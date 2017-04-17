@@ -46,7 +46,6 @@
 #include <SPI.h>
 
 #include "mcp_can.h"
-#include "can_frame.h"
 #include "kia_obd_can.h"
 #include "control_protocol_can.h"
 #include "serial.h"
