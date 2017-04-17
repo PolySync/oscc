@@ -90,4 +90,4 @@ int commander_low_frequency_update( );
 int commander_high_frequency_update( );
 
 
-#endif	/* COMMANDER_H */
+#endif /* COMMANDER_H */

@@ -172,4 +172,4 @@ double joystick_normalize_trigger_position( const int position,
                                             const double range_max );
 
 
-#endif	/* JOYSTICK_H */
+#endif /* JOYSTICK_H */

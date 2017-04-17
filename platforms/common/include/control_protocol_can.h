@@ -34,7 +34,7 @@
 
 
 #ifndef CONTROL_PROTOCOL_CAN_H
-#define	CONTROL_PROTOCOL_CAN_H
+#define CONTROL_PROTOCOL_CAN_H
 
 
 #ifdef __cplusplus
@@ -53,7 +53,7 @@ extern "C" {
 
 /*
  * @brief Brake report message (CAN frame) ID.
- *  
+ *
  */
 #define PS_CTRL_MSG_ID_BRAKE_REPORT (0x061)
 
@@ -64,14 +64,14 @@ extern "C" {
 
 /*
  * @brief Throttle command message (CAN frame) ID.
- *  
+ *
  */
 #define PS_CTRL_THROTTLE_COMMAND_ID (0x062)
 
 
 /*
  * @brief Throttle report message (CAN frame) ID.
- *  
+ *
  */
 #define PS_CTRL_MSG_ID_THROTTLE_REPORT (0x063)
 
@@ -658,4 +658,4 @@ typedef struct
 #endif
 
 
-#endif	/* CONTROL_PROTOCOL_CAN_H */
+#endif /* CONTROL_PROTOCOL_CAN_H */
