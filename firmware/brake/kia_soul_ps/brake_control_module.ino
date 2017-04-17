@@ -1075,7 +1075,7 @@ void check_rx_timeouts( )
 // *****************************************************
 void setup( void )
 {
-    // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range 
+    // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range
     TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
     TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
 

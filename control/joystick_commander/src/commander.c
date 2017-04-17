@@ -2,7 +2,7 @@
 /* The MIT License (MIT) */
 /* ===================== */
 
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
 
 /* Permission is hereby granted, free of charge, to any person */
 /* obtaining a copy of this software and associated documentation */
@@ -28,7 +28,7 @@
 
 /**
  * @file commander.c
- * @brief Commander Interface Source.
+ * @brief Commander Interface Source
  *
  */
 
@@ -36,16 +36,13 @@
 
 
 #include <canlib.h>
-#include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
-#include <string.h>
+#include <math.h>
 
 #include "macros.h"
 #include "joystick.h"
-#include "messages.h"
-#include "commander.h"
-
-
+#include "oscc_interface.h"
 
 
 // *****************************************************
@@ -53,537 +50,546 @@
 // *****************************************************
 
 /**
- * @brief Throttle axis index.
+ * @brief Joystick axis indices
  *
  */
-#define JSTICK_AXIS_THROTTLE (5)
+#define JOYSTICK_AXIS_THROTTLE (5)
+#define JOYSTICK_AXIS_BRAKE (2)
+#define JOYSTICK_AXIS_STEER (3)
 
 
 /**
- * @brief Brake axis index.
+ * @brief Joystick button indices
  *
  */
-#define JSTICK_AXIS_BRAKE (2)
+#define JOYSTICK_BUTTON_ENABLE_CONTROLS (7)
+#define JOYSTICK_BUTTON_DISABLE_CONTROLS (6)
+
+/**
+ * @brief Throttle pedal position values [normalized]
+ *
+ */
+#define MIN_THROTTLE_PEDAL (0.0)
+#define MAX_THROTTLE_PEDAL (0.3)
 
 
 /**
- * @brief Steering axis index.
+ * @brief Brake pedal position values [normalized]
  *
  */
-#define JSTICK_AXIS_STEER (3)
+#define MIN_BRAKE_PEDAL (0.0)
+#define MAX_BRAKE_PEDAL (0.8)
 
 
 /**
- * @brief Enable controls button index.
+ * @brief Minimum brake value to be considered enabled [normalized] 
+ *
+ * Throttle is disabled when brake value is greater than this value
  *
  */
-#define JSTICK_BUTTON_ENABLE_CONTROLS (7)
-
-/**
- * @brief Disable controls button index.
- *
- */
-#define JSTICK_BUTTON_DISABLE_CONTROLS (6)
+#define BRAKES_ENABLED_MIN (0.05)
 
 
 /**
- * @brief Convert degrees to radians.
+ * @brief Steering wheel angle values [radians]
+ *
+ * Negative value means turning to the right
  *
  */
-#define m_radians(deg) ((deg)*(M_PI/180.0))
+#define MIN_STEERING_WHEEL_ANGLE (-M_PI * 2.0)
+#define MAX_STEERING_WHEEL_ANGLE (M_PI * 2.0)
 
 
 /**
- * @brief Convert radians to degrees.
+ * @brief Steering command angles [int16_t]
  *
  */
-#define m_degrees(rad) ((rad)*(180.0/M_PI))
+#define STEERING_COMMAND_ANGLE_MIN (-4700)
+#define STEERING_COMMAND_ANGLE_MAX (4700)
 
 
 /**
- * @brief Absolute value.
+ * @brief Steering command angle scale factor
  *
  */
-#define m_abs(x) ((x)>0?(x):-(x))
+#define STEERING_COMMAND_ANGLE_FACTOR ( 10.0 )
 
 
+/**
+ * @brief Steering command steering wheel velocities [uint8_t]
+ *
+ */
+#define STEERING_COMMAND_MAX_VELOCITY_MIN (20)
+#define STEERING_COMMAND_MAX_VELOCITY_MAX (254)
+
+
+/**
+ * @brief Steering command steering wheel velocity scale factor
+ * 
+ * This factor can be increased to provide smoother, but
+ * slightly less responsive, steering control. It is recommended
+ * to smooth at the higher level, with this factor, before
+ * trying to smooth at the lower level
+ *
+ */
+#define STEERING_COMMAND_MAX_VELOCITY_FACTOR (0.25)
+
+
+/**
+ * @brief Exponential filter factors
+ *
+ */
+#define BRAKES_FILTER_FACTOR (0.2)
+#define THROTTLE_FILTER_FACTOR (0.2)
+#define STEERING_FILTER_FACTOR (0.1)
+
+/**
+ * @brief joystick delay interval [microseconds]
+ *
+ * Defines the delay to wait for the joystick to update
+ *
+ * 50,000 us == 50 ms == 20 Hertz
+ *
+ */
+#define JOYSTICK_DELAY_INTERVAL (50000)
+
+
+/**
+ * @brief Convert radians to degrees
+ *
+ */
+#define m_degrees(rad) ( ( rad ) * ( 180.0 / M_PI ) )
+
+
+// *****************************************************
+// Local Type definitions
+// *****************************************************
+
+/**
+ * @brief Commander setpoint
+ *
+ * The commander setpoint is a structure that contains all the
+ * relevant information to retrieve data from an external source
+ * and range check it for validity.  The range-limits for this
+ * instance represent the values that are typically available
+ * from a joystick
+ * 
+ */
+struct commander_setpoint_s
+{
+    double setpoint;
+
+    const unsigned long axis;
+
+    const double min_position;
+
+    const double max_position;
+};
 
 
 // *****************************************************
 // static global data
 // *****************************************************
 
+#define COMMANDER_ENABLED ( 1 )
+#define COMMANDER_DISABLED ( 0 )
 
+static int commander_enabled = COMMANDER_DISABLED;
 
+/**
+ * @brief Setpoint Data
+ *
+ * Static definitions for brake, steering and throttle setpoints
+ *
+ */
+static struct commander_setpoint_s brake_setpoint =
+    { 0.0, JOYSTICK_AXIS_BRAKE, MIN_BRAKE_PEDAL, MAX_BRAKE_PEDAL };
 
-// *****************************************************
-// static declarations
-// *****************************************************
+static struct commander_setpoint_s throttle_setpoint =
+    { 0.0, JOYSTICK_AXIS_THROTTLE, MIN_THROTTLE_PEDAL, MAX_THROTTLE_PEDAL };
 
-//
-static int get_brake_setpoint(
-        joystick_device_s * const jstick,
-        double * const brake );
-
-
-//
-static int get_throttle_setpoint(
-        joystick_device_s * const jstick,
-        double * const throttle );
-
-
-//
-static int get_steering_setpoint(
-        joystick_device_s * const jstick,
-        double * const angle );
-
-
-//
-static int get_disable_button(
-        joystick_device_s * const jstick,
-        unsigned int * const state );
-
-
-//
-static int get_enable_button(
-        joystick_device_s * const jstick,
-        unsigned int * const state );
-
-
-//
-static int publish_disable_brake_command(
-        canHandle h,
-        ps_ctrl_brake_command_msg * const msg );
-
-
-//
-static int publish_disable_throttle_command(
-        canHandle h,
-        ps_ctrl_throttle_command_msg * const msg );
-
-
-//
-static int publish_disable_steering_command(
-        canHandle h,
-        ps_ctrl_steering_command_msg * const msg );
-
-
-//
-static int publish_brake_command(
-        canHandle h,
-        joystick_device_s * const jstick,
-        ps_ctrl_brake_command_msg * const msg );
-
-
-//
-static int publish_throttle_command(
-        canHandle h,
-        joystick_device_s * const jstick,
-        ps_ctrl_throttle_command_msg * const msg );
-
-
-//
-static int publish_steering_command(
-        canHandle h,
-        joystick_device_s * const jstick,
-        ps_ctrl_steering_command_msg * const msg );
-
-
+static struct commander_setpoint_s steering_setpoint =
+    { 0.0, JOYSTICK_AXIS_STEER, MIN_STEERING_WHEEL_ANGLE, MAX_STEERING_WHEEL_ANGLE };
 
 
 // *****************************************************
 // static definitions
 // *****************************************************
 
+
+// *****************************************************
+// Function:    get_setpoint
+// 
+// Purpose:     Retrieve the data from the joystick based on which axis is
+//              selected and normalize that value along the scale that is
+//              provided
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  setpoint - the setpoint structure containing the range limits
+//                         the joystick axis, and the storage location for the
+//                         requested value
 //
-static int get_brake_setpoint(
-        joystick_device_s * const jstick,
-        double * const brake )
+// *****************************************************
+static int get_setpoint( struct commander_setpoint_s* setpoint )
 {
-    int ret = NOERR;
-    int axis_position = 0;
+    int return_code = ERROR;
 
-
-    // read axis position
-    ret = jstick_get_axis(
-            jstick,
-            JSTICK_AXIS_BRAKE,
-            &axis_position );
-
-    // if succeeded
-    if( ret == NOERR )
+    if ( setpoint != NULL )
     {
-        // set brake set point - scale to 0:max
-        (*brake) = jstick_normalize_trigger_position(
-                axis_position,
-                0.0,
+        int axis_position = 0;
+
+        return_code = joystick_get_axis( setpoint->axis, &axis_position );
+
+        if ( return_code == NOERR )
+        {
+            if ( setpoint->axis == JOYSTICK_AXIS_STEER )
+            {
+                setpoint->setpoint =
+                    joystick_normalize_axis_position( axis_position,
+                                                      setpoint->min_position,
+                                                      setpoint->max_position );
+            }
+            else
+            {
+                setpoint->setpoint =
+                    joystick_normalize_trigger_position( axis_position,
+                                                         setpoint->min_position,
+                                                         setpoint->max_position );
+            }
+        }
+    }
+    return ( return_code );
+
+}
+
+
+// *****************************************************
+// Function:    is_joystick_safe
+// 
+// Purpose:     Examine the positions of the brake and throttle to determine
+//              if they are in a safe position to enable control
+// 
+// Returns:     int - ERROR, NOERR or UNAVAILABLE
+// 
+// Parameters:  void
+//
+// *****************************************************
+static int is_joystick_safe( )
+{
+    int return_code = ERROR;
+
+    return_code = joystick_update( );
+
+    if ( return_code == NOERR )
+    {
+        return_code = get_setpoint( &brake_setpoint );
+
+        if ( return_code == NOERR )
+        {
+            return_code = get_setpoint( &throttle_setpoint );
+
+            if ( return_code == NOERR )
+            {
+                if ( ( throttle_setpoint.setpoint > 0.0 ) ||
+                     ( brake_setpoint.setpoint > 0.0 ) )
+                {
+                    return_code = UNAVAILABLE;
+                }
+            }
+        }
+    }
+    return return_code;
+}
+
+// *****************************************************
+// Function:    commander_set_safe
+// 
+// Purpose:     Put the OSCC module in a safe position
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  void
+//
+// *****************************************************
+static int commander_set_safe( )
+{
+    int return_code = ERROR;
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        return_code = oscc_interface_set_defaults();
+    }
+    return ( return_code );
+}
+
+
+// *****************************************************
+// Function:    calc_exponential_average 
+// 
+// Purpose:     Calculate an exponential average based on previous values
+// 
+// Returns:     double - the exponentially averaged result
+// 
+// Parameters:  average - previous average
+//              setpoint - new setpoint to incorperate into average
+//              factor - factor of exponential average
+// 
+// *****************************************************
+static double calc_exponential_average( double average,
+                                        double setpoint,
+                                        double factor )
+{
+    double exponential_average =
+        ( setpoint * factor ) + ( ( 1 - factor ) * average );
+    
+    return ( exponential_average );
+}
+
+
+// *****************************************************
+// Function:    commander_disable_controls
+// 
+// Purpose:     Helper function to put the system in a safe state before
+//              disabling the OSCC module vehicle controls
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  void
+//
+// *****************************************************
+static int commander_disable_controls( )
+{
+    int return_code = ERROR;
+
+    printf( "Disable controls\n" );
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        return_code = commander_set_safe( );
+
+        if ( return_code == NOERR )
+        {
+            return_code = oscc_interface_disable();
+        }
+    }
+    return return_code;
+}
+
+
+// *****************************************************
+// Function:    commander_enable_controls
+// 
+// Purpose:     Helper function to put the system in a safe state before
+//              enabling the OSCC module vehicle controls
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  void
+//
+// *****************************************************
+static int commander_enable_controls( )
+{
+    int return_code = ERROR;
+
+    printf( "Enable controls\n" );
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        return_code = commander_set_safe( );
+
+        if ( return_code == NOERR )
+        {
+            return_code = oscc_interface_enable();
+        }
+    }
+    return ( return_code );
+}
+
+
+// *****************************************************
+// Function:    get_button
+// 
+// Purpose:     Wrapper function to get the status of a given button on the
+//              joystick
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  button - which button on the joystick to check
+//              state - pointer to an unsigned int to store the state of the
+//                      button
+//
+// *****************************************************
+static int get_button( unsigned long button, unsigned int* const state )
+{
+    int return_code = ERROR;
+
+    if ( state != NULL )
+    {
+        unsigned int button_state;
+
+        return_code = joystick_get_button( button, &button_state );
+
+        if ( ( return_code == NOERR ) &&
+             ( button_state == JOYSTICK_BUTTON_STATE_PRESSED ) )
+        {
+            ( *state ) = 1;
+        }
+        else
+        {
+            ( *state ) = 0;
+        }
+    }
+    return ( return_code );
+}
+
+
+// *****************************************************
+// Function:    command_brakes
+// 
+// Purpose:     Determine the setpoint being commanded by the joystick and
+//              send that value to the OSCC Module
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  void
+//
+// *****************************************************
+static int command_brakes( )
+{
+    int return_code = ERROR;
+    unsigned int constrained_value = 0;
+    static double brake_average = 0.0;
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        return_code = get_setpoint( &brake_setpoint );
+
+        if ( return_code == NOERR )
+        {
+            brake_average = calc_exponential_average( brake_average,
+                                                      brake_setpoint.setpoint,
+                                                      BRAKES_FILTER_FACTOR );
+
+            const float normalized_value = (float) m_constrain(
+                (float) brake_average,
+                0.0f,
                 MAX_BRAKE_PEDAL );
+
+            constrained_value = ( unsigned int ) m_constrain(
+                (float) ( normalized_value * (float) UINT16_MAX ),
+                (float) 0.0f,
+                (float) UINT16_MAX );
+        }
+
+        printf( "brake: %d\n", constrained_value );
+
+        return_code = oscc_interface_command_brakes( constrained_value );
     }
-
-
-    return ret;
+    return ( return_code );
 }
 
 
+// *****************************************************
+// Function:    command_throttle
+// 
+// Purpose:     Determine the setpoint being commanded by the joystick and
+//              send that value to the OSCC Module
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  void
 //
-static int get_throttle_setpoint(
-        joystick_device_s * const jstick,
-        double * const throttle )
+// *****************************************************
+static int command_throttle( )
 {
-    int ret = NOERR;
-    int axis_position = 0;
+    int return_code = ERROR;
 
-
-    // read axis position
-    ret = jstick_get_axis(
-            jstick,
-            JSTICK_AXIS_THROTTLE,
-            &axis_position );
-
-    // if succeeded
-    if( ret == NOERR )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
-        // set throttle set point - scale to 0:max
-        (*throttle) = jstick_normalize_trigger_position(
-                axis_position,
-                0.0,
+        return_code = get_setpoint( &throttle_setpoint );
+
+        // don't allow throttle if brakes are applied
+        if ( return_code == NOERR )
+        {
+            return_code = get_setpoint( &brake_setpoint );
+
+            if ( brake_setpoint.setpoint >= BRAKES_ENABLED_MIN )
+            {
+                throttle_setpoint.setpoint = 0.0;
+            }
+        }
+
+        // Redundant, but better safe then sorry
+        const float normalized_value = (float) m_constrain(
+                (float) throttle_setpoint.setpoint,
+                0.0f,
                 MAX_THROTTLE_PEDAL );
+
+        unsigned int constrained_value = ( unsigned int )m_constrain(
+                (float) (normalized_value * (float) UINT16_MAX),
+                (float) 0.0f,
+                (float) UINT16_MAX );
+
+        printf( "throttle: %d\n", constrained_value );
+
+        return_code = oscc_interface_command_throttle( constrained_value );
     }
-
-
-    return ret;
+    return ( return_code );
 }
 
 
+// *****************************************************
+// Function:    command_steering
+// 
+// Purpose:     Determine the setpoint being commanded by the joystick and
+//              send that value to the OSCC Module
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  void
 //
-static int get_steering_setpoint(
-        joystick_device_s * const jstick,
-        double * const angle )
+// *****************************************************
+static int command_steering( )
 {
-    int ret = NOERR;
-    int axis_position = 0;
+    int return_code = ERROR;
+    static double steering_average = 0.0;
+    static double last_steering_rate = 0.0;
 
-
-    // read axis position
-    ret = jstick_get_axis(
-            jstick,
-            JSTICK_AXIS_STEER,
-            &axis_position );
-
-
-    // if succeeded
-    if( ret == NOERR )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
-        // set steering wheel angle set point - scale to max:min
-        // note that this is inverting the sign of the joystick axis
-        (*angle) = jstick_normalize_axis_position(
-                axis_position,
-                MIN_STEERING_WHEEL_ANGLE,
-                MAX_STEERING_WHEEL_ANGLE );
+        return_code = get_setpoint( &steering_setpoint );
+
+        steering_average =
+            calc_exponential_average( steering_average,
+                                      steering_setpoint.setpoint,
+                                      STEERING_FILTER_FACTOR );
+
+        const float angle_degrees =
+            (float) m_degrees( (float) steering_average );
+
+        const int constrained_angle = ( int ) m_constrain(
+                (float) (angle_degrees * STEERING_COMMAND_ANGLE_FACTOR),
+                (float) STEERING_COMMAND_ANGLE_MIN,
+                (float) STEERING_COMMAND_ANGLE_MAX );
+
+        float rate_degrees =
+            (float) fabs( constrained_angle - last_steering_rate );
+
+        last_steering_rate = constrained_angle;
+
+        unsigned int constrained_rate = ( unsigned int ) m_constrain(
+                (float) (rate_degrees / (float) STEERING_COMMAND_MAX_VELOCITY_FACTOR),
+                (float) STEERING_COMMAND_MAX_VELOCITY_MIN + 1.0f,
+                (float) STEERING_COMMAND_MAX_VELOCITY_MAX );
+
+        printf( "steering: %d\t%d\n", constrained_angle, constrained_rate );
+
+        return_code = oscc_interface_command_steering( constrained_angle,
+                                                       constrained_rate );
     }
-
-
-    return ret;
+    return ( return_code );
 }
-
-
-//
-static int get_disable_button(
-        joystick_device_s * const jstick,
-        unsigned int * const state )
-{
-    int ret = NOERR;
-    unsigned int btn_state = JOYSTICK_BUTTON_STATE_NOT_PRESSED;
-
-
-    // default state is disabled/not-pressed
-    (*state) = 0;
-
-    ret = jstick_get_button(
-            jstick,
-            JSTICK_BUTTON_DISABLE_CONTROLS,
-            &btn_state );
-
-    if( ret == NOERR )
-    {
-        if( btn_state == JOYSTICK_BUTTON_STATE_PRESSED )
-        {
-            (*state) = 1;
-        }
-    }
-
-
-    return ret;
-}
-
-
-//
-static int get_enable_button(
-        joystick_device_s * const jstick,
-        unsigned int * const state )
-{
-    int ret = NOERR;
-    unsigned int btn_state = JOYSTICK_BUTTON_STATE_NOT_PRESSED;
-
-
-    // default state is disabled/not-pressed
-    (*state) = 0;
-
-    ret = jstick_get_button(
-            jstick,
-            JSTICK_BUTTON_ENABLE_CONTROLS,
-            &btn_state );
-
-    if( ret == NOERR )
-    {
-        if( btn_state == JOYSTICK_BUTTON_STATE_PRESSED )
-        {
-            (*state) = 1;
-        }
-    }
-
-
-    return ret;
-}
-
-
-//
-static int publish_disable_brake_command(
-        canHandle h,
-        ps_ctrl_brake_command_msg * const msg )
-{
-    int ret = NOERR;
-
-    if( ret == NOERR )
-    {
-        msg->pedal_command = (uint16_t) 0.0;
-
-        msg->enabled = 0;
-    }
-
-    printf( "brake: %d %d\n", msg->enabled, msg->pedal_command );
-
-    if( ret == NOERR )
-    {
-        canWrite( h, PS_CTRL_MSG_ID_BRAKE_COMMAND, (void *) msg, sizeof( ps_ctrl_brake_command_msg ), 0 );
-    }
-
-
-    return ret;
-}
-
-
-//
-static int publish_disable_throttle_command(
-        canHandle h,
-        ps_ctrl_throttle_command_msg * const msg )
-{
-    int ret = NOERR;
-
-    if( ret == NOERR )
-    {
-        msg->pedal_command = (uint16_t) 0.0;
-
-        msg->enabled = 0;
-    }
-
-    printf( "throttle: %d %d\n", msg->enabled, msg->pedal_command );
-
-    if( ret == NOERR )
-    {
-        canWrite( h, PS_CTRL_THROTTLE_COMMAND_ID, (void *) msg, sizeof( ps_ctrl_throttle_command_msg ), 0 );
-    }
-
-
-    return ret;
-}
-
-
-//
-static int publish_disable_steering_command(
-        canHandle h,
-        ps_ctrl_steering_command_msg * const msg )
-{
-    int ret = NOERR;
-
-    if( ret == NOERR )
-    {
-        msg->steering_wheel_angle_command = (int16_t) 0.0;
-
-        msg->steering_wheel_max_velocity = (uint8_t) 0.0;
-
-        msg->enabled = 0;
-    }
-
-    printf( "steering: %d %d %d\n", msg->enabled, msg->steering_wheel_angle_command, msg->steering_wheel_max_velocity );
-
-    if( ret == NOERR )
-    {
-        canWrite( h, PS_CTRL_MSG_ID_STEERING_COMMAND, (void *) msg, sizeof( ps_ctrl_steering_command_msg ), 0 );
-    }
-
-
-    return ret;
-}
-
-
-//
-static int publish_brake_command(
-        canHandle h,
-        joystick_device_s * const jstick,
-        ps_ctrl_brake_command_msg * const msg )
-{
-    int ret = NOERR;
-    double brake_setpoint = 0.0;
-
-    ret = get_brake_setpoint(
-            jstick,
-            &brake_setpoint );
-    
-    double exponential_average = jstick_calc_exponential_average(
-            &jstick->joystick_state.brake_setpoint_average,
-            brake_setpoint,
-            BRAKES_FILTER_FACTOR );
-
-    const float normalized_value = (float) m_constrain(
-            (float) exponential_average,
-            0.0f,
-            MAX_BRAKE_PEDAL );
-
-    const float constrained_value = (float) m_constrain(
-            (float) (normalized_value * (float) UINT16_MAX),
-            (float) 0.0f,
-            (float) UINT16_MAX );
-
-    if( ret == NOERR )
-    {
-        msg->pedal_command = (uint16_t) constrained_value;
-    }
-
-    printf( "brake: %d %d\n", msg->enabled, msg->pedal_command );
-
-    if( ret == NOERR )
-    {
-        canWrite( h, PS_CTRL_MSG_ID_BRAKE_COMMAND, (void *) msg, sizeof( ps_ctrl_brake_command_msg ), 0 );
-    }
-
-
-    return ret;
-}
-
-
-//
-static int publish_throttle_command(
-        canHandle h,
-        joystick_device_s * const jstick,
-        ps_ctrl_throttle_command_msg * const msg )
-{
-    int ret = NOERR;
-    double throttle_setpoint = 0.0;
-    double brake_setpoint = 0.0;
-
-
-    ret = get_throttle_setpoint(
-            jstick,
-            &throttle_setpoint );
-
-    // don't allow throttle if brakes are applied
-    if( ret == NOERR )
-    {
-        ret = get_brake_setpoint(
-            jstick,
-            &brake_setpoint );
-
-        if( brake_setpoint >= BRAKES_ENABLED_MIN )
-        {
-            throttle_setpoint = 0.0;
-        }
-    }
-
-    // Redundant, but better safe then sorry
-    const float normalized_value = (float) m_constrain(
-            (float) throttle_setpoint,
-            0.0f,
-            MAX_THROTTLE_PEDAL );
-
-    const float constrained_value = (float) m_constrain(
-            (float) (normalized_value * (float) UINT16_MAX),
-            (float) 0.0f,
-            (float) UINT16_MAX );
-
-    if( ret == NOERR )
-    {
-        msg->pedal_command = (uint16_t) constrained_value;
-    }
-
-    printf( "throttle: %d %d\n", msg->enabled, msg->pedal_command );
-
-    if( ret == NOERR )
-    {
-        canWrite( h, PS_CTRL_THROTTLE_COMMAND_ID, (void *) msg, sizeof( ps_ctrl_throttle_command_msg ), 0 );
-    }
-
-
-    return ret;
-}
-
-
-//
-static int publish_steering_command(
-        canHandle h,
-        joystick_device_s * const jstick,
-        ps_ctrl_steering_command_msg * const msg )
-{
-    int ret = NOERR;
-    double steering_setpoint = 0.0;
-
-
-    ret = get_steering_setpoint(
-            jstick,
-            &steering_setpoint );
-    
-    double exponential_average = jstick_calc_exponential_average(
-            &jstick->joystick_state.steering_setpoint_average,
-            steering_setpoint,
-            STEERING_FILTER_FACTOR );
-
-    const float angle_degrees = (float) m_degrees(
-            (float) exponential_average );
-
-    const float constrained_angle = (float) m_constrain(
-            (float) (angle_degrees * (float) STEERING_COMMAND_ANGLE_FACTOR),
-            (float) STEERING_COMMAND_ANGLE_MIN,
-            (float) STEERING_COMMAND_ANGLE_MAX );
-
-    float rate_degrees =  
-            (float) fabs( constrained_angle - 
-            jstick->joystick_state.last_joystick_state_steering );
-    
-    jstick->joystick_state.last_joystick_state_steering = constrained_angle;
-
-    const float constrained_rate = (float) m_constrain(
-            (float) (rate_degrees / (float) STEERING_COMMAND_MAX_VELOCITY_FACTOR),
-            (float) STEERING_COMMAND_MAX_VELOCITY_MIN + 1.0f,
-            (float) STEERING_COMMAND_MAX_VELOCITY_MAX );
-
-    if( ret == NOERR )
-    {
-        msg->steering_wheel_angle_command = (int16_t) constrained_angle;
-
-        msg->steering_wheel_max_velocity = (uint8_t) constrained_rate;
-    }
-
-    printf( "steering: %d %d %d\n", msg->enabled, msg->steering_wheel_angle_command, msg->steering_wheel_max_velocity );
-
-    if( ret == NOERR )
-    {
-        canWrite( h, PS_CTRL_MSG_ID_STEERING_COMMAND, (void *) msg, sizeof( ps_ctrl_steering_command_msg ), 0 );
-    }
-
-
-    return ret;
-}
-
 
 
 
@@ -591,311 +597,172 @@ static int publish_steering_command(
 // public definitions
 // *****************************************************
 
+// *****************************************************
+// Function:    commander_init
+// 
+// Purpose:     Externally visible function to initialize the commander object
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  channel - for now, the CAN channel to use when interacting
+//              with the OSCC modules
 //
-int commander_check_for_safe_joystick(
-        commander_s * const commander )
+// *****************************************************
+int commander_init( int channel )
 {
-    int ret = NOERR;
-    double brake_setpoint = 0.0;
-    double throttle_setpoint = 0.0;
+    int return_code = ERROR;
 
-
-    if( commander == NULL )
+    if ( commander_enabled == COMMANDER_DISABLED )
     {
-        ret = ERROR;
-    }
-    else
-    {
-        // update joystick readings
-        ret = jstick_update( &commander->joystick );
+        commander_enabled = COMMANDER_ENABLED;
 
-        // get brake set point
-        ret |= get_brake_setpoint(
-                &commander->joystick,
-                &brake_setpoint );
+        return_code = oscc_interface_init( channel );
 
-        // get throttle set point
-        ret |= get_throttle_setpoint(
-                &commander->joystick,
-                &throttle_setpoint );
-
-        // handle DTC
-        if( ret != NOERR )
+        if ( return_code != ERROR )
         {
-            // configuration error
-            ret = ERROR;
-        }
+            return_code = joystick_init( );
 
-        // if succeeded
-        if( ret == NOERR )
-        {
-            // if throttle not zero
-            if( throttle_setpoint > 0.0 )
-            {
-                // invalidate
-                ret = UNAVAILABLE;
-            }
+            printf( "waiting for joystick controls to zero\n" );
 
-            // if brake not zero
-            if( brake_setpoint > 0.0 )
+            while ( return_code != ERROR )
             {
-                // invalidate
-                ret = UNAVAILABLE;
+                return_code = is_joystick_safe( );
+
+                if ( return_code == UNAVAILABLE )
+                {
+                    (void) usleep( JOYSTICK_DELAY_INTERVAL );
+                }
+                else if ( return_code == ERROR )
+                {
+                    printf( "Failed to wait for joystick to zero the control values\n" );
+                }
+                else
+                {
+                    break;
+                }
             }
         }
     }
+    return ( return_code );
+}
 
+// *****************************************************
+// Function:    command_close
+// 
+// Purpose:     Shuts down all of the other modules that the commander uses
+//              and closes the commander object
+// 
+// Returns:     int - ERROR or NOERR
+// 
+// Parameters:  void
+//
+// *****************************************************
+void commander_close( )
+{
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        commander_disable_controls( );
 
-    return ret;
+        oscc_interface_disable( );
+
+        oscc_interface_close( );
+
+        joystick_close( );
+
+        commander_enabled = COMMANDER_DISABLED;
+    }
 }
 
 
+// *****************************************************
+// Function:    commander_low_frequency_update
+// 
+// Purpose:     Should be run every 50ms
+//              The commander low-frequency update function polls the joystick,
+//              converts the joystick input into values that reflect what the
+//              vehicle should do and sends them to the OSCC interface
 //
-int commander_is_valid(
-        commander_s * const commander )
+// Returns:     int - ERROR or NOERR
+//
+// Parameters:  void
+//
+// *****************************************************
+int commander_low_frequency_update( )
 {
-    int ret = NOERR;
+    unsigned int button_pressed = 0;
 
+    int return_code = joystick_update( );
 
-    if( commander == NULL )
+    if ( return_code == NOERR )
     {
-        ret = ERROR;
-    }
-    else
-    {
-        ret = messages_is_valid( &commander->messages );
-    }
+        return_code = get_button( JOYSTICK_BUTTON_DISABLE_CONTROLS,
+                                  &button_pressed );
 
+        if ( return_code == NOERR )
+        {
+            if ( button_pressed != 0 )
+            {
+                printf( "Disabling Controls\n" );
+                return_code = commander_disable_controls( );
+            }
+            else
+            {
+                button_pressed = 0;
+                return_code = get_button( JOYSTICK_BUTTON_ENABLE_CONTROLS,
+                                          &button_pressed );
 
-    return ret;
+                if ( return_code == NOERR )
+                {
+                    if ( button_pressed != 0 )
+                    {
+                        return_code = commander_enable_controls( );
+                    }
+                    else
+                    {
+                        return_code = command_brakes( );
+
+                        if ( return_code == NOERR )
+                        {
+                            return_code = command_throttle( );
+                        }
+
+                        if ( return_code == NOERR )
+                        {
+                            return_code = command_steering( );
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return return_code;
 }
 
 
+// *****************************************************
+// Function:    commander_high_frequency_update
 //
-int commander_set_safe(
-        commander_s * const commander )
-{
-    int ret = NOERR;
-
-
-    if( commander == NULL )
-    {
-        ret = ERROR;
-    }
-    else
-    {
-        ret = commander_is_valid( commander );
-
-        if( ret == NOERR )
-        {
-            ret = messages_set_default_values(
-                    &commander->messages );
-        }
-    }
-
-
-    return ret;
-}
-
-
+// Purpose:     Should be run every 1ms (one millisecond)
+//              Run the high-frequency commander tasks
+//              Checks the vehicle for override information
 //
-int commander_enumerate_control_nodes(
-        commander_s * const commander )
-{
-    int ret = NOERR;
-
-
-    if( commander == NULL )
-    {
-        ret = ERROR;
-    }
-    else
-    {
-        // safe state
-        ret = commander_set_safe( commander );
-
-        // TODO: identify control nodes on CAN bus?
-    }
-
-
-    return ret;
-}
-
-
+// Returns:     int - ERROR or NOERR
 //
-int commander_disable_controls(
-        commander_s * const commander )
-{
-    int ret = NOERR;
-    
-
-    printf( "Sending command to disable controls\n" );
-
-    if( commander == NULL )
-    {
-        ret = ERROR;
-    }
-    else
-    {
-        // safe state
-        ret = commander_set_safe( commander );
-
-        // publish commands with disabled flag
-        if( ret == NOERR )
-        {
-            ret = publish_disable_brake_command(
-                    commander->canhandle,
-                    &commander->messages.brake_cmd );
-        }
-
-        if( ret == NOERR )
-        {
-            ret = publish_disable_throttle_command(
-                    commander->canhandle,
-                    &commander->messages.throttle_cmd );
-        }
-
-        if( ret == NOERR )
-        {
-            ret = publish_disable_steering_command(
-                    commander->canhandle,
-                    &commander->messages.steering_cmd );
-        }
-    }
-
-
-    return ret;
-}
-
-
+// Parameters:  void
 //
-int commander_enable_controls(
-        commander_s * const commander )
+// *****************************************************
+int commander_high_frequency_update( )
 {
-    int ret = NOERR;
+    int return_code = ERROR;
 
+    int oscc_override = 0;
 
-    printf( "Enabling controls\n" );
+    return_code = oscc_interface_update_status( &oscc_override );
 
-    if( commander == NULL )
+    if ( oscc_override == 1 )
     {
-        ret = ERROR;
+        printf( "Driver Override Detected\n" );
+        return_code = commander_disable_controls( );
     }
-    else
-    {
-        // safe state
-        ret = commander_set_safe( commander );
-
-        if( ret == NOERR )
-        {
-            commander->messages.brake_cmd.enabled = 1;
-
-            commander->messages.steering_cmd.enabled = 1;
-
-            commander->messages.throttle_cmd.enabled = 1;
-        }
-    }
-    
-    if( ret == NOERR )
-    {
-        ret = jstick_init_state( &commander->joystick );
-    }
-
-
-    return ret;
-}
-
-
-//
-int commander_update(
-        commander_s * const commander )
-{
-    int ret = NOERR;
-    unsigned int disable_button_pressed = 0;
-    unsigned int enable_button_pressed = 0;
-
-
-    if( commander == NULL )
-    {
-        ret = ERROR;
-    }
-
-    // safe state
-    if( ret == ERROR )
-    {
-        ret = commander_set_safe( commander );
-    }
-
-    // update joystick
-    if( ret == NOERR )
-    {
-        ret = jstick_update( &commander->joystick );
-    }
-
-    // get 'disable-controls' button state
-    if( ret == NOERR )
-    {
-        ret = get_disable_button(
-                &commander->joystick,
-                &disable_button_pressed );
-    }
-
-    // get 'enable-controls' button state
-    if( ret == NOERR )
-    {
-        ret = get_enable_button(
-                &commander->joystick,
-                &enable_button_pressed );
-    }
-
-    // only disable if both enable and disable buttons are pressed
-    if( (enable_button_pressed != 0) && (disable_button_pressed != 0) )
-    {
-        enable_button_pressed = 0;
-        disable_button_pressed = 1;
-    }
-
-    // send command if a enable/disable command
-    if( (disable_button_pressed != 0) || (commander->driver_override == 1) )
-    {
-        printf( "Global disable: ");
-        ret = commander_disable_controls( commander );
-
-        commander->driver_override = 0;
-    }
-    else if( enable_button_pressed != 0 )
-    {
-        ret = commander_enable_controls( commander );
-    }
-    else
-    {
-        // publish brake command continously
-        if( ret == NOERR )
-        {
-            ret = publish_brake_command(
-                    commander->canhandle,
-                    &commander->joystick,
-                    &commander->messages.brake_cmd );
-        }
-
-        // publish throttle command continously
-        if( ret == NOERR )
-        {
-            ret = publish_throttle_command(
-                    commander->canhandle,
-                    &commander->joystick,
-                    &commander->messages.throttle_cmd );
-        }
-
-        // publish steering command continously
-        if( ret == NOERR )
-        {
-            ret = publish_steering_command(
-                    commander->canhandle,
-                    &commander->joystick,
-                    &commander->messages.steering_cmd );
-        }
-    }
-
-    return ret;
+    return return_code;
 }

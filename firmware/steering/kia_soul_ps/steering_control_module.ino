@@ -48,7 +48,7 @@
 #define CAN_CS                          ( 10 )
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT         ( 2500 )
+#define PS_CTRL_RX_WARN_TIMEOUT         ( 250 )
 
 // set up pins for interface with DAC (MCP4922)
 #define DAC_CS                          ( 9 )       // Chip select pin
@@ -75,7 +75,7 @@
 #define STEERING_WHEEL_CUTOFF_THRESHOLD ( 3000 )
 
 // Threshhold to detect when there is a discrepancy between DAC and ADC values
-#define VOLTAGE_THRESHOLD               ( 200 )     // mV
+#define VOLTAGE_THRESHOLD               ( 0.096 )     // mV
 
 #define SAMPLE_A                        ( 0 )
 
@@ -122,6 +122,10 @@ static current_control_state current_ctrl_state;
 
 //
 static PID pid_params;
+
+
+//
+static uint8_t torque_sum;
 
 
 // *****************************************************
@@ -350,6 +354,84 @@ void disable_control( )
 
 
 // *****************************************************
+// Function:    check_driver_steering_override
+//
+// Purpose:     This function checks the voltage input from the steering
+//              wheel's torque sensors to determine if the driver is attempting
+//              to steer the vehicle.  This must be done over time by taking
+//              periodic samples of the input torque voltage, calculating the
+//              difference between the two and then passing that difference
+//              through a basic exponential filter to smooth the input.
+//
+//              The required response time for the filter is 250 ms, which at
+//              50ms per sample is 5 samples.  As such, the alpha for the
+//              exponential filter is 0.5 to make the input go "close to" zero
+//              in 5 samples.
+//
+//              The implementation is:
+//                  s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
+//
+//              If the filtered torque exceeds the max torque, it is an
+//              indicator that there is feedback on the steering wheel and the
+//              control should be disabled.
+//
+//              The final check determines if the a and b signals are opposite
+//              each other.  If they are not, it is an indicator that there is
+//              a problem with one of the sensors.  The check is looking for a
+//              90% tolerance.
+//
+// Returns:     true if the driver is requesting an override
+//
+// Parameters:  None
+//
+// *****************************************************
+bool check_driver_steering_override( )
+{
+    // The parameters below; torque_filter_alpha and steering_wheel_max_torque,
+    // can be used to modify how selective the steering override functionality
+    // is. If torque_filter_alpha or steering_wheel_max_torque is increased
+    // then steering override will be more selective about disabling on driver
+    // input. That is, it will require a harder input for the steering wheel
+    // to automatically disable. If these values are lowered then the steering
+    // override will be less selective; this may result in drastic movements
+    // of the joystick controller triggering steering override.
+    // It is expected behavior that if a user uses the joystick controller to
+    // purposefully "fight" the direction of steering wheel movement that this
+    // will cause a steering override with the below parameters. That is if
+    // the steering wheel is drastically "jerked" back and forth, opposing the
+    // direction of steering wheel movement and purposefully trying to cause
+    // an unstable situation, the steering override is expected to be
+    // triggered.
+    static const float torque_filter_alpha = 0.5;
+    static const float steering_wheel_max_torque = 3000.0;
+
+    static float filtered_torque_a = 0.0;
+    static float filtered_torque_b = 0.0;
+
+    bool override = false;
+
+    float torque_sensor_a = ( float )( analogRead( SIGNAL_INPUT_A ) << 2 );
+    float torque_sensor_b = ( float )( analogRead( SIGNAL_INPUT_B ) << 2 );
+
+    filtered_torque_a =
+        ( torque_filter_alpha * torque_sensor_a ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_a );
+
+    filtered_torque_b =
+        ( torque_filter_alpha * torque_sensor_b ) +
+            ( ( 1.0 - torque_filter_alpha ) * filtered_torque_b );
+
+    if ( ( abs( filtered_torque_a ) > steering_wheel_max_torque ) ||
+         ( abs( filtered_torque_b ) > steering_wheel_max_torque ) )
+    {
+        override = true;
+    }
+
+    return ( override );
+}
+
+
+// *****************************************************
 // Function:    calculate_torque_spoof
 //
 // Purpose:     Container for hand-tuned empirically determined values
@@ -368,76 +450,6 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof )
 {
     spoof->low = 819.2 * ( 0.0008 * torque + 2.26 );
     spoof->high = 819.2 * ( -0.0008 * torque + 2.5 );
-}
-
-
-// *****************************************************
-// Function:    check_spoof_voltages
-//
-// Purpose:     Check for discrepancies between DAC output and ADC input for
-//              spoof voltages.
-//
-// Returns:     void
-//
-// Parameters:  [out] torque_spoof - struct containing the integer torque values
-//
-// *****************************************************
-void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
-{
-
-    uint16_t spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
-    uint16_t spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
-
-    float spoof_a_adc_volts = spoof_a_adc * ( 5.0 / 1023.0 ) + 0.010;
-    float spoof_b_adc_volts = spoof_b_adc * ( 5.0 / 1023.0 ) + 0.010;
-
-    // DAC values passed in from calculate_torque_spoof( )
-    float spoof_a_dac_current_volts = spoof->high * ( 5.0 / 4095.0 );
-    float spoof_b_dac_current_volts = spoof->low * ( 5.0 / 4095.0 );
-
-    // fail criteria. ~ ( ± 96mV )
-    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
-            VOLTAGE_THRESHOLD )
-    {
-        if ( current_ctrl_state.override_flag.voltage_spike_a == 0 )
-        {
-            current_ctrl_state.override_flag.voltage_spike_a = 1;
-        }
-        else
-        {
-            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal A. * *" );
-
-            disable_control( );
-            current_ctrl_state.override_flag.voltage = 1;
-        }
-    }
-    else
-    {
-        current_ctrl_state.override_flag.voltage = 0;
-        current_ctrl_state.override_flag.voltage_spike_a = 0;
-    }
-
-    // fail criteria. ~ ( ± 96mV )
-    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
-            VOLTAGE_THRESHOLD )
-    {
-        if ( current_ctrl_state.override_flag.voltage_spike_b == 0 )
-        {
-            current_ctrl_state.override_flag.voltage_spike_b = 1;
-        }
-        else
-        {
-            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal B. * *" );
-
-            disable_control( );
-            current_ctrl_state.override_flag.voltage = 1;
-        }
-    }
-    else
-    {
-        current_ctrl_state.override_flag.voltage = 0;
-        current_ctrl_state.override_flag.voltage_spike_b = 0;
-    }
 }
 
 
@@ -485,6 +497,12 @@ static void publish_ps_ctrl_steering_report( )
     {
         data->override = 1;
     }
+
+    data->angle_command = current_ctrl_state.commanded_steering_angle;
+
+    data->torque = torque_sum;
+
+    data->enabled = (uint8_t) current_ctrl_state.control_enabled;
 
     CAN.sendMsgBuf( tx_frame_ps_ctrl_steering_report.id,
                     0,
@@ -696,8 +714,6 @@ void setup( )
 
     current_ctrl_state.override_flag.voltage_spike_b = 0;
 
-    current_ctrl_state.test_countdown = 0;
-
     // Initialize the Rx timestamps to avoid timeout warnings on start up
     rx_frame_ps_ctrl_steering_command.timestamp = millis( );
 
@@ -747,8 +763,32 @@ void loop( )
 
         current_ctrl_state.timestamp_us = current_timestamp_us;
 
-        if ( current_ctrl_state.control_enabled == true )
+        bool override = check_driver_steering_override( );
+
+        if ( override == true )
         {
+            current_ctrl_state.override_flag.wheel = 1;
+            disable_control( );
+        }
+        else if ( current_ctrl_state.control_enabled == true )
+        {
+
+/*******************************************************************************
+*   WARNING
+*
+*   The ranges selected to do steering control are carefully tested to
+*   ensure that a torque is not requested that the vehicles steering motor
+*   cannot handle. By changing any of this code you risk attempting to actuate
+*   a torque outside of the vehicles valid range. Actuating a torque outside of
+*   the vehicles valid range will, at best, cause the vehicle to go into an
+*   unrecoverable fault state. Clearing this fault state requires one of Kia's
+*   native diagnostics tools, and someone who knows how to clear DTC codes with
+*   said tool.
+*
+*   It is NOT recommended to modify any of the existing control ranges, or
+*   gains, without expert knowledge.
+*******************************************************************************/
+
             // Calculate steering angle rates (degrees/microsecond)
             double steering_angle_rate =
                 ( current_ctrl_state.current_steering_angle -
@@ -787,21 +827,15 @@ void loop( )
 
             calculate_torque_spoof( control, &torque_spoof );
 
+            torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
+
             dac.outputA( torque_spoof.low );
             dac.outputB( torque_spoof.high );
-
-            current_ctrl_state.test_countdown += 1;
-
-            // if DAC out and ADC in voltages differ, disable control
-            // only test every fifth loop
-            if ( current_ctrl_state.test_countdown >= 5 )
-            {
-                current_ctrl_state.test_countdown = 0;
-                check_spoof_voltages( &torque_spoof );
-            }
         }
         else
         {
+            current_ctrl_state.override_flag.wheel = 0;
+
             pid_zeroize( &pid_params, STEERING_WINDUP_GUARD );
         }
     }

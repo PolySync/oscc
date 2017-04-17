@@ -49,7 +49,7 @@
 #define CAN_CS                          ( 10 )
 
 // ms
-#define PS_CTRL_RX_WARN_TIMEOUT         ( 2500 )
+#define PS_CTRL_RX_WARN_TIMEOUT         ( 250 )
 
 // set up pins for interface with DAC (MCP4922)
 #define DAC_CS                          ( 9 )       // Chip select pin
@@ -70,7 +70,7 @@
 #define SPOOF_ENGAGE                    ( 6 )
 
 // Threshhold to detect when a person is pressing accelerator
-#define PEDAL_THRESH                    ( 1000 )
+#define PEDAL_THRESHOLD                 ( 1000 )
 
 // Threshhold to detect when there is a discrepancy between DAC and ADC values
 #define VOLTAGE_THRESHOLD               ( 0.096 )     // mV
@@ -280,7 +280,7 @@ void calculate_pedal_spoof( float pedal_target, struct torque_spoof_t* spoof )
 //
 void check_pedal_override( )
 {
-    if ( ( signal_L + signal_H ) / 2 > PEDAL_THRESH )
+    if ( ( signal_L + signal_H ) / 2 > PEDAL_THRESHOLD )
     {
         disable_control( );
         current_ctrl_state.override_flag.pedal = 1;
@@ -289,66 +289,6 @@ void check_pedal_override( )
     {
         current_ctrl_state.override_flag.pedal = 0;
     }
-}
-
-//
-void check_spoof_voltages( struct torque_spoof_t* spoof ) // L -> A, H -> B
-{
-
-    uint16_t spoof_a_adc = analogRead( SPOOF_SIGNAL_A );
-    uint16_t spoof_b_adc = analogRead( SPOOF_SIGNAL_B );
-
-    float spoof_a_adc_volts = spoof_a_adc * ( 5.0 / 1023.0 ) + 0.010;
-    float spoof_b_adc_volts = spoof_b_adc * ( 5.0 / 1023.0 ) + 0.010;
-
-    // DAC values passed in from calculate_pedal_spoof( )
-    float spoof_a_dac_current_volts = spoof->high * ( 5.0 / 4095.0 );
-    float spoof_b_dac_current_volts = spoof->low * ( 5.0 / 4095.0 );
-
-    // fail criteria. ~ ( ± 96mV )
-    if ( abs( spoof_a_adc_volts - spoof_a_dac_current_volts ) >
-            VOLTAGE_THRESHOLD )
-    {
-        if ( current_ctrl_state.override_flag.voltage_spike_a == 0 )
-        {
-            current_ctrl_state.override_flag.voltage_spike_a = 1;
-        }
-        else
-        {
-            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal A. * *" );
-
-            disable_control( );
-            current_ctrl_state.override_flag.voltage = 1;
-        }
-    }
-    else
-    {
-        current_ctrl_state.override_flag.voltage = 0;
-        current_ctrl_state.override_flag.voltage_spike_a = 0;
-    }
-
-    // fail criteria. ~ ( ± 96mV )
-    if ( abs( spoof_b_adc_volts - spoof_b_dac_current_volts ) >
-            VOLTAGE_THRESHOLD )
-    {
-        if ( current_ctrl_state.override_flag.voltage_spike_b == 0 )
-        {
-            current_ctrl_state.override_flag.voltage_spike_b = 1;
-        }
-        else
-        {
-            DEBUG_PRINT( "* * ERROR!!  Voltage Discrepancy on Signal B. * *" );
-
-            disable_control( );
-            current_ctrl_state.override_flag.voltage = 1;
-        }
-    }
-    else
-    {
-        current_ctrl_state.override_flag.voltage = 0;
-        current_ctrl_state.override_flag.voltage_spike_b = 0;
-    }
-
 }
 
 
@@ -384,13 +324,11 @@ static void publish_ps_ctrl_throttle_report( void )
         data->override = 1;
     }
 
-    //data->override = local_override;
+    data->enabled = (uint8_t) current_ctrl_state.control_enabled;
 
-    //// Set Pedal Command (PC)
-    //data->pedal_command =
-
-    //// Set Pedal Output (PO)
-    //data->pedal_output = max()
+    data->pedal_input = signal_L + signal_H;
+    // Set Pedal Command (PC)
+    data->pedal_command = current_ctrl_state.pedal_position_target;
 
     // publish to control CAN bus
     CAN.sendMsgBuf(
@@ -554,8 +492,6 @@ void setup( )
 
     current_ctrl_state.override_flag.voltage_spike_b = 0;
 
-    current_ctrl_state.test_countdown = 0;
-
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
@@ -591,11 +527,12 @@ void loop()
     signal_L = analogRead( SIGNAL_INPUT_A ) << 2;  //10 bit to 12 bit
     signal_H = analogRead( SIGNAL_INPUT_B ) << 2;
 
+    // if someone is pressing the throttle pedal, disable control
+    check_pedal_override( );
+
     // now that we've set control status, do throttle if we are in control
     if ( current_ctrl_state.control_enabled == true )
     {
-        // if someone is pressing the throttle pedal, disable control
-        check_pedal_override( );
 
         struct torque_spoof_t torque_spoof;
 
@@ -605,16 +542,6 @@ void loop()
 
         dac.outputA( torque_spoof.high );
         dac.outputB( torque_spoof.low );
-
-        current_ctrl_state.test_countdown += 1;
-
-        // if DAC out and ADC in voltages differ, disable control
-        // only test every fifth loop
-        if ( current_ctrl_state.test_countdown >= 5 )
-        {
-            current_ctrl_state.test_countdown = 0;
-            check_spoof_voltages( &torque_spoof );
-        }
     }
 
 }

@@ -1,7 +1,7 @@
 # The MIT License (MIT)
 # =====================
 
-# Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved.
+# Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved.
 
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -32,13 +32,17 @@
 LIB_HOME = ../../firmware/arduino_libraries/control_protocol_can
 
 # target
-TARGET  := bin/joystick-commander
+TARGET  := bin/diagnostics-tool
 
 # source files
-SRCS    :=  src/main.c \
-	    src/commander.c \
-            src/joystick.c \
-	    src/oscc_interface.c
+SRCS    :=  src/diagnostics.c \
+            src/terminal_print.c \
+            src/can_monitor.c \
+            src/system_state.c \
+            src/gateway_module_state.c \
+            src/steering_module_state.c \
+            src/throttle_module_state.c \
+            src/brake_module_state.c
 
 # dep files
 OBJS    := $(SRCS:.c=.o)
