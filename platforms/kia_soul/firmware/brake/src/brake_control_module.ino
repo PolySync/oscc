@@ -684,7 +684,7 @@ void publish_timed_tx_frames( void )
 {
     static uint32_t tx_timestamp = 0;
 
-    uint32_t delta = timer_delta_ms( tx_timestamp );
+    uint32_t delta = get_time_delta( tx_timestamp, GET_TIMESTAMP_MS() );
 
     if ( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
     {
@@ -752,33 +752,20 @@ void process_psvc_chassis_state1(
 // Parameters:  void
 //
 // *****************************************************
-void handle_ready_rx_frames( )
+void handle_ready_rx_frames( can_frame_s *frame )
 {
-    if ( CAN.checkReceive( ) == CAN_MSGAVAIL )
+    if ( frame->id == PS_CTRL_MSG_ID_BRAKE_COMMAND )
     {
-        can_frame_s rx_frame;
+        brakes.rx_timestamp = millis( );
 
-        memset( &rx_frame, 0, sizeof(rx_frame) );
+        process_ps_ctrl_brake_command(
+            ( const ps_ctrl_brake_command_msg * const )frame->data );
+    }
 
-        rx_frame.timestamp = millis( );
-
-        CAN.readMsgBufID( (INT32U*) &rx_frame.id,
-                          (INT8U*) &rx_frame.dlc,
-                          (INT8U*) rx_frame.data );
-
-        if ( rx_frame.id == PS_CTRL_MSG_ID_BRAKE_COMMAND )
-        {
-            brakes.rx_timestamp = millis( );
-
-            process_ps_ctrl_brake_command(
-                ( const ps_ctrl_brake_command_msg * const )rx_frame.data );
-        }
-
-        if ( rx_frame.id == KIA_STATUS1_MESSAGE_ID )
-        {
-            process_psvc_chassis_state1(
-                ( const psvc_chassis_state1_data_s * const )rx_frame.data );
-        }
+    if ( frame->id == KIA_STATUS1_MESSAGE_ID )
+    {
+        process_psvc_chassis_state1(
+            ( const psvc_chassis_state1_data_s * const )frame->data );
     }
 }
 
@@ -798,10 +785,9 @@ void brake_update( )
     static float pressure_target = 0.0;
     static float pressure = 0.0;
 
-    static uint32_t control_loop_time = 0;
+    static uint32_t control_loop_time = GET_TIMESTAMP_US();
 
-    float loop_delta_t = (float)timer_delta_us( control_loop_time );
-    control_loop_time = micros();
+    float loop_delta_t = (float)get_time_delta( control_loop_time, control_loop_time );
 
     loop_delta_t /= 1000.0;
     loop_delta_t /= 1000.0;
@@ -935,7 +921,7 @@ void brake_update( )
 void check_rx_timeouts( )
 {
     // local vars
-    uint32_t delta = timer_delta_ms( brakes.rx_timestamp );
+    uint32_t delta = get_time_delta( brakes.rx_timestamp, GET_TIMESTAMP_MS() );
 
     if ( delta >= PS_CTRL_RX_WARN_TIMEOUT )
     {
@@ -979,8 +965,11 @@ void setup( void )
     brake_command_release_solenoids( 0 );
     brake_command_actuator_solenoids( 0 );
 
-    init_serial( );
-    init_can( );
+    #ifdef DEBUG
+        init_serial( );
+    #endif
+
+    init_can( CAN );
 
     publish_ps_ctrl_brake_report( );
 
@@ -1017,7 +1006,13 @@ void setup( void )
 // *****************************************************
 void loop( )
 {
-    handle_ready_rx_frames( );
+    can_frame_s rx_frame;
+    int ret = check_for_rx_frame( CAN, &rx_frame );
+
+    if( ret == RX_FRAME_AVAILABLE )
+    {
+        handle_ready_rx_frames( &rx_frame );
+    }
 
     publish_timed_tx_frames( );
 
