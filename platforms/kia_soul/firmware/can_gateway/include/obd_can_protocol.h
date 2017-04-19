@@ -27,28 +27,33 @@
 /************************************************************************/
 
 /**
- * @file kia_obd_can.h
+ * @file obd_can_protocol.h
  * @brief Kia Soul OBDII CAN Protocol.
  *
  */
 
 
-
-
-#ifndef KIA_OBD_CAN_H
-#define    KIA_OBD_CAN_H
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
+#ifndef _OSCC_KIA_SOUL_OBD_CAN_PROTOCOL_H_
+#define _OSCC_KIA_SOUL_OBD_CAN_PROTOCOL_H_
 
 
 #include <stdint.h>
 
 
+//
+#define OSCC_HEARTBEAT_WARN_KIA_STATUS1_TIMEOUT (0x0100)
+
+
+//
+#define OSCC_HEARTBEAT_WARN_KIA_STATUS2_TIMEOUT (0x0200)
+
+
+//
+#define OSCC_HEARTBEAT_WARN_KIA_STATUS3_TIMEOUT (0x0400)
+
+
+//
+#define OSCC_HEARTBEAT_WARN_KIA_STATUS4_TIMEOUT (0x0800)
 
 
 //
@@ -175,11 +180,4 @@ typedef struct
 } kia_obd_status4_data_s;
 
 
-
-
-#ifdef __cplusplus
-}
 #endif
-
-
-#endif    /* KIA_OBD_CAN_H */
