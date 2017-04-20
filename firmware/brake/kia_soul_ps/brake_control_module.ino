@@ -74,7 +74,7 @@ const float MAX_BRAKE_PRESSURE = 947.9;
 #define SLA_DUTY_CYCLE_MAX (105.0)
 #define SLA_DUTY_CYCLE_MIN (80.0)
 #define SLR_DUTY_CYCLE_MAX (100.0)
-#define SLR_DUTY_CYCLE_MIN (50.0)
+#define SLR_DUTY_CYCLE_MIN (65.0)
 
 // ******************************************************************
 // MOSFET pin (digital) definitions ( MOSFETs control the solenoids )
@@ -1101,7 +1101,7 @@ void setup( void )
     // Initialize PID params
     pid_zeroize( &pid_params, BRAKE_PID_WINDUP_GUARD );
 
-    pid_params.proportional_gain = 0.5;
+    pid_params.proportional_gain = 0.58;
     pid_params.integral_gain     = 0.2;
     pid_params.derivative_gain   = 0.001;
 
