@@ -36,14 +36,14 @@
 static kia_soul_throttle_module_s throttle_module;
 static DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, throttle_module.pins.dac_cs ); // DAC model, SS pin, LDAC pin
 static MCP_CAN can(throttle_module.pins.can_cs); // Set CS pin for the CAN shield
-static can_frame_s rx_frame_ps_ctrl_throttle_command;
-static can_frame_s tx_frame_ps_ctrl_throttle_report;
+static can_frame_s rx_frame_throttle_command;
+static can_frame_s tx_frame_throttle_report;
 
 void setup( )
 {
-    memset( &rx_frame_ps_ctrl_throttle_command,
+    memset( &rx_frame_throttle_command,
             0,
-            sizeof( rx_frame_ps_ctrl_throttle_command ) );
+            sizeof( rx_frame_throttle_command ) );
 
     init_pins( &throttle_module );
 
@@ -53,8 +53,8 @@ void setup( )
 
     init_can( can );
 
-    publish_ps_ctrl_throttle_report( &throttle_module,
-        &tx_frame_ps_ctrl_throttle_report,
+    publish_throttle_report( &throttle_module,
+        &tx_frame_throttle_report,
         can );
 
     throttle_module.control_state.enabled = false;
@@ -70,7 +70,7 @@ void setup( )
     throttle_module.override_flags.voltage_spike_b = 0;
 
     // update last Rx timestamps so we don't set timeout warnings on start up
-    rx_frame_ps_ctrl_throttle_command.timestamp = GET_TIMESTAMP_MS( );
+    rx_frame_throttle_command.timestamp = GET_TIMESTAMP_MS( );
 
     // debug log
     DEBUG_PRINTLN( "init: pass" );
@@ -84,17 +84,17 @@ void loop()
 
     if( ret == RX_FRAME_AVAILABLE )
     {
-        handle_ready_rx_frames( &throttle_module, &rx_frame, &rx_frame_ps_ctrl_throttle_command, dac );
+        handle_ready_rx_frames( &throttle_module, &rx_frame, &rx_frame_throttle_command, dac );
     }
 
     // publish all report CAN frames
     publish_timed_report(
         &throttle_module,
-        &tx_frame_ps_ctrl_throttle_report,
+        &tx_frame_throttle_report,
         can );
 
     // heartbeat checker??
-    check_rx_timeouts( &throttle_module, &rx_frame_ps_ctrl_throttle_command, dac );
+    check_rx_timeouts( &throttle_module, &rx_frame_throttle_command, dac );
 
     // update state variables
     throttle_module.state.accel_position_sensor_low = analogRead( throttle_module.pins.signal_accel_pos_sensor_high ) << 2;  //10 bit to 12 bit

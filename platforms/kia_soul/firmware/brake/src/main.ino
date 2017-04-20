@@ -62,7 +62,7 @@ void setup( void )
 
     init_can( CAN );
 
-    publish_ps_ctrl_brake_report( &brake_module, CAN);
+    publish_brake_report( &brake_module, CAN);
 
     // update last Rx timestamps so we don't set timeout warnings on start up
     brake_module.control_state.rx_timestamp = millis( );

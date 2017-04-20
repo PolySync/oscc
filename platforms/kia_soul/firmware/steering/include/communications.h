@@ -10,7 +10,7 @@
 
 
 // *****************************************************
-// Function:    publish_ps_ctrl_steering_report
+// Function:    publish_steering_report
 //
 // Purpose:     Fill out the transmit CAN frame with the steering angle
 //              and publish that information on the CAN bus
@@ -20,7 +20,7 @@
 // Parameters:  None
 //
 // *****************************************************
-void publish_ps_ctrl_steering_report(
+void publish_steering_report(
     kia_soul_steering_module_s *steering_module,
     can_frame_s *report,
     MCP_CAN &can,
@@ -46,7 +46,7 @@ void publish_timed_tx_frames(
 
 
 // *****************************************************
-// Function:    process_ps_ctrl_steering_command
+// Function:    process_steering_command
 //
 // Purpose:     Process a steering command message
 //
@@ -55,15 +55,15 @@ void publish_timed_tx_frames(
 // Parameters:  control_data -  pointer to a steering command control message
 //
 // *****************************************************
-void process_ps_ctrl_steering_command(
+void process_steering_command(
     kia_soul_steering_module_s *steering_module,
-    const ps_ctrl_steering_command_msg * const control_data,
+    const oscc_command_msg_steering * const control_data,
     can_frame_s *command,
     DAC_MCP49xx &dac );
 
 
 // *****************************************************
-// Function:    process_psvc_chassis_state1
+// Function:    process_chassis_state1
 //
 // Purpose:     Process the chassis state message
 //
@@ -73,9 +73,9 @@ void process_ps_ctrl_steering_command(
 //                             the steering angle
 //
 // *****************************************************
-void process_psvc_chassis_state1(
+void process_chassis_state1(
     kia_soul_steering_module_s *steering_module,
-    const psvc_chassis_state1_data_s * const chassis_data );
+    const oscc_chassis_state1_data_s * const chassis_data );
 
 
 // *****************************************************

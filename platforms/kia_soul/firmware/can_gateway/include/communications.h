@@ -32,11 +32,11 @@
 #define GET_STATE(data) (((oscc_heartbeat_data_s*) &data)->state)
 
 //
-#define SET_CHASSIS_FLAG(data, x) (((psvc_chassis_state1_data_s*) &data)->flags |= ((uint8_t) x))
+#define SET_CHASSIS_FLAG(data, x) (((oscc_chassis_state1_data_s*) &data)->flags |= ((uint8_t) x))
 
 
 //
-#define CLEAR_CHASSIS_FLAG(data, x) (((psvc_chassis_state1_data_s*) &data)->flags &= ~((uint8_t) x))
+#define CLEAR_CHASSIS_FLAG(data, x) (((oscc_chassis_state1_data_s*) &data)->flags &= ~((uint8_t) x))
 
 void publish_heartbeat_frame(
     can_frame_s *frame,

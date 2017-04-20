@@ -102,8 +102,8 @@ void process_kia_status1(
     const kia_obd_status1_data_s * const kia_data =
             (kia_obd_status1_data_s*) rx_frame_kia_status1->data;
 
-    psvc_chassis_state1_data_s * const control_data =
-            (psvc_chassis_state1_data_s*) tx_frame_chassis_state1->data;
+    oscc_chassis_state1_data_s * const control_data =
+            (oscc_chassis_state1_data_s*) tx_frame_chassis_state1->data;
 
     CLEAR_WARNING( tx_frame_heartbeat->data, OSCC_HEARTBEAT_WARN_KIA_STATUS1_TIMEOUT );
 
@@ -138,8 +138,8 @@ void process_kia_status2(
     const kia_obd_status2_data_s * const kia_data =
             (kia_obd_status2_data_s*) rx_frame_kia_status2->data;
 
-    psvc_chassis_state2_data_s * const control_data =
-            (psvc_chassis_state2_data_s*) tx_frame_chassis_state2->data;
+    oscc_chassis_state2_data_s * const control_data =
+            (oscc_chassis_state2_data_s*) tx_frame_chassis_state2->data;
 
     CLEAR_WARNING( tx_frame_heartbeat->data, OSCC_HEARTBEAT_WARN_KIA_STATUS2_TIMEOUT );
 
@@ -181,8 +181,8 @@ void process_kia_status3(
     const kia_obd_status3_data_s * const kia_data =
             (kia_obd_status3_data_s*) rx_frame_kia_status3->data;
 
-    psvc_chassis_state1_data_s * const control_data =
-            (psvc_chassis_state1_data_s*) tx_frame_chassis_state1->data;
+    oscc_chassis_state1_data_s * const control_data =
+            (oscc_chassis_state1_data_s*) tx_frame_chassis_state1->data;
 
     CLEAR_WARNING( tx_frame_heartbeat->data, OSCC_HEARTBEAT_WARN_KIA_STATUS3_TIMEOUT );
 
@@ -210,8 +210,8 @@ void process_kia_status4(
     const kia_obd_status4_data_s * const kia_data =
             (kia_obd_status4_data_s*) rx_frame_kia_status4->data;
 
-    psvc_chassis_state1_data_s * const control_data =
-            (psvc_chassis_state1_data_s*) tx_frame_chassis_state1->data;
+    oscc_chassis_state1_data_s * const control_data =
+            (oscc_chassis_state1_data_s*) tx_frame_chassis_state1->data;
 
     CLEAR_WARNING( tx_frame_heartbeat->data, OSCC_HEARTBEAT_WARN_KIA_STATUS4_TIMEOUT );
 

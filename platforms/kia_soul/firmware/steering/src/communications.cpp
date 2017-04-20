@@ -10,7 +10,7 @@
 #include "steering_control.h"
 
 
-void publish_ps_ctrl_steering_report(
+void publish_steering_report(
     kia_soul_steering_module_s *steering_module,
     can_frame_s *report,
     MCP_CAN &can,
@@ -22,8 +22,8 @@ void publish_ps_ctrl_steering_report(
 
     // Get a pointer to the data buffer in the CAN frame and set
     // the steering angle
-    ps_ctrl_steering_report_msg * data =
-        ( ps_ctrl_steering_report_msg* ) report->data;
+    oscc_report_msg_steering * data =
+        ( oscc_report_msg_steering* ) report->data;
 
     data->angle = steering_module->state.steering_angle;
 
@@ -63,14 +63,14 @@ void publish_timed_tx_frames(
 
     if ( delta >= OSCC_PUBLISH_INTERVAL_STEERING_REPORT )
     {
-        publish_ps_ctrl_steering_report( steering_module, report, can, torque_sum );
+        publish_steering_report( steering_module, report, can, torque_sum );
     }
 }
 
 
-void process_ps_ctrl_steering_command(
+void process_steering_command(
     kia_soul_steering_module_s *steering_module,
-    const ps_ctrl_steering_command_msg * const control_data,
+    const oscc_command_msg_steering * const control_data,
     can_frame_s *command,
     DAC_MCP49xx &dac )
 {
@@ -97,9 +97,9 @@ void process_ps_ctrl_steering_command(
 }
 
 
-void process_psvc_chassis_state1(
+void process_chassis_state1(
     kia_soul_steering_module_s *steering_module,
-    const psvc_chassis_state1_data_s * const chassis_data )
+    const oscc_chassis_state1_data_s * const chassis_data )
 {
     float raw_angle = (float)chassis_data->steering_wheel_angle;
     steering_module->state.steering_angle = raw_angle * 0.0076294;
@@ -117,17 +117,17 @@ void handle_ready_rx_frames(
 {
     if ( frame->id == OSCC_CAN_ID_STEERING_COMMAND )
     {
-        process_ps_ctrl_steering_command(
+        process_steering_command(
             steering_module,
-            ( const ps_ctrl_steering_command_msg * const )frame->data,
+            ( const oscc_command_msg_steering * const )frame->data,
             command,
             dac);
     }
     else if ( frame->id == KIA_STATUS1_MESSAGE_ID )
     {
-        process_psvc_chassis_state1(
+        process_chassis_state1(
             steering_module,
-            ( const psvc_chassis_state1_data_s * const )frame->data );
+            ( const oscc_chassis_state1_data_s * const )frame->data );
     }
 }
 

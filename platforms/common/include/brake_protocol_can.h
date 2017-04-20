@@ -6,25 +6,25 @@
  * @brief Brake command message (CAN frame) ID.
  *
  */
-#define PS_CTRL_MSG_ID_BRAKE_COMMAND (0x060)
+#define OSCC_CAN_ID_BRAKE_COMMAND (0x060)
 
 
 /*
  * @brief Brake report message (CAN frame) ID.
  *
  */
-#define PS_CTRL_MSG_ID_BRAKE_REPORT (0x061)
+#define OSCC_CAN_ID_BRAKE_REPORT (0x061)
 
 
 // ms
-#define PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL (50)
+#define OSCC_PUBLISH_INTERVAL_BRAKE_REPORT (50)
 
 
 /**
  * @brief Brake command message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref PS_CTRL_MSG_ID_BRAKE_COMMAND
+ * CAN frame ID: \ref OSCC_CAN_ID_ID_BRAKE_COMMAND
  * Receive rate: 20 ms
  * Receive timeout: 100 ms
  *
@@ -72,15 +72,14 @@ typedef struct
     //
     //
     uint8_t count; /*!< Optional watchdog counter. */
-} ps_ctrl_brake_command_msg;
-
+} oscc_command_msg_brake;
 
 
 /**
  * @brief Brake report message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref PS_CTRL_MSG_ID_BRAKE_REPORT
+ * CAN frame ID: \ref OSCC_CAN_ID_BRAKE_REPORT
  * Transmit rate: 20 ms
  *
  */
@@ -163,6 +162,7 @@ typedef struct
     uint8_t fault_connector : 1; /*!< Connector fault state.
                                   * Value zero means no fault (CD pins shorted).
                                   * Value one means fault active (CD pins not shorted). */
-} ps_ctrl_brake_report_msg;
+} oscc_report_msg_brake;
+
 
 #endif

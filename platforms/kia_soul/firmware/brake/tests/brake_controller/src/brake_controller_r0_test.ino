@@ -51,11 +51,11 @@ MCP_CAN CAN(CAN_CS);                                    // Set CS pin for the CA
 
 
 //
-static can_frame_s rx_frame_ps_ctrl_brake_command;
+static can_frame_s rx_frame_brake_command;
 
 
 //
-static can_frame_s tx_frame_ps_ctrl_brake_report;
+static can_frame_s tx_frame_brake_report;
 
 
 //
@@ -467,30 +467,30 @@ void processSerialByte() {
 
 
 //
-static void publish_ps_ctrl_brake_report( void )
+static void publish_brake_report( void )
 {
     // cast data
-    ps_ctrl_brake_report_msg * data =
-            (ps_ctrl_brake_report_msg*) tx_frame_ps_ctrl_brake_report.data;
+    oscc_report_msg_brake * data =
+            (oscc_report_msg_brake*) tx_frame_brake_report.data;
 
     // set frame ID
-    tx_frame_ps_ctrl_brake_report.id = (uint32_t) (PS_CTRL_MSG_ID_BRAKE_REPORT);
+    tx_frame_brake_report.id = (uint32_t) (OSCC_CAN_ID_BRAKE_REPORT);
 
     // set DLC
-    tx_frame_ps_ctrl_brake_report.dlc = 8; //TODO
+    tx_frame_brake_report.dlc = 8; //TODO
 
     // Set override flag
     data->override = local_override;
 
     // publish to control CAN bus
     CAN.sendMsgBuf(
-            tx_frame_ps_ctrl_brake_report.id,
+            tx_frame_brake_report.id,
             0, // standard ID (not extended)
-            tx_frame_ps_ctrl_brake_report.dlc,
-            tx_frame_ps_ctrl_brake_report.data );
+            tx_frame_brake_report.dlc,
+            tx_frame_brake_report.data );
 
     // update last publish timestamp, ms
-    tx_frame_ps_ctrl_brake_report.timestamp = last_update_ms;
+    tx_frame_brake_report.timestamp = last_update_ms;
 }
 
 
@@ -501,25 +501,25 @@ static void publish_timed_tx_frames( void )
     uint32_t delta = 0;
 
     // get time since last publish
-    delta = get_time_delta( tx_frame_ps_ctrl_brake_report.timestamp, last_update_ms );
+    delta = get_time_delta( tx_frame_brake_report.timestamp, last_update_ms );
 
     // check publish interval
-    if( delta >= PS_CTRL_BRAKE_REPORT_PUBLISH_INTERVAL )
+    if( delta >= OSCC_PUBLISH_INTERVAL_BRAKE_REPORT )
     {
         // publish frame, update timestamp
-        publish_ps_ctrl_brake_report();
+        publish_brake_report();
     }
 }
 
 uint16_t map_uint16(uint16_t x, uint16_t in_min, uint16_t in_max, uint16_t out_min, uint16_t out_max);
 
 
-static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer )
+static void process_brake_command( const uint8_t * const rx_frame_buffer )
 {
 
     // cast control frame data
-    const ps_ctrl_brake_command_msg * const control_data =
-            (ps_ctrl_brake_command_msg*) rx_frame_buffer;
+    const oscc_command_msg_brake * const control_data =
+            (oscc_command_msg_brake*) rx_frame_buffer;
 
 
     bool enabled = control_data->enabled == 1;
@@ -547,10 +547,10 @@ static void process_ps_ctrl_brake_command( const uint8_t * const rx_frame_buffer
 
 }
 
-static void process_psvc_chassis_state1( const uint8_t * const rx_frame_buffer )
+static void process_chassis_state1( const uint8_t * const rx_frame_buffer )
 {
-    const psvc_chassis_state1_data_s * const chassis_data =
-        (psvc_chassis_state1_data_s*) rx_frame_buffer;
+    const oscc_chassis_state1_data_s * const chassis_data =
+        (oscc_chassis_state1_data_s*) rx_frame_buffer;
 
     // brake pressure as reported from the C-CAN bus
     int brake_pressure = chassis_data->brake_pressure;
@@ -598,17 +598,17 @@ void handle_ready_rx_frames(void) {
                 (INT8U*) rx_frame.data );
 
         // check for a supported frame ID
-        if( rx_frame.id == PS_CTRL_MSG_ID_BRAKE_COMMAND )
+        if( rx_frame.id == OSCC_CAN_ID_BRAKE_COMMAND )
         {
             // process brake command
-            process_ps_ctrl_brake_command( rx_frame.data );
+            process_brake_command( rx_frame.data );
         }
 
         // check for a supported frame ID
         if( rx_frame.id == KIA_STATUS1_MESSAGE_ID )
         {
             // process brake command
-            process_psvc_chassis_state1( rx_frame.data );
+            process_chassis_state1( rx_frame.data );
         }
     }
 
@@ -785,7 +785,7 @@ void setup( void )
 
     // zero
     last_update_ms = 0;
-    memset( &rx_frame_ps_ctrl_brake_command, 0, sizeof(rx_frame_ps_ctrl_brake_command) );
+    memset( &rx_frame_brake_command, 0, sizeof(rx_frame_brake_command) );
 
     // relay boards are active low, set to high before setting output to avoid unintended energisation of relay
     digitalWrite( PIN_BRAKE_SWITCH_1, LOW );
@@ -803,10 +803,10 @@ void setup( void )
 
     init_can(CAN);
 
-    //publish_ps_ctrl_brake_report();
+    //publish_brake_report();
 
     // update last Rx timestamps so we don't set timeout warnings on start up
-    //rx_frame_ps_ctrl_brake_command.timestamp = GET_TIMESTAMP_MS();
+    //rx_frame_brake_command.timestamp = GET_TIMESTAMP_MS();
 
     // update the global system update timestamp, ms
     //last_update_ms = GET_TIMESTAMP_MS();

@@ -40,17 +40,17 @@
 static kia_soul_steering_module_s steering_module;
 static DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, steering_module.pins.dac_cs );     // DAC model, SS pin, LDAC pin
 static MCP_CAN CAN( steering_module.pins.can_cs );                          // Set CS pin for the CAN shield
-static can_frame_s rx_frame_ps_ctrl_steering_command;
-static can_frame_s tx_frame_ps_ctrl_steering_report;
+static can_frame_s rx_frame_steering_command;
+static can_frame_s tx_frame_steering_report;
 static PID pid;
 static uint8_t torque_sum;
 
 
 void setup( )
 {
-    memset( &rx_frame_ps_ctrl_steering_command,
+    memset( &rx_frame_steering_command,
             0,
-            sizeof(rx_frame_ps_ctrl_steering_command) );
+            sizeof(rx_frame_steering_command) );
 
     init_pins( &steering_module );
 
@@ -62,7 +62,7 @@ void setup( )
 
     publish_timed_tx_frames(
         &steering_module,
-        &tx_frame_ps_ctrl_steering_report,
+        &tx_frame_steering_report,
         CAN,
         torque_sum );
 
@@ -79,7 +79,7 @@ void setup( )
     steering_module.override_flags.voltage_spike_b = 0;
 
     // Initialize the Rx timestamps to avoid timeout warnings on start up
-    rx_frame_ps_ctrl_steering_command.timestamp = millis( );
+    rx_frame_steering_command.timestamp = millis( );
 
     pid_zeroize( &pid, steering_module.params.windup_guard );
 
@@ -99,21 +99,21 @@ void loop( )
         handle_ready_rx_frames(
             &steering_module,
             &rx_frame,
-            &rx_frame_ps_ctrl_steering_command,
+            &rx_frame_steering_command,
             dac );
     }
 
     // publish all report CAN frames
     publish_timed_tx_frames(
         &steering_module,
-        &tx_frame_ps_ctrl_steering_report,
+        &tx_frame_steering_report,
         CAN,
         torque_sum );
 
     // check all timeouts
     check_rx_timeouts(
         &steering_module,
-        &rx_frame_ps_ctrl_steering_command,
+        &rx_frame_steering_command,
         dac );
 
     uint32_t current_timestamp_us = GET_TIMESTAMP_US();

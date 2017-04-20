@@ -3,7 +3,7 @@
 
 
 // *****************************************************
-// Function:    publish_ps_ctrl_brake_report
+// Function:    publish_brake_report
 //
 // Purpose:     Fill out the transmit CAN frame with the brake report
 //              and publish that information on the CAN bus
@@ -13,7 +13,7 @@
 // Parameters:  void
 //
 // *****************************************************
-void publish_ps_ctrl_brake_report( kia_soul_brake_module_s *brake_module, MCP_CAN &can );
+void publish_brake_report( kia_soul_brake_module_s *brake_module, MCP_CAN &can );
 
 
 // *****************************************************
@@ -30,7 +30,7 @@ void publish_timed_tx_frames( kia_soul_brake_module_s *brake_module, MCP_CAN &ca
 
 
 // *****************************************************
-// Function:    process_ps_ctrl_brake_command
+// Function:    process_brake_command
 //
 // Purpose:     Process a brake command message
 //
@@ -39,13 +39,13 @@ void publish_timed_tx_frames( kia_soul_brake_module_s *brake_module, MCP_CAN &ca
 // Parameters:  control_data -  pointer to a brake command control message
 //
 // *****************************************************
-void process_ps_ctrl_brake_command(
+void process_brake_command(
     kia_soul_brake_module_s *brake_module,
-    const ps_ctrl_brake_command_msg * const control_data );
+    const oscc_command_msg_brake * const control_data );
 
 
 // *****************************************************
-// Function:    process_psvc_chassis_state1
+// Function:    process_chassis_state1
 //
 // Purpose:     Process the chassis state message
 //
@@ -55,9 +55,9 @@ void process_ps_ctrl_brake_command(
 //                             the brake pressure
 //
 // *****************************************************
-void process_psvc_chassis_state1(
+void process_chassis_state1(
     kia_soul_brake_module_s *brake_module,
-    const psvc_chassis_state1_data_s * const chassis_data );
+    const oscc_chassis_state1_data_s * const chassis_data );
 
 
 // *****************************************************

@@ -27,7 +27,7 @@
  * @brief Throttle command message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref PS_CTRL_MSG_ID_THROTTLE_COMMAND
+ * CAN frame ID: \ref OSCC_CAN_ID_THROTTLE_COMMAND
  * Transmit rate: 20 ms
  *
  */
@@ -69,15 +69,14 @@ typedef struct
     //
     //
     uint8_t count; /*!< Optional watchdog counter. */
-} ps_ctrl_throttle_command_msg;
-
+} oscc_command_msg_throttle;
 
 
 /**
  * @brief Throttle report message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref PS_CTRL_MSG_ID_THROTTLE_REPORT
+ * CAN frame ID: \ref OSCC_CAN_ID_THROTTLE_REPORT
  * Transmit rate: 20 ms
  *
  */
@@ -141,7 +140,7 @@ typedef struct
     uint8_t fault_connector : 1; /*!< Connector fault state.
                                   * Value zero means no fault (CD pins shorted).
                                   * Value one means fault active (CD pins not shorted). */
-} ps_ctrl_throttle_report_msg;
+} oscc_report_msg_throttle;
 
 
 #endif
