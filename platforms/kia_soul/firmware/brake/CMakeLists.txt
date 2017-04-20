@@ -4,18 +4,24 @@ set(ARDUINO_DEFAULT_BOARD mega2560)
 
 generate_arduino_firmware(
     kia-soul-brake
-    SKETCH src/brake_control_module.ino
+    SKETCH src/main.ino
     SRCS
     ${CMAKE_SOURCE_DIR}/common/libs/FiniteStateMachine/FiniteStateMachine.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/PID/PID.c
     ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp)
+    ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp
+    src/accumulator.cpp
+    src/helper.cpp
+    src/master_cylinder.cpp
+    src/brake_control.cpp
+    src/communications.cpp)
 
 target_include_directories(
     kia-soul-brake
     PRIVATE
+    include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/FiniteStateMachine
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can

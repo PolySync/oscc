@@ -10,7 +10,8 @@
 #include <SPI.h>
 #include "FiniteStateMachine.h"
 #include "mcp_can.h"
-#include "control_protocol_can.h"
+#include "brake_protocol_can.h"
+#include "gateway_protocol_can.h"
 #include "PID.h"
 #include "serial.h"
 #include "can.h"
