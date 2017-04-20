@@ -4,7 +4,6 @@
 #include "DAC_MCP49xx.h"
 #include "mcp_can.h"
 #include "can.h"
-#include "control_protocol_can.h"
 
 #include "steering_module.h"
 

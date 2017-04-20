@@ -1,5 +1,5 @@
 #include "mcp_can.h"
-#include "control_protocol_can.h"
+#include "gateway_protocol_can.h"
 #include "throttle_protocol_can.h"
 #include "time.h"
 #include "debug.h"

@@ -22,7 +22,6 @@
 
 #include <SPI.h>
 #include "mcp_can.h"
-#include "control_protocol_can.h"
 #include "DAC_MCP49xx.h"
 #include "serial.h"
 #include "can.h"
