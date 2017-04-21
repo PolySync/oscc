@@ -21,7 +21,7 @@ void publish_throttle_report(
     report->id = OSCC_CAN_ID_THROTTLE_REPORT;
     report->dlc = 8;
 
-    if ( (throttle_module->override_flags.pedal == 0 )
+    if ( (throttle_module->override_flags.accelerator == 0 )
         && (throttle_module->override_flags.voltage == 0) )
     {
         data->override = 0;
@@ -33,10 +33,10 @@ void publish_throttle_report(
 
     data->enabled = (uint8_t) throttle_module->control_state.enabled;
 
-    data->pedal_input = throttle_module->state.accel_position_sensor_low + throttle_module->state.accel_position_sensor_high;
+    data->accelerator_input = throttle_module->state.accel_pos_sensor_low + throttle_module->state.accel_pos_sensor_high;
 
     // Set Pedal Command (PC)
-    data->pedal_command = throttle_module->state.accel_position_target;
+    data->accelerator_command = throttle_module->state.accel_pos_target;
 
     // publish to control CAN bus
     can.sendMsgBuf(
@@ -88,10 +88,10 @@ void process_throttle_command(
 
     rx_frame_throttle_command->timestamp = GET_TIMESTAMP_MS( );
 
-    throttle_module->state.accel_position_target = control_data->pedal_command / 24;
+    throttle_module->state.accel_pos_target = control_data->accelerator_command / 24;
 
     DEBUG_PRINT( "accelerator position target: " );
-    DEBUG_PRINTLN( throttle_module->state.accel_position_target );
+    DEBUG_PRINTLN( throttle_module->state.accel_pos_target );
 }
 
 void handle_ready_rx_frames(

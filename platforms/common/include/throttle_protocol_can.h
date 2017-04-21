@@ -35,7 +35,7 @@ typedef struct
 {
     //
     //
-    uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
+    uint16_t accelerator_command; /*!< Accelerator command. [65535 == 100%] */
     //
     //
     uint8_t reserved_0; /*!< Reserved data. */
@@ -84,17 +84,17 @@ typedef struct
 {
     //
     //
-    uint16_t pedal_input; /*!< Pedal input value from
-                           * the physical pedal. [65535 == 100%] */
+    uint16_t accelerator_input; /*!< Accelerator input value from
+                                 * the physical accelerator. [65535 == 100%] */
     //
     //
-    uint16_t pedal_command; /*!< Pedal command value from
-                             * the command message. [65535 == 100%] */
+    uint16_t accelerator_command; /*!< Accelerator command value from
+                                   * the command message. [65535 == 100%] */
     //
     //
-    uint16_t pedal_output; /*!< Pedal output value.
-                            * Set the maximum of
-                            * pedal_input and pedal command. [65535 == 100%] */
+    uint16_t accelerator_output; /*!< Accelerator output value.
+                                  * Set the maximum of
+                                  * accelerator_input and accelerator command. [65535 == 100%] */
     //
     //
     uint8_t reserved_0 : 4; /*!< Reserved data. */

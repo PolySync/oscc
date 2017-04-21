@@ -36,12 +36,12 @@
 /**
  * @brief Override flags.
  *
- * Tracks override flags for pedal and voltages.
+ * Tracks override flags for accelerator and voltages.
  *
  */
 typedef struct
 {
-    uint16_t pedal; /* Tracks whether pedal is pressed */
+    uint16_t accelerator; /* Tracks whether accelerator is pressed */
     uint16_t voltage; /* Tracks any DAC/ADC voltage discrepancies */
     uint16_t voltage_spike_a; /* Used to filter any DAC/ADC voltage spikes */
     uint16_t voltage_spike_b; /* Used to filter any DAC/ADC voltage spikes */
@@ -50,7 +50,7 @@ typedef struct
 
 typedef struct
 {
-    double pedal_threshold = 1000.0; /* Threshhold to detect when a person is pressing accelerator */
+    double accelerator_threshold = 1000.0; /* Threshhold to detect when a person is pressing accelerator */
     uint8_t rx_timeout = 250; /* Amount of time when system is considered unresponsive (milliseconds) */
 } kia_soul_throttle_params_s;
 
@@ -59,8 +59,8 @@ typedef struct
 {
     uint8_t dac_cs = 9; /* DAC chip select */
     uint8_t can_cs = 10; /* CAN chip select */
-    uint8_t signal_accel_pos_sensor_high = A0; /* High signal from acceleration position sensor */
-    uint8_t signal_accel_pos_sensor_low = A1; /* Low signal from acceleration position sensor */
+    uint8_t signal_accel_pos_sensor_high = A0; /* High signal from accelerator position sensor */
+    uint8_t signal_accel_pos_sensor_low = A1; /* Low signal from accelerator position sensor */
     uint8_t spoof_signal_high = A2; /* High signal of spoof output */
     uint8_t spoof_signal_low = A3; /* Low signal of spoof output */
     uint8_t spoof_enable = 6; /* Relay enable for spoofed accel values */
@@ -76,13 +76,13 @@ typedef struct
 {
     //
     //
-    uint16_t accel_position_sensor_high; /* Value of high signal of accelerator position sensor */
+    uint16_t accel_pos_sensor_high; /* Value of high signal of accelerator position sensor */
     //
     //
-    uint16_t accel_position_sensor_low; /* Value of low signal of accelerator position sensor */
+    uint16_t accel_pos_sensor_low; /* Value of low signal of accelerator position sensor */
     //
     //
-    double accel_position_target; /* As specified by higher level controller */
+    double accel_pos_target; /* As specified by higher level controller */
 } kia_soul_throttle_state_s;
 
 

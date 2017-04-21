@@ -15,14 +15,14 @@ static void write_sample_averages_to_dac(
         DAC_MCP49xx &dac );
 
 
-void calculate_pedal_spoof(
-    float pedal_target,
+void calculate_accelerator_spoof(
+    float accelerator_target,
     struct accel_spoof_t* spoof )
 {
     // values calculated with min/max calibration curve and tuned for neutral
     // balance.  DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
-    spoof->low = 819.2 * ( 0.0004 * pedal_target + 0.366 );
-    spoof->high = 819.2 * ( 0.0008 * pedal_target + 0.732 );
+    spoof->low = 819.2 * ( 0.0004 * accelerator_target + 0.366 );
+    spoof->high = 819.2 * ( 0.0008 * accelerator_target + 0.732 );
 
     // range = 300 - ~1800
     spoof->low = constrain( spoof->low, 0, 1800 );
@@ -31,27 +31,27 @@ void calculate_pedal_spoof(
 }
 
 
-void check_pedal_override(
+void check_accelerator_override(
     kia_soul_throttle_module_s *throttle_module,
     DAC_MCP49xx &dac )
 {
     uint32_t accel_pos_normalized =
-        (throttle_module->state.accel_position_sensor_low
-        + throttle_module->state.accel_position_sensor_high)
+        (throttle_module->state.accel_pos_sensor_low
+        + throttle_module->state.accel_pos_sensor_high)
         / 2;
 
-    if ( accel_pos_normalized > throttle_module->params.pedal_threshold )
+    if ( accel_pos_normalized > throttle_module->params.accelerator_threshold )
     {
         if( throttle_module->control_state.enabled == true )
         {
             disable_control( throttle_module, dac );
 
-            throttle_module->override_flags.pedal = 1;
+            throttle_module->override_flags.accelerator = 1;
         }
     }
     else
     {
-        throttle_module->override_flags.pedal = 0;
+        throttle_module->override_flags.accelerator = 0;
     }
 }
 

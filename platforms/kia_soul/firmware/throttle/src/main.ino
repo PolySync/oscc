@@ -61,7 +61,7 @@ void setup( )
 
     throttle_module.control_state.emergency_stop = false;
 
-    throttle_module.override_flags.pedal = 0;
+    throttle_module.override_flags.accelerator = 0;
 
     throttle_module.override_flags.voltage = 0;
 
@@ -97,11 +97,11 @@ void loop()
     check_rx_timeouts( &throttle_module, &rx_frame_throttle_command, dac );
 
     // update state variables
-    throttle_module.state.accel_position_sensor_low = analogRead( throttle_module.pins.signal_accel_pos_sensor_high ) << 2;  //10 bit to 12 bit
-    throttle_module.state.accel_position_sensor_high = analogRead( throttle_module.pins.signal_accel_pos_sensor_low ) << 2;
+    throttle_module.state.accel_pos_sensor_low = analogRead( throttle_module.pins.signal_accel_pos_sensor_high ) << 2;  //10 bit to 12 bit
+    throttle_module.state.accel_pos_sensor_high = analogRead( throttle_module.pins.signal_accel_pos_sensor_low ) << 2;
 
-    // if someone is pressing the throttle pedal, disable control
-    check_pedal_override( &throttle_module, dac );
+    // if someone is pressing the throttle accelerator, disable control
+    check_accelerator_override( &throttle_module, dac );
 
     // now that we've set control status, do throttle if we are in control
     if ( throttle_module.control_state.enabled == true )
@@ -109,8 +109,8 @@ void loop()
 
         struct accel_spoof_t accel_spoof;
 
-        calculate_pedal_spoof(
-                throttle_module.state.accel_position_target,
+        calculate_accelerator_spoof(
+                throttle_module.state.accel_pos_target,
                 &accel_spoof );
 
         dac.outputA( accel_spoof.high );

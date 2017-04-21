@@ -9,11 +9,11 @@ struct accel_spoof_t
     uint16_t high;
 };
 
-void calculate_pedal_spoof(
-    float pedal_target,
+void calculate_accelerator_spoof(
+    float accelerator_target,
     struct accel_spoof_t* spoof );
 
-void check_pedal_override(
+void check_accelerator_override(
     kia_soul_throttle_module_s *throttle_module,
     DAC_MCP49xx &dac );
 
