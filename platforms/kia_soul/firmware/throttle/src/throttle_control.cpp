@@ -17,7 +17,7 @@ static void write_sample_averages_to_dac(
 
 void calculate_pedal_spoof(
     float pedal_target,
-    struct torque_spoof_t* spoof )
+    struct accel_spoof_t* spoof )
 {
     // values calculated with min/max calibration curve and tuned for neutral
     // balance.  DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
@@ -60,7 +60,7 @@ void enable_control(
         kia_soul_throttle_module_s *throttle_module,
         DAC_MCP49xx &dac )
 {
-    // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
+    // Sample the current values, smooth them, and write measured accel values to DAC to avoid a
     // signal discontinuity when the SCM takes over
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
@@ -82,7 +82,7 @@ void disable_control(
         kia_soul_throttle_module_s *throttle_module,
         DAC_MCP49xx &dac )
 {
-    // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
+    // Sample the current values, smooth them, and write measured accel values to DAC to avoid a
     // signal discontinuity when the SCM takes over
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(

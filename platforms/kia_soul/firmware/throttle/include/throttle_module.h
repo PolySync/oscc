@@ -63,7 +63,7 @@ typedef struct
     uint8_t signal_accel_pos_sensor_low = A1; /* Low signal from acceleration position sensor */
     uint8_t spoof_signal_high = A2; /* High signal of spoof output */
     uint8_t spoof_signal_low = A3; /* Low signal of spoof output */
-    uint8_t spoof_enable = 6; /* Relay enable for spoofed torque values */
+    uint8_t spoof_enable = 6; /* Relay enable for spoofed accel values */
 } kia_soul_throttle_pins_s;
 
 /**

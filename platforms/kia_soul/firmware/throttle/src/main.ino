@@ -107,13 +107,13 @@ void loop()
     if ( throttle_module.control_state.enabled == true )
     {
 
-        struct torque_spoof_t torque_spoof;
+        struct accel_spoof_t accel_spoof;
 
         calculate_pedal_spoof(
                 throttle_module.state.accel_position_target,
-                &torque_spoof );
+                &accel_spoof );
 
-        dac.outputA( torque_spoof.high );
-        dac.outputB( torque_spoof.low );
+        dac.outputA( accel_spoof.high );
+        dac.outputB( accel_spoof.low );
     }
 }

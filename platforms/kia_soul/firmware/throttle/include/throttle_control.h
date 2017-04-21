@@ -3,7 +3,7 @@
 
 #include "DAC_MCP49xx.h"
 
-struct torque_spoof_t
+struct accel_spoof_t
 {
     uint16_t low;
     uint16_t high;
@@ -11,7 +11,7 @@ struct torque_spoof_t
 
 void calculate_pedal_spoof(
     float pedal_target,
-    struct torque_spoof_t* spoof );
+    struct accel_spoof_t* spoof );
 
 void check_pedal_override(
     kia_soul_throttle_module_s *throttle_module,
