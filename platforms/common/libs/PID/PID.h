@@ -67,23 +67,23 @@ extern "C" {
 
 typedef struct 
 {
-    double windup_guard;
-    double proportional_gain;
-    double integral_gain;
-    double derivative_gain;
-    double prev_input;
-    double int_error;
-    double control;
-    double prev_steering_angle;
+    float windup_guard;
+    float proportional_gain;
+    float integral_gain;
+    float derivative_gain;
+    float prev_input;
+    float int_error;
+    float control;
+    float prev_steering_angle;
 } PID;
 
 
 
 
-int pid_update( PID* pid, double setpoint, double input, double dt );
+int pid_update( PID* pid, float setpoint, float input, float dt );
 
 
-void pid_zeroize( PID* pid, double integral_windup_guard );
+void pid_zeroize( PID* pid, float integral_windup_guard );
 
 
 

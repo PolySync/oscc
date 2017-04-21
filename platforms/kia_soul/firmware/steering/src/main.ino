@@ -137,11 +137,11 @@ void loop( )
         else if ( steering_module.control_state.enabled == true )
         {
             // Calculate steering angle rates (degrees/microsecond)
-            double steering_angle_rate =
+            float steering_angle_rate =
                 ( steering_module.state.steering_angle -
                   steering_module.state.steering_angle_last ) / 0.05;
 
-            double steering_angle_rate_target =
+            float steering_angle_rate_target =
                 ( steering_module.state.steering_angle_target -
                   steering_module.state.steering_angle ) / 0.05;
 
@@ -150,9 +150,9 @@ void loop( )
                 steering_module.state.steering_angle;
 
             steering_angle_rate_target =
-                constrain( ( double )steering_angle_rate_target,
-                           ( double )-steering_module.params.steering_angle_rate_max,
-                           ( double )steering_module.params.steering_angle_rate_max );
+                constrain( ( float )steering_angle_rate_target,
+                           ( float )-steering_module.params.steering_angle_rate_max,
+                           ( float )steering_module.params.steering_angle_rate_max );
 
             pid.derivative_gain = steering_module.params.SA_Kd;
             pid.proportional_gain = steering_module.params.SA_Kp;
@@ -164,7 +164,7 @@ void loop( )
                     steering_angle_rate,
                     0.050 );
 
-            double control = pid.control;
+            float control = pid.control;
 
             control = constrain( ( float ) control,
                                  ( float ) -1500.0f,

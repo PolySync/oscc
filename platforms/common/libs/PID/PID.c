@@ -31,7 +31,7 @@
 
 
 
-void pid_zeroize( PID* pid, double integral_windup_guard )
+void pid_zeroize( PID* pid, float integral_windup_guard )
 {
     // set prev and integrated error to zero
     pid->prev_input = 0;
@@ -41,14 +41,14 @@ void pid_zeroize( PID* pid, double integral_windup_guard )
 }
 
 
-int pid_update( PID* pid, double setpoint, double input, double dt )
+int pid_update( PID* pid, float setpoint, float input, float dt )
 {
-    double diff;
-    double p_term;
-    double i_term;
-    double d_term;
+    float diff;
+    float p_term;
+    float i_term;
+    float d_term;
 
-    double curr_error = setpoint - input;
+    float curr_error = setpoint - input;
 
     static int count = 0;
 

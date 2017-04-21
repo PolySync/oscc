@@ -65,11 +65,11 @@ typedef struct
 *******************************************************************************/
 typedef struct
 {
-    double steering_angle_rate_max = 1000.0; /* Maximum rate of change of steering wheel angle */
-    double steering_wheel_cutoff_threshold = 3000;
-    double SA_Kp = 0.3; /* Proportional gain for PID controller */
-    double SA_Ki = 1.3; /* Integral gain for PID controller */
-    double SA_Kd = 0.03; /* Derivative gain for PID controller */
+    float steering_angle_rate_max = 1000.0; /* Maximum rate of change of steering wheel angle */
+    float steering_wheel_cutoff_threshold = 3000;
+    float SA_Kp = 0.3; /* Proportional gain for PID controller */
+    float SA_Ki = 1.3; /* Integral gain for PID controller */
+    float SA_Kd = 0.03; /* Derivative gain for PID controller */
     uint32_t windup_guard = 1500; /* Windup guard of the PID controller */
     uint8_t rx_timeout = 250; /* Amount of time when system is considered unresponsive (milliseconds) */
 } kia_soul_steering_params_s;
@@ -95,9 +95,9 @@ typedef struct
  */
 typedef struct
 {
-    double steering_angle; /* Current steering angle as reported by car */
-    double steering_angle_target; /* Commanded steering angle as specified by higher level controller */
-    double steering_angle_last; /* Last steering angle recorded */
+    float steering_angle; /* Current steering angle as reported by car */
+    float steering_angle_target; /* Commanded steering angle as specified by higher level controller */
+    float steering_angle_last; /* Last steering angle recorded */
 } kia_soul_steering_state_s;
 
 

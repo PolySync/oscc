@@ -50,7 +50,7 @@ typedef struct
 
 typedef struct
 {
-    double accelerator_threshold = 1000.0; /* Threshhold to detect when a person is pressing accelerator */
+    float accelerator_threshold = 1000.0; /* Threshhold to detect when a person is pressing accelerator */
     uint8_t rx_timeout = 250; /* Amount of time when system is considered unresponsive (milliseconds) */
 } kia_soul_throttle_params_s;
 
@@ -82,7 +82,7 @@ typedef struct
     uint16_t accel_pos_sensor_low; /* Value of low signal of accelerator position sensor */
     //
     //
-    double accel_pos_target; /* As specified by higher level controller */
+    float accel_pos_target; /* As specified by higher level controller */
 } kia_soul_throttle_state_s;
 
 

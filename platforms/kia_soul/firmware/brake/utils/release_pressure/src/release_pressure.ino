@@ -44,10 +44,10 @@ const byte PIN_PFL  = 14;      // pressure front left sensor
 
 
 // the following are guesses, these need to be debugged/researched
-const double ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
-const double MIN_PACC = 2.3;              // minumum accumulator pressure to maintain
-const double MAX_PACC = 2.4;              // max accumulator pressure to maintain
-const double PEDAL_THRESH = 0.6;          // Pressure for pedal interference
+const float ZERO_PRESSURE = 0.48;        // The voltage the sensors read when no pressure is present
+const float MIN_PACC = 2.3;              // minumum accumulator pressure to maintain
+const float MAX_PACC = 2.4;              // max accumulator pressure to maintain
+const float PEDAL_THRESH = 0.6;          // Pressure for pedal interference
 
 
 int deltaT=10,
