@@ -2,6 +2,7 @@
 
 #include "throttle_module.h"
 #include "throttle_control.h"
+#include "globals.h"
 
 
 static int32_t get_analog_sample_average(
@@ -11,90 +12,84 @@ static int32_t get_analog_sample_average(
 static void write_sample_averages_to_dac(
         int16_t num_samples,
         uint8_t signal_pin_1,
-        uint8_t signal_pin_2,
-        DAC_MCP49xx &dac );
+        uint8_t signal_pin_2 );
 
 
 void calculate_accelerator_spoof(
     float accelerator_target,
-    struct accel_spoof_t* spoof )
+    struct accel_spoof_t * spoof )
 {
-    // values calculated with min/max calibration curve and tuned for neutral
-    // balance.  DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
-    spoof->low = 819.2 * ( 0.0004 * accelerator_target + 0.366 );
-    spoof->high = 819.2 * ( 0.0008 * accelerator_target + 0.732 );
+    if ( spoof != NULL )
+    {
+        // values calculated with min/max calibration curve and tuned for neutral
+        // balance.  DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
+        spoof->low = 819.2 * ( 0.0004 * accelerator_target + 0.366 );
+        spoof->high = 819.2 * ( 0.0008 * accelerator_target + 0.732 );
 
-    // range = 300 - ~1800
-    spoof->low = constrain( spoof->low, 0, 1800 );
-    // range = 600 - ~3500
-    spoof->high = constrain( spoof->high, 0, 3500 );
+        // range = 300 - ~1800
+        spoof->low = constrain( spoof->low, 0, 1800 );
+        // range = 600 - ~3500
+        spoof->high = constrain( spoof->high, 0, 3500 );
+    }
 }
 
 
-void check_accelerator_override(
-    kia_soul_throttle_module_s *throttle_module,
-    DAC_MCP49xx &dac )
+void check_accelerator_override( )
 {
     uint32_t accel_pos_normalized =
-        (throttle_module->state.accel_pos_sensor_low
-        + throttle_module->state.accel_pos_sensor_high)
+        (throttle_state.accel_pos_sensor_low
+        + throttle_state.accel_pos_sensor_high)
         / 2;
 
-    if ( accel_pos_normalized > throttle_module->params.accelerator_threshold )
+    if ( accel_pos_normalized > PARAM_ACCEL_OVERRIDE_THRESHOLD )
     {
-        if( throttle_module->control_state.enabled == true )
+        if( control_state.enabled == true )
         {
-            disable_control( throttle_module, dac );
+            disable_control( );
 
-            throttle_module->override_flags.accelerator = 1;
+            override_flags.accelerator_pressed = true;
         }
     }
     else
     {
-        throttle_module->override_flags.accelerator = 0;
+        override_flags.accelerator_pressed = false;
     }
 }
 
 
-void enable_control(
-        kia_soul_throttle_module_s *throttle_module,
-        DAC_MCP49xx &dac )
+void enable_control( )
 {
     // Sample the current values, smooth them, and write measured accel values to DAC to avoid a
     // signal discontinuity when the SCM takes over
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
         num_samples,
-        throttle_module->pins.signal_accel_pos_sensor_high,
-        throttle_module->pins.signal_accel_pos_sensor_low,
-        dac);
+        PIN_ACCEL_POS_SENSOR_HIGH,
+        PIN_ACCEL_POS_SENSOR_LOW );
 
     // Enable the signal interrupt relays
-    digitalWrite( throttle_module->pins.spoof_enable, HIGH );
+    digitalWrite( PIN_SPOOF_ENABLE, HIGH );
 
-    throttle_module->control_state.enabled = true;
+    control_state.enabled = true;
 
     DEBUG_PRINTLN( "Control enabled" );
 }
 
 
-void disable_control(
-        kia_soul_throttle_module_s *throttle_module,
-        DAC_MCP49xx &dac )
+void disable_control( )
 {
     // Sample the current values, smooth them, and write measured accel values to DAC to avoid a
     // signal discontinuity when the SCM takes over
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
         num_samples,
-        throttle_module->pins.signal_accel_pos_sensor_high,
-        throttle_module->pins.signal_accel_pos_sensor_low,
-        dac);
+        PIN_ACCEL_POS_SENSOR_HIGH,
+        PIN_ACCEL_POS_SENSOR_LOW );
 
     // Disable the signal interrupt relays
-    digitalWrite( throttle_module->pins.spoof_enable, LOW );
+    digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
-    throttle_module->control_state.enabled =false;
+    control_state.enabled = false;
 
     DEBUG_PRINTLN( "Control disabled" );
 }
@@ -119,8 +114,7 @@ static int32_t get_analog_sample_average(
 static void write_sample_averages_to_dac(
         int16_t num_samples,
         uint8_t signal_pin_1,
-        uint8_t signal_pin_2,
-        DAC_MCP49xx &dac )
+        uint8_t signal_pin_2 )
 {
     int32_t averages[ 2 ] = { 0, 0 };
 

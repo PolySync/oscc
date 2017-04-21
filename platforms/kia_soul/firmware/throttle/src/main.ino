@@ -28,16 +28,12 @@
 #include "time.h"
 #include "debug.h"
 
+#include "globals.h"
 #include "throttle_module.h"
 #include "init.h"
 #include "communications.h"
 #include "throttle_control.h"
 
-static kia_soul_throttle_module_s throttle_module;
-static DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, throttle_module.pins.dac_cs ); // DAC model, SS pin, LDAC pin
-static MCP_CAN can(throttle_module.pins.can_cs); // Set CS pin for the CAN shield
-static can_frame_s rx_frame_throttle_command;
-static can_frame_s tx_frame_throttle_report;
 
 void setup( )
 {
@@ -45,7 +41,7 @@ void setup( )
             0,
             sizeof( rx_frame_throttle_command ) );
 
-    init_pins( &throttle_module );
+    init_pins( );
 
     #ifdef DEBUG
     init_serial( );
@@ -53,21 +49,15 @@ void setup( )
 
     init_can( can );
 
-    publish_throttle_report( &throttle_module,
-        &tx_frame_throttle_report,
-        can );
+    publish_throttle_report( );
 
-    throttle_module.control_state.enabled = false;
+    control_state.enabled = false;
+    control_state.emergency_stop = false;
 
-    throttle_module.control_state.emergency_stop = false;
-
-    throttle_module.override_flags.accelerator = 0;
-
-    throttle_module.override_flags.voltage = 0;
-
-    throttle_module.override_flags.voltage_spike_a = 0;
-
-    throttle_module.override_flags.voltage_spike_b = 0;
+    override_flags.accelerator_pressed = false;
+    override_flags.voltage = 0;
+    override_flags.voltage_spike_a = 0;
+    override_flags.voltage_spike_b = 0;
 
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_throttle_command.timestamp = GET_TIMESTAMP_MS( );
@@ -84,33 +74,30 @@ void loop()
 
     if( ret == RX_FRAME_AVAILABLE )
     {
-        handle_ready_rx_frames( &throttle_module, &rx_frame, &rx_frame_throttle_command, dac );
+        handle_ready_rx_frame( &rx_frame );
     }
 
     // publish all report CAN frames
-    publish_timed_report(
-        &throttle_module,
-        &tx_frame_throttle_report,
-        can );
+    publish_timed_report( );
 
     // heartbeat checker??
-    check_rx_timeouts( &throttle_module, &rx_frame_throttle_command, dac );
+    check_rx_timeouts( );
 
     // update state variables
-    throttle_module.state.accel_pos_sensor_low = analogRead( throttle_module.pins.signal_accel_pos_sensor_high ) << 2;  //10 bit to 12 bit
-    throttle_module.state.accel_pos_sensor_high = analogRead( throttle_module.pins.signal_accel_pos_sensor_low ) << 2;
+    throttle_state.accel_pos_sensor_low = analogRead( PIN_ACCEL_POS_SENSOR_HIGH ) << 2;  //10 bit to 12 bit
+    throttle_state.accel_pos_sensor_high = analogRead( PIN_ACCEL_POS_SENSOR_LOW ) << 2;
 
     // if someone is pressing the throttle accelerator, disable control
-    check_accelerator_override( &throttle_module, dac );
+    check_accelerator_override( );
 
     // now that we've set control status, do throttle if we are in control
-    if ( throttle_module.control_state.enabled == true )
+    if ( control_state.enabled == true )
     {
 
         struct accel_spoof_t accel_spoof;
 
         calculate_accelerator_spoof(
-                throttle_module.state.accel_pos_target,
+                throttle_state.accel_pos_target,
                 &accel_spoof );
 
         dac.outputA( accel_spoof.high );
