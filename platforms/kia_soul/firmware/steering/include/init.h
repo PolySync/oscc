@@ -3,6 +3,6 @@
 
 #include "steering_module.h"
 
-void init_pins( kia_soul_steering_module_s *module );
+void init_pins( );
 
 #endif

@@ -1,5 +1,6 @@
 #include "debug.h"
 
+#include "globals.h"
 #include "steering_control.h"
 
 
@@ -10,10 +11,9 @@ static int32_t get_analog_sample_average(
 static void write_sample_averages_to_dac(
         int16_t num_samples,
         uint8_t signal_pin_1,
-        uint8_t signal_pin_2,
-        DAC_MCP49xx &dac );
+        uint8_t signal_pin_2 );
 
-bool check_driver_steering_override( kia_soul_steering_module_s *steering_module )
+bool check_driver_steering_override( )
 {
     // The parameters below; torque_filter_alpha and steering_wheel_max_torque,
     // can be used to modify how selective the steering override functionality
@@ -38,8 +38,8 @@ bool check_driver_steering_override( kia_soul_steering_module_s *steering_module
 
     bool override = false;
 
-    float torque_sensor_a = ( float )( analogRead( steering_module->pins.signal_torque_pos_sensor_high ) << 2 );
-    float torque_sensor_b = ( float )( analogRead( steering_module->pins.signal_torque_pos_sensor_low ) << 2 );
+    float torque_sensor_a = ( float )( analogRead( PIN_TORQUE_POS_SENSOR_HIGH ) << 2 );
+    float torque_sensor_b = ( float )( analogRead( PIN_TORQUE_POS_SENSOR_LOW ) << 2 );
 
     filtered_torque_a =
         ( torque_filter_alpha * torque_sensor_a ) +
@@ -66,45 +66,39 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof )
 }
 
 
-void enable_control(
-        kia_soul_steering_module_s *steering_module,
-        DAC_MCP49xx &dac )
+void enable_control( )
 {
     // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
     // signal discontinuity when the SCM takes over
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
         num_samples,
-        steering_module->pins.signal_torque_pos_sensor_high,
-        steering_module->pins.signal_torque_pos_sensor_low,
-        dac);
+        PIN_TORQUE_POS_SENSOR_HIGH,
+        PIN_TORQUE_POS_SENSOR_LOW );
 
     // Enable the signal interrupt relays
-    digitalWrite( steering_module->pins.spoof_enable, HIGH );
+    digitalWrite( PIN_SPOOF_ENABLE, HIGH );
 
-    steering_module->control_state.enabled = true;
+    control_state.enabled = true;
 
     DEBUG_PRINTLN( "Control enabled" );
 }
 
 
-void disable_control(
-        kia_soul_steering_module_s *steering_module,
-        DAC_MCP49xx &dac )
+void disable_control( )
 {
     // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
     // signal discontinuity when the SCM takes over
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
         num_samples,
-        steering_module->pins.signal_torque_pos_sensor_high,
-        steering_module->pins.signal_torque_pos_sensor_low,
-        dac);
+        PIN_TORQUE_POS_SENSOR_HIGH,
+        PIN_TORQUE_POS_SENSOR_LOW );
 
     // Disable the signal interrupt relays
-    digitalWrite( steering_module->pins.spoof_enable, LOW );
+    digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
-    steering_module->control_state.enabled =false;
+    control_state.enabled =false;
 
     DEBUG_PRINTLN( "Control disabled" );
 }
@@ -129,8 +123,7 @@ static int32_t get_analog_sample_average(
 static void write_sample_averages_to_dac(
         int16_t num_samples,
         uint8_t signal_pin_1,
-        uint8_t signal_pin_2,
-        DAC_MCP49xx &dac )
+        uint8_t signal_pin_2 )
 {
     int32_t averages[ 2 ] = { 0, 0 };
 

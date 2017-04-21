@@ -31,19 +31,11 @@
 #include "time.h"
 #include "debug.h"
 
+#include "globals.h"
 #include "steering_module.h"
 #include "init.h"
 #include "steering_control.h"
 #include "communications.h"
-
-
-static kia_soul_steering_module_s steering_module;
-static DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, steering_module.pins.dac_cs );     // DAC model, SS pin, LDAC pin
-static MCP_CAN CAN( steering_module.pins.can_cs );                          // Set CS pin for the CAN shield
-static can_frame_s rx_frame_steering_command;
-static can_frame_s tx_frame_steering_report;
-static PID pid;
-static uint8_t torque_sum;
 
 
 void setup( )
@@ -52,38 +44,29 @@ void setup( )
             0,
             sizeof(rx_frame_steering_command) );
 
-    init_pins( &steering_module );
+    init_pins( );
 
     #ifdef DEBUG
         init_serial( );
     #endif
 
-    init_can( CAN );
+    init_can( can );
 
-    publish_timed_tx_frames(
-        &steering_module,
-        &tx_frame_steering_report,
-        CAN,
-        torque_sum );
+    publish_timed_tx_frames( );
 
-    steering_module.control_state.enabled = false;
+    control_state.enabled = false;
+    control_state.emergency_stop = false;
 
-    steering_module.control_state.emergency_stop = false;
-
-    steering_module.override_flags.wheel = 0;
-
-    steering_module.override_flags.voltage = 0;
-
-    steering_module.override_flags.voltage_spike_a = 0;
-
-    steering_module.override_flags.voltage_spike_b = 0;
+    override_flags.wheel_active = false;
+    override_flags.voltage = 0;
+    override_flags.voltage_spike_a = 0;
+    override_flags.voltage_spike_b = 0;
 
     // Initialize the Rx timestamps to avoid timeout warnings on start up
-    rx_frame_steering_command.timestamp = millis( );
+    rx_frame_steering_command.timestamp = GET_TIMESTAMP_MS( );
 
-    pid_zeroize( &pid, steering_module.params.windup_guard );
+    pid_zeroize( &pid, PARAM_PID_WINDUP_GUARD );
 
-    // debug log
     DEBUG_PRINTLN( "init: pass" );
 }
 
@@ -92,71 +75,60 @@ void loop( )
 {
     // checks for CAN frames, if yes, updates state variables
     can_frame_s rx_frame;
-    int ret = check_for_rx_frame( CAN, &rx_frame );
+    int ret = check_for_rx_frame( can, &rx_frame );
 
     if( ret == RX_FRAME_AVAILABLE )
     {
-        handle_ready_rx_frames(
-            &steering_module,
-            &rx_frame,
-            &rx_frame_steering_command,
-            dac );
+        handle_ready_rx_frame( &rx_frame );
     }
 
     // publish all report CAN frames
-    publish_timed_tx_frames(
-        &steering_module,
-        &tx_frame_steering_report,
-        CAN,
-        torque_sum );
+    publish_timed_tx_frames( );
 
     // check all timeouts
-    check_rx_timeouts(
-        &steering_module,
-        &rx_frame_steering_command,
-        dac );
+    check_rx_timeouts( );
 
     uint32_t current_timestamp_us = GET_TIMESTAMP_US();
 
-    uint32_t deltaT = get_time_delta( steering_module.control_state.timestamp_us,
+    uint32_t deltaT = get_time_delta( control_state.timestamp_us,
                                       current_timestamp_us );
 
     if ( deltaT > 50000 )
     {
 
-        steering_module.control_state.timestamp_us = current_timestamp_us;
+        control_state.timestamp_us = current_timestamp_us;
 
-        bool override = check_driver_steering_override( &steering_module );
+        bool override = check_driver_steering_override( );
 
         if ( override == true
-             && steering_module.control_state.enabled == true )
+             && control_state.enabled == true )
         {
-            steering_module.override_flags.wheel = 1;
-            disable_control( &steering_module, dac );
+            override_flags.wheel_active = true;
+            disable_control( );
         }
-        else if ( steering_module.control_state.enabled == true )
+        else if ( control_state.enabled == true )
         {
             // Calculate steering angle rates (degrees/microsecond)
             float steering_angle_rate =
-                ( steering_module.state.steering_angle -
-                  steering_module.state.steering_angle_last ) / 0.05;
+                ( steering_state.steering_angle -
+                  steering_state.steering_angle_last ) / 0.05;
 
             float steering_angle_rate_target =
-                ( steering_module.state.steering_angle_target -
-                  steering_module.state.steering_angle ) / 0.05;
+                ( steering_state.steering_angle_target -
+                  steering_state.steering_angle ) / 0.05;
 
             // Save the angle for next iteration
-            steering_module.state.steering_angle_last =
-                steering_module.state.steering_angle;
+            steering_state.steering_angle_last =
+                steering_state.steering_angle;
 
             steering_angle_rate_target =
                 constrain( ( float )steering_angle_rate_target,
-                           ( float )-steering_module.params.steering_angle_rate_max,
-                           ( float )steering_module.params.steering_angle_rate_max );
+                           ( float )-PARAM_STEERING_ANGLE_RATE_MAX,
+                           ( float )PARAM_STEERING_ANGLE_RATE_MAX );
 
-            pid.derivative_gain = steering_module.params.SA_Kd;
-            pid.proportional_gain = steering_module.params.SA_Kp;
-            pid.integral_gain = steering_module.params.SA_Ki;
+            pid.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
+            pid.integral_gain = PARAM_PID_INTEGRAL_GAIN;
+            pid.derivative_gain = PARAM_PID_DIFFERENTIAL_GAIN;
 
             pid_update(
                     &pid,
@@ -181,9 +153,9 @@ void loop( )
         }
         else
         {
-            steering_module.override_flags.wheel = 0;
+            override_flags.wheel_active = false;
 
-            pid_zeroize( &pid, steering_module.params.windup_guard );
+            pid_zeroize( &pid, PARAM_PID_WINDUP_GUARD );
         }
     }
 }

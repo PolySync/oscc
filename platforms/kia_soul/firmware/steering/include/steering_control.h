@@ -46,7 +46,7 @@ struct torque_spoof_t
 // Parameters:  None
 //
 // *****************************************************
-bool check_driver_steering_override( kia_soul_steering_module_s *steering_module );
+bool check_driver_steering_override( );
 
 
 // *****************************************************
@@ -79,9 +79,7 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof );
 //              dac - reference to DAC object
 //
 // *****************************************************
-void enable_control(
-        kia_soul_steering_module_s *steering_module,
-        DAC_MCP49xx &dac );
+void enable_control( );
 
 
 // *****************************************************
@@ -97,9 +95,7 @@ void enable_control(
 //              dac - reference to DAC object
 //
 // *****************************************************
-void disable_control(
-        kia_soul_steering_module_s *steering_module,
-        DAC_MCP49xx &dac );
+void disable_control( );
 
 
 #endif

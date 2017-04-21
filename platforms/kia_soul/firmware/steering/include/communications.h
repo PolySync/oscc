@@ -20,11 +20,7 @@
 // Parameters:  None
 //
 // *****************************************************
-void publish_steering_report(
-    kia_soul_steering_module_s *steering_module,
-    can_frame_s *report,
-    MCP_CAN &can,
-    uint8_t torque_sum );
+void publish_steering_report( );
 
 
 // *****************************************************
@@ -38,11 +34,7 @@ void publish_steering_report(
 // Parameters:  None
 //
 // *****************************************************
-void publish_timed_tx_frames(
-    kia_soul_steering_module_s *steering_module,
-    can_frame_s *report,
-    MCP_CAN &can,
-    uint8_t torque_sum );
+void publish_timed_tx_frames( );
 
 
 // *****************************************************
@@ -55,11 +47,7 @@ void publish_timed_tx_frames(
 // Parameters:  control_data -  pointer to a steering command control message
 //
 // *****************************************************
-void process_steering_command(
-    kia_soul_steering_module_s *steering_module,
-    const oscc_command_msg_steering * const control_data,
-    can_frame_s *command,
-    DAC_MCP49xx &dac );
+void process_steering_command( );
 
 
 // *****************************************************
@@ -74,7 +62,6 @@ void process_steering_command(
 //
 // *****************************************************
 void process_chassis_state1(
-    kia_soul_steering_module_s *steering_module,
     const oscc_chassis_state1_data_s * const chassis_data );
 
 
@@ -89,11 +76,7 @@ void process_chassis_state1(
 // Parameters:  frame - frame containing received data
 //
 // *****************************************************
-void handle_ready_rx_frames(
-    kia_soul_steering_module_s *steering_module,
-    can_frame_s *frame,
-    can_frame_s *command,
-    DAC_MCP49xx &dac );
+void handle_ready_rx_frame( can_frame_s *frame );
 
 
 // *****************************************************
@@ -107,10 +90,7 @@ void handle_ready_rx_frames(
 // Parameters:  None
 //
 // *****************************************************
-void check_rx_timeouts(
-    kia_soul_steering_module_s *steering_module,
-    can_frame_s *command,
-    DAC_MCP49xx &dac );
+void check_rx_timeouts( );
 
 
 #endif

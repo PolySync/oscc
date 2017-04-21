@@ -5,33 +5,30 @@
 #include "time.h"
 #include "debug.h"
 
+#include "globals.h"
 #include "communications.h"
 #include "steering_module.h"
 #include "steering_control.h"
 
 
-void publish_steering_report(
-    kia_soul_steering_module_s *steering_module,
-    can_frame_s *report,
-    MCP_CAN &can,
-    uint8_t torque_sum )
+void publish_steering_report( )
 {
-    report->id = ( uint32_t ) ( OSCC_CAN_ID_STEERING_REPORT );
+    tx_frame_steering_report.id = ( uint32_t ) ( OSCC_CAN_ID_STEERING_REPORT );
 
-    report->dlc = 8;
+    tx_frame_steering_report.dlc = 8;
 
     // Get a pointer to the data buffer in the CAN frame and set
     // the steering angle
     oscc_report_msg_steering * data =
-        ( oscc_report_msg_steering* ) report->data;
+        ( oscc_report_msg_steering* ) tx_frame_steering_report.data;
 
-    data->angle = steering_module->state.steering_angle;
+    data->angle = steering_state.steering_angle;
 
-    report->timestamp = millis( );
+    tx_frame_steering_report.timestamp = GET_TIMESTAMP_MS( );
 
     // set override flag
-    if ( ( steering_module->override_flags.wheel == 0 ) &&
-            ( steering_module->override_flags.voltage == 0 ) )
+    if ( ( override_flags.wheel_active == false ) &&
+            ( override_flags.voltage == 0 ) )
     {
         data->override = 0;
     }
@@ -40,112 +37,96 @@ void publish_steering_report(
         data->override = 1;
     }
 
-    data->angle_command = steering_module->state.steering_angle_target;
+    data->angle_command = steering_state.steering_angle_target;
 
     data->torque = torque_sum;
 
-    data->enabled = (uint8_t) steering_module->control_state.enabled;
+    data->enabled = (uint8_t) control_state.enabled;
 
-    can.sendMsgBuf( report->id,
+    can.sendMsgBuf( tx_frame_steering_report.id,
                     0,
-                    report->dlc,
-                    report->data );
+                    tx_frame_steering_report.dlc,
+                    tx_frame_steering_report.data );
 }
 
 
-void publish_timed_tx_frames(
-    kia_soul_steering_module_s *steering_module,
-    can_frame_s *report,
-    MCP_CAN &can,
-    uint8_t torque_sum )
+void publish_timed_tx_frames( )
 {
-    uint32_t delta = get_time_delta( report->timestamp, GET_TIMESTAMP_MS() );
+    uint32_t delta = get_time_delta( tx_frame_steering_report.timestamp, GET_TIMESTAMP_MS() );
 
     if ( delta >= OSCC_PUBLISH_INTERVAL_STEERING_REPORT )
     {
-        publish_steering_report( steering_module, report, can, torque_sum );
+        publish_steering_report( );
     }
 }
 
 
 void process_steering_command(
-    kia_soul_steering_module_s *steering_module,
-    const oscc_command_msg_steering * const control_data,
-    can_frame_s *command,
-    DAC_MCP49xx &dac )
+    const oscc_command_msg_steering * const control_data
+)
 {
-    steering_module->state.steering_angle_target =
+    steering_state.steering_angle_target =
         control_data->steering_wheel_angle_command / 9.0;
 
-    steering_module->params.steering_angle_rate_max =
+    steering_state.steering_angle_rate_max =
         control_data->steering_wheel_max_velocity * 9.0;
 
     if ( ( control_data->enabled == 1 ) &&
-            ( steering_module->control_state.enabled == false ) &&
-            ( steering_module->control_state.emergency_stop == false ) )
+            ( control_state.enabled == false ) &&
+            ( control_state.emergency_stop == false ) )
     {
-        enable_control( steering_module, dac );
+        enable_control( );
     }
 
     if ( ( control_data->enabled == 0 ) &&
-            ( steering_module->control_state.enabled == true ) )
+            ( control_state.enabled == true ) )
     {
-        disable_control( steering_module, dac );
+        disable_control( );
     }
 
-    command->timestamp = millis( );
+    rx_frame_steering_command.timestamp = GET_TIMESTAMP_MS( );
 }
 
 
 void process_chassis_state1(
-    kia_soul_steering_module_s *steering_module,
     const oscc_chassis_state1_data_s * const chassis_data )
 {
     float raw_angle = (float)chassis_data->steering_wheel_angle;
-    steering_module->state.steering_angle = raw_angle * 0.0076294;
+    steering_state.steering_angle = raw_angle * 0.0076294;
 
     // Convert from 40 degree range to 470 degree range in 1 degree increments
-    steering_module->state.steering_angle *= 11.7;
+    steering_state.steering_angle *= 11.7;
 }
 
 
-void handle_ready_rx_frames(
-    kia_soul_steering_module_s *steering_module,
-    can_frame_s *frame,
-    can_frame_s *command,
-    DAC_MCP49xx &dac )
+void handle_ready_rx_frame(
+    can_frame_s *frame )
 {
     if ( frame->id == OSCC_CAN_ID_STEERING_COMMAND )
     {
         process_steering_command(
-            steering_module,
-            ( const oscc_command_msg_steering * const )frame->data,
-            command,
-            dac);
+            ( const oscc_command_msg_steering * const )frame->data );
     }
     else if ( frame->id == KIA_STATUS1_MESSAGE_ID )
     {
         process_chassis_state1(
-            steering_module,
             ( const oscc_chassis_state1_data_s * const )frame->data );
     }
 }
 
-void check_rx_timeouts(
-    kia_soul_steering_module_s *steering_module,
-    can_frame_s *command,
-    DAC_MCP49xx &dac )
+
+void check_rx_timeouts( )
 {
     bool timeout = is_timeout(
-            command->timestamp,
+            rx_frame_steering_command.timestamp,
             GET_TIMESTAMP_MS( ),
-            steering_module->params.rx_timeout);
+            PARAM_RX_TIMEOUT);
 
     if( timeout == true )
     {
-        if( steering_module->control_state.enabled == true )
+        if( control_state.enabled == true )
         {
-            disable_control( steering_module, dac );
+            disable_control( );
             DEBUG_PRINTLN( "Control disabled: Timeout" );
         }
     }

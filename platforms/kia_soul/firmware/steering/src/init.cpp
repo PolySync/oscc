@@ -1,18 +1,17 @@
-#include "steering_module.h"
 #include "init.h"
+#include "globals.h"
 
-void init_pins( kia_soul_steering_module_s *module )
+
+void init_pins( )
 {
-    pinMode( module->pins.dac_cs, OUTPUT );
-    pinMode( module->pins.signal_torque_pos_sensor_high, INPUT );
-    pinMode( module->pins.signal_torque_pos_sensor_low, INPUT );
-    pinMode( module->pins.spoof_signal_high, INPUT );
-    pinMode( module->pins.spoof_signal_low, INPUT );
-    pinMode( module->pins.spoof_enable, OUTPUT );
+    pinMode( PIN_DAC_CS, OUTPUT );
+    pinMode( PIN_TORQUE_POS_SENSOR_HIGH, INPUT );
+    pinMode( PIN_TORQUE_POS_SENSOR_LOW, INPUT );
+    pinMode( PIN_TORQUE_POS_SPOOF_HIGH, INPUT );
+    pinMode( PIN_TORQUE_POS_SPOOF_LOW, INPUT );
+    pinMode( PIN_SPOOF_ENABLE, OUTPUT );
 
-    // Initialize the DAC board by setting the DAC Chip Select
-    digitalWrite( module->pins.dac_cs, HIGH );
+    digitalWrite( PIN_DAC_CS, HIGH );
 
-    // Initialize relay board by clearing the Spoof Engage
-    digitalWrite( module->pins.spoof_enable, LOW );
+    digitalWrite( PIN_SPOOF_ENABLE, LOW );
 }
