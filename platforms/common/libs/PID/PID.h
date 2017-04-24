@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef PID_H
-#define PID_H
+#ifndef _OSCC_PID_H_
+#define _OSCC_PID_H_
 
 
 
@@ -67,6 +67,6 @@ void pid_zeroize( PID* pid, float integral_windup_guard );
 
 
 
-#endif /* PID_H */
+#endif /* _OSCC_PID_H_ */
 
 

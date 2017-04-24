@@ -1,5 +1,5 @@
-#ifndef _OSCC_BRAKE_CONTROL_PROTOCOL_CAN_H_
-#define _OSCC_BRAKE_CONTROL_PROTOCOL_CAN_H_
+#ifndef _OSCC_BRAKE_PROTOCOL_CAN_H_
+#define _OSCC_BRAKE_PROTOCOL_CAN_H_
 
 
 /*
@@ -165,4 +165,4 @@ typedef struct
 } oscc_report_msg_brake;
 
 
-#endif
+#endif /* _OSCC_BRAKE_PROTOCOL_CAN_H_ */

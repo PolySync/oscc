@@ -1,5 +1,5 @@
-#ifndef _KIA_SOUL_BRAKE_HELPER_H_
-#define _KIA_SOUL_BRAKE_HELPER_H_
+#ifndef _OSCC_KIA_SOUL_BRAKE_HELPER_H_
+#define _OSCC_KIA_SOUL_BRAKE_HELPER_H_
 
 
 #include <stdint.h>

@@ -1,5 +1,5 @@
-#ifndef _DEBUG_H_
-#define _DEBUG_H_
+#ifndef _OSCC_DEBUG_H_
+#define _OSCC_DEBUG_H_
 
 #ifdef DEBUG
     #warning "DEBUG defined"
@@ -10,4 +10,4 @@
     #define DEBUG_PRINTLN(x)
 #endif
 
-#endif
+#endif /* _OSCC_DEBUG_H_ */

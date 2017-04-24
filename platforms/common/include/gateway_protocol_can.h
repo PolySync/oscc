@@ -5,8 +5,8 @@
  */
 
 
-#ifndef GATEWAY_PROTOCOL_CAN_H
-#define GATEWAY_PROTOCOL_CAN_H
+#ifndef _OSCC_GATEWAY_PROTOCOL_CAN_H_
+#define _OSCC_GATEWAY_PROTOCOL_CAN_H_
 
 
 #include <stdint.h>
@@ -64,4 +64,4 @@ typedef struct
 } oscc_chassis_state2_data_s;
 
 
-#endif
+#endif /* _OSCC_GATEWAY_PROTOCOL_CAN_H_ */

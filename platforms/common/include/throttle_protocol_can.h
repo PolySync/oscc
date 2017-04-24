@@ -1,5 +1,5 @@
-#ifndef _OSCC_THROTTLE_CONTROL_PROTOCOL_CAN_H_
-#define _OSCC_THROTTLE_CONTROL_PROTOCOL_CAN_H_
+#ifndef _OSCC_THROTTLE_PROTOCOL_CAN_H_
+#define _OSCC_THROTTLE_PROTOCOL_CAN_H_
 
 
 /*
@@ -143,4 +143,4 @@ typedef struct
 } oscc_report_msg_throttle;
 
 
-#endif
+#endif /* _OSCC_THROTTLE_PROTOCOL_CAN_H_ */

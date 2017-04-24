@@ -1,5 +1,6 @@
-#ifndef _OSCC_STEERING_CONTROL_PROTOCOL_CAN_H_
-#define _OSCC_STEERING_CONTROL_PROTOCOL_CAN_H_
+#ifndef _OSCC_STEERING_PROTOCOL_CAN_H_
+#define _OSCC_STEERING_PROTOCOL_CAN_H_
+
 
 #include <stdint.h>
 
@@ -146,4 +147,4 @@ typedef struct
 } oscc_report_msg_steering;
 
 
-#endif
+#endif /* _OSCC_STEERING_PROTOCOL_CAN_H_ */
