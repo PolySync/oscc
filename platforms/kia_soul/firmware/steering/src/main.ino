@@ -51,9 +51,9 @@ void loop( )
 {
     // checks for CAN frames, if yes, updates state variables
     can_frame_s rx_frame;
-    int ret = check_for_rx_frame( can, &rx_frame );
+    can_status_t ret = check_for_rx_frame( can, &rx_frame );
 
-    if( ret == RX_FRAME_AVAILABLE )
+    if( ret == CAN_RX_FRAME_AVAILABLE )
     {
         handle_ready_rx_frame( &rx_frame );
     }

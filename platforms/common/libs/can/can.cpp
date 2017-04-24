@@ -17,9 +17,9 @@ void init_can( MCP_CAN &can )
 }
 
 
-int check_for_rx_frame( MCP_CAN &can, can_frame_s *frame )
+can_status_t check_for_rx_frame( MCP_CAN &can, can_frame_s * const frame )
 {
-    int ret = RX_FRAME_UNAVAILABLE;
+    can_status_t ret = CAN_RX_FRAME_UNKNOWN;
 
     if( frame != NULL )
     {
@@ -34,7 +34,11 @@ int check_for_rx_frame( MCP_CAN &can, can_frame_s *frame )
                     ( INT8U* ) &frame->dlc,
                     ( INT8U* ) frame->data );
 
-            ret = RX_FRAME_AVAILABLE;
+            ret = CAN_RX_FRAME_AVAILABLE;
+        }
+        else
+        {
+            ret = CAN_RX_FRAME_UNAVAILABLE;
         }
     }
 
