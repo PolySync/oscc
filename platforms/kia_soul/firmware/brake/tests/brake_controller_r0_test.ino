@@ -14,6 +14,7 @@
 #include "master_cylinder.h"
 #include "brake_control.h"
 #include "communications.h"
+#include "init.h"
 
 
 struct accumulator_data_s
@@ -305,8 +306,7 @@ void setup( void )
     brake_command_release_solenoids( 0 );
     brake_command_actuator_solenoids( 0 );
 
-    init_serial( );
-    init_can( can );
+    init_interfaces( );
 
     publish_brake_report( );
 

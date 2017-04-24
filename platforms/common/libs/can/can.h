@@ -2,6 +2,7 @@
 #define _OSCC_CAN_H_
 
 #include <stdint.h>
+#include "mcp_can.h"
 
 #define CAN_BAUD (CAN_500KBPS)
 #define CAN_INIT_RETRY_DELAY (50)

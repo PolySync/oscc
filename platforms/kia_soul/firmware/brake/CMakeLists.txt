@@ -16,7 +16,8 @@ generate_arduino_firmware(
     src/helper.cpp
     src/master_cylinder.cpp
     src/brake_control.cpp
-    src/communications.cpp)
+    src/communications.cpp
+    src/init.cpp)
 
 target_include_directories(
     kia-soul-brake
@@ -44,7 +45,8 @@ generate_arduino_firmware(
     src/helper.cpp
     src/master_cylinder.cpp
     src/brake_control.cpp
-    src/communications.cpp)
+    src/communications.cpp
+    src/init.cpp)
 
 target_include_directories(
     kia-soul-brake-test-controller

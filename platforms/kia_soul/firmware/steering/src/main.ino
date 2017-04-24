@@ -22,17 +22,11 @@
 
 void setup( )
 {
-    memset( &rx_frame_steering_command,
-            0,
-            sizeof(rx_frame_steering_command) );
+    init_structs_to_zero( );
 
     init_pins( );
 
-    #ifdef DEBUG
-        init_serial( );
-    #endif
-
-    init_can( can );
+    init_interfaces( );
 
     publish_timed_tx_frames( );
 

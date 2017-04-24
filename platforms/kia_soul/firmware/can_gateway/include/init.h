@@ -5,7 +5,9 @@
 #include "globals.h"
 
 
-void init_pins( );
+void init_structs_to_zero( void );
+void init_pins( void );
+void init_interfaces( void );
 
 
 #endif

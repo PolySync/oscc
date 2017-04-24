@@ -1,8 +1,10 @@
 #ifndef _OSCC_KIA_SOUL_STEERING_INIT_H_
 #define _OSCC_KIA_SOUL_STEERING_INIT_H_
 
-#include "steering_module.h"
 
-void init_pins( );
+void init_structs_to_zero( void );
+void init_pins( void );
+void init_interfaces( void );
+
 
 #endif
