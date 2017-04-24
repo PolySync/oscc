@@ -1,31 +1,3 @@
-/************************************************************************/
-/* The MIT License (MIT) */
-/* ===================== */
-
-/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
-
-/* Permission is hereby granted, free of charge, to any person */
-/* obtaining a copy of this software and associated documentation */
-/* files (the “Software”), to deal in the Software without */
-/* restriction, including without limitation the rights to use, */
-/* copy, modify, merge, publish, distribute, sublicense, and/or sell */
-/* copies of the Software, and to permit persons to whom the */
-/* Software is furnished to do so, subject to the following */
-/* conditions: */
-
-/* The above copyright notice and this permission notice shall be */
-/* included in all copies or substantial portions of the Software. */
-
-/* THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES */
-/* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND */
-/* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT */
-/* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, */
-/* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING */
-/* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR */
-/* OTHER DEALINGS IN THE SOFTWARE. */
-/************************************************************************/
-
 /**
  * @file joystick.c
  * @brief Joystick Interface Source
@@ -128,13 +100,13 @@ static joystick_device_data_s* joystick = NULL;
 
 // *****************************************************
 // Function:    joystick_init_subsystem
-// 
+//
 // Purpose:     Initialize the joystick subsystem
-// 
+//
 // Returns:     int - ERROR or NOERROR
-// 
+//
 // Parameters:  None
-// 
+//
 // *****************************************************
 static int joystick_init_subsystem( )
 {
@@ -158,14 +130,14 @@ static int joystick_init_subsystem( )
 
 // *****************************************************
 // Function:    joystick_get_guid_at_index
-// 
+//
 // Purpose:     Return the Globally Unique ID (GUID) for the requested joystick
-// 
+//
 // Returns:     int - ERROR or NOERROR
-// 
+//
 // Parameters:  device_index - index to the requested device
 //              guid - pointer to the guid to fill out
-// 
+//
 // *****************************************************
 static int joystick_get_guid_at_index( unsigned long device_index )
 {
@@ -193,13 +165,13 @@ static int joystick_get_guid_at_index( unsigned long device_index )
 
 // *****************************************************
 // Function:    joystick_get_num_devices
-// 
+//
 // Purpose:     Return the number of joystick devices resident on the system
-// 
+//
 // Returns:     int - the number of devices or ERROR
-// 
+//
 // Parameters:  None
-// 
+//
 // *****************************************************
 static int joystick_get_num_devices( )
 {
@@ -272,13 +244,13 @@ static double joystick_curve_fit( double input_min,
 
 // *****************************************************
 // Function:    joystick_init_subsystem
-// 
+//
 // Purpose:     Initialize the joystick subsystem
-// 
+//
 // Returns:     int - ERROR or NOERROR
-// 
+//
 // Parameters:  None
-// 
+//
 // *****************************************************
 int joystick_init( )
 {
@@ -324,13 +296,13 @@ int joystick_init( )
 
 // *****************************************************
 // Function:    joystick_open
-// 
+//
 // Purpose:     Open the requested joystick for use
-// 
+//
 // Returns:     int - ERROR or NOERROR
-// 
+//
 // Parameters:  device_index - index to the requested device
-// 
+//
 // *****************************************************
 int joystick_open( unsigned long device_index )
 {
@@ -368,13 +340,13 @@ int joystick_open( unsigned long device_index )
 
 // *****************************************************
 // Function:    jstick_close
-// 
+//
 // Purpose:     Close the joystick for use
-// 
+//
 // Returns:     void
-// 
+//
 // Parameters:  void
-// 
+//
 // *****************************************************
 void joystick_close( )
 {
@@ -398,13 +370,13 @@ void joystick_close( )
 
 // *****************************************************
 // Function:    joystick_update
-// 
+//
 // Purpose:     Update the requested joystick for use
-// 
+//
 // Returns:     int - ERROR or NOERROR
-// 
+//
 // Parameters:  device_index - index to the requested device
-// 
+//
 // *****************************************************
 int joystick_update( )
 {
@@ -432,14 +404,14 @@ int joystick_update( )
 
 // *****************************************************
 // Function:    joystick_get_axis
-// 
+//
 // Purpose:     Get the axis index
-// 
+//
 // Returns:     int - ERROR or NOERROR
-// 
+//
 // Parameters:  axis_index - index to the axis to use
 //              position - pointer to the position to update
-// 
+//
 // *****************************************************
 int joystick_get_axis( unsigned long axis_index, int * const position )
 {
@@ -460,14 +432,14 @@ int joystick_get_axis( unsigned long axis_index, int * const position )
 
 // *****************************************************
 // Function:    joystick_get_button
-// 
+//
 // Purpose:     Get which button was pressed for the requested joystick
-// 
+//
 // Returns:     int - ERROR or NOERROR
-// 
+//
 // Parameters:  button_index - index to the button to use
 //              button_state - pointer to the button state to update
-// 
+//
 // *****************************************************
 int joystick_get_button( unsigned long button_index,
                          unsigned int * const button_state )
@@ -498,17 +470,17 @@ int joystick_get_button( unsigned long button_index,
 
 // *****************************************************
 // Function:    joystick_normalize_axis_position
-// 
+//
 // Purpose:     Convert the integer current joystick input position into a
 //              scaled value for the variable that the joystick input
 //              represents
-// 
+//
 // Returns:     double - the normalized axis position
-// 
+//
 // Parameters:  position - current input position on the joystick
 //              range_min - minimum scaled value for the variable
 //              range_max - maximum scaled value for the variable
-// 
+//
 // *****************************************************
 double joystick_normalize_axis_position( const int position,
                                          const double range_min,
@@ -538,16 +510,16 @@ double joystick_normalize_axis_position( const int position,
 
 // *****************************************************
 // Function:    joystick_normalize_trigger_position
-// 
+//
 // Purpose:     Convert the integer current joystick trigger position
 //              to a scaled value
-// 
+//
 // Returns:     double - the normalized trigger position
-// 
+//
 // Parameters:  position - current trigger position on the joystick
 //              range_min - minimum scaled value for the variable
 //              range_max - maximum scaled value for the variable
-// 
+//
 // *****************************************************
 double joystick_normalize_trigger_position( const int position,
                                             const double range_min,

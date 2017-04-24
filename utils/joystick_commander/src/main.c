@@ -1,31 +1,3 @@
-/************************************************************************/
-/* The MIT License (MIT) */
-/* ===================== */
-
-/* Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved. */
-
-/* Permission is hereby granted, free of charge, to any person */
-/* obtaining a copy of this software and associated documentation */
-/* files (the “Software”), to deal in the Software without */
-/* restriction, including without limitation the rights to use, */
-/* copy, modify, merge, publish, distribute, sublicense, and/or sell */
-/* copies of the Software, and to permit persons to whom the */
-/* Software is furnished to do so, subject to the following */
-/* conditions: */
-
-/* The above copyright notice and this permission notice shall be */
-/* included in all copies or substantial portions of the Software. */
-
-/* THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES */
-/* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND */
-/* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT */
-/* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, */
-/* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING */
-/* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR */
-/* OTHER DEALINGS IN THE SOFTWARE. */
-/************************************************************************/
-
 /**
  * @file main.c
  * @brief Entry point for the joystick commander application
@@ -115,14 +87,14 @@ static int error_thrown = NOERR;
 
 // *****************************************************
 // Function:    get_timestamp
-// 
+//
 // Purpose:     Get the current timestamp from the system time
 //              Value is returned in microseconds
-// 
+//
 // Returns:     unsigned long long - current time in microseconds
-// 
+//
 // Parameters:  void
-// 
+//
 // *****************************************************
 static unsigned long long get_timestamp( )
 {
@@ -145,13 +117,13 @@ static unsigned long long get_timestamp( )
 
 // *****************************************************
 // Function:    get_elapsed_time
-// 
+//
 // Purpose:     Determine the elapsed time since the last check
-// 
+//
 // Returns:     unsigned long long - the elapsed time in microseconds
-// 
+//
 // Parameters:  timestamp - pointer to a timestamp value
-// 
+//
 // *****************************************************
 static unsigned long long get_elapsed_time( unsigned long long timestamp )
 {
@@ -164,13 +136,13 @@ static unsigned long long get_elapsed_time( unsigned long long timestamp )
 
 // *****************************************************
 // Function:    signal_handler
-// 
+//
 // Purpose:     Function to catch and handle SIGINT operations
-// 
+//
 // Returns:     void
-// 
+//
 // Parameters:  signal_number - number of the signal sent
-// 
+//
 // *****************************************************
 void signal_handler( int signal_number )
 {
@@ -196,14 +168,14 @@ int main( int argc, char **argv )
 
     errno = 0;
 
-    if ( argc != 2 || ( channel = atoi( argv[1] ), errno ) != 0 ) 
+    if ( argc != 2 || ( channel = atoi( argv[1] ), errno ) != 0 )
     {
         printf( "usage %s channel\n", argv[0] );
         exit( 1 );
     }
-    
+
     signal( SIGINT, signal_handler );
-    
+
     return_code = commander_init( channel );
 
     if ( return_code == NOERR )
@@ -226,7 +198,7 @@ int main( int argc, char **argv )
         }
         commander_close( );
     }
-    
+
     return 0;
 }
 

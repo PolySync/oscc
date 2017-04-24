@@ -1,31 +1,3 @@
-/************************************************************************/
-/* The MIT License (MIT) */
-/* ===================== */
-
-/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
-
-/* Permission is hereby granted, free of charge, to any person */
-/* obtaining a copy of this software and associated documentation */
-/* files (the “Software”), to deal in the Software without */
-/* restriction, including without limitation the rights to use, */
-/* copy, modify, merge, publish, distribute, sublicense, and/or sell */
-/* copies of the Software, and to permit persons to whom the */
-/* Software is furnished to do so, subject to the following */
-/* conditions: */
-
-/* The above copyright notice and this permission notice shall be */
-/* included in all copies or substantial portions of the Software. */
-
-/* THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES */
-/* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND */
-/* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT */
-/* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, */
-/* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING */
-/* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR */
-/* OTHER DEALINGS IN THE SOFTWARE. */
-/************************************************************************/
-
 /**
  * @file oscc_interface.h
  * @brief OSCC interface - The main command* functions and the
@@ -173,10 +145,10 @@ int oscc_interface_command_throttle( unsigned int throttle_setpoint );
  *        steering module to control how much and how fast to
  *        turn the steering wheel
  *
- * @param [in] angle - steering wheel angle to set - 
+ * @param [in] angle - steering wheel angle to set -
  *        possible range goes from -4700 to 4700 degrees (signed
  *        16 bit value)
- * 
+ *
  *        [in] rate - how fast to turn the steering wheel -
  *        possible range goes from 20 to 254 degrees/sec
  *        (unsigned 16 bit value)
@@ -192,7 +164,7 @@ int oscc_interface_command_steering( int angle, unsigned int rate );
  *        detected a driver override of the OSCC control. If any
  *        of the modules have been overridded by the driver,
  *        this status will indicate that
- * 
+ *
  *        This is a polled call that must be read at 50ms or
  *        faster.
  *
