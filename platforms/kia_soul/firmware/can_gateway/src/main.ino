@@ -50,26 +50,14 @@
 #include "time.h"
 #include "debug.h"
 
+#include "globals.h"
 #include "init.h"
-#include "can_gateway_module.h"
 #include "obd_can_protocol.h"
 #include "communications.h"
 
 
-#define STATUS_LED_ON() digitalWrite(can_gateway_module.pins.status_led, HIGH);
-#define STATUS_LED_OFF() digitalWrite(can_gateway_module.pins.status_led, LOW);
-
-
-static kia_soul_can_gateway_module_s can_gateway_module;
-static MCP_CAN obd_can( can_gateway_module.pins.obd_can_cs );
-static MCP_CAN control_can( can_gateway_module.pins.control_can_cs );
-static can_frame_s tx_frame_heartbeat;
-static can_frame_s tx_frame_chassis_state1;
-static can_frame_s tx_frame_chassis_state2;
-static can_frame_s rx_frame_kia_status1;
-static can_frame_s rx_frame_kia_status2;
-static can_frame_s rx_frame_kia_status3;
-static can_frame_s rx_frame_kia_status4;
+#define STATUS_LED_ON() digitalWrite( PIN_STATUS_LED, HIGH );
+#define STATUS_LED_OFF() digitalWrite( PIN_STATUS_LED, LOW );
 
 
 void setup( void )
@@ -83,7 +71,7 @@ void setup( void )
     memset( &rx_frame_kia_status3, 0, sizeof(rx_frame_kia_status3) );
     memset( &rx_frame_kia_status4, 0, sizeof(rx_frame_kia_status4) );
 
-    init_pins( &can_gateway_module );
+    init_pins( );
 
     SET_STATE( tx_frame_heartbeat.data, OSCC_HEARTBEAT_STATE_INIT );
 
@@ -113,7 +101,7 @@ void setup( void )
     wdt_reset();
 
     // publish heartbeat showing that we are initializing
-    publish_heartbeat_frame( &tx_frame_heartbeat, control_can);
+    publish_heartbeat_frame( );
 
     // wait a little so we can offset CAN frame Tx timestamps
     SLEEP_MS(5);
@@ -155,28 +143,10 @@ void loop( void )
 
     if( ret == RX_FRAME_AVAILABLE )
     {
-         handle_ready_rx_frames(
-            &rx_frame_kia_status1,
-            &rx_frame_kia_status2,
-            &rx_frame_kia_status3,
-            &rx_frame_kia_status4,
-            &tx_frame_chassis_state1,
-            &tx_frame_chassis_state2,
-            &tx_frame_heartbeat,
-            &rx_frame );
+         handle_ready_rx_frames( &rx_frame );
     }
 
-    publish_timed_tx_frames(
-        &tx_frame_heartbeat,
-        &tx_frame_chassis_state1,
-        &tx_frame_chassis_state2,
-        control_can);
+    publish_timed_tx_frames( );
 
-    check_rx_timeouts(
-        &rx_frame_kia_status1,
-        &rx_frame_kia_status2,
-        &rx_frame_kia_status3,
-        &rx_frame_kia_status4,
-        &tx_frame_chassis_state1,
-        &tx_frame_heartbeat);
+    check_rx_timeouts( );
 }

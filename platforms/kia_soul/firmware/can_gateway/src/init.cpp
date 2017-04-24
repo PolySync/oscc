@@ -1,9 +1,7 @@
-#include <Arduino.h>
-
-#include "can_gateway_module.h"
+#include "globals.h"
 #include "init.h"
 
-void init_pins( kia_soul_can_gateway_module_s *can_gateway_module)
+void init_pins( )
 {
-    pinMode( can_gateway_module->pins.status_led, OUTPUT );
+    pinMode( PIN_STATUS_LED, OUTPUT );
 }

@@ -9,6 +9,7 @@ generate_arduino_firmware(
     ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp
+    src/globals.cpp
     src/init.cpp
     src/communications.cpp)
 
