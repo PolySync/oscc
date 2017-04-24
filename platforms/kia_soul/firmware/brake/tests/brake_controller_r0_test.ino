@@ -1,0 +1,360 @@
+/************************************************************************/
+/* Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved. */
+/*                                                                      */
+/* This file is part of Open Source Car Control (OSCC).                 */
+/*                                                                      */
+/* OSCC is free software: you can redistribute it and/or modify         */
+/* it under the terms of the GNU General Public License as published by */
+/* the Free Software Foundation, either version 3 of the License, or    */
+/* (at your option) any later version.                                  */
+/*                                                                      */
+/* OSCC is distributed in the hope that it will be useful,              */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/* GNU General Public License for more details.                         */
+/*                                                                      */
+/* You should have received a copy of the GNU General Public License    */
+/* along with OSCC.  If not, see <http://www.gnu.org/licenses/>.        */
+/************************************************************************/
+
+#include <SPI.h>
+#include "mcp_can.h"
+#include "gateway_protocol_can.h"
+#include "brake_protocol_can.h"
+#include "PID.h"
+#include "serial.h"
+#include "can.h"
+#include "time.h"
+#include "debug.h"
+
+#include "globals.h"
+#include "accumulator.h"
+#include "helper.h"
+#include "master_cylinder.h"
+#include "brake_control.h"
+#include "communications.h"
+
+
+struct accumulator_data_s
+{
+    float pressure;
+};
+
+
+// master solenoid structure
+struct master_cylinder_data_s
+{
+    float pressure1;
+    float pressure2;
+};
+
+
+// pressure at tires structure
+struct pressure_at_tires_data_s
+{
+    float pressure_left;
+    float pressure_right;
+};
+
+
+// brake structure
+struct brake_data_s
+{
+    float pressure;
+
+    bool enable;
+    bool enable_request;
+
+    uint32_t rx_timestamp;
+
+    int16_t driver_override;
+
+    int16_t can_pressure;
+    uint16_t pedal_command;
+};
+
+
+struct accumulator_data_s accumulator =
+{
+    0.0     // pressure
+};
+
+
+struct master_cylinder_data_s master_cylinder =
+{
+    0.0,    // pressure1
+    0.0     // pressure2
+};
+
+
+struct pressure_at_tires_data_s pressure_at_tires =
+{
+    0.0,    // pressure_left
+    0.0     // pressure_right
+};
+
+
+struct brake_data_s brakes =
+{
+    0.0,                        // pressure
+    false,                      // enable
+    false,                      // enable_request
+    0,                          // rx_timestamp
+    0,                          // driver_override
+    0,                          // can_pressure
+    0                           // pedal_command
+};
+
+
+// *****************************************************
+// Function:    raw_adc_to_voltage
+//
+// Purpose:     Convert the raw ADC reading (0 - 1023)
+//              to a pressure (0 - 5V)
+//
+// Returns:     float - pressure
+//
+// Parameters:  input - raw ADC reading
+//
+// *****************************************************
+static float raw_adc_to_voltage( int16_t input )
+{
+    float voltage = ( ( float )input * ( 5.0 / 1023.0 ) );
+    return voltage;
+}
+
+
+// *****************************************************
+// Function:    print_pressure_info
+//
+// Purpose:     Print pressure being read from sensors
+//  and CAN bus.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+static void print_pressure_info()
+{
+    DEBUG_PRINT( "CAN," );
+    DEBUG_PRINT( brakes.can_pressure );
+
+    DEBUG_PRINT( ",PACC," );
+    DEBUG_PRINT( accumulator.pressure );
+
+    DEBUG_PRINT( ",PFL," );
+    DEBUG_PRINT( pressure_at_tires.pressure_left );
+
+    DEBUG_PRINT( ",PFR," );
+    DEBUG_PRINT( pressure_at_tires.pressure_right );
+
+    DEBUG_PRINT( ",PMC1," );
+    DEBUG_PRINT( master_cylinder.pressure1 );
+
+    DEBUG_PRINT( ",PMC2," );
+    DEBUG_PRINTLN( master_cylinder.pressure2 );
+}
+
+
+// *****************************************************
+// Function:    accumulator_maintain_pressure
+//
+// Purpose:     Turn accumulator pump on or off
+//              to maintain pressure
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+static void accumulator_read_pressure( )
+{
+    int16_t raw_accumulator_data = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
+
+    float pressure = raw_adc_to_voltage( raw_accumulator_data );
+
+    accumulator.pressure = pressure;
+}
+
+
+// *****************************************************
+// Function:    master_cylinder_init
+//
+// Purpose:     Initializes the master cylinder solenoid
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+static void master_cylinder_read_pressure( )
+{
+    int16_t raw_smc1_data = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 );
+    int16_t raw_smc2_data = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 );
+
+    float pressure_smc1 = raw_adc_to_voltage( raw_smc1_data );
+    float pressure_smc2 = raw_adc_to_voltage( raw_smc2_data );
+
+    master_cylinder.pressure1 = pressure_smc1;
+    master_cylinder.pressure2 = pressure_smc2;
+}
+
+
+// *****************************************************
+// Function:    process_serial_byte
+//
+// Purpose:     Process test commands from user.
+//
+// Returns:     void
+//
+// Parameters:  incoming_byte - byte received from serial
+// connection
+//
+// *****************************************************
+static void process_serial_byte( uint8_t incoming_byte )
+{
+    switch( incoming_byte )
+    {
+        case 'u':
+
+            master_cylinder_open();
+
+            DEBUG_PRINTLN("opened SMCs");
+
+            break;
+
+        case 'i':
+
+            master_cylinder_close( );
+
+            DEBUG_PRINTLN("closed SMCs");
+
+            break;
+
+        case 'j':
+
+            brake_command_actuator_solenoids( 255 );
+
+            DEBUG_PRINTLN("opened SLAs");
+
+            break;
+
+        case 'k':
+
+            brake_command_actuator_solenoids( 0 );
+
+            DEBUG_PRINTLN("closed SLAs");
+
+            break;
+
+        case 'm':
+
+            brake_command_release_solenoids( 255 );
+
+            DEBUG_PRINTLN("opened SLRs");
+
+            break;
+
+        case ',':
+
+            brake_command_release_solenoids( 0 );
+
+            DEBUG_PRINTLN("closed SLRs");
+
+            break;
+
+        case 'p':
+
+            accumulator_turn_pump_on();
+
+            DEBUG_PRINTLN("pump on");
+
+            break;
+
+        case '[':
+
+            accumulator_turn_pump_off();
+
+            DEBUG_PRINTLN("pump off");
+
+            break;
+    }
+}
+
+
+// *****************************************************
+// Function:    process_serial
+//
+// Purpose:     Process incoming serial byte
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+static void process_serial()
+{
+    uint8_t incomingSerialByte;
+
+    // read and parse incoming serial commands
+    if( Serial.available() > 0 )
+    {
+        incomingSerialByte = Serial.read();
+
+        process_serial_byte( incomingSerialByte );
+    }
+}
+
+
+void setup( void )
+{
+    // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range
+    TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
+    TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
+
+    accumulator_init( );
+    master_cylinder_init( );
+    brake_init( );
+
+    // depower all the things
+    accumulator_turn_pump_off( );
+    master_cylinder_open( );
+
+    brake_command_release_solenoids( 0 );
+    brake_command_actuator_solenoids( 0 );
+
+    init_serial( );
+    init_can( can );
+
+    publish_brake_report( );
+
+    // update last Rx timestamps so we don't set timeout warnings on start up
+    brakes.rx_timestamp = GET_TIMESTAMP_MS( );
+
+    DEBUG_PRINT( "init: pass" );
+}
+
+
+void loop( )
+{
+    can_frame_s rx_frame;
+    int ret = check_for_rx_frame( can, &rx_frame );
+
+    if( ret == RX_FRAME_AVAILABLE )
+    {
+        handle_ready_rx_frames( &rx_frame );
+    }
+
+    publish_timed_tx_frames( );
+
+    process_serial( );
+
+    brake_update_pressure( );
+
+    accumulator_read_pressure( );
+
+    master_cylinder_read_pressure( );
+
+    print_pressure_info( );
+}
