@@ -99,12 +99,12 @@ void loop( )
 
             steering_angle_rate_target =
                 constrain( ( float )steering_angle_rate_target,
-                           ( float )-PARAM_STEERING_ANGLE_RATE_MAX,
-                           ( float )PARAM_STEERING_ANGLE_RATE_MAX );
+                           ( float )-PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC,
+                           ( float )PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC );
 
             pid.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
             pid.integral_gain = PARAM_PID_INTEGRAL_GAIN;
-            pid.derivative_gain = PARAM_PID_DIFFERENTIAL_GAIN;
+            pid.derivative_gain = PARAM_PID_DERIVATIVE_GAIN;
 
             pid_update(
                     &pid,

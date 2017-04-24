@@ -38,8 +38,8 @@ bool check_driver_steering_override( )
 
     bool override = false;
 
-    float torque_sensor_a = ( float )( analogRead( PIN_TORQUE_POS_SENSOR_HIGH ) << 2 );
-    float torque_sensor_b = ( float )( analogRead( PIN_TORQUE_POS_SENSOR_LOW ) << 2 );
+    float torque_sensor_a = ( float )( analogRead( PIN_TORQUE_POSITION_SENSOR_HIGH ) << 2 );
+    float torque_sensor_b = ( float )( analogRead( PIN_TORQUE_POSITION_SENSOR_LOW ) << 2 );
 
     filtered_torque_a =
         ( torque_filter_alpha * torque_sensor_a ) +
@@ -73,8 +73,8 @@ void enable_control( )
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
         num_samples,
-        PIN_TORQUE_POS_SENSOR_HIGH,
-        PIN_TORQUE_POS_SENSOR_LOW );
+        PIN_TORQUE_POSITION_SENSOR_HIGH,
+        PIN_TORQUE_POSITION_SENSOR_LOW );
 
     // Enable the signal interrupt relays
     digitalWrite( PIN_SPOOF_ENABLE, HIGH );
@@ -92,8 +92,8 @@ void disable_control( )
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
         num_samples,
-        PIN_TORQUE_POS_SENSOR_HIGH,
-        PIN_TORQUE_POS_SENSOR_LOW );
+        PIN_TORQUE_POSITION_SENSOR_HIGH,
+        PIN_TORQUE_POSITION_SENSOR_LOW );
 
     // Disable the signal interrupt relays
     digitalWrite( PIN_SPOOF_ENABLE, LOW );

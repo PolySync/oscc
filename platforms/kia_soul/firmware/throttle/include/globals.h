@@ -2,6 +2,7 @@
 #define _KIA_SOUL_THROTTLE_GLOBALS_H_
 
 
+#include <Arduino.h>
 #include "DAC_MCP49xx.h"
 #include "mcp_can.h"
 #include "can.h"
@@ -9,21 +10,21 @@
 #include "throttle_module.h"
 
 
-#define PIN_DAC_CS ( 9 ) /* DAC chip select */
-#define PIN_CAN_CS ( 10 ) /* CAN chip select */
-#define PIN_ACCEL_POS_SENSOR_HIGH ( A0 ) /* High signal from accelerator position sensor */
-#define PIN_ACCEL_POS_SENSOR_LOW ( A1 ) /* Low signal from accelerator position sensor */
-#define PIN_ACCEL_POS_SPOOF_HIGH ( A2 )/* High signal of spoof output */
-#define PIN_ACCEL_POS_SPOOF_LOW ( A3 ) /* Low signal of spoof output */
-#define PIN_SPOOF_ENABLE ( 6 ) /* Relay enable for spoofed accel values */
+#define PIN_DAC_CHIP_SELECT ( 9 )
+#define PIN_CAN_CHIP_SELECT ( 10 )
+#define PIN_ACCELERATOR_POSITION_SENSOR_HIGH ( A0 )
+#define PIN_ACCELERATOR_POSITION_SENSOR_LOW ( A1 )
+#define PIN_ACCELERATOR_POSITION_SPOOF_HIGH ( A2 )
+#define PIN_ACCELERATOR_POSITION_SPOOF_LOW ( A3 )
+#define PIN_SPOOF_ENABLE ( 6 )
 
-#define PARAM_ACCEL_OVERRIDE_THRESHOLD ( 1000.0 ) /* Threshhold to detect when a person is pressing accelerator */
-#define PARAM_RX_TIMEOUT ( 250 ) /* Amount of time when system is considered unresponsive (milliseconds) */
+#define PARAM_ACCELERATOR_OVERRIDE_THRESHOLD_IN_DECIBARS ( 1000.0 )
+#define PARAM_RX_TIMEOUT_IN_MSEC ( 250 )
 
 
 #ifdef GLOBAL_DEFINED
-    DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, PIN_DAC_CS );
-    MCP_CAN can( PIN_CAN_CS );
+    DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, PIN_DAC_CHIP_SELECT );
+    MCP_CAN can( PIN_CAN_CHIP_SELECT );
 
     #define EXTERN
 #else

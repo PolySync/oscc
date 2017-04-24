@@ -102,7 +102,7 @@ void check_rx_timeouts( )
     bool timeout = is_timeout(
             rx_frame_throttle_command.timestamp,
             GET_TIMESTAMP_MS( ),
-            PARAM_RX_TIMEOUT );
+            PARAM_RX_TIMEOUT_IN_MSEC );
 
     if( timeout == true )
     {

@@ -56,8 +56,8 @@ void loop()
 
     check_rx_timeouts( );
 
-    throttle_state.accel_pos_sensor_low = analogRead( PIN_ACCEL_POS_SENSOR_HIGH ) << 2; //10 bit to 12 bit
-    throttle_state.accel_pos_sensor_high = analogRead( PIN_ACCEL_POS_SENSOR_LOW ) << 2;
+    throttle_state.accel_pos_sensor_low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH ) << 2; //10 bit to 12 bit
+    throttle_state.accel_pos_sensor_high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW ) << 2;
 
     check_accelerator_override( );
 

@@ -41,7 +41,7 @@ void check_accelerator_override( )
         + throttle_state.accel_pos_sensor_high)
         / 2;
 
-    if ( accel_pos_normalized > PARAM_ACCEL_OVERRIDE_THRESHOLD )
+    if ( accel_pos_normalized > PARAM_ACCELERATOR_OVERRIDE_THRESHOLD_IN_DECIBARS )
     {
         if( control_state.enabled == true )
         {
@@ -64,8 +64,8 @@ void enable_control( )
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
         num_samples,
-        PIN_ACCEL_POS_SENSOR_HIGH,
-        PIN_ACCEL_POS_SENSOR_LOW );
+        PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
+        PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 
     // Enable the signal interrupt relays
     digitalWrite( PIN_SPOOF_ENABLE, HIGH );
@@ -83,8 +83,8 @@ void disable_control( )
     static uint16_t num_samples = 20;
     write_sample_averages_to_dac(
         num_samples,
-        PIN_ACCEL_POS_SENSOR_HIGH,
-        PIN_ACCEL_POS_SENSOR_LOW );
+        PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
+        PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 
     // Disable the signal interrupt relays
     digitalWrite( PIN_SPOOF_ENABLE, LOW );

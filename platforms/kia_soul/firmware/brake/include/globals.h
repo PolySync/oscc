@@ -32,7 +32,7 @@
 // Pins are not perfectly sequential because the clock frequency of certain pins are different
 // Duty cycles of pins 3 and 5 controlled by timer 3 (TCCR3B)
 // Duty cycles of pins 6, 7, and 8 controlled by timer 4 (TCCR4B)
-#define PIN_CAN_CS ( 53 )
+#define PIN_CAN_CHIP_SELECT ( 53 )
 
 #define PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT ( 5 )
 #define PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT ( 7 )
@@ -49,7 +49,7 @@
 
 
 #ifdef GLOBAL_DEFINED
-    MCP_CAN can( PIN_CAN_CS );
+    MCP_CAN can( PIN_CAN_CHIP_SELECT );
 
     #define EXTERN
 #else

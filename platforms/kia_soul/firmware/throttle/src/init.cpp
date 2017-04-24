@@ -16,14 +16,14 @@ void init_structs_to_zero( void )
 
 void init_pins( void )
 {
-    pinMode( PIN_DAC_CS, OUTPUT );
-    pinMode( PIN_ACCEL_POS_SENSOR_HIGH, INPUT );
-    pinMode( PIN_ACCEL_POS_SENSOR_LOW, INPUT );
-    pinMode( PIN_ACCEL_POS_SPOOF_HIGH, INPUT );
-    pinMode( PIN_ACCEL_POS_SPOOF_LOW, INPUT );
+    pinMode( PIN_DAC_CHIP_SELECT, OUTPUT );
+    pinMode( PIN_ACCELERATOR_POSITION_SENSOR_HIGH, INPUT );
+    pinMode( PIN_ACCELERATOR_POSITION_SENSOR_LOW, INPUT );
+    pinMode( PIN_ACCELERATOR_POSITION_SPOOF_HIGH, INPUT );
+    pinMode( PIN_ACCELERATOR_POSITION_SPOOF_LOW, INPUT );
     pinMode( PIN_SPOOF_ENABLE, OUTPUT );
 
-    digitalWrite( PIN_DAC_CS, HIGH ); // Deselect DAC CS
+    digitalWrite( PIN_DAC_CHIP_SELECT, HIGH ); // Deselect DAC CS
 
     digitalWrite( PIN_SPOOF_ENABLE, LOW );
 }
