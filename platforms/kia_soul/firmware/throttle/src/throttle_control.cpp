@@ -6,18 +6,18 @@
 
 
 static int32_t get_analog_sample_average(
-        int32_t num_samples,
-        uint8_t pin );
+        const int32_t num_samples,
+        const uint8_t pin );
 
 static void write_sample_averages_to_dac(
-        int16_t num_samples,
-        uint8_t signal_pin_1,
-        uint8_t signal_pin_2 );
+        const int16_t num_samples,
+        const uint8_t signal_pin_1,
+        const uint8_t signal_pin_2 );
 
 
 void calculate_accelerator_spoof(
-    float accelerator_target,
-    struct accel_spoof_t * spoof )
+    const float accelerator_target,
+    accel_spoof_t * const spoof )
 {
     if ( spoof != NULL )
     {
@@ -34,7 +34,7 @@ void calculate_accelerator_spoof(
 }
 
 
-void check_accelerator_override( )
+void check_accelerator_override( void )
 {
     uint32_t accel_pos_normalized =
         (throttle_state.accel_pos_sensor_low
@@ -57,7 +57,7 @@ void check_accelerator_override( )
 }
 
 
-void enable_control( )
+void enable_control( void )
 {
     // Sample the current values, smooth them, and write measured accel values to DAC to avoid a
     // signal discontinuity when the SCM takes over
@@ -76,7 +76,7 @@ void enable_control( )
 }
 
 
-void disable_control( )
+void disable_control( void )
 {
     // Sample the current values, smooth them, and write measured accel values to DAC to avoid a
     // signal discontinuity when the SCM takes over
@@ -96,8 +96,8 @@ void disable_control( )
 
 
 static int32_t get_analog_sample_average(
-    int32_t num_samples,
-    uint8_t pin )
+    const int32_t num_samples,
+    const uint8_t pin )
 {
     int32_t sum = 0;
     int32_t i = 0;
@@ -112,9 +112,9 @@ static int32_t get_analog_sample_average(
 
 
 static void write_sample_averages_to_dac(
-        int16_t num_samples,
-        uint8_t signal_pin_1,
-        uint8_t signal_pin_2 )
+        const int16_t num_samples,
+        const uint8_t signal_pin_1,
+        const uint8_t signal_pin_2 )
 {
     int32_t averages[ 2 ] = { 0, 0 };
 

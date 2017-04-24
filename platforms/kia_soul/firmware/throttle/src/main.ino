@@ -17,7 +17,7 @@
 #include "throttle_control.h"
 
 
-void setup( )
+void setup( void )
 {
     init_structs_to_zero( );
 
@@ -42,7 +42,7 @@ void setup( )
 }
 
 
-void loop()
+void loop( void )
 {
     can_frame_s rx_frame;
     can_status_t ret = check_for_rx_frame( can, &rx_frame );
@@ -63,7 +63,7 @@ void loop()
 
     if ( control_state.enabled == true )
     {
-        struct accel_spoof_t accel_spoof;
+        accel_spoof_t accel_spoof;
 
         calculate_accelerator_spoof(
                 throttle_state.accel_pos_target,

@@ -31,7 +31,9 @@ typedef struct
 //              range - structure that defines the input and output ranges
 //
 // *****************************************************
-float interpolate( float input, interpolate_range_s* range );
+float interpolate(
+    const float input,
+    const interpolate_range_s * const range );
 
 
 // *****************************************************
@@ -57,7 +59,8 @@ float interpolate( float input, interpolate_range_s* range );
 // Parameters:  input - raw ADC reading
 //
 // *****************************************************
-float raw_adc_to_pressure( uint16_t input );
+float raw_adc_to_pressure(
+    const uint16_t input );
 
 
 #endif

@@ -20,7 +20,7 @@
 #include "communications.h"
 
 
-void setup( )
+void setup( void )
 {
     init_structs_to_zero( );
 
@@ -47,7 +47,7 @@ void setup( )
 }
 
 
-void loop( )
+void loop( void )
 {
     // checks for CAN frames, if yes, updates state variables
     can_frame_s rx_frame;
@@ -118,7 +118,7 @@ void loop( )
                                  ( float ) -1500.0f,
                                  ( float ) 1500.0f );
 
-            struct torque_spoof_t torque_spoof;
+            torque_spoof_t torque_spoof;
 
             calculate_torque_spoof( control, &torque_spoof );
 

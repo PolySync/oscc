@@ -5,15 +5,15 @@
 
 
 static int32_t get_analog_sample_average(
-        int32_t num_samples,
-        uint8_t pin );
+        const int32_t num_samples,
+        const uint8_t pin );
 
 static void write_sample_averages_to_dac(
-        int16_t num_samples,
-        uint8_t signal_pin_1,
-        uint8_t signal_pin_2 );
+        const int16_t num_samples,
+        const uint8_t signal_pin_1,
+        const uint8_t signal_pin_2 );
 
-bool check_driver_steering_override( )
+bool check_driver_steering_override( void )
 {
     // The parameters below; torque_filter_alpha and steering_wheel_max_torque,
     // can be used to modify how selective the steering override functionality
@@ -59,14 +59,16 @@ bool check_driver_steering_override( )
 }
 
 
-void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof )
+void calculate_torque_spoof(
+    const float torque,
+    torque_spoof_t * const spoof )
 {
     spoof->low = 819.2 * ( 0.0008 * torque + 2.26 );
     spoof->high = 819.2 * ( -0.0008 * torque + 2.5 );
 }
 
 
-void enable_control( )
+void enable_control( void )
 {
     // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
     // signal discontinuity when the SCM takes over
@@ -85,7 +87,7 @@ void enable_control( )
 }
 
 
-void disable_control( )
+void disable_control( void )
 {
     // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
     // signal discontinuity when the SCM takes over
@@ -105,8 +107,8 @@ void disable_control( )
 
 
 static int32_t get_analog_sample_average(
-    int32_t num_samples,
-    uint8_t pin )
+    const int32_t num_samples,
+    const uint8_t pin )
 {
     int32_t sum = 0;
     int32_t i = 0;
@@ -121,9 +123,9 @@ static int32_t get_analog_sample_average(
 
 
 static void write_sample_averages_to_dac(
-        int16_t num_samples,
-        uint8_t signal_pin_1,
-        uint8_t signal_pin_2 )
+        const int16_t num_samples,
+        const uint8_t signal_pin_1,
+        const uint8_t signal_pin_2 )
 {
     int32_t averages[ 2 ] = { 0, 0 };
 

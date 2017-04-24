@@ -2,19 +2,19 @@
 #define _OSCC_KIA_SOUL_THROTTLE_CONTROL_H_
 
 
-struct accel_spoof_t
+typedef struct
 {
     uint16_t low;
     uint16_t high;
-};
+} accel_spoof_t;
 
 
 void calculate_accelerator_spoof(
-    float accelerator_target,
-    struct accel_spoof_t* spoof );
+    const float accelerator_target,
+    accel_spoof_t * const spoof );
 
 
-void check_accelerator_override( );
+void check_accelerator_override( void );
 
 
 // *****************************************************
@@ -30,7 +30,7 @@ void check_accelerator_override( );
 //              dac - reference to DAC object
 //
 // *****************************************************
-void enable_control( );
+void enable_control( void );
 
 
 // *****************************************************
@@ -46,7 +46,7 @@ void enable_control( );
 //              dac - reference to DAC object
 //
 // *****************************************************
-void disable_control( );
+void disable_control( void );
 
 
 #endif

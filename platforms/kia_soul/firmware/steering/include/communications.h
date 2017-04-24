@@ -20,7 +20,7 @@
 // Parameters:  None
 //
 // *****************************************************
-void publish_steering_report( );
+void publish_steering_report( void );
 
 
 // *****************************************************
@@ -34,7 +34,7 @@ void publish_steering_report( );
 // Parameters:  None
 //
 // *****************************************************
-void publish_timed_tx_frames( );
+void publish_timed_tx_frames( void );
 
 
 // *****************************************************
@@ -47,7 +47,7 @@ void publish_timed_tx_frames( );
 // Parameters:  control_data -  pointer to a steering command control message
 //
 // *****************************************************
-void process_steering_command( );
+void process_steering_command( void );
 
 
 // *****************************************************
@@ -76,7 +76,7 @@ void process_chassis_state1(
 // Parameters:  frame - frame containing received data
 //
 // *****************************************************
-void handle_ready_rx_frame( can_frame_s *frame );
+void handle_ready_rx_frame( can_frame_s * const frame );
 
 
 // *****************************************************
@@ -90,7 +90,7 @@ void handle_ready_rx_frame( can_frame_s *frame );
 // Parameters:  None
 //
 // *****************************************************
-void check_rx_timeouts( );
+void check_rx_timeouts( void );
 
 
 #endif

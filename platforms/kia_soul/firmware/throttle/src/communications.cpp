@@ -10,7 +10,7 @@
 #include "throttle_control.h"
 
 
-void publish_throttle_report( )
+void publish_throttle_report( void )
 {
     // cast data
     oscc_report_msg_throttle * const data =
@@ -47,7 +47,7 @@ void publish_throttle_report( )
 }
 
 
-void publish_timed_report( )
+void publish_timed_report( void )
 {
     uint32_t delta = get_time_delta( tx_frame_throttle_report.timestamp, GET_TIMESTAMP_MS() );
 
@@ -86,18 +86,16 @@ void process_throttle_command(
 }
 
 
-void handle_ready_rx_frame( can_frame_s *frame )
+void handle_ready_rx_frame( can_frame_s * const frame )
 {
-    // check for a supported frame ID
     if( frame->id == OSCC_CAN_ID_THROTTLE_COMMAND )
     {
-        // process status1
         process_throttle_command( rx_frame_throttle_command.data );
     }
 }
 
 
-void check_rx_timeouts( )
+void check_rx_timeouts( void )
 {
     bool timeout = is_timeout(
             rx_frame_throttle_command.timestamp,

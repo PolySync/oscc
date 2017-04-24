@@ -21,14 +21,14 @@ void brake_lights_on( void )
 }
 
 
-void brake_command_actuator_solenoids( uint16_t duty_cycle )
+void brake_command_actuator_solenoids( const uint16_t duty_cycle )
 {
     analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, duty_cycle );
     analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, duty_cycle );
 }
 
 
-void brake_command_release_solenoids( uint16_t duty_cycle )
+void brake_command_release_solenoids( const uint16_t duty_cycle )
 {
     analogWrite( PIN_RELEASE_SOLENOID_FRONT_LEFT, duty_cycle );
     analogWrite( PIN_RELEASE_SOLENOID_FRONT_RIGHT, duty_cycle );

@@ -6,7 +6,7 @@
 #include "helper.h"
 
 
-void accumulator_init( )
+void accumulator_init( void )
 {
     pinMode( PIN_ACCUMULATOR_PUMP_MOTOR, OUTPUT );
 
@@ -14,19 +14,19 @@ void accumulator_init( )
 }
 
 
-void accumulator_turn_pump_off( )
+void accumulator_turn_pump_off( void )
 {
     digitalWrite( PIN_ACCUMULATOR_PUMP_MOTOR, LOW );
 }
 
 
-void accumulator_turn_pump_on( )
+void accumulator_turn_pump_on( void )
 {
     digitalWrite( PIN_ACCUMULATOR_PUMP_MOTOR, HIGH );
 }
 
 
-void accumulator_maintain_pressure( )
+void accumulator_maintain_pressure( void )
 {
     const float accumulator_alpha = 0.05;
 

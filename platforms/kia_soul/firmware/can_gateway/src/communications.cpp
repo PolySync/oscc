@@ -8,7 +8,7 @@
 #include "obd_can_protocol.h"
 
 
-void publish_heartbeat_frame( )
+void publish_heartbeat_frame( void )
 {
     oscc_heartbeat_data_s * const data =
             (oscc_heartbeat_data_s*) tx_frame_heartbeat.data;
@@ -28,7 +28,7 @@ void publish_heartbeat_frame( )
 }
 
 
-void publish_chassis_state1_frame( )
+void publish_chassis_state1_frame( void )
 {
     tx_frame_chassis_state1.id = (uint32_t) OSCC_CAN_ID_CHASSIS_STATE_1;
     tx_frame_chassis_state1.dlc = OSCC_CAN_DLC_CHASSIS_STATE_1;
@@ -43,7 +43,7 @@ void publish_chassis_state1_frame( )
 }
 
 
-void publish_chassis_state2_frame( )
+void publish_chassis_state2_frame( void)
 {
     tx_frame_chassis_state2.id = (uint32_t) OSCC_CAN_ID_CHASSIS_STATE_2;
     tx_frame_chassis_state2.dlc = OSCC_CAN_DLC_CHASSIS_STATE_2;
@@ -58,7 +58,7 @@ void publish_chassis_state2_frame( )
 }
 
 
-void publish_timed_tx_frames( )
+void publish_timed_tx_frames( void )
 {
     uint32_t delta = 0;
 
@@ -236,7 +236,7 @@ void handle_ready_rx_frames( const can_frame_s * const rx_frame )
 }
 
 
-void check_rx_timeouts( )
+void check_rx_timeouts( void )
 {
     bool timeout = false;
 

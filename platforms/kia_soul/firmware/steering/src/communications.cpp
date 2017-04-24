@@ -11,7 +11,7 @@
 #include "steering_control.h"
 
 
-void publish_steering_report( )
+void publish_steering_report( void )
 {
     tx_frame_steering_report.id = ( uint32_t ) ( OSCC_CAN_ID_STEERING_REPORT );
 
@@ -50,7 +50,7 @@ void publish_steering_report( )
 }
 
 
-void publish_timed_tx_frames( )
+void publish_timed_tx_frames( void )
 {
     uint32_t delta = get_time_delta( tx_frame_steering_report.timestamp, GET_TIMESTAMP_MS() );
 
@@ -100,7 +100,7 @@ void process_chassis_state1(
 
 
 void handle_ready_rx_frame(
-    can_frame_s *frame )
+    can_frame_s * const frame )
 {
     if ( frame->id == OSCC_CAN_ID_STEERING_COMMAND )
     {
@@ -115,7 +115,7 @@ void handle_ready_rx_frame(
 }
 
 
-void check_rx_timeouts( )
+void check_rx_timeouts( void )
 {
     bool timeout = is_timeout(
             rx_frame_steering_command.timestamp,

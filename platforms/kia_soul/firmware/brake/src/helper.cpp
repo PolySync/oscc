@@ -3,7 +3,9 @@
 #include "globals.h"
 #include "helper.h"
 
-float interpolate( float input, interpolate_range_s* range )
+float interpolate(
+    const float input,
+    const interpolate_range_s * const range )
 {
     float output = input;
 
@@ -18,7 +20,7 @@ float interpolate( float input, interpolate_range_s* range )
 }
 
 
-float raw_adc_to_pressure( uint16_t input )
+float raw_adc_to_pressure( const uint16_t input )
 {
     float pressure = ( float )input;
     pressure *= 2.4;

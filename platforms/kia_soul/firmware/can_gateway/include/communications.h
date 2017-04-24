@@ -21,13 +21,13 @@
 #define CLEAR_CHASSIS_FLAG(data, x) (((oscc_chassis_state1_data_s*) &data)->flags &= ~((uint8_t) x))
 
 
-void publish_heartbeat_frame( );
+void publish_heartbeat_frame( void );
 
-void publish_chassis_state1_frame( );
+void publish_chassis_state1_frame( void );
 
-void publish_chassis_state2_frame( );
+void publish_chassis_state2_frame( void );
 
-void publish_timed_tx_frames( );
+void publish_timed_tx_frames( void );
 
 void process_kia_status1(
     const can_frame_s * const rx_frame );
@@ -44,6 +44,6 @@ void process_kia_status4(
 void handle_ready_rx_frames(
     const can_frame_s * const rx_frame );
 
-void check_rx_timeouts( );
+void check_rx_timeouts( void );
 
 #endif

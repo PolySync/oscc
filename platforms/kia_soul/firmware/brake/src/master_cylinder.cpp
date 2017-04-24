@@ -5,7 +5,7 @@
 #include "master_cylinder.h"
 
 
-void master_cylinder_init( )
+void master_cylinder_init( void )
 {
     pinMode( PIN_MASTER_CYLINDER_SOLENOID, OUTPUT );
 
@@ -13,7 +13,7 @@ void master_cylinder_init( )
 }
 
 
-void master_cylinder_open( )
+void master_cylinder_open( void )
 {
     analogWrite( PIN_MASTER_CYLINDER_SOLENOID, 0 );
 
@@ -21,7 +21,7 @@ void master_cylinder_open( )
 }
 
 
-void master_cylinder_close( )
+void master_cylinder_close( void )
 {
     analogWrite( PIN_MASTER_CYLINDER_SOLENOID, 255 );
 

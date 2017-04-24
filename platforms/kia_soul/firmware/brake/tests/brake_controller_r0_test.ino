@@ -317,7 +317,7 @@ void setup( void )
 }
 
 
-void loop( )
+void loop( void )
 {
     can_frame_s rx_frame;
     can_status_t ret = check_for_rx_frame( can, &rx_frame );

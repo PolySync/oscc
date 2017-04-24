@@ -7,11 +7,11 @@
 #include "steering_module.h"
 
 
-struct torque_spoof_t
+typedef struct
 {
     uint16_t low;
     uint16_t high;
-};
+} torque_spoof_t;
 
 
 // *****************************************************
@@ -46,7 +46,7 @@ struct torque_spoof_t
 // Parameters:  None
 //
 // *****************************************************
-bool check_driver_steering_override( );
+bool check_driver_steering_override( void );
 
 
 // *****************************************************
@@ -64,7 +64,9 @@ bool check_driver_steering_override( );
 //              [out] torque_spoof - structure containing the integer torque values
 //
 // *****************************************************
-void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof );
+void calculate_torque_spoof(
+    const float torque,
+    torque_spoof_t * const spoof );
 
 // *****************************************************
 // Function:    enable_control
@@ -79,7 +81,7 @@ void calculate_torque_spoof( float torque, struct torque_spoof_t* spoof );
 //              dac - reference to DAC object
 //
 // *****************************************************
-void enable_control( );
+void enable_control( void );
 
 
 // *****************************************************
@@ -95,7 +97,7 @@ void enable_control( );
 //              dac - reference to DAC object
 //
 // *****************************************************
-void disable_control( );
+void disable_control( void );
 
 
 #endif

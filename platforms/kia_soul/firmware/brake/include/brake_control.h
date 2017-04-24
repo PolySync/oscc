@@ -39,7 +39,7 @@ void brake_lights_on( void );
 // Parameters:  uint16_t - duty_cycle - value to send to the PWM
 //
 // *****************************************************
-void brake_command_actuator_solenoids( uint16_t duty_cycle );
+void brake_command_actuator_solenoids( const uint16_t duty_cycle );
 
 
 // *****************************************************
@@ -53,7 +53,7 @@ void brake_command_actuator_solenoids( uint16_t duty_cycle );
 // Parameters:  uint16_t - duty_cycle - value to send to the PWM
 //
 // *****************************************************
-void brake_command_release_solenoids( uint16_t duty_cycle );
+void brake_command_release_solenoids( const uint16_t duty_cycle );
 
 
 // *****************************************************

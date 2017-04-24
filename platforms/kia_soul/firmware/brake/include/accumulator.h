@@ -18,7 +18,7 @@ typedef struct
 // Parameters:  void
 //
 // *****************************************************
-void accumulator_init( );
+void accumulator_init( void );
 
 
 // *****************************************************
@@ -31,7 +31,7 @@ void accumulator_init( );
 // Parameters:  void
 //
 // *****************************************************
-void accumulator_turn_pump_off( );
+void accumulator_turn_pump_off( void );
 
 
 // *****************************************************
@@ -44,7 +44,7 @@ void accumulator_turn_pump_off( );
 // Parameters:  void
 //
 // *****************************************************
-void accumulator_turn_pump_on( );
+void accumulator_turn_pump_on( void );
 
 
 // *****************************************************
@@ -58,7 +58,7 @@ void accumulator_turn_pump_on( );
 // Parameters:  void
 //
 // *****************************************************
-void accumulator_maintain_pressure( );
+void accumulator_maintain_pressure( void );
 
 
 #endif
