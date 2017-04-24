@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
+#include "globals.h"
 #include "helper.h"
-#include "brake_module.h"
 
 float interpolate( float input, interpolate_range_s* range )
 {
@@ -18,19 +18,19 @@ float interpolate( float input, interpolate_range_s* range )
 }
 
 
-float raw_adc_to_pressure( uint16_t input, kia_soul_brake_module_s *brake_module )
+float raw_adc_to_pressure( uint16_t input )
 {
     float pressure = ( float )input;
     pressure *= 2.4;
     pressure -= 252.1;
 
-    if ( pressure < brake_module->params.min_brake_pressure )
+    if ( pressure < PARAM_BRAKE_PRESSURE_MIN_IN_DECIBARS )
     {
-        pressure = brake_module->params.min_brake_pressure;
+        pressure = PARAM_BRAKE_PRESSURE_MIN_IN_DECIBARS;
     }
-    else if ( pressure > brake_module->params.max_brake_pressure )
+    else if ( pressure > PARAM_BRAKE_PRESSURE_MAX_IN_DECIBARS )
     {
-        pressure = brake_module->params.max_brake_pressure;
+        pressure = PARAM_BRAKE_PRESSURE_MAX_IN_DECIBARS;
     }
 
     return ( pressure );

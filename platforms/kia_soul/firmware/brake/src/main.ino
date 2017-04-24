@@ -27,16 +27,12 @@
 #include "time.h"
 #include "debug.h"
 
-#include "brake_module.h"
+#include "globals.h"
 #include "accumulator.h"
 #include "helper.h"
 #include "master_cylinder.h"
 #include "brake_control.h"
 #include "communications.h"
-
-
-static kia_soul_brake_module_s brake_module;
-static MCP_CAN CAN(brake_module.pins.can_cs);
 
 
 void setup( void )
@@ -45,27 +41,27 @@ void setup( void )
     TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
     TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
 
-    accumulator_init( &brake_module );
-    master_cylinder_init( &brake_module );
-    brake_init( &brake_module );
+    accumulator_init( );
+    master_cylinder_init( );
+    brake_init( );
 
     // depower all the things
-    accumulator_turn_pump_off( &brake_module );
-    master_cylinder_open( &brake_module );
+    accumulator_turn_pump_off( );
+    master_cylinder_open( );
 
-    brake_command_release_solenoids( &brake_module, 0 );
-    brake_command_actuator_solenoids( &brake_module, 0 );
+    brake_command_release_solenoids( 0 );
+    brake_command_actuator_solenoids( 0 );
 
     #ifdef DEBUG
         init_serial( );
     #endif
 
-    init_can( CAN );
+    init_can( can );
 
-    publish_brake_report( &brake_module, CAN);
+    publish_brake_report( );
 
     // update last Rx timestamps so we don't set timeout warnings on start up
-    brake_module.control_state.rx_timestamp = millis( );
+    brake_control_state.rx_timestamp = GET_TIMESTAMP_MS( );
 
     DEBUG_PRINTLN( "init: pass" );
 }
@@ -74,35 +70,35 @@ void setup( void )
 void loop( )
 {
     can_frame_s rx_frame;
-    int ret = check_for_rx_frame( CAN, &rx_frame );
+    int ret = check_for_rx_frame( can, &rx_frame );
 
     if( ret == RX_FRAME_AVAILABLE )
     {
-        handle_ready_rx_frames( &brake_module, &rx_frame );
+        handle_ready_rx_frames( &rx_frame );
     }
 
-    publish_timed_tx_frames( &brake_module, CAN );
+    publish_timed_tx_frames( );
 
-    accumulator_maintain_pressure( &brake_module );
+    accumulator_maintain_pressure( );
 
-    check_rx_timeouts( &brake_module );
+    check_rx_timeouts( );
 
-    brake_check_driver_override( &brake_module );
+    brake_check_driver_override( );
 
-    if ( brake_module.control_state.enabled != brake_module.control_state.enable_request )
+    if ( brake_control_state.enabled != brake_control_state.enable_request )
     {
-        if ( brake_module.control_state.enable_request == true )
+        if ( brake_control_state.enable_request == true )
         {
-            brake_enable( &brake_module );
+            brake_enable( );
         }
         else
         {
-            brake_disable( &brake_module );
+            brake_disable( );
         }
     }
 
-    if ( brake_module.control_state.enabled == true )
+    if ( brake_control_state.enabled == true )
     {
-        brake_update( &brake_module );
+        brake_update( );
     }
 }

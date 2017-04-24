@@ -13,7 +13,7 @@
 // Parameters:  void
 //
 // *****************************************************
-void publish_brake_report( kia_soul_brake_module_s *brake_module, MCP_CAN &can );
+void publish_brake_report( void );
 
 
 // *****************************************************
@@ -26,7 +26,7 @@ void publish_brake_report( kia_soul_brake_module_s *brake_module, MCP_CAN &can )
 // Parameters:  void
 //
 // *****************************************************
-void publish_timed_tx_frames( kia_soul_brake_module_s *brake_module, MCP_CAN &can );
+void publish_timed_tx_frames( void );
 
 
 // *****************************************************
@@ -40,7 +40,6 @@ void publish_timed_tx_frames( kia_soul_brake_module_s *brake_module, MCP_CAN &ca
 //
 // *****************************************************
 void process_brake_command(
-    kia_soul_brake_module_s *brake_module,
     const oscc_command_msg_brake * const control_data );
 
 
@@ -56,7 +55,6 @@ void process_brake_command(
 //
 // *****************************************************
 void process_chassis_state1(
-    kia_soul_brake_module_s *brake_module,
     const oscc_chassis_state1_data_s * const chassis_data );
 
 
@@ -68,12 +66,11 @@ void process_chassis_state1(
 //
 // Returns:     void
 //
-// Parameters:  void
+// Parameters:  rx_frame - pointer to struct containing to CAN frame
 //
 // *****************************************************
 void handle_ready_rx_frames(
-    kia_soul_brake_module_s *brake_module,
-    can_frame_s *frame );
+    const can_frame_s * const rx_frame );
 
 
 // *****************************************************
@@ -87,8 +84,7 @@ void handle_ready_rx_frames(
 // Parameters:  void
 //
 // *****************************************************
-void check_rx_timeouts(
-    kia_soul_brake_module_s *brake_module);
+void check_rx_timeouts( void );
 
 
 #endif

@@ -4,8 +4,6 @@
 
 #include <stdint.h>
 
-#include "brake_module.h"
-
 
 typedef struct
 {
@@ -14,6 +12,7 @@ typedef struct
     float output_min;
     float output_max;
 } interpolate_range_s;
+
 
 // *****************************************************
 // Function:    interpolate
@@ -56,10 +55,9 @@ float interpolate( float input, interpolate_range_s* range );
 // Returns:     float - pressure
 //
 // Parameters:  input - raw ADC reading
-//              brake_module - structure containing brake module information
 //
 // *****************************************************
-float raw_adc_to_pressure( uint16_t input, kia_soul_brake_module_s *brake_module );
+float raw_adc_to_pressure( uint16_t input );
 
 
 #endif

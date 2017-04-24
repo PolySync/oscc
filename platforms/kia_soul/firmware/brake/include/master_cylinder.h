@@ -2,9 +2,6 @@
 #define _OSCC_KIA_SOUL_BRAKE_MASTER_CYLINDER_H_
 
 
-#include "brake_module.h"
-
-
 // *****************************************************
 // Function:    master_cylinder_open
 //
@@ -12,10 +9,10 @@
 //
 // Returns:     void
 //
-// Parameters:  brake_module - structure containing brake module information
+// Parameters:  void
 //
 // *****************************************************
-void master_cylinder_open( kia_soul_brake_module_s *brake_module );
+void master_cylinder_open( void );
 
 // *****************************************************
 // Function:    master_cylinder_close
@@ -24,10 +21,10 @@ void master_cylinder_open( kia_soul_brake_module_s *brake_module );
 //
 // Returns:     void
 //
-// Parameters:  brake_module - structure containing brake module information
+// Parameters:  void
 //
 // *****************************************************
-void master_cylinder_close( kia_soul_brake_module_s *brake_module );
+void master_cylinder_close( void );
 
 
 // *****************************************************
@@ -37,10 +34,10 @@ void master_cylinder_close( kia_soul_brake_module_s *brake_module );
 //
 // Returns:     void
 //
-// Parameters:  brake_module - structure containing brake module information
+// Parameters:  None
 //
 // *****************************************************
-void master_cylinder_init( kia_soul_brake_module_s *brake_module );
+void master_cylinder_init( void );
 
 
 #endif

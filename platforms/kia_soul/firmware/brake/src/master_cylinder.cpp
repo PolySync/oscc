@@ -1,32 +1,29 @@
 #include <Arduino.h>
 #include "debug.h"
 
+#include "globals.h"
 #include "master_cylinder.h"
-#include "brake_module.h"
 
 
-void master_cylinder_init( kia_soul_brake_module_s *brake_module )
+void master_cylinder_init( )
 {
-    pinMode( brake_module->pins.smc, OUTPUT );
+    pinMode( PIN_MASTER_CYLINDER_SOLENOID, OUTPUT );
 
-    master_cylinder_open( brake_module );
+    master_cylinder_open( );
 }
 
 
-void master_cylinder_open( kia_soul_brake_module_s *brake_module )
+void master_cylinder_open( )
 {
-    analogWrite( brake_module->pins.smc, 0 );
+    analogWrite( PIN_MASTER_CYLINDER_SOLENOID, 0 );
 
     DEBUG_PRINTLN( "MC Open" );
 }
 
 
-void master_cylinder_close( kia_soul_brake_module_s *brake_module )
+void master_cylinder_close( )
 {
-    analogWrite( brake_module->pins.smc, 255 );
+    analogWrite( PIN_MASTER_CYLINDER_SOLENOID, 255 );
 
     DEBUG_PRINTLN( "MC Close" );
 }
-
-
-

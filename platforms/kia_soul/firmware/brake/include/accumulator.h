@@ -2,7 +2,10 @@
 #define _OSCC_KIA_SOUL_BRAKE_ACCUMULATOR_H_
 
 
-#include "brake_module.h"
+typedef struct
+{
+    float pressure;
+} kia_soul_accumulator_s;
 
 
 // *****************************************************
@@ -15,7 +18,7 @@
 // Parameters:  void
 //
 // *****************************************************
-void accumulator_init( kia_soul_brake_module_s *brake_module );
+void accumulator_init( );
 
 
 // *****************************************************
@@ -28,7 +31,7 @@ void accumulator_init( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void accumulator_turn_pump_off( kia_soul_brake_module_s *brake_module );
+void accumulator_turn_pump_off( );
 
 
 // *****************************************************
@@ -41,7 +44,7 @@ void accumulator_turn_pump_off( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void accumulator_turn_pump_on( kia_soul_brake_module_s *brake_module );
+void accumulator_turn_pump_on( );
 
 
 // *****************************************************
@@ -55,7 +58,7 @@ void accumulator_turn_pump_on( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void accumulator_maintain_pressure( kia_soul_brake_module_s *brake_module );
+void accumulator_maintain_pressure( );
 
 
 #endif

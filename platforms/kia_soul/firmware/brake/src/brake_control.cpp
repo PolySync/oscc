@@ -3,80 +3,81 @@
 #include "time.h"
 #include "PID.h"
 
+#include "globals.h"
 #include "brake_control.h"
-#include "brake_module.h"
 #include "master_cylinder.h"
 #include "helper.h"
 
-void brake_lights_off( kia_soul_brake_module_s *brake_module )
+
+void brake_lights_off( void )
 {
-    digitalWrite( brake_module->pins.brake_light, LOW );
+    digitalWrite( PIN_BRAKE_LIGHT, LOW );
 }
 
 
-void brake_lights_on( kia_soul_brake_module_s *brake_module )
+void brake_lights_on( void )
 {
-    digitalWrite( brake_module->pins.brake_light, HIGH );
+    digitalWrite( PIN_BRAKE_LIGHT, HIGH );
 }
 
 
-void brake_command_actuator_solenoids( kia_soul_brake_module_s *brake_module, uint16_t duty_cycle )
+void brake_command_actuator_solenoids( uint16_t duty_cycle )
 {
-    analogWrite( brake_module->pins.slafl, duty_cycle );
-    analogWrite( brake_module->pins.slafr, duty_cycle );
+    analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, duty_cycle );
+    analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, duty_cycle );
 }
 
 
-void brake_command_release_solenoids( kia_soul_brake_module_s *brake_module, uint16_t duty_cycle )
+void brake_command_release_solenoids( uint16_t duty_cycle )
 {
-    analogWrite( brake_module->pins.slrfl, duty_cycle );
-    analogWrite( brake_module->pins.slrfr, duty_cycle );
+    analogWrite( PIN_RELEASE_SOLENOID_FRONT_LEFT, duty_cycle );
+    analogWrite( PIN_RELEASE_SOLENOID_FRONT_RIGHT, duty_cycle );
 }
 
 
-void brake_enable( kia_soul_brake_module_s *brake_module )
+void brake_enable( void )
 {
-    if ( brake_module->control_state.enabled == false )
+    if ( brake_control_state.enabled == false )
     {
-        master_cylinder_close( brake_module );
-        brake_command_release_solenoids( brake_module, 0 );
-        brake_module->control_state.enabled = true;
+        master_cylinder_close( );
+        brake_command_release_solenoids( 0 );
+        brake_control_state.enabled = true;
     }
 }
 
 
-void brake_disable( kia_soul_brake_module_s *brake_module )
+void brake_disable( void )
 {
-    if ( brake_module->control_state.enabled == true )
+    if ( brake_control_state.enabled == true )
     {
-        brake_command_actuator_solenoids( brake_module, 0 );
+        brake_command_actuator_solenoids( 0 );
 
-        brake_command_release_solenoids( brake_module, 255 );
+        brake_command_release_solenoids( 255 );
 
-        brake_lights_off( brake_module );
+        brake_lights_off( );
         delay( 15 );
 
-        master_cylinder_open( brake_module );
+        master_cylinder_open( );
 
-        brake_command_release_solenoids( brake_module, 0 );
+        brake_command_release_solenoids( 0 );
 
-        brake_module->control_state.enabled = false;
+        brake_control_state.enabled = false;
     }
 }
 
 
-void brake_check_driver_override( kia_soul_brake_module_s *brake_module )
+void brake_check_driver_override( void )
 {
     static const float filter_alpha = 0.05;
 
     static float filtered_input_1 = 0.0;
     static float filtered_input_2 = 0.0;
 
-    float sensor_1 = ( float )( analogRead( brake_module->pins.pmc1 ) );
-    float sensor_2 = ( float )( analogRead( brake_module->pins.pmc2 ) );
+    float sensor_1 = ( float )( analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 ) );
+    float sensor_2 = ( float )( analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 ) );
 
-    sensor_1 = raw_adc_to_pressure( ( uint16_t )sensor_1, brake_module );
-    sensor_2 = raw_adc_to_pressure( ( uint16_t )sensor_2, brake_module );
+    sensor_1 = raw_adc_to_pressure( ( uint16_t )sensor_1 );
+    sensor_2 = raw_adc_to_pressure( ( uint16_t )sensor_2 );
 
     filtered_input_1 = ( filter_alpha * sensor_1 ) +
         ( ( 1.0 - filter_alpha ) * filtered_input_1 );
@@ -84,52 +85,50 @@ void brake_check_driver_override( kia_soul_brake_module_s *brake_module )
     filtered_input_2 = ( filter_alpha * sensor_2 ) +
         ( ( 1.0 - filter_alpha ) * filtered_input_2 );
 
-    if ( ( filtered_input_1 > brake_module->params.driver_override_pedal_threshold ) ||
-         ( filtered_input_2 > brake_module->params.driver_override_pedal_threshold ) )
+    if ( ( filtered_input_1 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
+         ( filtered_input_2 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
     {
         DEBUG_PRINTLN( "driver override" );
-        brake_module->control_state.driver_override = 1;
-        brake_module->control_state.enable_request = false;
+        brake_control_state.driver_override = 1;
+        brake_control_state.enable_request = false;
     }
     else
     {
-        brake_module->control_state.driver_override = 0;
+        brake_control_state.driver_override = 0;
     }
 }
 
 
-void brake_update_pressure( kia_soul_brake_module_s *brake_module )
+void brake_update_pressure( void )
 {
-    uint16_t raw_left_pressure = analogRead( brake_module->pins.pfl );
-    uint16_t raw_right_pressure = analogRead( brake_module->pins.pfr );
+    uint16_t raw_left_pressure = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
+    uint16_t raw_right_pressure = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
 
-    float pressure_left = raw_adc_to_pressure( raw_left_pressure, brake_module );
-    float pressure_right = raw_adc_to_pressure( raw_right_pressure, brake_module );
+    float pressure_left = raw_adc_to_pressure( raw_left_pressure );
+    float pressure_right = raw_adc_to_pressure( raw_right_pressure );
 
-    brake_module->state.current_pressure = ( pressure_left + pressure_right ) / 2;
+    brake_state.current_pressure = ( pressure_left + pressure_right ) / 2;
 }
 
 
-void brake_init( kia_soul_brake_module_s *brake_module )
+void brake_init( void )
 {
-    // initialize solenoid pins to off
-    digitalWrite( brake_module->pins.slafl, LOW );
-    digitalWrite( brake_module->pins.slafr, LOW );
-    digitalWrite( brake_module->pins.slrfl, LOW );
-    digitalWrite( brake_module->pins.slrfr, LOW );
+    digitalWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, LOW );
+    digitalWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, LOW );
+    digitalWrite( PIN_RELEASE_SOLENOID_FRONT_LEFT, LOW );
+    digitalWrite( PIN_RELEASE_SOLENOID_FRONT_RIGHT, LOW );
 
-    // set pinmode to OUTPUT
-    pinMode( brake_module->pins.slafl, OUTPUT );
-    pinMode( brake_module->pins.slafr, OUTPUT );
-    pinMode( brake_module->pins.slrfl, OUTPUT );
-    pinMode( brake_module->pins.slrfr, OUTPUT );
+    pinMode( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, OUTPUT );
+    pinMode( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, OUTPUT );
+    pinMode( PIN_RELEASE_SOLENOID_FRONT_LEFT, OUTPUT );
+    pinMode( PIN_RELEASE_SOLENOID_FRONT_RIGHT, OUTPUT );
 
-    brake_lights_off( brake_module );
-    pinMode( brake_module->pins.brake_light, OUTPUT );
+    brake_lights_off( );
+    pinMode( PIN_BRAKE_LIGHT, OUTPUT );
 }
 
 
-void brake_update( kia_soul_brake_module_s *brake_module )
+void brake_update( void )
 {
     static float pressure_target = 0.0;
     static float pressure = 0.0;
@@ -141,7 +140,7 @@ void brake_update( kia_soul_brake_module_s *brake_module )
     loop_delta_t /= 1000.0;
     loop_delta_t /= 1000.0;
 
-    brake_update_pressure( brake_module );
+    brake_update_pressure( );
 
     // ********************************************************************
     //
@@ -166,18 +165,18 @@ void brake_update( kia_soul_brake_module_s *brake_module )
     static interpolate_range_s pressure_ranges =
         { 0.0, UINT16_MAX, 12.0, 878.3 };
 
-    pressure = brake_module->state.current_pressure;
+    pressure = brake_state.current_pressure;
 
-    pressure_target = interpolate( brake_module->state.pedal_command, &pressure_ranges );
+    pressure_target = interpolate( brake_state.pedal_command, &pressure_ranges );
 
     PID pid_params;
 
     // Initialize PID params
-    pid_zeroize( &pid_params, brake_module->params.pid_windup_guard );
+    pid_zeroize( &pid_params, PARAM_PID_WINDUP_GUARD );
 
-    pid_params.proportional_gain = brake_module->params.pid_proportional_gain;
-    pid_params.integral_gain     = brake_module->params.pid_integral_gain;
-    pid_params.derivative_gain   = brake_module->params.pid_derivative_gain;
+    pid_params.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
+    pid_params.integral_gain     = PARAM_PID_INTEGRAL_GAIN;
+    pid_params.derivative_gain   = PARAM_PID_DERIVATIVE_GAIN;
 
     int16_t ret = pid_update( &pid_params,
                               pressure_target,
@@ -203,28 +202,28 @@ void brake_update( kia_soul_brake_module_s *brake_module )
         {
             // pressure is too high
             static interpolate_range_s slr_ranges =
-                { 0.0, 60.0, brake_module->params.slr_duty_cycle_min, brake_module->params.slr_duty_cycle_max };
+                { 0.0, 60.0, PARAM_SLR_DUTY_CYCLE_MIN, PARAM_SLR_DUTY_CYCLE_MAX };
 
             uint16_t slr_duty_cycle = 0;
 
-            brake_command_actuator_solenoids( brake_module, 0 );
+            brake_command_actuator_solenoids( 0 );
 
             pid_output = -pid_output;
             slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
 
-            if ( slr_duty_cycle > ( uint16_t )brake_module->params.slr_duty_cycle_max )
+            if ( slr_duty_cycle > ( uint16_t )PARAM_SLR_DUTY_CYCLE_MAX )
             {
-                slr_duty_cycle = ( uint16_t )brake_module->params.slr_duty_cycle_max;
+                slr_duty_cycle = ( uint16_t )PARAM_SLR_DUTY_CYCLE_MAX;
             }
 
-            brake_command_release_solenoids( brake_module, slr_duty_cycle );
+            brake_command_release_solenoids( slr_duty_cycle );
 
             DEBUG_PRINT(",0,");
             DEBUG_PRINT(slr_duty_cycle);
 
             if ( pressure_target < 20.0 )
             {
-                brake_lights_off( brake_module );
+                brake_lights_off( );
             }
 
         }
@@ -232,22 +231,22 @@ void brake_update( kia_soul_brake_module_s *brake_module )
         {
             // pressure is too low
             static interpolate_range_s sla_ranges =
-                { 10.0, 110.0, brake_module->params.sla_duty_cycle_min, brake_module->params.sla_duty_cycle_max };
+                { 10.0, 110.0, PARAM_SLA_DUTY_CYCLE_MIN, PARAM_SLA_DUTY_CYCLE_MAX };
 
             uint16_t sla_duty_cycle = 0;
 
-            brake_lights_on( brake_module );
+            brake_lights_on( );
 
-            brake_command_release_solenoids( brake_module, 0 );
+            brake_command_release_solenoids( 0 );
 
             sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
 
-            if ( sla_duty_cycle > ( uint16_t )brake_module->params.sla_duty_cycle_max )
+            if ( sla_duty_cycle > ( uint16_t )PARAM_SLA_DUTY_CYCLE_MAX )
             {
-                sla_duty_cycle = ( uint16_t )brake_module->params.sla_duty_cycle_max;
+                sla_duty_cycle = ( uint16_t )PARAM_SLA_DUTY_CYCLE_MAX;
             }
 
-            brake_command_actuator_solenoids( brake_module, sla_duty_cycle );
+            brake_command_actuator_solenoids( sla_duty_cycle );
 
             DEBUG_PRINT(",");
             DEBUG_PRINT(sla_duty_cycle);
@@ -255,9 +254,9 @@ void brake_update( kia_soul_brake_module_s *brake_module )
         }
         else    // -10.0 < pid_output < 10.0
         {
-            if ( brake_module->state.pedal_command < 100 )
+            if ( brake_state.pedal_command < 100 )
             {
-                brake_lights_off( brake_module );
+                brake_lights_off( );
             }
         }
     }

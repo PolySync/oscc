@@ -2,9 +2,6 @@
 #define _OSCC_KIA_SOUL_BRAKE_CONTROL_H_
 
 
-#include "brake_module.h"
-
-
 // *****************************************************
 // Function:    brake_lights_off
 //
@@ -15,7 +12,7 @@
 // Parameters:  void
 //
 // *****************************************************
-void brake_lights_off( kia_soul_brake_module_s *brake_module );
+void brake_lights_off( void );
 
 
 // *****************************************************
@@ -28,7 +25,7 @@ void brake_lights_off( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void brake_lights_on( kia_soul_brake_module_s *brake_module );
+void brake_lights_on( void );
 
 
 // *****************************************************
@@ -42,7 +39,7 @@ void brake_lights_on( kia_soul_brake_module_s *brake_module );
 // Parameters:  uint16_t - duty_cycle - value to send to the PWM
 //
 // *****************************************************
-void brake_command_actuator_solenoids( kia_soul_brake_module_s *brake_module, uint16_t duty_cycle );
+void brake_command_actuator_solenoids( uint16_t duty_cycle );
 
 
 // *****************************************************
@@ -56,7 +53,7 @@ void brake_command_actuator_solenoids( kia_soul_brake_module_s *brake_module, ui
 // Parameters:  uint16_t - duty_cycle - value to send to the PWM
 //
 // *****************************************************
-void brake_command_release_solenoids( kia_soul_brake_module_s *brake_module, uint16_t duty_cycle );
+void brake_command_release_solenoids( uint16_t duty_cycle );
 
 
 // *****************************************************
@@ -69,7 +66,7 @@ void brake_command_release_solenoids( kia_soul_brake_module_s *brake_module, uin
 // Parameters:  void
 //
 // *****************************************************
-void brake_enable( kia_soul_brake_module_s *brake_module );
+void brake_enable( void );
 
 
 // *****************************************************
@@ -82,7 +79,7 @@ void brake_enable( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void brake_disable( kia_soul_brake_module_s *brake_module );
+void brake_disable( void );
 
 
 // *****************************************************
@@ -112,7 +109,7 @@ void brake_disable( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void brake_check_driver_override( kia_soul_brake_module_s *brake_module );
+void brake_check_driver_override( void );
 
 
 // *****************************************************
@@ -125,7 +122,7 @@ void brake_check_driver_override( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void brake_update_pressure( kia_soul_brake_module_s *brake_module );
+void brake_update_pressure( void );
 
 
 // *****************************************************
@@ -138,7 +135,7 @@ void brake_update_pressure( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void brake_init( kia_soul_brake_module_s *brake_module );
+void brake_init( void );
 
 
 // *****************************************************
@@ -151,7 +148,7 @@ void brake_init( kia_soul_brake_module_s *brake_module );
 // Parameters:  void
 //
 // *****************************************************
-void brake_update( kia_soul_brake_module_s *brake_module );
+void brake_update( void );
 
 
 #endif
