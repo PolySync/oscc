@@ -61,36 +61,42 @@ void publish_timed_report( void )
 void process_throttle_command(
         const uint8_t * const rx_frame_buffer )
 {
-    const oscc_command_msg_throttle * const control_data =
-            (oscc_command_msg_throttle*) rx_frame_buffer;
-
-    if( (control_data->enabled == 1)
-        && (control_state.enabled == false)
-        && (control_state.emergency_stop == false) )
+    if ( rx_frame_buffer != NULL )
     {
-        enable_control( );
+        const oscc_command_msg_throttle * const control_data =
+                (oscc_command_msg_throttle*) rx_frame_buffer;
+
+        if( (control_data->enabled == 1)
+            && (control_state.enabled == false)
+            && (control_state.emergency_stop == false) )
+        {
+            enable_control( );
+        }
+
+        if( (control_data->enabled == 0)
+            && (control_state.enabled == true) )
+        {
+            disable_control( );
+        }
+
+        rx_frame_throttle_command.timestamp = GET_TIMESTAMP_MS( );
+
+        throttle_state.accel_pos_target = control_data->accelerator_command / 24;
+
+        DEBUG_PRINT( "accelerator position target: " );
+        DEBUG_PRINTLN( throttle_state.accel_pos_target );
     }
-
-    if( (control_data->enabled == 0)
-        && (control_state.enabled == true) )
-    {
-        disable_control( );
-    }
-
-    rx_frame_throttle_command.timestamp = GET_TIMESTAMP_MS( );
-
-    throttle_state.accel_pos_target = control_data->accelerator_command / 24;
-
-    DEBUG_PRINT( "accelerator position target: " );
-    DEBUG_PRINTLN( throttle_state.accel_pos_target );
 }
 
 
 void handle_ready_rx_frame( can_frame_s * const frame )
 {
-    if( frame->id == OSCC_CAN_ID_THROTTLE_COMMAND )
+    if ( frame != NULL )
     {
-        process_throttle_command( rx_frame_throttle_command.data );
+        if( frame->id == OSCC_CAN_ID_THROTTLE_COMMAND )
+        {
+            process_throttle_command( rx_frame_throttle_command.data );
+        }
     }
 }
 

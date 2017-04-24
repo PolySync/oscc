@@ -63,8 +63,11 @@ void calculate_torque_spoof(
     const float torque,
     torque_spoof_t * const spoof )
 {
-    spoof->low = 819.2 * ( 0.0008 * torque + 2.26 );
-    spoof->high = 819.2 * ( -0.0008 * torque + 2.5 );
+    if( spoof != NULL )
+    {
+        spoof->low = 819.2 * ( 0.0008 * torque + 2.26 );
+        spoof->high = 819.2 * ( -0.0008 * torque + 2.5 );
+    }
 }
 
 

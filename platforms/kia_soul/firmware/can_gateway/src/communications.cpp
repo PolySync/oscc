@@ -85,153 +85,168 @@ void publish_timed_tx_frames( void )
 void process_kia_status1(
     const can_frame_s * const rx_frame )
 {
-    int32_t s32 = 0;
+    if ( rx_frame != NULL )
+    {
+        int32_t s32 = 0;
 
-    // copy to global frame
-    memcpy(
-            &rx_frame_kia_status1,
-            rx_frame,
-            sizeof(*rx_frame) );
+        // copy to global frame
+        memcpy(
+                &rx_frame_kia_status1,
+                rx_frame,
+                sizeof(*rx_frame) );
 
-    const kia_obd_status1_data_s * const kia_data =
-            (kia_obd_status1_data_s*) rx_frame_kia_status1.data;
+        const kia_obd_status1_data_s * const kia_data =
+                (kia_obd_status1_data_s*) rx_frame_kia_status1.data;
 
-    oscc_chassis_state1_data_s * const control_data =
-            (oscc_chassis_state1_data_s*) tx_frame_chassis_state1.data;
+        oscc_chassis_state1_data_s * const control_data =
+                (oscc_chassis_state1_data_s*) tx_frame_chassis_state1.data;
 
-    CLEAR_WARNING( tx_frame_heartbeat.data, OSCC_HEARTBEAT_WARN_KIA_STATUS1_TIMEOUT );
+        CLEAR_WARNING( tx_frame_heartbeat.data, OSCC_HEARTBEAT_WARN_KIA_STATUS1_TIMEOUT );
 
-    SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_STEER_WHEEL_ANGLE_VALID );
-    //SET_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
+        SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_STEER_WHEEL_ANGLE_VALID );
+        //SET_CHASSIS_FLAG( PSVC_CHASSIS_STATE1_FLAG_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
 
-    CLEAR_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
-    control_data->steering_wheel_angle_rate = 0;
+        CLEAR_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
+        control_data->steering_wheel_angle_rate = 0;
 
-    s32 = (int32_t) kia_data->steering_angle;
-    control_data->steering_wheel_angle = (int16_t) s32;
+        s32 = (int32_t) kia_data->steering_angle;
+        control_data->steering_wheel_angle = (int16_t) s32;
 
-#warning "TODO - steering wheel angle convertion and rate calculation"
+    #warning "TODO - steering wheel angle convertion and rate calculation"
+    }
 }
 
 
 void process_kia_status2(
     const can_frame_s * const rx_frame )
 {
-    int32_t s32 = 0;
+    if ( rx_frame != NULL )
+    {
+        int32_t s32 = 0;
 
-    // copy to global frame
-    memcpy(
-            &rx_frame_kia_status2,
-            rx_frame,
-            sizeof(*rx_frame) );
+        // copy to global frame
+        memcpy(
+                &rx_frame_kia_status2,
+                rx_frame,
+                sizeof(*rx_frame) );
 
-    const kia_obd_status2_data_s * const kia_data =
-            (kia_obd_status2_data_s*) rx_frame_kia_status2.data;
+        const kia_obd_status2_data_s * const kia_data =
+                (kia_obd_status2_data_s*) rx_frame_kia_status2.data;
 
-    oscc_chassis_state2_data_s * const control_data =
-            (oscc_chassis_state2_data_s*) tx_frame_chassis_state2.data;
+        oscc_chassis_state2_data_s * const control_data =
+                (oscc_chassis_state2_data_s*) tx_frame_chassis_state2.data;
 
-    CLEAR_WARNING( tx_frame_heartbeat.data, OSCC_HEARTBEAT_WARN_KIA_STATUS2_TIMEOUT );
+        CLEAR_WARNING( tx_frame_heartbeat.data, OSCC_HEARTBEAT_WARN_KIA_STATUS2_TIMEOUT );
 
-    SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_WHEEL_SPEED_VALID );
+        SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_WHEEL_SPEED_VALID );
 
-#warning "TODO - wheel speed unit convertion"
-    // convert left front wheel speed
-    s32 = (int32_t) kia_data->wheel_speed_lf;
-    control_data->wheel_speed_lf = (int16_t) s32;
+    #warning "TODO - wheel speed unit convertion"
+        // convert left front wheel speed
+        s32 = (int32_t) kia_data->wheel_speed_lf;
+        control_data->wheel_speed_lf = (int16_t) s32;
 
-    // convert right front wheel speed
-    s32 = (int32_t) kia_data->wheel_speed_rf;
-    control_data->wheel_speed_rf = (int16_t) s32;
+        // convert right front wheel speed
+        s32 = (int32_t) kia_data->wheel_speed_rf;
+        control_data->wheel_speed_rf = (int16_t) s32;
 
-    // convert left rear wheel speed
-    s32 = (int32_t) kia_data->wheel_speed_lr;
-    control_data->wheel_speed_lr = (int16_t) s32;
+        // convert left rear wheel speed
+        s32 = (int32_t) kia_data->wheel_speed_lr;
+        control_data->wheel_speed_lr = (int16_t) s32;
 
-    // convert right rear wheel speed
-    s32 = (int32_t) kia_data->wheel_speed_rr;
-    control_data->wheel_speed_rr = (int16_t) s32;
+        // convert right rear wheel speed
+        s32 = (int32_t) kia_data->wheel_speed_rr;
+        control_data->wheel_speed_rr = (int16_t) s32;
+    }
 }
 
 
 void process_kia_status3(
     const can_frame_s * const rx_frame )
 {
-    int16_t s16 = 0;
+    if ( rx_frame != NULL )
+    {
+        int16_t s16 = 0;
 
-    // copy to global frame
-    memcpy(
-            &rx_frame_kia_status3,
-            rx_frame,
-            sizeof(*rx_frame) );
+        // copy to global frame
+        memcpy(
+                &rx_frame_kia_status3,
+                rx_frame,
+                sizeof(*rx_frame) );
 
-    const kia_obd_status3_data_s * const kia_data =
-            (kia_obd_status3_data_s*) rx_frame_kia_status3.data;
+        const kia_obd_status3_data_s * const kia_data =
+                (kia_obd_status3_data_s*) rx_frame_kia_status3.data;
 
-    oscc_chassis_state1_data_s * const control_data =
-            (oscc_chassis_state1_data_s*) tx_frame_chassis_state1.data;
+        oscc_chassis_state1_data_s * const control_data =
+                (oscc_chassis_state1_data_s*) tx_frame_chassis_state1.data;
 
-    CLEAR_WARNING( tx_frame_heartbeat.data, OSCC_HEARTBEAT_WARN_KIA_STATUS3_TIMEOUT );
+        CLEAR_WARNING( tx_frame_heartbeat.data, OSCC_HEARTBEAT_WARN_KIA_STATUS3_TIMEOUT );
 
-    SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_BRAKE_PRESSURE_VALID );
+        SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_BRAKE_PRESSURE_VALID );
 
-#warning "TODO - brake pressure unit convertion"
-    // convert
-    s16 = (int16_t) kia_data->master_cylinder_pressure;
-    control_data->brake_pressure = (int16_t) s16;
+    #warning "TODO - brake pressure unit convertion"
+        // convert
+        s16 = (int16_t) kia_data->master_cylinder_pressure;
+        control_data->brake_pressure = (int16_t) s16;
+    }
 }
 
 
 void process_kia_status4(
     const can_frame_s * const rx_frame )
 {
-    // copy to global frame
-    memcpy(
-            &rx_frame_kia_status4,
-            rx_frame,
-            sizeof(*rx_frame) );
-
-    const kia_obd_status4_data_s * const kia_data =
-            (kia_obd_status4_data_s*) rx_frame_kia_status4.data;
-
-    oscc_chassis_state1_data_s * const control_data =
-            (oscc_chassis_state1_data_s*) tx_frame_chassis_state1.data;
-
-    CLEAR_WARNING( tx_frame_heartbeat.data, OSCC_HEARTBEAT_WARN_KIA_STATUS4_TIMEOUT );
-
-    CLEAR_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_LEFT_TURN_SIGNAL_ON );
-    CLEAR_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_RIGHT_TURN_SIGNAL_ON );
-    CLEAR_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_BRAKE_SIGNAL_ON );
-
-    if( kia_data->turn_signal_flags == KIA_CCAN_STATUS4_TURN_SIGNAL_LEFT )
+    if ( rx_frame != NULL )
     {
-        SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_LEFT_TURN_SIGNAL_ON );
-    }
+        // copy to global frame
+        memcpy(
+                &rx_frame_kia_status4,
+                rx_frame,
+                sizeof(*rx_frame) );
 
-    if( kia_data->turn_signal_flags == KIA_CCAN_STATUS4_TURN_SIGNAL_RIGHT )
-    {
-        SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_RIGHT_TURN_SIGNAL_ON );
+        const kia_obd_status4_data_s * const kia_data =
+                (kia_obd_status4_data_s*) rx_frame_kia_status4.data;
+
+        oscc_chassis_state1_data_s * const control_data =
+                (oscc_chassis_state1_data_s*) tx_frame_chassis_state1.data;
+
+        CLEAR_WARNING( tx_frame_heartbeat.data, OSCC_HEARTBEAT_WARN_KIA_STATUS4_TIMEOUT );
+
+        CLEAR_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_LEFT_TURN_SIGNAL_ON );
+        CLEAR_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_RIGHT_TURN_SIGNAL_ON );
+        CLEAR_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_BRAKE_SIGNAL_ON );
+
+        if( kia_data->turn_signal_flags == KIA_CCAN_STATUS4_TURN_SIGNAL_LEFT )
+        {
+            SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_LEFT_TURN_SIGNAL_ON );
+        }
+
+        if( kia_data->turn_signal_flags == KIA_CCAN_STATUS4_TURN_SIGNAL_RIGHT )
+        {
+            SET_CHASSIS_FLAG( tx_frame_chassis_state1.data, PSVC_CHASSIS_STATE1_FLAG_BIT_RIGHT_TURN_SIGNAL_ON );
+        }
     }
 }
 
 
 void handle_ready_rx_frames( const can_frame_s * const rx_frame )
 {
-    if( rx_frame->id == KIA_CCAN_STATUS1_MESSAGE_ID )
+    if ( rx_frame != NULL )
     {
-        process_kia_status1( rx_frame );
-    }
-    else if( rx_frame->id == KIA_CCAN_STATUS2_MESSAGE_ID )
-    {
-        process_kia_status2( rx_frame );
-    }
-    else if( rx_frame->id == KIA_CCAN_STATUS3_MESSAGE_ID )
-    {
-        process_kia_status3( rx_frame );
-    }
-    else if( rx_frame->id == KIA_CCAN_STATUS4_MESSAGE_ID )
-    {
-        process_kia_status4( rx_frame );
+        if( rx_frame->id == KIA_CCAN_STATUS1_MESSAGE_ID )
+        {
+            process_kia_status1( rx_frame );
+        }
+        else if( rx_frame->id == KIA_CCAN_STATUS2_MESSAGE_ID )
+        {
+            process_kia_status2( rx_frame );
+        }
+        else if( rx_frame->id == KIA_CCAN_STATUS3_MESSAGE_ID )
+        {
+            process_kia_status3( rx_frame );
+        }
+        else if( rx_frame->id == KIA_CCAN_STATUS4_MESSAGE_ID )
+        {
+            process_kia_status4( rx_frame );
+        }
     }
 }
 

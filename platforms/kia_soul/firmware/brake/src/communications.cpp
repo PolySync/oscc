@@ -54,40 +54,49 @@ void publish_timed_tx_frames( void )
 void process_brake_command(
     const oscc_command_msg_brake * const control_data )
 {
-    if ( control_data->enabled == 1 )
+    if (control_data != NULL )
     {
-        brake_control_state.enable_request = true;
-    }
+        if ( control_data->enabled == 1 )
+        {
+            brake_control_state.enable_request = true;
+        }
 
-    if ( control_data->enabled == 0 )
-    {
-        brake_control_state.enable_request = false;
-    }
+        if ( control_data->enabled == 0 )
+        {
+            brake_control_state.enable_request = false;
+        }
 
-    brake_state.pedal_command = control_data->pedal_command;
+        brake_state.pedal_command = control_data->pedal_command;
+    }
 }
 
 
 void process_chassis_state1(
     const oscc_chassis_state1_data_s * const chassis_data )
 {
-    brake_state.can_pressure = chassis_data->brake_pressure;
+    if ( chassis_data != NULL )
+    {
+        brake_state.can_pressure = chassis_data->brake_pressure;
+    }
 }
 
 
 void handle_ready_rx_frames( const can_frame_s * const rx_frame )
 {
-    if ( rx_frame->id == OSCC_CAN_ID_BRAKE_COMMAND )
+    if ( rx_frame != NULL )
     {
-        brake_control_state.rx_timestamp = GET_TIMESTAMP_MS( );
+        if ( rx_frame->id == OSCC_CAN_ID_BRAKE_COMMAND )
+        {
+            brake_control_state.rx_timestamp = GET_TIMESTAMP_MS( );
 
-        process_brake_command(
-            ( const oscc_command_msg_brake * const )rx_frame->data );
-    }
-    else if ( rx_frame->id == KIA_STATUS1_MESSAGE_ID )
-    {
-        process_chassis_state1(
-            ( const oscc_chassis_state1_data_s * const )rx_frame->data );
+            process_brake_command(
+                ( const oscc_command_msg_brake * const )rx_frame->data );
+        }
+        else if ( rx_frame->id == KIA_STATUS1_MESSAGE_ID )
+        {
+            process_chassis_state1(
+                ( const oscc_chassis_state1_data_s * const )rx_frame->data );
+        }
     }
 }
 
