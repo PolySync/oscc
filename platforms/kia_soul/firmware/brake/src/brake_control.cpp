@@ -66,7 +66,7 @@ void brake_disable( void )
 }
 
 
-void brake_check_driver_override( void )
+void brake_check_operator_override( void )
 {
     static const float filter_alpha = 0.05;
 
@@ -89,12 +89,12 @@ void brake_check_driver_override( void )
          ( filtered_input_2 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
     {
         DEBUG_PRINTLN( "driver override" );
-        brake_control_state.driver_override = 1;
+        brake_control_state.operator_override = true;
         brake_control_state.enable_request = false;
     }
     else
     {
-        brake_control_state.driver_override = 0;
+        brake_control_state.operator_override = false;
     }
 }
 

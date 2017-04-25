@@ -64,7 +64,7 @@ int main( void )
 
         check_rx_timeouts( );
 
-        brake_check_driver_override( );
+        brake_check_operator_override( );
 
         if ( brake_control_state.enabled != brake_control_state.enable_request )
         {

@@ -5,7 +5,7 @@
 #include "mcp_can.h"
 #include "can.h"
 
-#include "brake_module.h"
+#include "brake_control.h"
 
 
 #define PARAM_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS ( 777.6 )

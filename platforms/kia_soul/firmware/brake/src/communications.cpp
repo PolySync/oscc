@@ -14,9 +14,7 @@ void publish_brake_report( void )
 {
     oscc_report_msg_brake report;
 
-    report.override = ( uint8_t )brake_control_state.driver_override;
-
-    if ( brake_control_state.enabled == true )
+    if ( brake_control_state.operator_override == true )
     {
         report.enabled = 1;
     }

@@ -2,12 +2,6 @@
 #define _OSCC_KIA_SOUL_BRAKE_ACCUMULATOR_H_
 
 
-typedef struct
-{
-    float pressure;
-} kia_soul_accumulator_s;
-
-
 // *****************************************************
 // Function:    accumulator_init
 //

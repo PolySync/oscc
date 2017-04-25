@@ -50,7 +50,7 @@ struct brake_data_s
 
     uint32_t rx_timestamp;
 
-    int16_t driver_override;
+    int16_t operator_override;
 
     int16_t can_pressure;
     uint16_t pedal_command;
@@ -83,7 +83,7 @@ struct brake_data_s brakes =
     false,                      // enable
     false,                      // enable_request
     0,                          // rx_timestamp
-    0,                          // driver_override
+    0,                          // operator_override
     0,                          // can_pressure
     0                           // pedal_command
 };

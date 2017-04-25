@@ -2,6 +2,39 @@
 #define _OSCC_KIA_SOUL_BRAKE_CONTROL_H_
 
 
+#include <stdint.h>
+
+
+/**
+ * @brief Current brake state.
+ *
+ * Keeps track of what state the arduino controller is currently in.
+ *
+ */
+typedef struct
+{
+    float accumulator_pressure;
+    float current_pressure;
+    float can_pressure;
+    uint16_t pedal_command;
+} kia_soul_brake_state_s;
+
+
+/**
+ * @brief Current brake control state.
+ *
+ * Keeps track of what control state the arduino controller is currently in.
+ *
+ */
+typedef struct
+{
+    bool enabled;
+    bool enable_request;
+    bool operator_override;
+    uint32_t rx_timestamp;
+} kia_soul_brake_control_state_s;
+
+
 // *****************************************************
 // Function:    brake_lights_off
 //
@@ -83,7 +116,7 @@ void brake_disable( void );
 
 
 // *****************************************************
-// Function:    brake_check_driver_override
+// Function:    brake_check_operator_override
 //
 // Purpose:     This function checks the voltage input from the brake pedal
 //              sensors to determine if the driver is attempting to brake
@@ -109,7 +142,7 @@ void brake_disable( void );
 // Parameters:  void
 //
 // *****************************************************
-void brake_check_driver_override( void );
+void brake_check_operator_override( void );
 
 
 // *****************************************************
