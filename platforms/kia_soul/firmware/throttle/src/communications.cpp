@@ -19,8 +19,7 @@ void publish_throttle_report( void )
     tx_frame_throttle_report.id = OSCC_CAN_ID_THROTTLE_REPORT;
     tx_frame_throttle_report.dlc = 8;
 
-    if ( (override_flags.accelerator_pressed == false )
-        && (override_flags.voltage == 0) )
+    if ( throttle_control_state.operator_override == false )
     {
         data->override = 0;
     }

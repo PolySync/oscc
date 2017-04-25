@@ -6,21 +6,6 @@
 
 
 /**
- * @brief Override flags.
- *
- * Tracks override flags for wheel and voltages.
- *
- */
-typedef struct
-{
-    bool wheel_active; /* Tracks whether wheel is active */
-    uint16_t voltage; /* Tracks any DAC/ADC voltage discrepancies */
-    uint16_t voltage_spike_a; /* Used to filter any DAC/ADC voltage spikes */
-    uint16_t voltage_spike_b; /* Used to filter any DAC/ADC voltage spikes */
-} kia_soul_steering_override_flags_s;
-
-
-/**
  * @brief Current steering state.
  *
  * Keeps track of the current state of the steering system.
@@ -45,8 +30,9 @@ typedef struct
 {
     bool enabled; /* Flag indicating control is currently enabled */
     bool emergency_stop; /* Flag indicating emergency stop has been acitivated */
+    bool operator_override; /* Flag indicating whether steering wheel was manually turned by operator */
     uint32_t timestamp_us; /* Keeps track of last control loop time in us */
-} kia_soul_control_state_s;
+} kia_soul_steering_control_state_s;
 
 
 #endif

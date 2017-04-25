@@ -37,7 +37,6 @@
 
 EXTERN can_frame_s rx_frame_throttle_command;
 EXTERN can_frame_s tx_frame_throttle_report;
-EXTERN kia_soul_throttle_override_flags_s override_flags;
 EXTERN kia_soul_throttle_state_s throttle_state;
 EXTERN kia_soul_throttle_control_state_s throttle_control_state;
 

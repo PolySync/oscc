@@ -27,8 +27,7 @@ void publish_steering_report( void )
     tx_frame_steering_report.timestamp = GET_TIMESTAMP_MS( );
 
     // set override flag
-    if ( ( override_flags.wheel_active == false ) &&
-            ( override_flags.voltage == 0 ) )
+    if ( steering_control_state.operator_override == false )
     {
         data->override = 0;
     }
@@ -41,7 +40,7 @@ void publish_steering_report( void )
 
     data->torque = torque_sum;
 
-    data->enabled = (uint8_t) control_state.enabled;
+    data->enabled = (uint8_t) steering_control_state.enabled;
 
     can.sendMsgBuf( tx_frame_steering_report.id,
                     0,
@@ -73,14 +72,14 @@ void process_steering_command(
             control_data->steering_wheel_max_velocity * 9.0;
 
         if ( ( control_data->enabled == 1 ) &&
-                ( control_state.enabled == false ) &&
-                ( control_state.emergency_stop == false ) )
+                ( steering_control_state.enabled == false ) &&
+                ( steering_control_state.emergency_stop == false ) )
         {
             enable_control( );
         }
 
         if ( ( control_data->enabled == 0 ) &&
-                ( control_state.enabled == true ) )
+                ( steering_control_state.enabled == true ) )
         {
             disable_control( );
         }
@@ -132,7 +131,7 @@ void check_rx_timeouts( void )
 
     if( timeout == true )
     {
-        if( control_state.enabled == true )
+        if( steering_control_state.enabled == true )
         {
             disable_control( );
             DEBUG_PRINTLN( "Control disabled: Timeout" );

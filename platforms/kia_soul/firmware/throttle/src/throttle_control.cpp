@@ -47,12 +47,12 @@ void check_accelerator_override( void )
         {
             disable_control( );
 
-            override_flags.accelerator_pressed = true;
+            throttle_control_state.operator_override = true;
         }
     }
     else
     {
-        override_flags.accelerator_pressed = false;
+        throttle_control_state.operator_override = false;
     }
 }
 

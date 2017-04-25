@@ -84,7 +84,7 @@ void enable_control( void )
     // Enable the signal interrupt relays
     digitalWrite( PIN_SPOOF_ENABLE, HIGH );
 
-    control_state.enabled = true;
+    steering_control_state.enabled = true;
 
     DEBUG_PRINTLN( "Control enabled" );
 }
@@ -103,7 +103,7 @@ void disable_control( void )
     // Disable the signal interrupt relays
     digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
-    control_state.enabled =false;
+    steering_control_state.enabled =false;
 
     DEBUG_PRINTLN( "Control disabled" );
 }

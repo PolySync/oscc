@@ -59,9 +59,8 @@
 
 EXTERN can_frame_s rx_frame_steering_command;
 EXTERN can_frame_s tx_frame_steering_report;
-EXTERN kia_soul_steering_override_flags_s override_flags;
 EXTERN kia_soul_steering_state_s steering_state;
-EXTERN kia_soul_control_state_s control_state;
+EXTERN kia_soul_steering_control_state_s steering_control_state;
 EXTERN PID pid;
 EXTERN uint8_t torque_sum;
 

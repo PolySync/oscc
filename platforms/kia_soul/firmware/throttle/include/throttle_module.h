@@ -5,21 +5,6 @@
 
 
 /**
- * @brief Override flags.
- *
- * Tracks override flags for accelerator and voltages.
- *
- */
-typedef struct
-{
-    bool accelerator_pressed; /* Tracks whether accelerator is pressed */
-    uint16_t voltage; /* Tracks any DAC/ADC voltage discrepancies */
-    uint16_t voltage_spike_a; /* Used to filter any DAC/ADC voltage spikes */
-    uint16_t voltage_spike_b; /* Used to filter any DAC/ADC voltage spikes */
-} kia_soul_throttle_override_flags_s;
-
-
-/**
  * @brief Current throttle state.
  *
  * Keeps track of the current state of the throttle system.
@@ -43,6 +28,7 @@ typedef struct
 {
     bool enabled; /* Flag indicating control is currently enabled */
     bool emergency_stop; /* Flag indicating emergency stop has been acitivated */
+    bool operator_override; /* Flag indicating whether accelerator was manually pressed by operator */
     uint32_t timestamp_us; /* Keeps track of last control loop time in us */
 } kia_soul_throttle_control_state_s;
 

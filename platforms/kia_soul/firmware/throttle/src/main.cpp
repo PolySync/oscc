@@ -23,21 +23,13 @@ int main( void )
 {
     init_arduino( );
 
-    init_structs_to_zero( );
+    init_structs( );
 
     init_pins( );
 
     init_interfaces( );
 
     publish_throttle_report( );
-
-    throttle_control_state.enabled = false;
-    throttle_control_state.emergency_stop = false;
-
-    override_flags.accelerator_pressed = false;
-    override_flags.voltage = 0;
-    override_flags.voltage_spike_a = 0;
-    override_flags.voltage_spike_b = 0;
 
     // update last Rx timestamps so we don't set timeout warnings on start up
     rx_frame_throttle_command.timestamp = GET_TIMESTAMP_MS( );

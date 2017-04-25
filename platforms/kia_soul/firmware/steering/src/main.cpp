@@ -26,21 +26,13 @@ int main( void )
 {
     init_arduino( );
 
-    init_structs_to_zero( );
+    init_structs( );
 
     init_pins( );
 
     init_interfaces( );
 
     publish_timed_tx_frames( );
-
-    control_state.enabled = false;
-    control_state.emergency_stop = false;
-
-    override_flags.wheel_active = false;
-    override_flags.voltage = 0;
-    override_flags.voltage_spike_a = 0;
-    override_flags.voltage_spike_b = 0;
 
     // Initialize the Rx timestamps to avoid timeout warnings on start up
     rx_frame_steering_command.timestamp = GET_TIMESTAMP_MS( );
@@ -69,23 +61,23 @@ int main( void )
 
         uint32_t current_timestamp_us = GET_TIMESTAMP_US();
 
-        uint32_t deltaT = get_time_delta( control_state.timestamp_us,
+        uint32_t deltaT = get_time_delta( steering_control_state.timestamp_us,
                                         current_timestamp_us );
 
         if ( deltaT > 50000 )
         {
 
-            control_state.timestamp_us = current_timestamp_us;
+            steering_control_state.timestamp_us = current_timestamp_us;
 
             bool override = check_driver_steering_override( );
 
             if ( override == true
-                && control_state.enabled == true )
+                && steering_control_state.enabled == true )
             {
-                override_flags.wheel_active = true;
+                steering_control_state.operator_override = true;
                 disable_control( );
             }
-            else if ( control_state.enabled == true )
+            else if ( steering_control_state.enabled == true )
             {
                 // Calculate steering angle rates (degrees/microsecond)
                 float steering_angle_rate =
@@ -132,7 +124,7 @@ int main( void )
             }
             else
             {
-                override_flags.wheel_active = false;
+                steering_control_state.operator_override = false;
 
                 pid_zeroize( &pid, PARAM_PID_WINDUP_GUARD );
             }

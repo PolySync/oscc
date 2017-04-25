@@ -6,11 +6,15 @@
 #include "globals.h"
 
 
-void init_structs_to_zero( void )
+void init_structs( void )
 {
     memset( &rx_frame_steering_command,
             0,
             sizeof(rx_frame_steering_command) );
+
+    steering_control_state.enabled = false;
+    steering_control_state.emergency_stop = false;
+    steering_control_state.operator_override = false;
 }
 
 
