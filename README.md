@@ -1,4 +1,4 @@
-<img src="https://github.com/PolySync/OSCC/blob/master/assets/oscc_logo_title.png">
+<img src="https://raw.githubusercontent.com/wiki/PolySync/OSCC/images/oscc_logo_title.png">
 
 
 The Open Source Car Control Project is a hardware and software project detailing the conversion of a
@@ -11,7 +11,6 @@ information.
 Repository Contents
 -------------------
 * **/3d_models** - Technical drawings and 3D files for board enclosures and other useful parts
-* **/assets** - Diagrams and images used in the wiki
 * **/boards** - PCB schematics and board designs for control modules
 * **/platforms** - Arduino code and relevant files for the specific platforms
 * **/utilities** - Utilities for controlling and interfacing with a vehicle
@@ -19,7 +18,6 @@ Repository Contents
 Within a specific platform (e.g., `kia_soul`), there are:
 * **3d_models** - Technical drawings and 3D files related to that platform
 * **firmware** - Arduino code for the control modules
-* **info** - Information specific to the platform, such as sensor outputs and wiring diagrams
 
 
 Boards
