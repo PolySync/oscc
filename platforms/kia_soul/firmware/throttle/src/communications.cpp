@@ -29,7 +29,7 @@ void publish_throttle_report( void )
         data->override = 1;
     }
 
-    data->enabled = (uint8_t) control_state.enabled;
+    data->enabled = (uint8_t) throttle_control_state.enabled;
 
     data->accelerator_input = throttle_state.accel_pos_sensor_low + throttle_state.accel_pos_sensor_high;
 
@@ -67,14 +67,14 @@ void process_throttle_command(
                 (oscc_command_msg_throttle*) rx_frame_buffer;
 
         if( (control_data->enabled == 1)
-            && (control_state.enabled == false)
-            && (control_state.emergency_stop == false) )
+            && (throttle_control_state.enabled == false)
+            && (throttle_control_state.emergency_stop == false) )
         {
             enable_control( );
         }
 
         if( (control_data->enabled == 0)
-            && (control_state.enabled == true) )
+            && (throttle_control_state.enabled == true) )
         {
             disable_control( );
         }
@@ -110,7 +110,7 @@ void check_rx_timeouts( void )
 
     if( timeout == true )
     {
-        if( control_state.enabled == true )
+        if( throttle_control_state.enabled == true )
         {
             disable_control( );
             DEBUG_PRINTLN( "Control disabled: Timeout" );

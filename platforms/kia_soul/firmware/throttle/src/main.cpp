@@ -31,8 +31,8 @@ int main( void )
 
     publish_throttle_report( );
 
-    control_state.enabled = false;
-    control_state.emergency_stop = false;
+    throttle_control_state.enabled = false;
+    throttle_control_state.emergency_stop = false;
 
     override_flags.accelerator_pressed = false;
     override_flags.voltage = 0;
@@ -64,7 +64,7 @@ int main( void )
 
         check_accelerator_override( );
 
-        if ( control_state.enabled == true )
+        if ( throttle_control_state.enabled == true )
         {
             accel_spoof_t accel_spoof;
 

@@ -43,7 +43,7 @@ void check_accelerator_override( void )
 
     if ( accel_pos_normalized > PARAM_ACCELERATOR_OVERRIDE_THRESHOLD_IN_DECIBARS )
     {
-        if( control_state.enabled == true )
+        if( throttle_control_state.enabled == true )
         {
             disable_control( );
 
@@ -70,7 +70,7 @@ void enable_control( void )
     // Enable the signal interrupt relays
     digitalWrite( PIN_SPOOF_ENABLE, HIGH );
 
-    control_state.enabled = true;
+    throttle_control_state.enabled = true;
 
     DEBUG_PRINTLN( "Control enabled" );
 }
@@ -89,7 +89,7 @@ void disable_control( void )
     // Disable the signal interrupt relays
     digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
-    control_state.enabled = false;
+    throttle_control_state.enabled = false;
 
     DEBUG_PRINTLN( "Control disabled" );
 }
