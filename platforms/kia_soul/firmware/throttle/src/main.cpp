@@ -13,7 +13,6 @@
 #include "debug.h"
 
 #include "globals.h"
-#include "throttle_module.h"
 #include "init.h"
 #include "communications.h"
 #include "throttle_control.h"
@@ -58,14 +57,14 @@ int main( void )
 
         if ( throttle_control_state.enabled == true )
         {
-            accel_spoof_t accel_spoof;
+            accelerator_spoof_t accelerator_spoof;
 
             calculate_accelerator_spoof(
                     throttle_state.accel_pos_target,
-                    &accel_spoof );
+                    &accelerator_spoof );
 
-            dac.outputA( accel_spoof.high );
-            dac.outputB( accel_spoof.low );
+            dac.outputA( accelerator_spoof.high );
+            dac.outputB( accelerator_spoof.low );
         }
     }
 

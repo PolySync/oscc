@@ -6,7 +6,6 @@
 
 #include "globals.h"
 #include "communications.h"
-#include "throttle_module.h"
 #include "throttle_control.h"
 
 

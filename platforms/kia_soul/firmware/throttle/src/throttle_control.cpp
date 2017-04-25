@@ -1,6 +1,6 @@
+#include <stdint.h>
 #include "debug.h"
 
-#include "throttle_module.h"
 #include "throttle_control.h"
 #include "globals.h"
 
@@ -17,7 +17,7 @@ static void write_sample_averages_to_dac(
 
 void calculate_accelerator_spoof(
     const float accelerator_target,
-    accel_spoof_t * const spoof )
+    accelerator_spoof_t * const spoof )
 {
     if ( spoof != NULL )
     {

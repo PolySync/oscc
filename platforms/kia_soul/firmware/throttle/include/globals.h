@@ -7,7 +7,7 @@
 #include "mcp_can.h"
 #include "can.h"
 
-#include "throttle_module.h"
+#include "throttle_control.h"
 
 
 #define PIN_DAC_CHIP_SELECT ( 9 )
