@@ -7,7 +7,6 @@
 
 #include "globals.h"
 #include "communications.h"
-#include "steering_module.h"
 #include "steering_control.h"
 
 

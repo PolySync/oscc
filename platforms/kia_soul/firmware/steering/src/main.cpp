@@ -16,7 +16,6 @@
 #include "debug.h"
 
 #include "globals.h"
-#include "steering_module.h"
 #include "init.h"
 #include "steering_control.h"
 #include "communications.h"

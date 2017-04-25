@@ -8,7 +8,7 @@
 #include "can.h"
 #include "PID.h"
 
-#include "steering_module.h"
+#include "steering_control.h"
 
 
 /*******************************************************************************

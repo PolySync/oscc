@@ -1,12 +1,10 @@
 #ifndef _OSCC_KIA_SOUL_STEERING_COMMUNICATIONS_H_
 #define _OSCC_KIA_SOUL_STEERING_COMMUNICATIONS_H_
 
+
 #include "DAC_MCP49xx.h"
 #include "mcp_can.h"
 #include "can.h"
-
-#include "steering_module.h"
-
 
 
 // *****************************************************
