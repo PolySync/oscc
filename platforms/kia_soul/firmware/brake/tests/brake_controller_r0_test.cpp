@@ -1,4 +1,5 @@
 #include <SPI.h>
+#include "arduino_init.h"
 #include "mcp_can.h"
 #include "gateway_protocol_can.h"
 #include "brake_protocol_can.h"
@@ -289,8 +290,10 @@ static void process_serial()
 }
 
 
-void setup( void )
+int main( void )
 {
+    init_arduino( );
+
     // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range
     TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
     TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
@@ -314,28 +317,30 @@ void setup( void )
     brakes.rx_timestamp = GET_TIMESTAMP_MS( );
 
     DEBUG_PRINT( "init: pass" );
-}
 
 
-void loop( void )
-{
-    can_frame_s rx_frame;
-    can_status_t ret = check_for_rx_frame( can, &rx_frame );
-
-    if( ret == CAN_RX_FRAME_AVAILABLE )
+    while( true )
     {
-        handle_ready_rx_frames( &rx_frame );
+        can_frame_s rx_frame;
+        can_status_t ret = check_for_rx_frame( can, &rx_frame );
+
+        if( ret == CAN_RX_FRAME_AVAILABLE )
+        {
+            handle_ready_rx_frames( &rx_frame );
+        }
+
+        publish_timed_tx_frames( );
+
+        process_serial( );
+
+        brake_update_pressure( );
+
+        accumulator_read_pressure( );
+
+        master_cylinder_read_pressure( );
+
+        print_pressure_info( );
     }
 
-    publish_timed_tx_frames( );
-
-    process_serial( );
-
-    brake_update_pressure( );
-
-    accumulator_read_pressure( );
-
-    master_cylinder_read_pressure( );
-
-    print_pressure_info( );
+    return 0;
 }

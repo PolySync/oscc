@@ -4,13 +4,14 @@ set(ARDUINO_DEFAULT_BOARD mega2560)
 
 generate_arduino_firmware(
     kia-soul-brake
-    SKETCH src/main.ino
     SRCS
+    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.c
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/PID/PID.c
     ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp
+    src/main.cpp
     src/globals.cpp
     src/accumulator.cpp
     src/helper.cpp
@@ -24,6 +25,7 @@ target_include_directories(
     PRIVATE
     include
     ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
     ${CMAKE_SOURCE_DIR}/common/libs/PID
     ${CMAKE_SOURCE_DIR}/common/libs/serial
@@ -33,13 +35,14 @@ target_include_directories(
 
 generate_arduino_firmware(
     kia-soul-brake-test-controller
-    SKETCH tests/brake_controller_r0_test.ino
     SRCS
+    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.c
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/PID/PID.c
     ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp
+    tests/brake_controller_r0_test.cpp
     src/globals.cpp
     src/accumulator.cpp
     src/helper.cpp
@@ -53,6 +56,7 @@ target_include_directories(
     PRIVATE
     include
     ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
     ${CMAKE_SOURCE_DIR}/common/libs/PID
     ${CMAKE_SOURCE_DIR}/common/libs/serial

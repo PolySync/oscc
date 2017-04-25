@@ -11,10 +11,12 @@
  */
 
 
+#include <Arduino.h>
 #include <stdint.h>
 #include <avr/wdt.h>
 #include <SPI.h>
 
+#include "arduino_init.h"
 #include "mcp_can.h"
 #include "gateway_protocol_can.h"
 #include "serial.h"
@@ -32,8 +34,10 @@
 #define STATUS_LED_OFF() digitalWrite( PIN_STATUS_LED, LOW );
 
 
-void setup( void )
+int main( void )
 {
+    init_arduino( );
+
     init_structs_to_zero( );
 
     init_pins( );
@@ -83,23 +87,25 @@ void setup( void )
     SET_STATE( tx_frame_heartbeat.data, OSCC_HEARTBEAT_STATE_OK );
 
     DEBUG_PRINTLN( "init: pass" );
-}
 
 
-void loop( void )
-{
-    // reset watchdog
-    wdt_reset();
-
-    can_frame_s rx_frame;
-    can_status_t ret = check_for_rx_frame( obd_can, &rx_frame );
-
-    if( ret == CAN_RX_FRAME_AVAILABLE )
+    while( true )
     {
-         handle_ready_rx_frames( &rx_frame );
+        // reset watchdog
+        wdt_reset();
+
+        can_frame_s rx_frame;
+        can_status_t ret = check_for_rx_frame( obd_can, &rx_frame );
+
+        if( ret == CAN_RX_FRAME_AVAILABLE )
+        {
+            handle_ready_rx_frames( &rx_frame );
+        }
+
+        publish_timed_tx_frames( );
+
+        check_rx_timeouts( );
     }
 
-    publish_timed_tx_frames( );
-
-    check_rx_timeouts( );
+    return 0;
 }
