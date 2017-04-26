@@ -13,7 +13,7 @@ Repository Contents
 * **/3d_models** - Technical drawings and 3D files for board enclosures and other useful parts
 * **/boards** - PCB schematics and board designs for control modules
 * **/platforms** - Arduino code and relevant files for the specific platforms
-* **/utilities** - Utilities for controlling and interfacing with a vehicle
+* **/utils** - Utilities for controlling and interfacing with a platform
 
 Within a specific platform (e.g., `kia_soul`), there are:
 * **3d_models** - Technical drawings and 3D files related to that platform
