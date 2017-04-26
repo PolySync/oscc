@@ -59,6 +59,9 @@
 #endif
 
 
+EXTERN uint32_t g_brake_command_rx_timestamp;
+EXTERN uint32_t g_brake_report_tx_timestamp;
+
 EXTERN kia_soul_brake_state_s brake_state;
 EXTERN kia_soul_brake_control_state_s brake_control_state;
 

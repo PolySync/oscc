@@ -3,6 +3,6 @@
 
 
 void init_interfaces( void );
-
+void init_globals( void );
 
 #endif

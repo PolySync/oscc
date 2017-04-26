@@ -6,18 +6,28 @@
  * @brief Brake command message (CAN frame) ID.
  *
  */
-#define OSCC_CAN_ID_BRAKE_COMMAND (0x060)
+#define OSCC_COMMAND_BRAKE_CAN_ID (0x060)
 
 
 /*
  * @brief Brake report message (CAN frame) ID.
  *
  */
-#define OSCC_CAN_ID_BRAKE_REPORT (0x061)
+#define OSCC_REPORT_BRAKE_CAN_ID (0x061)
 
 
-// ms
-#define OSCC_PUBLISH_INTERVAL_BRAKE_REPORT (50)
+/*
+ * @brief Brake report message (CAN frame) length.
+ *
+ */
+#define OSCC_REPORT_BRAKE_CAN_DLC (8)
+
+
+/*
+ * @brief Brake report message publishing interval.
+ *
+ */
+#define OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC (50)
 
 
 /**
@@ -72,14 +82,21 @@ typedef struct
     //
     //
     uint8_t count; /*!< Optional watchdog counter. */
-} oscc_command_msg_brake;
+} oscc_command_brake_data_s;
+
+
+typedef struct
+{
+    uint32_t timestamp;
+    oscc_command_brake_data_s data;
+} oscc_command_brake_s;
 
 
 /**
  * @brief Brake report message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref OSCC_CAN_ID_BRAKE_REPORT
+ * CAN frame ID: \ref OSCC_REPORT_BRAKE_CAN_ID
  * Transmit rate: 20 ms
  *
  */
@@ -162,7 +179,16 @@ typedef struct
     uint8_t fault_connector : 1; /*!< Connector fault state.
                                   * Value zero means no fault (CD pins shorted).
                                   * Value one means fault active (CD pins not shorted). */
-} oscc_report_msg_brake;
+} oscc_report_brake_data_s;
+
+
+typedef struct
+{
+    const uint32_t id = OSCC_REPORT_BRAKE_CAN_ID;
+    const uint8_t dlc = OSCC_REPORT_BRAKE_CAN_DLC;
+    uint32_t timestamp;
+    oscc_report_brake_data_s data;
+} oscc_report_brake_s;
 
 
 #endif /* _OSCC_BRAKE_PROTOCOL_CAN_H_ */

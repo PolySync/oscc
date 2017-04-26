@@ -36,11 +36,11 @@ void publish_timed_tx_frames( void );
 //
 // Returns:     void
 //
-// Parameters:  control_data -  pointer to a brake command control message
+// Parameters:  data -  pointer to a brake command control message
 //
 // *****************************************************
 void process_brake_command(
-    const oscc_command_msg_brake * const control_data );
+    const uint8_t * data );
 
 
 // *****************************************************
@@ -50,12 +50,12 @@ void process_brake_command(
 //
 // Returns:     void
 //
-// Parameters:  chassis_data - pointer to a chassis state message that contains
+// Parameters:  data - pointer to a chassis state message that contains
 //                             the brake pressure
 //
 // *****************************************************
 void process_chassis_state_1(
-    const oscc_report_chassis_state_1_data_s * const chassis_data );
+    const uint8_t * data );
 
 
 // *****************************************************

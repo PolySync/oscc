@@ -23,6 +23,8 @@ int main( void )
 {
     init_arduino( );
 
+    init_globals( );
+
     // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range
     TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
     TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
@@ -41,9 +43,6 @@ int main( void )
     init_interfaces( );
 
     publish_brake_report( );
-
-    // update last Rx timestamps so we don't set timeout warnings on start up
-    brake_control_state.rx_timestamp = GET_TIMESTAMP_MS( );
 
     DEBUG_PRINTLN( "init: pass" );
 
@@ -65,18 +64,6 @@ int main( void )
         check_rx_timeouts( );
 
         brake_check_operator_override( );
-
-        if ( brake_control_state.enabled != brake_control_state.enable_request )
-        {
-            if ( brake_control_state.enable_request == true )
-            {
-                brake_enable( );
-            }
-            else
-            {
-                brake_disable( );
-            }
-        }
 
         if ( brake_control_state.enabled == true )
         {

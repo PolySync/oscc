@@ -8,92 +8,91 @@
 
 #include "globals.h"
 #include "communications.h"
+#include "brake_control.h"
 
 
 void publish_brake_report( void )
 {
-    oscc_report_msg_brake report;
+    oscc_report_brake_s brake_report;
 
-    if ( brake_control_state.operator_override == true )
-    {
-        report.enabled = 1;
-    }
-    else
-    {
-        report.enabled = 0;
-    }
+    brake_report.data.enabled = (uint8_t) brake_control_state.operator_override;
+    brake_report.data.pedal_input = ( uint16_t )brake_state.can_pressure;
+    brake_report.data.pedal_command = ( uint16_t )brake_state.pedal_command;
+    brake_report.data.pedal_output = ( uint16_t )brake_state.current_pressure;
 
-    report.pedal_input = ( uint16_t )brake_state.can_pressure;
-    report.pedal_command = ( uint16_t )brake_state.pedal_command;
-    report.pedal_output = ( uint16_t )brake_state.current_pressure;
+    can.sendMsgBuf(
+        brake_report.id,
+        CAN_STANDARD,
+        brake_report.dlc,
+        (uint8_t *) &brake_report.data );
 
-    can.sendMsgBuf( OSCC_CAN_ID_BRAKE_REPORT, // CAN ID
-                    0,                        // standard ID (not extended)
-                    8,                        // dlc
-                    (byte*)&report );        // brake report
+    g_brake_report_tx_timestamp = GET_TIMESTAMP_MS( );
 }
 
 
 void publish_timed_tx_frames( void )
 {
-    static uint32_t tx_timestamp = 0;
+    uint32_t delta = get_time_delta( g_brake_report_tx_timestamp, GET_TIMESTAMP_MS() );
 
-    uint32_t delta = get_time_delta( tx_timestamp, GET_TIMESTAMP_MS() );
-
-    if ( delta >= OSCC_PUBLISH_INTERVAL_BRAKE_REPORT )
+    if ( delta >= OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC )
     {
-        tx_timestamp = GET_TIMESTAMP_MS( );
-
         publish_brake_report( );
     }
 }
 
 
 void process_brake_command(
-    const oscc_command_msg_brake * const control_data )
+    const uint8_t * const data )
 {
-    if (control_data != NULL )
+    if (data != NULL )
     {
-        if ( control_data->enabled == 1 )
+        const oscc_command_brake_data_s * const brake_command_data =
+                (oscc_command_brake_data_s *) data;
+
+        if( (brake_command_data->enabled == 1)
+            && (brake_control_state.enabled == false) )
         {
-            brake_control_state.enable_request = true;
+            brake_enable( );
         }
 
-        if ( control_data->enabled == 0 )
+        if( (brake_command_data->enabled == 0)
+            && (brake_control_state.enabled == true) )
         {
-            brake_control_state.enable_request = false;
+            brake_disable( );
         }
 
-        brake_state.pedal_command = control_data->pedal_command;
+        brake_state.pedal_command = brake_command_data->pedal_command;
+
+        g_brake_command_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
 
 void process_chassis_state_1(
-    const oscc_report_chassis_state_1_data_s * const chassis_data )
+    const uint8_t * const data )
 {
-    if ( chassis_data != NULL )
+    if ( data != NULL )
     {
-        brake_state.can_pressure = chassis_data->brake_pressure;
+        const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
+                (oscc_report_chassis_state_1_data_s *) data;
+
+        brake_state.can_pressure = chassis_state_1_data->brake_pressure;
     }
 }
 
 
-void handle_ready_rx_frames( const can_frame_s * const rx_frame )
+void handle_ready_rx_frames(
+    const can_frame_s * const frame )
 {
-    if ( rx_frame != NULL )
+    if ( frame != NULL )
     {
-        if ( rx_frame->id == OSCC_CAN_ID_BRAKE_COMMAND )
+        if ( frame->id == OSCC_COMMAND_BRAKE_CAN_ID )
         {
-            brake_control_state.rx_timestamp = GET_TIMESTAMP_MS( );
-
-            process_brake_command(
-                ( const oscc_command_msg_brake * const )rx_frame->data );
+            process_brake_command( frame->data );
         }
-        else if ( rx_frame->id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID )
+        else if ( frame->id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID )
         {
-            process_chassis_state_1(
-                ( const oscc_report_chassis_state_1_data_s * const )rx_frame->data );
+            process_chassis_state_1( frame->data );
         }
     }
 }
@@ -101,9 +100,12 @@ void handle_ready_rx_frames( const can_frame_s * const rx_frame )
 
 void check_rx_timeouts( void )
 {
-    uint32_t delta = get_time_delta( brake_control_state.rx_timestamp, GET_TIMESTAMP_MS() );
+    bool timeout = is_timeout(
+        g_brake_command_rx_timestamp,
+        GET_TIMESTAMP_MS( ),
+        PARAM_RX_TIMEOUT_IN_MSEC );
 
-    if ( delta >= PARAM_RX_TIMEOUT_IN_MSEC )
+    if ( timeout == true )
     {
         brake_control_state.enable_request = false;
 
