@@ -4,11 +4,13 @@
 
 #include "mcp_can.h"
 #include "can.h"
+#include "gateway_protocol_can.h"
+
+#include "obd_can_protocol.h"
 
 
 #define PIN_OBD_CAN_CHIP_SELECT ( 9 )
 #define PIN_CONTROL_CAN_CHIP_SELECT ( 10 )
-#define PIN_STATUS_LED ( 13 )
 
 
 #ifdef GLOBAL_DEFINED
@@ -24,13 +26,14 @@
 #endif
 
 
-EXTERN can_frame_s tx_frame_heartbeat;
-EXTERN can_frame_s tx_frame_chassis_state1;
-EXTERN can_frame_s tx_frame_chassis_state2;
-EXTERN can_frame_s rx_frame_kia_status1;
-EXTERN can_frame_s rx_frame_kia_status2;
-EXTERN can_frame_s rx_frame_kia_status3;
-EXTERN can_frame_s rx_frame_kia_status4;
+EXTERN oscc_report_heartbeat_s tx_heartbeat;
+EXTERN oscc_report_chassis_state_1_s tx_chassis_state_1;
+EXTERN oscc_report_chassis_state_2_s tx_chassis_state_2;
+
+EXTERN uint32_t obd_steering_wheel_angle_rx_timestamp;
+EXTERN uint32_t obd_wheel_speed_rx_timestamp;
+EXTERN uint32_t obd_brake_pressure_rx_timestamp;
+EXTERN uint32_t obd_turn_signal_rx_timestamp;
 
 
 #endif

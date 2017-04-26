@@ -30,21 +30,13 @@
 #include "communications.h"
 
 
-#define STATUS_LED_ON() digitalWrite( PIN_STATUS_LED, HIGH );
-#define STATUS_LED_OFF() digitalWrite( PIN_STATUS_LED, LOW );
-
-
 int main( void )
 {
     init_arduino( );
 
-    init_structs_to_zero( );
+    init_globals( );
 
-    init_pins( );
-
-    SET_STATE( tx_frame_heartbeat.data, OSCC_HEARTBEAT_STATE_INIT );
-
-    STATUS_LED_OFF();
+    SET_STATE( tx_heartbeat.data, OSCC_REPORT_HEARTBEAT_STATE_INIT );
 
     // disable watchdog
     wdt_disable();
@@ -65,26 +57,19 @@ int main( void )
 
     // offset CAN frame Tx timestamp
     // so we don't publish at the same time as the heartbeat frame
-    tx_frame_chassis_state1.timestamp = GET_TIMESTAMP_MS();
+    tx_chassis_state_1.timestamp = GET_TIMESTAMP_MS();
 
     // wait a little so we can offset CAN frame Tx timestamps
     SLEEP_MS(5);
 
     // offset CAN frame Tx timestamp
     // so we dont publish at the same time as the chassis1 frame
-    tx_frame_chassis_state2.timestamp = GET_TIMESTAMP_MS();
+    tx_chassis_state_2.timestamp = GET_TIMESTAMP_MS();
 
     // reset watchdog
     wdt_reset();
 
-    rx_frame_kia_status1.timestamp = GET_TIMESTAMP_MS();
-    rx_frame_kia_status2.timestamp = GET_TIMESTAMP_MS();
-    rx_frame_kia_status3.timestamp = GET_TIMESTAMP_MS();
-    rx_frame_kia_status4.timestamp = GET_TIMESTAMP_MS();
-
-    STATUS_LED_ON();
-
-    SET_STATE( tx_frame_heartbeat.data, OSCC_HEARTBEAT_STATE_OK );
+    SET_STATE( tx_heartbeat.data, OSCC_REPORT_HEARTBEAT_STATE_OK );
 
     DEBUG_PRINTLN( "init: pass" );
 

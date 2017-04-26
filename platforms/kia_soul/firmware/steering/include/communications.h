@@ -49,7 +49,7 @@ void process_steering_command( void );
 
 
 // *****************************************************
-// Function:    process_chassis_state1
+// Function:    process_chassis_state_1
 //
 // Purpose:     Process the chassis state message
 //
@@ -59,8 +59,8 @@ void process_steering_command( void );
 //                             the steering angle
 //
 // *****************************************************
-void process_chassis_state1(
-    const oscc_chassis_state1_data_s * const chassis_data );
+void process_chassis_state_1(
+    const oscc_report_chassis_state_1_data_s * const chassis_data );
 
 
 // *****************************************************

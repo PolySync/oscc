@@ -9,6 +9,7 @@
 #define CAN_BAUD (CAN_500KBPS)
 #define CAN_INIT_RETRY_DELAY (50)
 #define CAN_FRAME_DLC_MAX (8)
+#define CAN_STANDARD (0)
 
 
 typedef enum

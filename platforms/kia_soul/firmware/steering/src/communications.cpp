@@ -88,8 +88,8 @@ void process_steering_command(
 }
 
 
-void process_chassis_state1(
-    const oscc_chassis_state1_data_s * const chassis_data )
+void process_chassis_state_1(
+    const oscc_report_chassis_state_1_data_s * const chassis_data )
 {
     if ( chassis_data != NULL )
     {
@@ -112,10 +112,10 @@ void handle_ready_rx_frame(
             process_steering_command(
                 ( const oscc_command_msg_steering * const )frame->data );
         }
-        else if ( frame->id == KIA_STATUS1_MESSAGE_ID )
+        else if ( frame->id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID )
         {
-            process_chassis_state1(
-                ( const oscc_chassis_state1_data_s * const )frame->data );
+            process_chassis_state_1(
+                ( const oscc_report_chassis_state_1_data_s * const )frame->data );
         }
     }
 }
