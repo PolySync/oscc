@@ -48,7 +48,7 @@ void publish_chassis_state_2_frame( void)
 }
 
 
-void publish_timed_tx_frames( void )
+void publish_reports( void )
 {
     uint32_t delta = 0;
 
@@ -165,7 +165,7 @@ void process_obd_turn_signal(
 }
 
 
-void handle_ready_rx_frames( const can_frame_s * const rx_frame )
+void process_rx_frame( const can_frame_s * const rx_frame )
 {
     if ( rx_frame != NULL )
     {
@@ -189,7 +189,7 @@ void handle_ready_rx_frames( const can_frame_s * const rx_frame )
 }
 
 
-void check_rx_timeouts( void )
+void check_for_command_timeout( void )
 {
     bool timeout = false;
 

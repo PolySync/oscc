@@ -20,7 +20,7 @@
 #define PIN_SPOOF_ENABLE ( 6 )
 
 #define PARAM_ACCELERATOR_OVERRIDE_THRESHOLD_IN_DECIBARS ( 1000.0 )
-#define PARAM_RX_TIMEOUT_IN_MSEC ( 250 )
+#define PARAM_COMMAND_TIMEOUT_IN_MSEC ( 250 )
 
 
 #ifdef GLOBAL_DEFINED
@@ -36,8 +36,8 @@
 #endif
 
 
-EXTERN uint32_t g_throttle_command_rx_timestamp;
-EXTERN uint32_t g_throttle_report_tx_timestamp;
+EXTERN uint32_t g_throttle_command_last_rx_timestamp;
+EXTERN uint32_t g_throttle_report_last_tx_timestamp;
 
 EXTERN kia_soul_throttle_state_s throttle_state;
 EXTERN kia_soul_throttle_control_state_s throttle_control_state;

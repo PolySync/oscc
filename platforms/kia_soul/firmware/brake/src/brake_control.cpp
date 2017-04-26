@@ -90,7 +90,6 @@ void brake_check_operator_override( void )
     {
         DEBUG_PRINTLN( "driver override" );
         brake_control_state.operator_override = true;
-        brake_control_state.enable_request = false;
     }
     else
     {

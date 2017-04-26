@@ -13,7 +13,7 @@
 #define PARAM_BRAKE_PRESSURE_MIN_IN_DECIBARS ( 12.0 )
 #define PARAM_BRAKE_PRESSURE_MAX_IN_DECIBARS ( 947.9 )
 #define PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ( 43.2 )
-#define PARAM_RX_TIMEOUT_IN_MSEC ( 2500 )
+#define PARAM_COMMAND_TIMEOUT_IN_MSEC ( 2500 )
 #define PARAM_PID_PROPORTIONAL_GAIN ( 0.5 )
 #define PARAM_PID_INTEGRAL_GAIN ( 0.2 )
 #define PARAM_PID_DERIVATIVE_GAIN ( 0.001 )
@@ -59,8 +59,8 @@
 #endif
 
 
-EXTERN uint32_t g_brake_command_rx_timestamp;
-EXTERN uint32_t g_brake_report_tx_timestamp;
+EXTERN uint32_t g_brake_command_last_rx_timestamp;
+EXTERN uint32_t g_brake_report_last_tx_timestamp;
 
 EXTERN kia_soul_brake_state_s brake_state;
 EXTERN kia_soul_brake_control_state_s brake_control_state;

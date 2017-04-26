@@ -20,8 +20,8 @@ void init_globals( void )
             sizeof(steering_control_state) );
 
     // Initialize the timestamps to avoid timeout warnings on start up
-    g_steering_command_rx_timestamp = GET_TIMESTAMP_MS( );
-    g_steering_report_tx_timestamp = GET_TIMESTAMP_MS( );
+    g_steering_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
+    g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 
     pid_zeroize( &pid, PARAM_PID_WINDUP_GUARD );
 }

@@ -8,9 +8,9 @@ void publish_timed_report( void );
 
 void process_throttle_command( const uint8_t * const data );
 
-void handle_ready_rx_frame( can_frame_s * const frame );
+void process_rx_frame( can_frame_s * const frame );
 
-void check_rx_timeouts( void );
+void check_for_command_timeout( void );
 
 
 #endif

@@ -18,8 +18,8 @@ void init_globals( void )
             sizeof(brake_control_state) );
 
     // Initialize the timestamps to avoid timeout warnings on start up
-    g_brake_command_rx_timestamp = GET_TIMESTAMP_MS( );
-    g_brake_command_rx_timestamp = GET_TIMESTAMP_MS( );
+    g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
+    g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
 }
 
 

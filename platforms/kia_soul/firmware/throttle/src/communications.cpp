@@ -28,13 +28,13 @@ void publish_throttle_report( void )
             throttle_report.dlc,
             (uint8_t*) &throttle_report.data );
 
-    g_throttle_report_tx_timestamp = GET_TIMESTAMP_MS();
+    g_throttle_report_last_tx_timestamp = GET_TIMESTAMP_MS();
 }
 
 
 void publish_timed_report( void )
 {
-    uint32_t delta = get_time_delta( g_throttle_report_tx_timestamp, GET_TIMESTAMP_MS() );
+    uint32_t delta = get_time_delta( g_throttle_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
 
     if( delta >= OSCC_REPORT_THROTTLE_PUBLISH_INTERVAL_IN_MSEC )
     {
@@ -69,12 +69,12 @@ void process_throttle_command(
         DEBUG_PRINT( "accelerator position target: " );
         DEBUG_PRINTLN( throttle_state.accel_pos_target );
 
-        g_throttle_command_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_throttle_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
 
-void handle_ready_rx_frame( can_frame_s * const frame )
+void process_rx_frame( can_frame_s * const frame )
 {
     if ( frame != NULL )
     {
@@ -86,12 +86,12 @@ void handle_ready_rx_frame( can_frame_s * const frame )
 }
 
 
-void check_rx_timeouts( void )
+void check_for_command_timeout( void )
 {
     bool timeout = is_timeout(
-            g_throttle_command_rx_timestamp,
+            g_throttle_command_last_rx_timestamp,
             GET_TIMESTAMP_MS( ),
-            PARAM_RX_TIMEOUT_IN_MSEC );
+            PARAM_COMMAND_TIMEOUT_IN_MSEC );
 
     if( timeout == true )
     {

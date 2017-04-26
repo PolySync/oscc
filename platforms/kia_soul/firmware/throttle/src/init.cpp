@@ -19,8 +19,8 @@ void init_globals( void )
             sizeof(throttle_control_state) );
 
     // update timestamps so we don't set timeout warnings on start up
-    g_throttle_command_rx_timestamp = GET_TIMESTAMP_MS( );
-    g_throttle_report_tx_timestamp = GET_TIMESTAMP_MS( );
+    g_throttle_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
+    g_throttle_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 }
 
 

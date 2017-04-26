@@ -29,7 +29,6 @@ typedef struct
 typedef struct
 {
     bool enabled;
-    bool enable_request;
     bool operator_override;
     uint32_t rx_timestamp;
 } kia_soul_brake_control_state_s;

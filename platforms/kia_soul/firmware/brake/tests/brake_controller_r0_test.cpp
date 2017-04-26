@@ -326,10 +326,10 @@ int main( void )
 
         if( ret == CAN_RX_FRAME_AVAILABLE )
         {
-            handle_ready_rx_frames( &rx_frame );
+            process_rx_frame( &rx_frame );
         }
 
-        publish_timed_tx_frames( );
+        publish_reports( );
 
         process_serial( );
 

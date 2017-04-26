@@ -25,13 +25,13 @@ void publish_steering_report( void )
                     steering_report.dlc,
                     (uint8_t *) &steering_report.data );
 
-    g_steering_report_tx_timestamp = GET_TIMESTAMP_MS( );
+    g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 }
 
 
-void publish_timed_tx_frames( void )
+void publish_reports( void )
 {
-    uint32_t delta = get_time_delta( g_steering_report_tx_timestamp, GET_TIMESTAMP_MS() );
+    uint32_t delta = get_time_delta( g_steering_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
 
     if ( delta >= OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC )
     {
@@ -67,7 +67,7 @@ void process_steering_command(
             disable_control( );
         }
 
-        g_steering_command_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_steering_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
@@ -89,7 +89,7 @@ void process_chassis_state_1_report(
 }
 
 
-void handle_ready_rx_frame(
+void process_rx_frame(
     can_frame_s * const frame )
 {
     if ( frame != NULL )
@@ -106,12 +106,12 @@ void handle_ready_rx_frame(
 }
 
 
-void check_rx_timeouts( void )
+void check_for_command_timeout( void )
 {
     bool timeout = is_timeout(
-            g_steering_command_rx_timestamp,
+            g_steering_command_last_rx_timestamp,
             GET_TIMESTAMP_MS( ),
-            PARAM_RX_TIMEOUT_IN_MSEC);
+            PARAM_COMMAND_TIMEOUT_IN_MSEC);
 
     if( timeout == true )
     {

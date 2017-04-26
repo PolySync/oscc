@@ -31,7 +31,7 @@ int main( void )
 
     init_interfaces( );
 
-    publish_timed_tx_frames( );
+    publish_reports( );
 
     DEBUG_PRINTLN( "init: pass" );
 
@@ -44,14 +44,14 @@ int main( void )
 
         if( ret == CAN_RX_FRAME_AVAILABLE )
         {
-            handle_ready_rx_frame( &rx_frame );
+            process_rx_frame( &rx_frame );
         }
 
         // publish all report CAN frames
-        publish_timed_tx_frames( );
+        publish_reports( );
 
         // check all timeouts
-        check_rx_timeouts( );
+        check_for_command_timeout( );
 
         uint32_t current_timestamp_us = GET_TIMESTAMP_US();
 

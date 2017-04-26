@@ -22,7 +22,7 @@ void publish_steering_report( void );
 
 
 // *****************************************************
-// Function:    publish_timed_tx_frames
+// Function:    publish_reports
 //
 // Purpose:     Determine if enough time has passed to publish the steering
 //              report to the CAN bus again
@@ -32,7 +32,7 @@ void publish_steering_report( void );
 // Parameters:  None
 //
 // *****************************************************
-void publish_timed_tx_frames( void );
+void publish_reports( void );
 
 
 // *****************************************************
@@ -64,7 +64,7 @@ void process_chassis_state_1_report(
 
 
 // *****************************************************
-// Function:    handle_ready_rx_frames
+// Function:    process_rx_frame
 //
 // Purpose:     Parse received CAN data and redirect to correct
 //              processing function
@@ -74,12 +74,12 @@ void process_chassis_state_1_report(
 // Parameters:  frame - frame containing received data
 //
 // *****************************************************
-void handle_ready_rx_frame(
+void process_rx_frame(
     can_frame_s * const frame );
 
 
 // *****************************************************
-// Function:    check_rx_timeouts
+// Function:    check_for_command_timeout
 //
 // Purpose:     If the control is currently enabled, but the receiver indicates
 //              a "watchdog" timeout, then disable the control
@@ -89,7 +89,7 @@ void handle_ready_rx_frame(
 // Parameters:  None
 //
 // *****************************************************
-void check_rx_timeouts( void );
+void check_for_command_timeout( void );
 
 
 #endif

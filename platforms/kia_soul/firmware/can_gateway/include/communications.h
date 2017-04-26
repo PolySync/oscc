@@ -23,7 +23,7 @@ void publish_chassis_state_1_frame( void );
 
 void publish_chassis_state_2_frame( void );
 
-void publish_timed_tx_frames( void );
+void publish_reports( void );
 
 void process_obd_steering_wheel_angle(
     const uint8_t * const data );
@@ -37,9 +37,9 @@ void process_obd_brake_pressure(
 void process_obd_turn_signal(
     const uint8_t * const data );
 
-void handle_ready_rx_frames(
+void process_rx_frame(
     const can_frame_s * const rx_frame );
 
-void check_rx_timeouts( void );
+void check_for_command_timeout( void );
 
 #endif

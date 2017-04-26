@@ -39,12 +39,12 @@ int main( void )
 
         if( ret == CAN_RX_FRAME_AVAILABLE )
         {
-            handle_ready_rx_frame( &rx_frame );
+            process_rx_frame( &rx_frame );
         }
 
         publish_timed_report( );
 
-        check_rx_timeouts( );
+        check_for_command_timeout( );
 
         throttle_state.accel_pos_sensor_low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH ) << 2; //10 bit to 12 bit
         throttle_state.accel_pos_sensor_high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW ) << 2;

@@ -17,7 +17,7 @@ void publish_brake_report( void );
 
 
 // *****************************************************
-// Function:    publish_timed_tx_frames
+// Function:    publish_reports
 //
 // Purpose:     Determine if enough time has passed to publish the braking report
 //
@@ -26,7 +26,7 @@ void publish_brake_report( void );
 // Parameters:  void
 //
 // *****************************************************
-void publish_timed_tx_frames( void );
+void publish_reports( void );
 
 
 // *****************************************************
@@ -59,7 +59,7 @@ void process_chassis_state_1(
 
 
 // *****************************************************
-// Function:    handle_ready_rx_frames
+// Function:    process_rx_frame
 //
 // Purpose:     Parse received CAN data and redirect to correct
 //              processing function
@@ -69,12 +69,12 @@ void process_chassis_state_1(
 // Parameters:  rx_frame - pointer to struct containing to CAN frame
 //
 // *****************************************************
-void handle_ready_rx_frames(
+void process_rx_frame(
     const can_frame_s * const rx_frame );
 
 
 // *****************************************************
-// Function:    check_rx_timeouts
+// Function:    check_for_command_timeout
 //
 // Purpose:     If the control is currently enabled, but the receiver indicates
 //              a "watchdog" timeout, then disable the control
@@ -84,7 +84,7 @@ void handle_ready_rx_frames(
 // Parameters:  void
 //
 // *****************************************************
-void check_rx_timeouts( void );
+void check_for_command_timeout( void );
 
 
 #endif

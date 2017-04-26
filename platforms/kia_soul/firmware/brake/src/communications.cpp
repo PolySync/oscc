@@ -26,13 +26,13 @@ void publish_brake_report( void )
         brake_report.dlc,
         (uint8_t *) &brake_report.data );
 
-    g_brake_report_tx_timestamp = GET_TIMESTAMP_MS( );
+    g_brake_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 }
 
 
-void publish_timed_tx_frames( void )
+void publish_reports( void )
 {
-    uint32_t delta = get_time_delta( g_brake_report_tx_timestamp, GET_TIMESTAMP_MS() );
+    uint32_t delta = get_time_delta( g_brake_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
 
     if ( delta >= OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC )
     {
@@ -63,7 +63,7 @@ void process_brake_command(
 
         brake_state.pedal_command = brake_command_data->pedal_command;
 
-        g_brake_command_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
@@ -81,7 +81,7 @@ void process_chassis_state_1(
 }
 
 
-void handle_ready_rx_frames(
+void process_rx_frame(
     const can_frame_s * const frame )
 {
     if ( frame != NULL )
@@ -98,17 +98,16 @@ void handle_ready_rx_frames(
 }
 
 
-void check_rx_timeouts( void )
+void check_for_command_timeout( void )
 {
     bool timeout = is_timeout(
-        g_brake_command_rx_timestamp,
+        g_brake_command_last_rx_timestamp,
         GET_TIMESTAMP_MS( ),
-        PARAM_RX_TIMEOUT_IN_MSEC );
+        PARAM_COMMAND_TIMEOUT_IN_MSEC );
 
     if ( timeout == true )
     {
-        brake_control_state.enable_request = false;
-
-        DEBUG_PRINTLN("timeout");
+        brake_disable( );
+        DEBUG_PRINTLN( "Control disabled: Timeout" );
     }
 }

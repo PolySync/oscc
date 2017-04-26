@@ -33,7 +33,7 @@
 #define PARAM_PID_INTEGRAL_GAIN ( 1.3 )
 #define PARAM_PID_DERIVATIVE_GAIN ( 0.03 )
 #define PARAM_PID_WINDUP_GUARD ( 1500 )
-#define PARAM_RX_TIMEOUT_IN_MSEC ( 250 )
+#define PARAM_COMMAND_TIMEOUT_IN_MSEC ( 250 )
 
 #define PIN_DAC_CHIP_SELECT ( 9 )
 #define PIN_CAN_CHIP_SELECT ( 10 )
@@ -57,8 +57,8 @@
 #endif
 
 
-EXTERN uint32_t g_steering_command_rx_timestamp;
-EXTERN uint32_t g_steering_report_tx_timestamp;
+EXTERN uint32_t g_steering_command_last_rx_timestamp;
+EXTERN uint32_t g_steering_report_last_tx_timestamp;
 
 EXTERN kia_soul_steering_state_s steering_state;
 EXTERN kia_soul_steering_control_state_s steering_control_state;
