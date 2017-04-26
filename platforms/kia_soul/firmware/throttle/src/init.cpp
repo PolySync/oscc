@@ -1,20 +1,26 @@
 #include <Arduino.h>
 #include "serial.h"
 #include "can.h"
+#include "time.h"
+#include "debug.h"
 
 #include "globals.h"
 #include "init.h"
 
 
-void init_structs( void )
+void init_globals( void )
 {
-    memset( &rx_frame_throttle_command,
+    memset( &throttle_state,
             0,
-            sizeof( rx_frame_throttle_command ) );
+            sizeof(throttle_state) );
 
-    throttle_control_state.enabled = false;
-    throttle_control_state.emergency_stop = false;
-    throttle_control_state.operator_override = false;
+    memset( &throttle_control_state,
+            0,
+            sizeof(throttle_control_state) );
+
+    // update timestamps so we don't set timeout warnings on start up
+    g_throttle_command_rx_timestamp = GET_TIMESTAMP_MS( );
+    g_throttle_report_tx_timestamp = GET_TIMESTAMP_MS( );
 }
 
 
@@ -39,5 +45,6 @@ void init_interfaces( void )
     init_serial( );
     #endif
 
-    init_can( can );
+    DEBUG_PRINT( "init Control CAN - " );
+    init_can( control_can );
 }

@@ -6,7 +6,7 @@ void publish_throttle_report( void );
 
 void publish_timed_report( void );
 
-void process_throttle_command( const uint8_t * const rx_frame_buffer );
+void process_throttle_command( const uint8_t * const data );
 
 void handle_ready_rx_frame( can_frame_s * const frame );
 

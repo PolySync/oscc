@@ -8,6 +8,7 @@
 #include "can.h"
 
 #include "throttle_control.h"
+#include "throttle_protocol_can.h"
 
 
 #define PIN_DAC_CHIP_SELECT ( 9 )
@@ -24,19 +25,20 @@
 
 #ifdef GLOBAL_DEFINED
     DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, PIN_DAC_CHIP_SELECT );
-    MCP_CAN can( PIN_CAN_CHIP_SELECT );
+    MCP_CAN control_can( PIN_CAN_CHIP_SELECT );
 
     #define EXTERN
 #else
     extern DAC_MCP49xx dac;
-    extern MCP_CAN can;
+    extern MCP_CAN control_can;
 
     #define EXTERN extern
 #endif
 
 
-EXTERN can_frame_s rx_frame_throttle_command;
-EXTERN can_frame_s tx_frame_throttle_report;
+EXTERN uint32_t g_throttle_command_rx_timestamp;
+EXTERN uint32_t g_throttle_report_tx_timestamp;
+
 EXTERN kia_soul_throttle_state_s throttle_state;
 EXTERN kia_soul_throttle_control_state_s throttle_control_state;
 

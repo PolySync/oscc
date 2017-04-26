@@ -22,7 +22,7 @@ int main( void )
 {
     init_arduino( );
 
-    init_structs( );
+    init_globals( );
 
     init_pins( );
 
@@ -30,16 +30,12 @@ int main( void )
 
     publish_throttle_report( );
 
-    // update last Rx timestamps so we don't set timeout warnings on start up
-    rx_frame_throttle_command.timestamp = GET_TIMESTAMP_MS( );
-
     DEBUG_PRINTLN( "init: pass" );
-
 
     while( true )
     {
         can_frame_s rx_frame;
-        can_status_t ret = check_for_rx_frame( can, &rx_frame );
+        can_status_t ret = check_for_rx_frame( control_can, &rx_frame );
 
         if( ret == CAN_RX_FRAME_AVAILABLE )
         {

@@ -6,28 +6,35 @@
  * @brief Throttle command message (CAN frame) ID.
  *
  */
-#define OSCC_CAN_ID_THROTTLE_COMMAND (0x062)
+#define OSCC_COMMAND_THROTTLE_CAN_ID (0x62)
 
 
 /*
  * @brief Throttle report message (CAN frame) ID.
  *
  */
-#define OSCC_CAN_ID_THROTTLE_REPORT (0x063)
+#define OSCC_REPORT_THROTTLE_CAN_ID (0x63)
+
+
+/*
+ * @brief Throttle report message (CAN frame) length.
+ *
+ */
+#define OSCC_REPORT_THROTTLE_CAN_DLC (8)
 
 
 /*
  * @brief Throttle report message publishing interval.
  *
  */
-#define OSCC_PUBLISH_INTERVAL_THROTTLE_REPORT (20)
+#define OSCC_REPORT_THROTTLE_PUBLISH_INTERVAL_IN_MSEC (20)
 
 
 /**
  * @brief Throttle command message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref OSCC_CAN_ID_THROTTLE_COMMAND
+ * CAN frame ID: \ref OSCC_COMMAND_THROTTLE_CAN_ID
  * Transmit rate: 20 ms
  *
  */
@@ -69,14 +76,21 @@ typedef struct
     //
     //
     uint8_t count; /*!< Optional watchdog counter. */
-} oscc_command_msg_throttle;
+} oscc_command_throttle_data_s;
+
+
+typedef struct
+{
+    uint32_t timestamp;
+    oscc_command_throttle_data_s data;
+} oscc_command_throttle_s;
 
 
 /**
  * @brief Throttle report message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref OSCC_CAN_ID_THROTTLE_REPORT
+ * CAN frame ID: \ref OSCC_REPORT_THROTTLE_CAN_ID
  * Transmit rate: 20 ms
  *
  */
@@ -140,7 +154,16 @@ typedef struct
     uint8_t fault_connector : 1; /*!< Connector fault state.
                                   * Value zero means no fault (CD pins shorted).
                                   * Value one means fault active (CD pins not shorted). */
-} oscc_report_msg_throttle;
+} oscc_report_throttle_data_s;
+
+
+typedef struct
+{
+    const uint32_t id = OSCC_REPORT_THROTTLE_CAN_ID;
+    const uint8_t dlc = OSCC_REPORT_THROTTLE_CAN_DLC;
+    uint32_t timestamp;
+    oscc_report_throttle_data_s data;
+} oscc_report_throttle_s;
 
 
 #endif /* _OSCC_THROTTLE_PROTOCOL_CAN_H_ */
