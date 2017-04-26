@@ -25,18 +25,13 @@ int main( void )
 {
     init_arduino( );
 
-    init_structs( );
+    init_globals( );
 
     init_pins( );
 
     init_interfaces( );
 
     publish_timed_tx_frames( );
-
-    // Initialize the Rx timestamps to avoid timeout warnings on start up
-    rx_frame_steering_command.timestamp = GET_TIMESTAMP_MS( );
-
-    pid_zeroize( &pid, PARAM_PID_WINDUP_GUARD );
 
     DEBUG_PRINTLN( "init: pass" );
 

@@ -9,28 +9,35 @@
  * @brief Steering command message (CAN frame) ID.
  *
  */
-#define OSCC_CAN_ID_STEERING_COMMAND (0x064)
+#define OSCC_COMMAND_STEERING_CAN_ID (0x64)
 
 
 /*
  * @brief Steering report message (CAN frame) ID.
  *
  */
-#define OSCC_CAN_ID_STEERING_REPORT (0x065)
+#define OSCC_REPORT_STEERING_CAN_ID (0x65)
+
+
+/*
+ * @brief Steering report message (CAN frame) length.
+ *
+ */
+#define OSCC_REPORT_STEERING_CAN_DLC (8)
 
 
 /*
  * @brief Steering report message publishing interval.
  *
  */
-#define OSCC_PUBLISH_INTERVAL_STEERING_REPORT (20)
+#define OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC (20)
 
 
 /**
  * @brief Steering command message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref OSCC_CAN_ID_STEERING_COMMAND
+ * CAN frame ID: \ref OSCC_COMMAND_STEERING_CAN_ID
  * Transmit rate: 20 ms
  *
  */
@@ -75,14 +82,21 @@ typedef struct
     //
     //
     uint8_t count; /*!< Optional watchdog counter. */
-} oscc_command_msg_steering;
+} oscc_command_steering_data_s;
+
+
+typedef struct
+{
+    uint32_t timestamp;
+    oscc_command_steering_data_s data;
+} oscc_command_steering_s;
 
 
 /**
  * @brief Steering report message.
  *
  * Message size (CAN frame DLC): 8 bytes
- * CAN frame ID: \ref OSCC_CAN_ID_STEERING_REPORT
+ * CAN frame ID: \ref OSCC_REPORT_STEERING_CAN_ID
  * Transmit rate: 20 ms
  *
  */
@@ -144,7 +158,16 @@ typedef struct
     uint8_t fault_connector : 1; /*!< Connector fault state.
                                   * Value zero means no fault (CD pins shorted).
                                   * Value one means fault active (CD pins not shorted). */
-} oscc_report_msg_steering;
+} oscc_report_steering_data_s;
+
+
+typedef struct
+{
+    const uint32_t id = OSCC_REPORT_STEERING_CAN_ID;
+    const uint8_t dlc = OSCC_REPORT_STEERING_CAN_DLC;
+    uint32_t timestamp;
+    oscc_report_steering_data_s data;
+} oscc_report_steering_s;
 
 
 #endif /* _OSCC_STEERING_PROTOCOL_CAN_H_ */

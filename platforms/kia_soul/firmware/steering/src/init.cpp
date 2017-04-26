@@ -1,20 +1,29 @@
 #include <Arduino.h>
 #include "serial.h"
 #include "can.h"
+#include "debug.h"
+#include "time.h"
+#include "PID.h"
 
 #include "init.h"
 #include "globals.h"
 
 
-void init_structs( void )
+void init_globals( void )
 {
-    memset( &rx_frame_steering_command,
+    memset( &steering_state,
             0,
-            sizeof(rx_frame_steering_command) );
+            sizeof(steering_state) );
 
-    steering_control_state.enabled = false;
-    steering_control_state.emergency_stop = false;
-    steering_control_state.operator_override = false;
+    memset( &steering_control_state,
+            0,
+            sizeof(steering_control_state) );
+
+    // Initialize the timestamps to avoid timeout warnings on start up
+    g_steering_command_rx_timestamp = GET_TIMESTAMP_MS( );
+    g_steering_report_tx_timestamp = GET_TIMESTAMP_MS( );
+
+    pid_zeroize( &pid, PARAM_PID_WINDUP_GUARD );
 }
 
 
@@ -39,5 +48,6 @@ void init_interfaces( void )
     init_serial( );
     #endif
 
+    DEBUG_PRINT( "init Control CAN - " );
     init_can( can );
 }

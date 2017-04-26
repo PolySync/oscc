@@ -42,25 +42,25 @@ void publish_timed_tx_frames( void );
 //
 // Returns:     void
 //
-// Parameters:  control_data -  pointer to a steering command control message
+// Parameters:  data -  pointer to a steering command control message
 //
 // *****************************************************
-void process_steering_command( void );
+void process_steering_command( const uint8_t * const data );
 
 
 // *****************************************************
-// Function:    process_chassis_state_1
+// Function:    process_chassis_state_1_report_report
 //
 // Purpose:     Process the chassis state message
 //
 // Returns:     void
 //
-// Parameters:  chassis_data - pointer to a chassis state message that contains
+// Parameters:  data - pointer to a chassis state message that contains
 //                             the steering angle
 //
 // *****************************************************
-void process_chassis_state_1(
-    const oscc_report_chassis_state_1_data_s * const chassis_data );
+void process_chassis_state_1_report(
+    const uint8_t * const data );
 
 
 // *****************************************************
@@ -74,7 +74,8 @@ void process_chassis_state_1(
 // Parameters:  frame - frame containing received data
 //
 // *****************************************************
-void handle_ready_rx_frame( can_frame_s * const frame );
+void handle_ready_rx_frame(
+    can_frame_s * const frame );
 
 
 // *****************************************************

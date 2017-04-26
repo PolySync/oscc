@@ -57,10 +57,12 @@
 #endif
 
 
-EXTERN can_frame_s rx_frame_steering_command;
-EXTERN can_frame_s tx_frame_steering_report;
+EXTERN uint32_t g_steering_command_rx_timestamp;
+EXTERN uint32_t g_steering_report_tx_timestamp;
+
 EXTERN kia_soul_steering_state_s steering_state;
 EXTERN kia_soul_steering_control_state_s steering_control_state;
+
 EXTERN PID pid;
 EXTERN uint8_t torque_sum;
 
