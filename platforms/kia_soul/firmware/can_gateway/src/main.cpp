@@ -18,7 +18,7 @@
 
 #include "arduino_init.h"
 #include "mcp_can.h"
-#include "gateway_protocol_can.h"
+#include "gateway_can_protocol.h"
 #include "chassis_state_can_protocol.h"
 #include "serial.h"
 #include "can.h"

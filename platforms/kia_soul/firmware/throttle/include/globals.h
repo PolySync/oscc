@@ -8,7 +8,7 @@
 #include "can.h"
 
 #include "throttle_control.h"
-#include "throttle_protocol_can.h"
+#include "throttle_can_protocol.h"
 
 
 #define PIN_DAC_CHIP_SELECT ( 9 )

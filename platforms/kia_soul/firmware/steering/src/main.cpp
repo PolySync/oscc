@@ -7,7 +7,7 @@
 #include "arduino_init.h"
 #include "mcp_can.h"
 #include "chassis_state_can_protocol.h"
-#include "steering_protocol_can.h"
+#include "steering_can_protocol.h"
 #include "PID.h"
 #include "DAC_MCP49xx.h"
 #include "serial.h"

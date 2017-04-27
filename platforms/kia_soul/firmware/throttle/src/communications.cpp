@@ -1,6 +1,6 @@
 #include "mcp_can.h"
 #include "chassis_state_can_protocol.h"
-#include "throttle_protocol_can.h"
+#include "throttle_can_protocol.h"
 #include "time.h"
 #include "debug.h"
 

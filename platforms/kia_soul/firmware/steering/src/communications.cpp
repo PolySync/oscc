@@ -1,7 +1,7 @@
 #include "mcp_can.h"
 #include "can.h"
 #include "chassis_state_can_protocol.h"
-#include "steering_protocol_can.h"
+#include "steering_can_protocol.h"
 #include "time.h"
 #include "debug.h"
 
