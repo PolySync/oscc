@@ -1,6 +1,8 @@
 #ifndef _OSCC_DEBUG_H_
 #define _OSCC_DEBUG_H_
 
+#include <Arduino.h>
+
 #ifdef DEBUG
     #warning "DEBUG defined"
     #define DEBUG_PRINT(x) Serial.print(x)
