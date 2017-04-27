@@ -1,4 +1,5 @@
 #include "gateway_protocol_can.h"
+#include "chassis_state_can_protocol.h"
 #include "mcp_can.h"
 #include "can.h"
 #include "time.h"

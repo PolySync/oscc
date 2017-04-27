@@ -5,6 +5,7 @@
 #include "can.h"
 #include "mcp_can.h"
 #include "gateway_protocol_can.h"
+#include "chassis_state_can_protocol.h"
 
 
 #define SET_WARNING(data, x) (((oscc_report_heartbeat_data_s*) &data)->warning_register |= ((uint16_t) x))
