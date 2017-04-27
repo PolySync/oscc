@@ -2,45 +2,73 @@
 #define _OSCC_KIA_SOUL_CAN_GATEWAY_COMMUNICATIONS_H_
 
 
-#include "can.h"
-#include "mcp_can.h"
-#include "gateway_can_protocol.h"
-#include "chassis_state_can_protocol.h"
+#include <stdint.h>
+
+#include "globals.h"
 
 
-#define SET_WARNING(data, x) (((oscc_report_heartbeat_data_s*) &data)->warning_register |= ((uint16_t) x))
-#define CLEAR_WARNING(data, x) (((oscc_report_heartbeat_data_s*) &data)->warning_register &= ~((uint16_t) x))
-#define SET_ERROR(data, x) (((oscc_report_heartbeat_data_s*) &data)->error_register |= ((uint16_t) x))
-#define CLEAR_ERROR(data, x) (((oscc_report_heartbeat_data_s*) &data)->error_register &= ~((uint16_t) x))
-#define SET_STATE(data, x) (((oscc_report_heartbeat_data_s*) &data)->state = ((uint8_t) x))
-#define GET_STATE(data) (((oscc_report_heartbeat_data_s*) &data)->state)
-#define SET_CHASSIS_FLAG(data, x) (((oscc_report_chassis_state_1_data_s*) &data)->flags |= ((uint8_t) x))
-#define CLEAR_CHASSIS_FLAG(data, x) (((oscc_report_chassis_state_1_data_s*) &data)->flags &= ~((uint8_t) x))
+#define SET_HEARTBEAT_WARNING(x) (tx_heartbeat.data.warning_register |= ((uint16_t) x))
+#define CLEAR_HEARTBEAT_WARNING(x) (tx_heartbeat.data.warning_register &= ~((uint16_t) x))
+#define SET_HEARTBEAT_ERROR(x) (tx_heartbeat.data.error_register |= ((uint16_t) x))
+#define CLEAR_HEARTBEAT_ERROR(x) (tx_heartbeat.data.error_register &= ~((uint16_t) x))
+#define SET_HEARTBEAT_STATE(x) (tx_heartbeat.data.state = ((uint8_t) x))
+#define GET_HEARTBEAT_STATE() (tx_heartbeat.data.state)
+
+#define SET_CHASSIS_1_FLAG(x) (tx_chassis_state_1.data.flags |= ((uint8_t) x))
+#define CLEAR_CHASSIS_1_FLAG(x) (tx_chassis_state_1.data.flags &= ~((uint8_t) x))
 
 
-void publish_heartbeat_frame( void );
+// *****************************************************
+// Function:    publish_heartbeat_report
+//
+// Purpose:     Fill out heartbeat report and publish it.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+void publish_heartbeat_report( void );
 
-void publish_chassis_state_1_frame( void );
 
-void publish_chassis_state_2_frame( void );
-
+// *****************************************************
+// Function:    publish_reports
+//
+// Purpose:     Determine if enough time has passed to publish reports.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
 void publish_reports( void );
 
-void process_obd_steering_wheel_angle(
-    const uint8_t * const data );
 
-void process_obd_wheel_speed(
-    const uint8_t * const data );
+// *****************************************************
+// Function:    check_for_controller_command_timeout
+//
+// Purpose:     If the control is currently enabled, but the receiver indicates
+//              a "watchdog" timeout, then disable the control
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+void check_for_controller_command_timeout( void );
 
-void process_obd_brake_pressure(
-    const uint8_t * const data );
 
-void process_obd_turn_signal(
-    const uint8_t * const data );
+// *****************************************************
+// Function:    check_for_incoming_message
+//
+// Purpose:     Check for incoming CAN frame.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+void check_for_incoming_message( void );
 
-void process_rx_frame(
-    const can_frame_s * const rx_frame );
-
-void check_for_command_timeout( void );
 
 #endif

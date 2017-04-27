@@ -3,14 +3,33 @@
 #include "mcp_can.h"
 #include "can.h"
 #include "time.h"
-#include "debug.h"
 
 #include "globals.h"
 #include "communications.h"
 #include "obd_can_protocol.h"
 
 
-void publish_heartbeat_frame( void )
+static void publish_chassis_state_1_report( void );
+
+static void publish_chassis_state_2_report( void );
+
+static void process_obd_steering_wheel_angle(
+    const uint8_t * const data );
+
+static void process_obd_wheel_speed(
+    const uint8_t * const data );
+
+static void process_obd_brake_pressure(
+    const uint8_t * const data );
+
+static void process_obd_turn_signal(
+    const uint8_t * const data );
+
+static void process_rx_frame(
+    const can_frame_s * const rx_frame );
+
+
+void publish_heartbeat_report( void )
 {
     tx_heartbeat.data.hardware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_HARDWARE;
     tx_heartbeat.data.firmware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_FIRMWARE;
@@ -25,7 +44,96 @@ void publish_heartbeat_frame( void )
 }
 
 
-void publish_chassis_state_1_frame( void )
+void publish_reports( void )
+{
+    uint32_t delta = 0;
+
+    delta = get_time_delta( tx_heartbeat.timestamp, GET_TIMESTAMP_MS() );
+    if( delta >= OSCC_REPORT_HEARTBEAT_PUBLISH_INTERVAL_IN_MSEC )
+    {
+        publish_heartbeat_report( );
+    }
+
+    delta = get_time_delta( tx_chassis_state_1.timestamp, GET_TIMESTAMP_MS() );
+    if( delta >= OSCC_REPORT_CHASSIS_STATE_1_PUBLISH_INTERVAL_IN_MSEC )
+    {
+        publish_chassis_state_1_report( );
+    }
+
+    delta = get_time_delta( tx_chassis_state_2.timestamp, GET_TIMESTAMP_MS() );
+    if( delta >= OSCC_REPORT_CHASSIS_STATE_2_PUBLISH_INTERVAL_IN_MSEC )
+    {
+        publish_chassis_state_2_report( );
+    }
+}
+
+
+void check_for_controller_command_timeout( void )
+{
+    bool timeout = false;
+
+    timeout = is_timeout(
+            obd_steering_wheel_angle_rx_timestamp,
+            GET_TIMESTAMP_MS(),
+            KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_RX_WARN_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_HEARTBEAT_WARNING_BIT );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_VALID );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
+    }
+
+    timeout = is_timeout(
+            obd_wheel_speed_rx_timestamp,
+            GET_TIMESTAMP_MS(),
+            KIA_SOUL_OBD_WHEEL_SPEED_RX_WARN_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_WHEEL_SPEED_HEARTBEAT_WARNING_BIT );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_WHEEL_SPEED_VALID );
+    }
+
+    timeout = is_timeout(
+            obd_brake_pressure_rx_timestamp,
+            GET_TIMESTAMP_MS(),
+            KIA_SOUL_OBD_BRAKE_PRESSURE_RX_WARN_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_BRAKE_PRESSURE_WARNING_BIT );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID );
+    }
+
+    timeout = is_timeout(
+            obd_turn_signal_rx_timestamp,
+            GET_TIMESTAMP_MS(),
+            KIA_SOUL_OBD_TURN_SIGNAL_RX_WARN_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_TURN_SIGNAL_WARNING_BIT );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON );
+    }
+}
+
+
+void check_for_incoming_message( void )
+{
+    can_frame_s rx_frame;
+    can_status_t ret = check_for_rx_frame( obd_can, &rx_frame );
+
+    if( ret == CAN_RX_FRAME_AVAILABLE )
+    {
+        process_rx_frame( &rx_frame );
+    }
+}
+
+
+static void publish_chassis_state_1_report( void )
 {
     control_can.sendMsgBuf(
             tx_chassis_state_1.id,
@@ -37,7 +145,7 @@ void publish_chassis_state_1_frame( void )
 }
 
 
-void publish_chassis_state_2_frame( void)
+static void publish_chassis_state_2_report( void)
 {
     control_can.sendMsgBuf(
             tx_chassis_state_2.id,
@@ -49,31 +157,7 @@ void publish_chassis_state_2_frame( void)
 }
 
 
-void publish_reports( void )
-{
-    uint32_t delta = 0;
-
-    delta = get_time_delta( tx_heartbeat.timestamp, GET_TIMESTAMP_MS() );
-    if( delta >= OSCC_REPORT_HEARTBEAT_PUBLISH_INTERVAL_IN_MSEC )
-    {
-        publish_heartbeat_frame( );
-    }
-
-    delta = get_time_delta( tx_chassis_state_1.timestamp, GET_TIMESTAMP_MS() );
-    if( delta >= OSCC_REPORT_CHASSIS_STATE_1_PUBLISH_INTERVAL_IN_MSEC )
-    {
-        publish_chassis_state_1_frame( );
-    }
-
-    delta = get_time_delta( tx_chassis_state_2.timestamp, GET_TIMESTAMP_MS() );
-    if( delta >= OSCC_REPORT_CHASSIS_STATE_2_PUBLISH_INTERVAL_IN_MSEC )
-    {
-        publish_chassis_state_2_frame( );
-    }
-}
-
-
-void process_obd_steering_wheel_angle(
+static void process_obd_steering_wheel_angle(
     const uint8_t * const data )
 {
     if ( data != NULL )
@@ -81,11 +165,11 @@ void process_obd_steering_wheel_angle(
         kia_soul_obd_steering_wheel_angle_data_s * steering_wheel_angle_data =
             (kia_soul_obd_steering_wheel_angle_data_s *) data;
 
-        CLEAR_WARNING( tx_heartbeat.data, KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_HEARTBEAT_WARNING_BIT );
-        SET_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_VALID );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
+        CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_HEARTBEAT_WARNING_BIT );
+        SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_VALID );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
 
-        #warning "TODO - steering wheel angle convertion and rate calculation"
+        #warning "TODO - steering wheel angle conversion and rate calculation"
 
         tx_chassis_state_1.data.steering_wheel_angle_rate = 0;
         tx_chassis_state_1.data.steering_wheel_angle = steering_wheel_angle_data->steering_angle;
@@ -95,7 +179,7 @@ void process_obd_steering_wheel_angle(
 }
 
 
-void process_obd_wheel_speed(
+static void process_obd_wheel_speed(
     const uint8_t * const data )
 {
     if ( data != NULL )
@@ -103,10 +187,10 @@ void process_obd_wheel_speed(
         kia_soul_obd_wheel_speed_data_s * wheel_speed_data =
             (kia_soul_obd_wheel_speed_data_s *) data;
 
-        CLEAR_WARNING( tx_heartbeat.data, KIA_SOUL_OBD_WHEEL_SPEED_HEARTBEAT_WARNING_BIT );
-        SET_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_WHEEL_SPEED_VALID );
+        CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_WHEEL_SPEED_HEARTBEAT_WARNING_BIT );
+        SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_WHEEL_SPEED_VALID );
 
-        #warning "TODO - wheel speed unit convertion"
+        #warning "TODO - wheel speed unit conversion"
 
         tx_chassis_state_2.data.wheel_speed_lf = wheel_speed_data->wheel_speed_lf;
         tx_chassis_state_2.data.wheel_speed_rf = wheel_speed_data->wheel_speed_rf;
@@ -118,7 +202,7 @@ void process_obd_wheel_speed(
 }
 
 
-void process_obd_brake_pressure(
+static void process_obd_brake_pressure(
     const uint8_t * const data )
 {
     if ( data != NULL )
@@ -126,10 +210,10 @@ void process_obd_brake_pressure(
         kia_soul_obd_brake_pressure_data_s * brake_pressure_data =
             (kia_soul_obd_brake_pressure_data_s *) data;
 
-        CLEAR_WARNING( tx_heartbeat.data, KIA_SOUL_OBD_BRAKE_PRESSURE_WARNING_BIT );
-        SET_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID );
+        CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_BRAKE_PRESSURE_WARNING_BIT );
+        SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID );
 
-        #warning "TODO - brake pressure unit convertion"
+        #warning "TODO - brake pressure unit conversion"
 
         tx_chassis_state_1.data.brake_pressure = brake_pressure_data->master_cylinder_pressure;
 
@@ -138,7 +222,7 @@ void process_obd_brake_pressure(
 }
 
 
-void process_obd_turn_signal(
+static void process_obd_turn_signal(
     const uint8_t * const data )
 {
     if ( data != NULL )
@@ -146,19 +230,19 @@ void process_obd_turn_signal(
         kia_soul_obd_turn_signal_data_s * turn_signal_data =
             (kia_soul_obd_turn_signal_data_s *) data;
 
-        CLEAR_WARNING( tx_heartbeat.data, KIA_SOUL_OBD_TURN_SIGNAL_WARNING_BIT );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON );
+        CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_TURN_SIGNAL_WARNING_BIT );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
+        CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON );
 
         if( turn_signal_data->turn_signal_flags == KIA_SOUL_OBD_TURN_SIGNAL_FLAG_LEFT_TURN )
         {
-            SET_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON );
+            SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON );
         }
 
         if( turn_signal_data->turn_signal_flags == KIA_SOUL_OBD_TURN_SIGNAL_FLAG_RIGHT_TURN )
         {
-            SET_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
+            SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
         }
 
         obd_turn_signal_rx_timestamp = GET_TIMESTAMP_MS( );
@@ -166,7 +250,8 @@ void process_obd_turn_signal(
 }
 
 
-void process_rx_frame( const can_frame_s * const rx_frame )
+static void process_rx_frame(
+    const can_frame_s * const rx_frame )
 {
     if ( rx_frame != NULL )
     {
@@ -186,58 +271,5 @@ void process_rx_frame( const can_frame_s * const rx_frame )
         {
             process_obd_turn_signal( rx_frame->data );
         }
-    }
-}
-
-
-void check_for_command_timeout( void )
-{
-    bool timeout = false;
-
-    timeout = is_timeout(
-            obd_steering_wheel_angle_rx_timestamp,
-            GET_TIMESTAMP_MS(),
-            KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_RX_WARN_TIMEOUT_IN_MSEC);
-
-    if( timeout == true )
-    {
-        SET_WARNING( tx_heartbeat.data, KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_HEARTBEAT_WARNING_BIT );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_VALID );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
-    }
-
-    timeout = is_timeout(
-            obd_wheel_speed_rx_timestamp,
-            GET_TIMESTAMP_MS(),
-            KIA_SOUL_OBD_WHEEL_SPEED_RX_WARN_TIMEOUT_IN_MSEC);
-
-    if( timeout == true )
-    {
-        SET_WARNING( tx_heartbeat.data, KIA_SOUL_OBD_WHEEL_SPEED_HEARTBEAT_WARNING_BIT );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_WHEEL_SPEED_VALID );
-    }
-
-    timeout = is_timeout(
-            obd_brake_pressure_rx_timestamp,
-            GET_TIMESTAMP_MS(),
-            KIA_SOUL_OBD_BRAKE_PRESSURE_RX_WARN_TIMEOUT_IN_MSEC);
-
-    if( timeout == true )
-    {
-        SET_WARNING( tx_heartbeat.data, KIA_SOUL_OBD_BRAKE_PRESSURE_WARNING_BIT );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID );
-    }
-
-    timeout = is_timeout(
-            obd_turn_signal_rx_timestamp,
-            GET_TIMESTAMP_MS(),
-            KIA_SOUL_OBD_TURN_SIGNAL_RX_WARN_TIMEOUT_IN_MSEC);
-
-    if( timeout == true )
-    {
-        SET_WARNING( tx_heartbeat.data, KIA_SOUL_OBD_TURN_SIGNAL_WARNING_BIT );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
-        CLEAR_CHASSIS_FLAG( tx_chassis_state_1.data, OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON );
     }
 }

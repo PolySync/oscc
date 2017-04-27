@@ -1,5 +1,4 @@
 #include <avr/wdt.h>
-#include <Arduino.h>
 #include "serial.h"
 #include "can.h"
 #include "debug.h"
@@ -31,10 +30,16 @@ void init_globals( void )
     obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS();
     obd_brake_pressure_rx_timestamp = GET_TIMESTAMP_MS();
     obd_turn_signal_rx_timestamp = GET_TIMESTAMP_MS();
+
+    // wait a little between timestamps transmissions are offset
+    tx_chassis_state_1.timestamp = GET_TIMESTAMP_MS();
+    SLEEP_MS(5);
+    tx_chassis_state_2.timestamp = GET_TIMESTAMP_MS();
+    SLEEP_MS(5);
 }
 
 
-void init_interfaces( void )
+void init_communication_interfaces( void )
 {
     #ifdef DEBUG
     init_serial();
@@ -43,10 +48,6 @@ void init_interfaces( void )
     DEBUG_PRINT( "init OBD CAN - ");
     init_can( obd_can );
 
-    wdt_reset();
-
     DEBUG_PRINT( "init Control CAN - ");
     init_can( control_can );
-
-    wdt_reset();
 }

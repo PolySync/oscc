@@ -2,11 +2,8 @@
 #define _OSCC_KIA_SOUL_CAN_GATEWAY_INIT_H_
 
 
-#include "globals.h"
-
-
 void init_globals( void );
-void init_interfaces( void );
+void init_communication_interfaces( void );
 
 
 #endif
