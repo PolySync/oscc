@@ -115,7 +115,7 @@ void brake_disable( void );
 
 
 // *****************************************************
-// Function:    brake_check_operator_override
+// Function:    check_for_operator_override
 //
 // Purpose:     This function checks the voltage input from the brake pedal
 //              sensors to determine if the driver is attempting to brake
@@ -141,7 +141,7 @@ void brake_disable( void );
 // Parameters:  void
 //
 // *****************************************************
-void brake_check_operator_override( void );
+void check_for_operator_override( void );
 
 
 // *****************************************************

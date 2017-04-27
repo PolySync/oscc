@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include "mcp_can.h"
 #include "chassis_state_can_protocol.h"
 #include "brake_can_protocol.h"
@@ -11,7 +10,58 @@
 #include "brake_control.h"
 
 
-void publish_brake_report( void )
+static void process_rx_frame(
+    const can_frame_s * const frame );
+
+static void publish_brake_report( void );
+
+static void process_brake_command(
+    const uint8_t * const data );
+
+static void process_chassis_state_1(
+    const uint8_t * const data );
+
+
+void publish_reports( void )
+{
+    uint32_t delta = get_time_delta( g_brake_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
+
+    if ( delta >= OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC )
+    {
+        publish_brake_report( );
+    }
+}
+
+
+void check_for_controller_command_timeout( void )
+{
+    bool timeout = is_timeout(
+        g_brake_command_last_rx_timestamp,
+        GET_TIMESTAMP_MS( ),
+        PARAM_COMMAND_TIMEOUT_IN_MSEC );
+
+    if ( timeout == true )
+    {
+        brake_disable( );
+
+        DEBUG_PRINTLN( "Timeout" );
+    }
+}
+
+
+void check_for_incoming_message( void )
+{
+    can_frame_s rx_frame;
+    can_status_t ret = check_for_rx_frame( can, &rx_frame );
+
+    if( ret == CAN_RX_FRAME_AVAILABLE )
+    {
+        process_rx_frame( &rx_frame );
+    }
+}
+
+
+static void publish_brake_report( void )
 {
     oscc_report_brake_s brake_report;
 
@@ -30,18 +80,7 @@ void publish_brake_report( void )
 }
 
 
-void publish_reports( void )
-{
-    uint32_t delta = get_time_delta( g_brake_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
-
-    if ( delta >= OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC )
-    {
-        publish_brake_report( );
-    }
-}
-
-
-void process_brake_command(
+static void process_brake_command(
     const uint8_t * const data )
 {
     if (data != NULL )
@@ -49,26 +88,29 @@ void process_brake_command(
         const oscc_command_brake_data_s * const brake_command_data =
                 (oscc_command_brake_data_s *) data;
 
-        if( (brake_command_data->enabled == 1)
-            && (brake_control_state.enabled == false) )
+        if( brake_command_data->enabled == true )
         {
             brake_enable( );
         }
 
-        if( (brake_command_data->enabled == 0)
-            && (brake_control_state.enabled == true) )
+        if( brake_command_data->enabled == false )
         {
             brake_disable( );
         }
 
         brake_state.pedal_command = brake_command_data->pedal_command;
 
+        DEBUG_PRINT( "controller commanded brake pressure: " );
+        DEBUG_PRINTLN( brake_state.pedal_command );
+
+        brake_update( );
+
         g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
 
-void process_chassis_state_1(
+static void process_chassis_state_1(
     const uint8_t * const data )
 {
     if ( data != NULL )
@@ -81,7 +123,7 @@ void process_chassis_state_1(
 }
 
 
-void process_rx_frame(
+static void process_rx_frame(
     const can_frame_s * const frame )
 {
     if ( frame != NULL )
@@ -94,20 +136,5 @@ void process_rx_frame(
         {
             process_chassis_state_1( frame->data );
         }
-    }
-}
-
-
-void check_for_command_timeout( void )
-{
-    bool timeout = is_timeout(
-        g_brake_command_last_rx_timestamp,
-        GET_TIMESTAMP_MS( ),
-        PARAM_COMMAND_TIMEOUT_IN_MSEC );
-
-    if ( timeout == true )
-    {
-        brake_disable( );
-        DEBUG_PRINTLN( "Control disabled: Timeout" );
     }
 }

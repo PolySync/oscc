@@ -2,7 +2,8 @@
 #define _OSCC_KIA_SOUL_BRAKE_INIT_H_
 
 
-void init_interfaces( void );
+void init_communication_interfaces( void );
+void init_devices( void );
 void init_globals( void );
 
 #endif

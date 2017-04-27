@@ -3,7 +3,6 @@
 
 
 #include "mcp_can.h"
-#include "can.h"
 
 #include "brake_control.h"
 

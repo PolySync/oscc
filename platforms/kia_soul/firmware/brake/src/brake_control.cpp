@@ -42,6 +42,8 @@ void brake_enable( void )
         master_cylinder_close( );
         brake_command_release_solenoids( 0 );
         brake_control_state.enabled = true;
+
+        DEBUG_PRINTLN( "Control enabled" );
     }
 }
 
@@ -62,11 +64,13 @@ void brake_disable( void )
         brake_command_release_solenoids( 0 );
 
         brake_control_state.enabled = false;
+
+        DEBUG_PRINTLN( "Control disabled" );
     }
 }
 
 
-void brake_check_operator_override( void )
+void check_for_operator_override( void )
 {
     static const float filter_alpha = 0.05;
 
@@ -122,6 +126,9 @@ void brake_init( void )
     pinMode( PIN_RELEASE_SOLENOID_FRONT_LEFT, OUTPUT );
     pinMode( PIN_RELEASE_SOLENOID_FRONT_RIGHT, OUTPUT );
 
+    brake_command_release_solenoids( 0 );
+    brake_command_actuator_solenoids( 0 );
+
     brake_lights_off( );
     pinMode( PIN_BRAKE_LIGHT, OUTPUT );
 }
@@ -129,136 +136,139 @@ void brake_init( void )
 
 void brake_update( void )
 {
-    static float pressure_target = 0.0;
-    static float pressure = 0.0;
-
-    static uint32_t control_loop_time = GET_TIMESTAMP_US();
-
-    float loop_delta_t = (float)get_time_delta( control_loop_time, control_loop_time );
-
-    loop_delta_t /= 1000.0;
-    loop_delta_t /= 1000.0;
-
-    brake_update_pressure( );
-
-    // ********************************************************************
-    //
-    // WARNING
-    //
-    // The ranges selected to do brake control are carefully tested to
-    // ensure that the pressure actuated is not outside of the range of
-    // what the brake module can handle. By changing any of this code you
-    // risk attempting to actuate a pressure outside of the brake modules
-    // valid range. Actuating a pressure outside of the modules valid
-    // range will, at best, cause it to go into an unrecoverable fault
-    // state. This is characterized by the accumulator "continuously
-    // pumping" without accumulating any actual pressure, or being
-    // "over pressured." Clearing this fault state requires expert
-    // knowledge of the braking module.
-    //
-    // It is NOT recommended to modify any of the existing control ranges,
-    // or gains, without expert knowledge.
-    //
-    // ************************************************************************
-
-    static interpolate_range_s pressure_ranges =
-        { 0.0, UINT16_MAX, 12.0, 878.3 };
-
-    pressure = brake_state.current_pressure;
-
-    pressure_target = interpolate( brake_state.pedal_command, &pressure_ranges );
-
-    PID pid_params;
-
-    // Initialize PID params
-    pid_zeroize( &pid_params, PARAM_PID_WINDUP_GUARD );
-
-    pid_params.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
-    pid_params.integral_gain     = PARAM_PID_INTEGRAL_GAIN;
-    pid_params.derivative_gain   = PARAM_PID_DERIVATIVE_GAIN;
-
-    int16_t ret = pid_update( &pid_params,
-                              pressure_target,
-                              pressure,
-                              loop_delta_t );
-
-    // Requested pressure
-    DEBUG_PRINT(pressure_target);
-
-    // Pressure at wheels (PFR and PFL)
-    DEBUG_PRINT(",");
-    DEBUG_PRINT(pressure);
-
-    // PID output
-    DEBUG_PRINT(",");
-    DEBUG_PRINT( pid_params.control );
-
-    if ( ret == PID_SUCCESS )
+    if ( brake_control_state.enabled == true )
     {
-        float pid_output = pid_params.control;
+        static float pressure_target = 0.0;
+        static float pressure = 0.0;
 
-        if ( pid_output < -10.0 )
+        static uint32_t control_loop_time = GET_TIMESTAMP_US();
+
+        float loop_delta_t = (float)get_time_delta( control_loop_time, control_loop_time );
+
+        loop_delta_t /= 1000.0;
+        loop_delta_t /= 1000.0;
+
+        brake_update_pressure( );
+
+        // ********************************************************************
+        //
+        // WARNING
+        //
+        // The ranges selected to do brake control are carefully tested to
+        // ensure that the pressure actuated is not outside of the range of
+        // what the brake module can handle. By changing any of this code you
+        // risk attempting to actuate a pressure outside of the brake modules
+        // valid range. Actuating a pressure outside of the modules valid
+        // range will, at best, cause it to go into an unrecoverable fault
+        // state. This is characterized by the accumulator "continuously
+        // pumping" without accumulating any actual pressure, or being
+        // "over pressured." Clearing this fault state requires expert
+        // knowledge of the braking module.
+        //
+        // It is NOT recommended to modify any of the existing control ranges,
+        // or gains, without expert knowledge.
+        //
+        // ************************************************************************
+
+        static interpolate_range_s pressure_ranges =
+            { 0.0, UINT16_MAX, 12.0, 878.3 };
+
+        pressure = brake_state.current_pressure;
+
+        pressure_target = interpolate( brake_state.pedal_command, &pressure_ranges );
+
+        PID pid_params;
+
+        // Initialize PID params
+        pid_zeroize( &pid_params, PARAM_PID_WINDUP_GUARD );
+
+        pid_params.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
+        pid_params.integral_gain     = PARAM_PID_INTEGRAL_GAIN;
+        pid_params.derivative_gain   = PARAM_PID_DERIVATIVE_GAIN;
+
+        int16_t ret = pid_update( &pid_params,
+                                pressure_target,
+                                pressure,
+                                loop_delta_t );
+
+        // Requested pressure
+        DEBUG_PRINT(pressure_target);
+
+        // Pressure at wheels (PFR and PFL)
+        DEBUG_PRINT(",");
+        DEBUG_PRINT(pressure);
+
+        // PID output
+        DEBUG_PRINT(",");
+        DEBUG_PRINT( pid_params.control );
+
+        if ( ret == PID_SUCCESS )
         {
-            // pressure is too high
-            static interpolate_range_s slr_ranges =
-                { 0.0, 60.0, PARAM_SLR_DUTY_CYCLE_MIN, PARAM_SLR_DUTY_CYCLE_MAX };
+            float pid_output = pid_params.control;
 
-            uint16_t slr_duty_cycle = 0;
-
-            brake_command_actuator_solenoids( 0 );
-
-            pid_output = -pid_output;
-            slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
-
-            if ( slr_duty_cycle > ( uint16_t )PARAM_SLR_DUTY_CYCLE_MAX )
+            if ( pid_output < -10.0 )
             {
-                slr_duty_cycle = ( uint16_t )PARAM_SLR_DUTY_CYCLE_MAX;
+                // pressure is too high
+                static interpolate_range_s slr_ranges =
+                    { 0.0, 60.0, PARAM_SLR_DUTY_CYCLE_MIN, PARAM_SLR_DUTY_CYCLE_MAX };
+
+                uint16_t slr_duty_cycle = 0;
+
+                brake_command_actuator_solenoids( 0 );
+
+                pid_output = -pid_output;
+                slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
+
+                if ( slr_duty_cycle > ( uint16_t )PARAM_SLR_DUTY_CYCLE_MAX )
+                {
+                    slr_duty_cycle = ( uint16_t )PARAM_SLR_DUTY_CYCLE_MAX;
+                }
+
+                brake_command_release_solenoids( slr_duty_cycle );
+
+                DEBUG_PRINT(",0,");
+                DEBUG_PRINT(slr_duty_cycle);
+
+                if ( pressure_target < 20.0 )
+                {
+                    brake_lights_off( );
+                }
+
             }
-
-            brake_command_release_solenoids( slr_duty_cycle );
-
-            DEBUG_PRINT(",0,");
-            DEBUG_PRINT(slr_duty_cycle);
-
-            if ( pressure_target < 20.0 )
+            else if ( pid_output > 10.0 )
             {
-                brake_lights_off( );
-            }
+                // pressure is too low
+                static interpolate_range_s sla_ranges =
+                    { 10.0, 110.0, PARAM_SLA_DUTY_CYCLE_MIN, PARAM_SLA_DUTY_CYCLE_MAX };
 
+                uint16_t sla_duty_cycle = 0;
+
+                brake_lights_on( );
+
+                brake_command_release_solenoids( 0 );
+
+                sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
+
+                if ( sla_duty_cycle > ( uint16_t )PARAM_SLA_DUTY_CYCLE_MAX )
+                {
+                    sla_duty_cycle = ( uint16_t )PARAM_SLA_DUTY_CYCLE_MAX;
+                }
+
+                brake_command_actuator_solenoids( sla_duty_cycle );
+
+                DEBUG_PRINT(",");
+                DEBUG_PRINT(sla_duty_cycle);
+                DEBUG_PRINT(",0");
+            }
+            else    // -10.0 < pid_output < 10.0
+            {
+                if ( brake_state.pedal_command < 100 )
+                {
+                    brake_lights_off( );
+                }
+            }
         }
-        else if ( pid_output > 10.0 )
-        {
-            // pressure is too low
-            static interpolate_range_s sla_ranges =
-                { 10.0, 110.0, PARAM_SLA_DUTY_CYCLE_MIN, PARAM_SLA_DUTY_CYCLE_MAX };
 
-            uint16_t sla_duty_cycle = 0;
-
-            brake_lights_on( );
-
-            brake_command_release_solenoids( 0 );
-
-            sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
-
-            if ( sla_duty_cycle > ( uint16_t )PARAM_SLA_DUTY_CYCLE_MAX )
-            {
-                sla_duty_cycle = ( uint16_t )PARAM_SLA_DUTY_CYCLE_MAX;
-            }
-
-            brake_command_actuator_solenoids( sla_duty_cycle );
-
-            DEBUG_PRINT(",");
-            DEBUG_PRINT(sla_duty_cycle);
-            DEBUG_PRINT(",0");
-        }
-        else    // -10.0 < pid_output < 10.0
-        {
-            if ( brake_state.pedal_command < 100 )
-            {
-                brake_lights_off( );
-            }
-        }
+        DEBUG_PRINTLN("");
     }
-
-    DEBUG_PRINTLN("");
 }

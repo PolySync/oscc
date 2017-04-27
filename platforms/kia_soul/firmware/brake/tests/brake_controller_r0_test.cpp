@@ -294,40 +294,17 @@ int main( void )
 {
     init_arduino( );
 
-    // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range
-    TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
-    TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
+    init_globals( );
 
-    accumulator_init( );
-    master_cylinder_init( );
-    brake_init( );
+    init_devices( );
 
-    // depower all the things
-    accumulator_turn_pump_off( );
-    master_cylinder_open( );
+    init_communication_interfaces( );
 
-    brake_command_release_solenoids( 0 );
-    brake_command_actuator_solenoids( 0 );
-
-    init_interfaces( );
-
-    publish_brake_report( );
-
-    // update last Rx timestamps so we don't set timeout warnings on start up
-    brakes.rx_timestamp = GET_TIMESTAMP_MS( );
-
-    DEBUG_PRINT( "init: pass" );
-
+    DEBUG_PRINTLN( "initialization complete" );
 
     while( true )
     {
-        can_frame_s rx_frame;
-        can_status_t ret = check_for_rx_frame( can, &rx_frame );
-
-        if( ret == CAN_RX_FRAME_AVAILABLE )
-        {
-            process_rx_frame( &rx_frame );
-        }
+        check_for_incoming_message( );
 
         publish_reports( );
 
@@ -341,6 +318,4 @@ int main( void )
 
         print_pressure_info( );
     }
-
-    return 0;
 }

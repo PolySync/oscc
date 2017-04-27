@@ -1,7 +1,8 @@
-#include <Arduino.h>
+#include <stdint.h>
 
 #include "globals.h"
 #include "helper.h"
+
 
 float interpolate(
     const float input,
@@ -16,6 +17,7 @@ float interpolate(
         output *= ( range->output_max - range->output_min );
         output += range->output_min;
     }
+
     return ( output );
 }
 
