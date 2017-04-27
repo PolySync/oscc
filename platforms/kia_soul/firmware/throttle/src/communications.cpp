@@ -10,6 +10,10 @@
 #include "throttle_control.h"
 
 
+void say_hello( void ){
+    printf("Hi\n");
+}
+
 void publish_throttle_report( void )
 {
     // cast data
