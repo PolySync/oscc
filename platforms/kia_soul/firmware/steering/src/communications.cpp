@@ -10,23 +10,16 @@
 #include "steering_control.h"
 
 
-void publish_steering_report( void )
-{
-    oscc_report_steering_s steering_report;
+static void publish_steering_report( void );
 
-    steering_report.data.angle = steering_state.steering_angle;
-    steering_report.data.override = (uint8_t) steering_control_state.operator_override;
-    steering_report.data.angle_command = steering_state.steering_angle_target;
-    steering_report.data.torque = torque_sum;
-    steering_report.data.enabled = (uint8_t) steering_control_state.enabled;
+static void process_steering_command(
+    const uint8_t * const data );
 
-    can.sendMsgBuf( steering_report.id,
-                    CAN_STANDARD,
-                    steering_report.dlc,
-                    (uint8_t *) &steering_report.data );
+static void process_chassis_state_1_report(
+    const uint8_t * const data );
 
-    g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
-}
+static void process_rx_frame(
+    can_frame_s * const frame );
 
 
 void publish_reports( void )
@@ -40,7 +33,58 @@ void publish_reports( void )
 }
 
 
-void process_steering_command(
+void check_for_controller_command_timeout( void )
+{
+    if( steering_control_state.enabled == true )
+    {
+        bool timeout = is_timeout(
+                g_steering_command_last_rx_timestamp,
+                GET_TIMESTAMP_MS( ),
+                PARAM_COMMAND_TIMEOUT_IN_MSEC);
+
+        if( timeout == true )
+        {
+            disable_control( );
+
+            DEBUG_PRINTLN( "Timeout waiting for controller command" );
+        }
+    }
+}
+
+
+void check_for_incoming_message( void )
+{
+    can_frame_s rx_frame;
+    can_status_t ret = check_for_rx_frame( control_can, &rx_frame );
+
+    if( ret == CAN_RX_FRAME_AVAILABLE )
+    {
+        process_rx_frame( &rx_frame );
+    }
+}
+
+
+static void publish_steering_report( void )
+{
+    oscc_report_steering_s steering_report;
+
+    steering_report.data.angle = steering_control_state.steering_angle;
+    steering_report.data.override = (uint8_t) steering_control_state.operator_override;
+    steering_report.data.angle_command = steering_control_state.commanded_steering_angle;
+    steering_report.data.torque = torque_sum;
+    steering_report.data.enabled = (uint8_t) steering_control_state.enabled;
+
+    control_can.sendMsgBuf(
+        steering_report.id,
+        CAN_STANDARD,
+        steering_report.dlc,
+        (uint8_t *) &steering_report.data );
+
+    g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
+}
+
+
+static void process_steering_command(
     const uint8_t * const data )
 {
     if ( data != NULL )
@@ -48,31 +92,29 @@ void process_steering_command(
         const oscc_command_steering_data_s * const steering_command_data =
                 (oscc_command_steering_data_s *) data;
 
-        steering_state.steering_angle_target =
-            (steering_command_data->steering_wheel_angle_command / 9.0);
-
-        steering_state.steering_angle_rate_max =
-            (steering_command_data->steering_wheel_max_velocity * 9.0);
-
-        if ( (steering_command_data->enabled == 1)
-            && (steering_control_state.enabled == false)
-            && (steering_control_state.emergency_stop == false) )
+        if ( steering_command_data->enabled == true )
         {
             enable_control( );
         }
-
-        if ( (steering_command_data->enabled == 0)
-            && (steering_control_state.enabled == true) )
+        else
         {
             disable_control( );
         }
+
+        steering_control_state.commanded_steering_angle =
+            (steering_command_data->steering_wheel_angle_command / 9.0);
+
+        DEBUG_PRINT( "controller commanded steering wheel angle: " );
+        DEBUG_PRINTLN( steering_control_state.commanded_steering_angle );
+
+        update_steering( );
 
         g_steering_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
 
-void process_chassis_state_1_report(
+static void process_chassis_state_1_report(
     const uint8_t * const data )
 {
     if ( data != NULL )
@@ -81,15 +123,15 @@ void process_chassis_state_1_report(
                 (oscc_report_chassis_state_1_data_s *) data;
 
         float raw_angle = (float)chassis_state_1_data->steering_wheel_angle;
-        steering_state.steering_angle = raw_angle * 0.0076294;
+        steering_control_state.steering_angle = raw_angle * 0.0076294;
 
         // Convert from 40 degree range to 470 degree range in 1 degree increments
-        steering_state.steering_angle *= 11.7;
+        steering_control_state.steering_angle *= 11.7;
     }
 }
 
 
-void process_rx_frame(
+static void process_rx_frame(
     can_frame_s * const frame )
 {
     if ( frame != NULL )
@@ -101,24 +143,6 @@ void process_rx_frame(
         else if ( frame->id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID )
         {
             process_chassis_state_1_report( frame->data );
-        }
-    }
-}
-
-
-void check_for_command_timeout( void )
-{
-    bool timeout = is_timeout(
-            g_steering_command_last_rx_timestamp,
-            GET_TIMESTAMP_MS( ),
-            PARAM_COMMAND_TIMEOUT_IN_MSEC);
-
-    if( timeout == true )
-    {
-        if( steering_control_state.enabled == true )
-        {
-            disable_control( );
-            DEBUG_PRINTLN( "Control disabled: Timeout" );
         }
     }
 }

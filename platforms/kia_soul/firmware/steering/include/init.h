@@ -3,8 +3,8 @@
 
 
 void init_globals( void );
-void init_pins( void );
-void init_interfaces( void );
+void init_devices( void );
+void init_communication_interfaces( void );
 
 
 #endif

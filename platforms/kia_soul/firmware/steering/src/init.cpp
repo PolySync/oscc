@@ -11,10 +11,6 @@
 
 void init_globals( void )
 {
-    memset( &steering_state,
-            0,
-            sizeof(steering_state) );
-
     memset( &steering_control_state,
             0,
             sizeof(steering_control_state) );
@@ -27,13 +23,13 @@ void init_globals( void )
 }
 
 
-void init_pins( void )
+void init_devices( void )
 {
     pinMode( PIN_DAC_CHIP_SELECT, OUTPUT );
-    pinMode( PIN_TORQUE_POSITION_SENSOR_HIGH, INPUT );
-    pinMode( PIN_TORQUE_POSITION_SENSOR_LOW, INPUT );
-    pinMode( PIN_TORQUE_POSITION_SPOOF_HIGH, INPUT );
-    pinMode( PIN_TORQUE_POSITION_SPOOF_LOW, INPUT );
+    pinMode( PIN_TORQUE_SENSOR_HIGH, INPUT );
+    pinMode( PIN_TORQUE_SENSOR_LOW, INPUT );
+    pinMode( PIN_TORQUE_SPOOF_HIGH, INPUT );
+    pinMode( PIN_TORQUE_SPOOF_LOW, INPUT );
     pinMode( PIN_SPOOF_ENABLE, OUTPUT );
 
     digitalWrite( PIN_DAC_CHIP_SELECT, HIGH );
@@ -42,12 +38,12 @@ void init_pins( void )
 }
 
 
-void init_interfaces( void )
+void init_communication_interfaces( void )
 {
     #ifdef DEBUG
     init_serial( );
     #endif
 
     DEBUG_PRINT( "init Control CAN - " );
-    init_can( can );
+    init_can( control_can );
 }

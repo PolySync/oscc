@@ -2,25 +2,6 @@
 #define _OSCC_KIA_SOUL_STEERING_COMMUNICATIONS_H_
 
 
-#include "DAC_MCP49xx.h"
-#include "mcp_can.h"
-#include "can.h"
-
-
-// *****************************************************
-// Function:    publish_steering_report
-//
-// Purpose:     Fill out the transmit CAN frame with the steering angle
-//              and publish that information on the CAN bus
-//
-// Returns:     void
-//
-// Parameters:  None
-//
-// *****************************************************
-void publish_steering_report( void );
-
-
 // *****************************************************
 // Function:    publish_reports
 //
@@ -36,50 +17,7 @@ void publish_reports( void );
 
 
 // *****************************************************
-// Function:    process_steering_command
-//
-// Purpose:     Process a steering command message
-//
-// Returns:     void
-//
-// Parameters:  data -  pointer to a steering command control message
-//
-// *****************************************************
-void process_steering_command( const uint8_t * const data );
-
-
-// *****************************************************
-// Function:    process_chassis_state_1_report_report
-//
-// Purpose:     Process the chassis state message
-//
-// Returns:     void
-//
-// Parameters:  data - pointer to a chassis state message that contains
-//                             the steering angle
-//
-// *****************************************************
-void process_chassis_state_1_report(
-    const uint8_t * const data );
-
-
-// *****************************************************
-// Function:    process_rx_frame
-//
-// Purpose:     Parse received CAN data and redirect to correct
-//              processing function
-//
-// Returns:     void
-//
-// Parameters:  frame - frame containing received data
-//
-// *****************************************************
-void process_rx_frame(
-    can_frame_s * const frame );
-
-
-// *****************************************************
-// Function:    check_for_command_timeout
+// Function:    check_for_controller_command_timeout
 //
 // Purpose:     If the control is currently enabled, but the receiver indicates
 //              a "watchdog" timeout, then disable the control
@@ -89,7 +27,20 @@ void process_rx_frame(
 // Parameters:  None
 //
 // *****************************************************
-void check_for_command_timeout( void );
+void check_for_controller_command_timeout( void );
+
+
+// *****************************************************
+// Function:    check_for_incoming_message
+//
+// Purpose:     Check for incoming CAN frame.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+void check_for_incoming_message( void );
 
 
 #endif

@@ -3,7 +3,6 @@
 
 
 #include <stdint.h>
-#include "DAC_MCP49xx.h"
 
 
 /**
@@ -16,22 +15,7 @@ typedef struct
 {
     uint16_t low;
     uint16_t high;
-} torque_spoof_t;
-
-
-/**
- * @brief Current steering state.
- *
- * Keeps track of the current state of the steering system.
- *
- */
-typedef struct
-{
-    float steering_angle; /* Current steering angle as reported by car */
-    float steering_angle_rate_max;
-    float steering_angle_target; /* Commanded steering angle as specified by higher level controller */
-    float steering_angle_last; /* Last steering angle recorded */
-} kia_soul_steering_state_s;
+} steering_torque_s;
 
 
 /**
@@ -43,14 +27,15 @@ typedef struct
 typedef struct
 {
     bool enabled; /* Flag indicating control is currently enabled */
-    bool emergency_stop; /* Flag indicating emergency stop has been acitivated */
     bool operator_override; /* Flag indicating whether steering wheel was manually turned by operator */
-    uint32_t timestamp_us; /* Keeps track of last control loop time in us */
+    float commanded_steering_angle; /* Angle of steering wheel commanded by controller */
+    float steering_angle; /* Current steering angle as reported by car */
+    float steering_angle_last; /* Last steering angle recorded */
 } kia_soul_steering_control_state_s;
 
 
 // *****************************************************
-// Function:    check_driver_steering_override
+// Function:    check_for_operator_override
 //
 // Purpose:     This function checks the voltage input from the steering
 //              wheel's torque sensors to determine if the driver is attempting
@@ -81,27 +66,21 @@ typedef struct
 // Parameters:  void
 //
 // *****************************************************
-bool check_driver_steering_override( void );
+void check_for_operator_override( void );
 
 
 // *****************************************************
-// Function:    calculate_torque_spoof
+// Function:    update_steering
 //
-// Purpose:     Container for hand-tuned empirically determined values
-//
-//              Values calculated with min/max calibration curve and hand
-//              tuned for neutral balance.
-//              DAC requires 12-bit values = (4096steps/5V = 819.2 steps/V)
+// Purpose:     Writes steering spoof values to DAC.
 //
 // Returns:     void
 //
-// Parameters:  [in] torque - floating point value with the current torque value
-//              [out] torque_spoof - structure containing the integer torque values
+// Parameters:  void
 //
 // *****************************************************
-void calculate_torque_spoof(
-    const float torque,
-    torque_spoof_t * const spoof );
+void update_steering( void );
+
 
 // *****************************************************
 // Function:    enable_control
