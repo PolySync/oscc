@@ -10,10 +10,6 @@
 
 void init_globals( void )
 {
-    memset( &throttle_state,
-            0,
-            sizeof(throttle_state) );
-
     memset( &throttle_control_state,
             0,
             sizeof(throttle_control_state) );
@@ -24,7 +20,7 @@ void init_globals( void )
 }
 
 
-void init_pins( void )
+void init_devices( void )
 {
     pinMode( PIN_DAC_CHIP_SELECT, OUTPUT );
     pinMode( PIN_ACCELERATOR_POSITION_SENSOR_HIGH, INPUT );
@@ -39,7 +35,7 @@ void init_pins( void )
 }
 
 
-void init_interfaces( void )
+void init_communication_interfaces( void )
 {
     #ifdef DEBUG
     init_serial( );

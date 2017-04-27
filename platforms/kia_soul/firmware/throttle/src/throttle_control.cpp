@@ -1,5 +1,7 @@
+#include <Arduino.h>
 #include <stdint.h>
 #include "debug.h"
+#include "DAC_MCP49xx.h"
 
 #include "throttle_control.h"
 #include "globals.h"
@@ -14,84 +16,103 @@ static void write_sample_averages_to_dac(
         const uint8_t signal_pin_1,
         const uint8_t signal_pin_2 );
 
-
-void calculate_accelerator_spoof(
+static void calculate_accelerator_spoof(
     const float accelerator_target,
-    accelerator_spoof_t * const spoof )
+    accelerator_position_s * const spoof );
+
+
+void check_for_operator_override( void )
 {
-    if ( spoof != NULL )
+    if ( throttle_control_state.enabled == true )
     {
-        // values calculated with min/max calibration curve and tuned for neutral
-        // balance.  DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
-        spoof->low = 819.2 * ( 0.0004 * accelerator_target + 0.366 );
-        spoof->high = 819.2 * ( 0.0008 * accelerator_target + 0.732 );
+        accelerator_position_s accelerator_position;
 
-        // range = 300 - ~1800
-        spoof->low = constrain( spoof->low, 0, 1800 );
-        // range = 600 - ~3500
-        spoof->high = constrain( spoof->high, 0, 3500 );
-    }
-}
+        read_accelerator_position_sensor( &accelerator_position );
 
+        uint32_t accelerator_position_normalized =
+            (accelerator_position.low + accelerator_position.high) / 2;
 
-void check_accelerator_override( void )
-{
-    uint32_t accel_pos_normalized =
-        (throttle_state.accel_pos_sensor_low
-        + throttle_state.accel_pos_sensor_high)
-        / 2;
-
-    if ( accel_pos_normalized > PARAM_ACCELERATOR_OVERRIDE_THRESHOLD_IN_DECIBARS )
-    {
-        if( throttle_control_state.enabled == true )
+        if ( accelerator_position_normalized > PARAM_ACCELERATOR_OVERRIDE_THRESHOLD_IN_DECIBARS )
         {
             disable_control( );
 
             throttle_control_state.operator_override = true;
+
+            DEBUG_PRINTLN( "Operator override" );
+        }
+        else
+        {
+            throttle_control_state.operator_override = false;
         }
     }
-    else
+}
+
+
+void update_throttle( void )
+{
+    if ( throttle_control_state.enabled == true )
     {
-        throttle_control_state.operator_override = false;
+        accelerator_position_s accelerator_spoof;
+
+        calculate_accelerator_spoof(
+                throttle_control_state.commanded_accelerator_position,
+                &accelerator_spoof );
+
+        dac.outputA( accelerator_spoof.high );
+        dac.outputB( accelerator_spoof.low );
     }
 }
 
 
 void enable_control( void )
 {
-    // Sample the current values, smooth them, and write measured accel values to DAC to avoid a
-    // signal discontinuity when the SCM takes over
-    static uint16_t num_samples = 20;
-    write_sample_averages_to_dac(
-        num_samples,
-        PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
-        PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+    if( throttle_control_state.enabled == false )
+    {
+        // Sample the current values, smooth them, and write measured accelerator position values to DAC to avoid a
+        // signal discontinuity when the SCM takes over
+        static uint16_t num_samples = 20;
+        write_sample_averages_to_dac(
+            num_samples,
+            PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
+            PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 
-    // Enable the signal interrupt relays
-    digitalWrite( PIN_SPOOF_ENABLE, HIGH );
+        // Enable the signal interrupt relays
+        digitalWrite( PIN_SPOOF_ENABLE, HIGH );
 
-    throttle_control_state.enabled = true;
+        throttle_control_state.enabled = true;
 
-    DEBUG_PRINTLN( "Control enabled" );
+        DEBUG_PRINTLN( "Control enabled" );
+    }
 }
 
 
 void disable_control( void )
 {
-    // Sample the current values, smooth them, and write measured accel values to DAC to avoid a
-    // signal discontinuity when the SCM takes over
-    static uint16_t num_samples = 20;
-    write_sample_averages_to_dac(
-        num_samples,
-        PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
-        PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+    if( throttle_control_state.enabled == true )
+    {
+        // Sample the current values, smooth them, and write measured accelerator position values to DAC to avoid a
+        // signal discontinuity when the SCM relinquishes control
+        static uint16_t num_samples = 20;
+        write_sample_averages_to_dac(
+            num_samples,
+            PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
+            PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 
-    // Disable the signal interrupt relays
-    digitalWrite( PIN_SPOOF_ENABLE, LOW );
+        // Disable the signal interrupt relays
+        digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
-    throttle_control_state.enabled = false;
+        throttle_control_state.enabled = false;
 
-    DEBUG_PRINTLN( "Control disabled" );
+        DEBUG_PRINTLN( "Control disabled" );
+    }
+}
+
+
+void read_accelerator_position_sensor( accelerator_position_s * value )
+{
+    // shifting required to go from 10 bit to 12 bit
+    value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW ) << 2;
+    value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH ) << 2;
 }
 
 
@@ -124,4 +145,23 @@ static void write_sample_averages_to_dac(
     // Write measured values to DAC to avoid a signal discontinuity when the SCM takes over
     dac.outputA( averages[0] );
     dac.outputB( averages[1] );
+}
+
+
+static void calculate_accelerator_spoof(
+    const float accelerator_target,
+    accelerator_position_s * const spoof )
+{
+    if ( spoof != NULL )
+    {
+        // values calculated with min/max calibration curve and tuned for neutral
+        // balance.  DAC requires 12-bit values, (4096steps/5V = 819.2 steps/V)
+        spoof->low = 819.2 * ( 0.0004 * accelerator_target + 0.366 );
+        spoof->high = 819.2 * ( 0.0008 * accelerator_target + 0.732 );
+
+        // range = 300 - ~1800
+        spoof->low = constrain( spoof->low, 0, 1800 );
+        // range = 600 - ~3500
+        spoof->high = constrain( spoof->high, 0, 3500 );
+    }
 }

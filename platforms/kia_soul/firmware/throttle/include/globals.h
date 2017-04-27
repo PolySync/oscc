@@ -2,13 +2,10 @@
 #define _OSCC_KIA_SOUL_THROTTLE_GLOBALS_H_
 
 
-#include <Arduino.h>
 #include "DAC_MCP49xx.h"
 #include "mcp_can.h"
-#include "can.h"
 
 #include "throttle_control.h"
-#include "throttle_can_protocol.h"
 
 
 #define PIN_DAC_CHIP_SELECT ( 9 )
@@ -39,7 +36,6 @@
 EXTERN uint32_t g_throttle_command_last_rx_timestamp;
 EXTERN uint32_t g_throttle_report_last_tx_timestamp;
 
-EXTERN kia_soul_throttle_state_s throttle_state;
 EXTERN kia_soul_throttle_control_state_s throttle_control_state;
 
 

@@ -2,31 +2,20 @@
 #define _OSCC_KIA_SOUL_THROTTLE_CONTROL_H_
 
 
+#include <stdint.h>
+
+
 /**
- * @brief Accelerator spoof values.
+ * @brief Accelerator values.
  *
- * Contains the high and low accelerator spoof values.
+ * Contains high and low accelerator values.
  *
  */
 typedef struct
 {
     uint16_t low;
     uint16_t high;
-} accelerator_spoof_t;
-
-
-/**
- * @brief Current throttle state.
- *
- * Keeps track of the current state of the throttle system.
- *
- */
-typedef struct
-{
-    uint16_t accel_pos_sensor_high; /* Value of high signal of accelerator position sensor */
-    uint16_t accel_pos_sensor_low; /* Value of low signal of accelerator position sensor */
-    float accel_pos_target; /* As specified by higher level controller */
-} kia_soul_throttle_state_s;
+} accelerator_position_s;
 
 
 /**
@@ -37,31 +26,14 @@ typedef struct
  */
 typedef struct
 {
-    bool enabled; /* Flag indicating control is currently enabled */
-    bool emergency_stop; /* Flag indicating emergency stop has been acitivated */
+    bool enabled; /* Flag indicating whether control is currently enabled */
     bool operator_override; /* Flag indicating whether accelerator was manually pressed by operator */
-    uint32_t timestamp_us; /* Keeps track of last control loop time in us */
+    float commanded_accelerator_position; /* Position of accelerator commanded by controller */
 } kia_soul_throttle_control_state_s;
 
 
 // *****************************************************
-// Function:    calculate_accelerator_spoof
-//
-// Purpose:     Container for hand-tuned empirically determined values
-//
-// Returns:     void
-//
-// Parameters:  [in] accelerator_target - floating point value that is the target accelerator position
-//              [out] spoof - structure containing the spoofed accelerator position values
-//
-// *****************************************************
-void calculate_accelerator_spoof(
-    const float accelerator_target,
-    accelerator_spoof_t * const spoof );
-
-
-// *****************************************************
-// Function:    check_accelerator_override
+// Function:    check_for_operator_override
 //
 // Purpose:     This function checks to see if the vehicle's
 //              operator has manually pressed the accelerator.
@@ -71,7 +43,33 @@ void calculate_accelerator_spoof(
 // Parameters:  void
 //
 // *****************************************************
-void check_accelerator_override( void );
+void check_for_operator_override( void );
+
+
+// *****************************************************
+// Function:    read_accelerator_position_sensor
+//
+// Purpose:     Reads from accelerator position sensor.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+void read_accelerator_position_sensor( accelerator_position_s * value );
+
+
+// *****************************************************
+// Function:    update_throttle
+//
+// Purpose:     Writes throttle spoof values to DAC.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// *****************************************************
+void update_throttle( void );
 
 
 // *****************************************************

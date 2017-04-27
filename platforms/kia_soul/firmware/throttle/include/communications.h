@@ -2,15 +2,14 @@
 #define _OSCC_KIA_SOUL_THROTTLE_COMMUNICATIONS_H_
 
 
-void publish_throttle_report( void );
+#include "can.h"
 
-void publish_timed_report( void );
 
-void process_throttle_command( const uint8_t * const data );
+void publish_reports( void );
 
-void process_rx_frame( can_frame_s * const frame );
+void check_for_controller_command_timeout( void );
 
-void check_for_command_timeout( void );
+void check_for_incoming_message( void );
 
 
 #endif
