@@ -1,12 +1,12 @@
-/*
- * Copyright (c) 2010 by Cristian Maglie <c.maglie@bug.st>
- * SPI Master library for arduino.
- *
- * This file is free software; you can redistribute it and/or modify
- * it under the terms of either the GNU General Public License version 2
- * or the GNU Lesser General Public License version 2.1, both as
- * published by the Free Software Foundation.
- */
+// /*
+//  * Copyright (c) 2010 by Cristian Maglie <c.maglie@bug.st>
+//  * SPI Master library for arduino.
+//  *
+//  * This file is free software; you can redistribute it and/or modify
+//  * it under the terms of either the GNU General Public License version 2
+//  * or the GNU Lesser General Public License version 2.1, both as
+//  * published by the Free Software Foundation.
+//  */
 
 #ifndef _SPI_H_INCLUDED
 #define _SPI_H_INCLUDED
@@ -14,25 +14,7 @@
 #include <stdio.h>
 #include <Arduino.h>
 #include <avr/pgmspace.h>
-#include "pins_arduino.h"
-
-// #  if __AVR_ARCH__ >= 100
-// #    define __SFR_OFFSET 0x00
-// #  else
-// #    define __SFR_OFFSET 0x20
-// #  endif
-// #endif
-// #if (__SFR_OFFSET != 0) && (__SFR_OFFSET != 0x20)
-// #error "__SFR_OFFSET must be 0 or 0x20"
-// #endif
-
-// #define _SFR_IO8(io_addr) ((io_addr) + __SFR_OFFSET)
-
-// #define SPDR	_SFR_IO8(0x0F)
-// #define SPSR	_SFR_IO8(0x0E)
-// #define SPCR	_SFR_IO8(0x0D)
-// #define SPIE    7
-// #define SPIF    7
+#include <avr/iom128rfa1.h> // pins for Arduino uno
 
 #define SPI_CLOCK_DIV4 0x00
 #define SPI_CLOCK_DIV16 0x01

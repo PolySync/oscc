@@ -6,7 +6,6 @@ use std::path::Path;
 
 fn main() {
     gcc::Config::new()
-        .file("../src/communications.cpp")
         .include("include")
         .include("../include")
         .include("../../../../common/include")
@@ -16,18 +15,35 @@ fn main() {
         .include("../../../../common/libs/serial")
         .include("../../../../common/libs/can")
         .include("../../../../common/libs/time")
-        .include("/usr/share/arduino/hardware/arduino/cores/arduino/")
-        .include("/usr/lib/avr/include/")
-        .include("/usr/lib/avr/include/avr")
-        .include("/usr/share/arduino/hardware/arduino/variants/standard/")
+        .include("/usr/lib/avr/include")
+        .file("src/SPI.cpp")
+        .file("src/Arduino.cpp")
+        .file("../src/communications.cpp")
+        .file("../src/throttle_control.cpp")
+        .file("../src/globals.cpp")
+        .file("../../../../common/libs/mcp_can/mcp_can.cpp")
+        .file("../../../../common/libs/DAC_MCP49xx/DAC_MCP49xx.cpp")
         .compile("libbarf.a");
     
     let out_dir = env::var("OUT_DIR").unwrap();
 
     let _ = bindgen::builder()
         .header("include/wrapper.hpp")
-        // // .use_core()
-        .whitelisted_function("say_hello")
+        .generate_comments(false)
+        .clang_arg("-Iinclude")
+        .clang_arg("-I../../../../common/libs/DAC_MCP49xx")
+        .clang_arg("-I/usr/lib/avr/include")
+        .clang_arg("-I../../../../common/libs/mcp_can")
+        .clang_arg("-I../../../../common/libs/can")
+        .whitelisted_function("publish_throttle_report")
+        .whitelisted_function("process_throttle_command")
+        .whitelisted_var("tx_frame_throttle_report")
+        .whitelisted_var("rx_frame_throttle_command")
+        .whitelisted_var("control_state")
+        .whitelisted_var("throttle_state")
+        .whitelisted_var("override_flags")
+        // .whitelisted_type("oscc_report_msg_throttle") // works!
+        // .whitelisted_type("oscc_command_msg_throttle")
         .generate().unwrap()
         .write_to_file(Path::new(&out_dir).join("communications.rs"))
         .expect("Unable to generate bindings");
