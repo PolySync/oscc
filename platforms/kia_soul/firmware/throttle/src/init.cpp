@@ -1,3 +1,9 @@
+/**
+ * @file init.cpp
+ *
+ */
+
+
 #include <Arduino.h>
 #include "serial.h"
 #include "can.h"
@@ -10,9 +16,9 @@
 
 void init_globals( void )
 {
-    memset( &throttle_control_state,
+    memset( &g_throttle_control_state,
             0,
-            sizeof(throttle_control_state) );
+            sizeof(g_throttle_control_state) );
 
     // update timestamps so we don't set timeout warnings on start up
     g_throttle_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
@@ -42,5 +48,5 @@ void init_communication_interfaces( void )
     #endif
 
     DEBUG_PRINT( "init Control CAN - " );
-    init_can( control_can );
+    init_can( g_control_can );
 }

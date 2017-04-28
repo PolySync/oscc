@@ -1,5 +1,7 @@
-// Throttle control ECU firmware
-// 2014 Kia Soul throttle system
+/**
+ * @file main.cpp
+ *
+ */
 
 
 #include <avr/wdt.h>

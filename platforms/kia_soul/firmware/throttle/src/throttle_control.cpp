@@ -1,3 +1,9 @@
+/**
+ * @file throttle_control.cpp
+ *
+ */
+
+
 #include <Arduino.h>
 #include <stdint.h>
 #include "debug.h"
@@ -8,13 +14,13 @@
 
 
 static int32_t get_analog_sample_average(
-        const int32_t num_samples,
-        const uint8_t pin );
+    const int32_t num_samples,
+    const uint8_t pin );
 
-static void write_sample_averages_to_dac(
-        const int16_t num_samples,
-        const uint8_t signal_pin_1,
-        const uint8_t signal_pin_2 );
+static void write_sample_averages_to_g_dac(
+    const int16_t num_samples,
+    const uint8_t signal_pin_1,
+    const uint8_t signal_pin_2 );
 
 static void calculate_accelerator_spoof(
     const float accelerator_target,
@@ -23,7 +29,7 @@ static void calculate_accelerator_spoof(
 
 void check_for_operator_override( void )
 {
-    if ( throttle_control_state.enabled == true )
+    if ( g_throttle_control_state.enabled == true )
     {
         accelerator_position_s accelerator_position;
 
@@ -36,13 +42,13 @@ void check_for_operator_override( void )
         {
             disable_control( );
 
-            throttle_control_state.operator_override = true;
+            g_throttle_control_state.operator_override = true;
 
             DEBUG_PRINTLN( "Operator override" );
         }
         else
         {
-            throttle_control_state.operator_override = false;
+            g_throttle_control_state.operator_override = false;
         }
     }
 }
@@ -50,28 +56,28 @@ void check_for_operator_override( void )
 
 void update_throttle( void )
 {
-    if ( throttle_control_state.enabled == true )
+    if ( g_throttle_control_state.enabled == true )
     {
         accelerator_position_s accelerator_spoof;
 
         calculate_accelerator_spoof(
-                throttle_control_state.commanded_accelerator_position,
+                g_throttle_control_state.commanded_accelerator_position,
                 &accelerator_spoof );
 
-        dac.outputA( accelerator_spoof.high );
-        dac.outputB( accelerator_spoof.low );
+        g_dac.outputA( accelerator_spoof.high );
+        g_dac.outputB( accelerator_spoof.low );
     }
 }
 
 
 void enable_control( void )
 {
-    if( throttle_control_state.enabled == false )
+    if( g_throttle_control_state.enabled == false )
     {
         // Sample the current values, smooth them, and write measured accelerator position values to DAC to avoid a
         // signal discontinuity when the SCM takes over
         static uint16_t num_samples = 20;
-        write_sample_averages_to_dac(
+        write_sample_averages_to_g_dac(
             num_samples,
             PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
             PIN_ACCELERATOR_POSITION_SENSOR_LOW );
@@ -79,7 +85,7 @@ void enable_control( void )
         // Enable the signal interrupt relays
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
 
-        throttle_control_state.enabled = true;
+        g_throttle_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
     }
@@ -88,12 +94,12 @@ void enable_control( void )
 
 void disable_control( void )
 {
-    if( throttle_control_state.enabled == true )
+    if( g_throttle_control_state.enabled == true )
     {
         // Sample the current values, smooth them, and write measured accelerator position values to DAC to avoid a
         // signal discontinuity when the SCM relinquishes control
         static uint16_t num_samples = 20;
-        write_sample_averages_to_dac(
+        write_sample_averages_to_g_dac(
             num_samples,
             PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
             PIN_ACCELERATOR_POSITION_SENSOR_LOW );
@@ -101,14 +107,15 @@ void disable_control( void )
         // Disable the signal interrupt relays
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
-        throttle_control_state.enabled = false;
+        g_throttle_control_state.enabled = false;
 
         DEBUG_PRINTLN( "Control disabled" );
     }
 }
 
 
-void read_accelerator_position_sensor( accelerator_position_s * value )
+void read_accelerator_position_sensor(
+    accelerator_position_s * const value )
 {
     // shifting required to go from 10 bit to 12 bit
     value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW ) << 2;
@@ -132,7 +139,7 @@ static int32_t get_analog_sample_average(
 }
 
 
-static void write_sample_averages_to_dac(
+static void write_sample_averages_to_g_dac(
         const int16_t num_samples,
         const uint8_t signal_pin_1,
         const uint8_t signal_pin_2 )
@@ -143,8 +150,8 @@ static void write_sample_averages_to_dac(
     averages[1] = get_analog_sample_average( num_samples, signal_pin_2);
 
     // Write measured values to DAC to avoid a signal discontinuity when the SCM takes over
-    dac.outputA( averages[0] );
-    dac.outputB( averages[1] );
+    g_dac.outputA( averages[0] );
+    g_dac.outputB( averages[1] );
 }
 
 

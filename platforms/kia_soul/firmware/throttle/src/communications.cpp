@@ -1,4 +1,11 @@
+/**
+ * @file communications.cpp
+ *
+ */
+
+
 #include "mcp_can.h"
+#include "can.h"
 #include "throttle_can_protocol.h"
 #include "time.h"
 #include "debug.h"
@@ -30,7 +37,7 @@ void publish_reports( void )
 
 void check_for_controller_command_timeout( void )
 {
-    if( throttle_control_state.enabled == true )
+    if( g_throttle_control_state.enabled == true )
     {
         bool timeout = is_timeout(
                 g_throttle_command_last_rx_timestamp,
@@ -50,7 +57,7 @@ void check_for_controller_command_timeout( void )
 void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;
-    can_status_t ret = check_for_rx_frame( control_can, &rx_frame );
+    can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
 
     if( ret == CAN_RX_FRAME_AVAILABLE )
     {
@@ -67,12 +74,12 @@ static void publish_throttle_report( void )
 
     throttle_report.id = OSCC_REPORT_THROTTLE_CAN_ID;
     throttle_report.dlc = OSCC_REPORT_THROTTLE_CAN_DLC;
-    throttle_report.data.enabled = (uint8_t) throttle_control_state.enabled;
-    throttle_report.data.override = (uint8_t) throttle_control_state.operator_override;
+    throttle_report.data.enabled = (uint8_t) g_throttle_control_state.enabled;
+    throttle_report.data.override = (uint8_t) g_throttle_control_state.operator_override;
     throttle_report.data.accelerator_input = (accelerator_position.low + accelerator_position.high);
-    throttle_report.data.accelerator_command = throttle_control_state.commanded_accelerator_position;
+    throttle_report.data.accelerator_command = g_throttle_control_state.commanded_accelerator_position;
 
-    control_can.sendMsgBuf(
+    g_control_can.sendMsgBuf(
             throttle_report.id,
             CAN_STANDARD,
             throttle_report.dlc,
@@ -83,7 +90,7 @@ static void publish_throttle_report( void )
 
 
 static void process_throttle_command(
-        const uint8_t * const data )
+    const uint8_t * const data )
 {
     if ( data != NULL )
     {
@@ -99,11 +106,11 @@ static void process_throttle_command(
             disable_control( );
         }
 
-        throttle_control_state.commanded_accelerator_position =
+        g_throttle_control_state.commanded_accelerator_position =
             (throttle_command_data->accelerator_command / 24);
 
         DEBUG_PRINT( "controller commanded accelerator position: " );
-        DEBUG_PRINTLN( throttle_control_state.commanded_accelerator_position );
+        DEBUG_PRINTLN( g_throttle_control_state.commanded_accelerator_position );
 
         update_throttle( );
 
@@ -112,7 +119,8 @@ static void process_throttle_command(
 }
 
 
-static void process_rx_frame( can_frame_s * const frame )
+static void process_rx_frame(
+    can_frame_s * const frame )
 {
     if ( frame != NULL )
     {
