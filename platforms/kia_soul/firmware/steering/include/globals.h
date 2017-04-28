@@ -1,3 +1,10 @@
+/**
+ * @file globals.h
+ * @brief Module globals.
+ *
+ */
+
+
 #ifndef _KIA_SOUL_STEERING_GLOBALS_H_
 #define _KIA_SOUL_STEERING_GLOBALS_H_
 
@@ -8,6 +15,49 @@
 #include "pid.h"
 
 #include "steering_control.h"
+
+
+/*
+ * @brief Chip select pin of the DAC IC.
+ *
+ */
+#define PIN_DAC_CHIP_SELECT ( 9 )
+
+/*
+ * @brief Chip select pin of the CAN IC.
+ *
+ */
+#define PIN_CAN_CHIP_SELECT ( 10 )
+
+/*
+ * @brief High signal pin of the torque sensor.
+ *
+ */
+#define PIN_TORQUE_SENSOR_HIGH ( A0 )
+
+/*
+ * @brief Low signal pin of the torque sensor.
+ *
+ */
+#define PIN_TORQUE_SENSOR_LOW ( A1 )
+
+/*
+ * @brief High signal pin of the torque spoof output.
+ *
+ */
+#define PIN_TORQUE_SPOOF_HIGH ( A2 )
+
+/*
+ * @brief Low signal pin of the torque spoof output.
+ *
+ */
+#define PIN_TORQUE_SPOOF_LOW ( A3 )
+
+/*
+ * @brief Relay enable pin for the spoof output.
+ *
+ */
+#define PIN_SPOOF_ENABLE ( 6 )
 
 
 /*******************************************************************************
@@ -26,31 +76,59 @@
 *   gains, without expert knowledge.
 *******************************************************************************/
 
+/*
+ * @brief Maximum steering angle rate. [degrees/microsecond]
+ *
+ */
 #define PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC ( 1000.0 )
+
+/*
+ * @brief Value of the torque sensor that indicates operator override.
+          [degrees/microsecond]
+ *
+ */
 #define PARAM_OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 3000 )
-#define PARAM_PID_PROPORTIONAL_GAIN ( 0.3 )
-#define PARAM_PID_INTEGRAL_GAIN ( 1.3 )
-#define PARAM_PID_DERIVATIVE_GAIN ( 0.03 )
-#define PARAM_PID_WINDUP_GUARD ( 1500 )
+
+/*
+ * @brief Amount of time after controller command that is considered a
+ *        timeout. [milliseconds]
+ *
+ */
 #define PARAM_COMMAND_TIMEOUT_IN_MSEC ( 250 )
 
-#define PIN_DAC_CHIP_SELECT ( 9 )
-#define PIN_CAN_CHIP_SELECT ( 10 )
-#define PIN_TORQUE_SENSOR_HIGH ( A0 )
-#define PIN_TORQUE_SENSOR_LOW ( A1 )
-#define PIN_TORQUE_SPOOF_HIGH ( A2 )
-#define PIN_TORQUE_SPOOF_LOW ( A3 )
-#define PIN_SPOOF_ENABLE ( 6 )
+/*
+ * @brief Proportional gain of the PID controller.
+ *
+ */
+#define PARAM_PID_PROPORTIONAL_GAIN ( 0.3 )
+
+/*
+ * @brief Integral gain of the PID controller.
+ *
+ */
+#define PARAM_PID_INTEGRAL_GAIN ( 1.3 )
+
+/*
+ * @brief Derivative gain of the PID controller.
+ *
+ */
+#define PARAM_PID_DERIVATIVE_GAIN ( 0.03 )
+
+/*
+ * @brief Windup guard of the PID controller.
+ *
+ */
+#define PARAM_PID_WINDUP_GUARD ( 1500 )
 
 
 #ifdef GLOBAL_DEFINED
-    DAC_MCP49xx dac( DAC_MCP49xx::MCP4922, PIN_DAC_CHIP_SELECT );
-    MCP_CAN control_can( PIN_CAN_CHIP_SELECT );
+    DAC_MCP49xx g_dac( DAC_MCP49xx::MCP4922, PIN_DAC_CHIP_SELECT );
+    MCP_CAN g_control_can( PIN_CAN_CHIP_SELECT );
 
     #define EXTERN
 #else
-    extern DAC_MCP49xx dac;
-    extern MCP_CAN control_can;
+    extern DAC_MCP49xx g_dac;
+    extern MCP_CAN g_control_can;
 
     #define EXTERN extern
 #endif
@@ -59,10 +137,10 @@
 EXTERN uint32_t g_steering_command_last_rx_timestamp;
 EXTERN uint32_t g_steering_report_last_tx_timestamp;
 
-EXTERN kia_soul_steering_control_state_s steering_control_state;
+EXTERN kia_soul_steering_control_state_s g_steering_control_state;
 
-EXTERN pid_s pid;
-EXTERN uint8_t torque_sum;
+EXTERN pid_s g_pid;
+EXTERN uint8_t g_torque_sum;
 
 
 #endif

@@ -1,3 +1,9 @@
+/**
+ * @file communications.cpp
+ *
+ */
+
+
 #include "mcp_can.h"
 #include "can.h"
 #include "chassis_state_can_protocol.h"
@@ -35,7 +41,7 @@ void publish_reports( void )
 
 void check_for_controller_command_timeout( void )
 {
-    if( steering_control_state.enabled == true )
+    if( g_steering_control_state.enabled == true )
     {
         bool timeout = is_timeout(
                 g_steering_command_last_rx_timestamp,
@@ -55,7 +61,7 @@ void check_for_controller_command_timeout( void )
 void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;
-    can_status_t ret = check_for_rx_frame( control_can, &rx_frame );
+    can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
 
     if( ret == CAN_RX_FRAME_AVAILABLE )
     {
@@ -70,13 +76,13 @@ static void publish_steering_report( void )
 
     steering_report.id = OSCC_REPORT_STEERING_CAN_ID;
     steering_report.dlc = OSCC_REPORT_STEERING_CAN_DLC;
-    steering_report.data.angle = steering_control_state.steering_angle;
-    steering_report.data.override = (uint8_t) steering_control_state.operator_override;
-    steering_report.data.angle_command = steering_control_state.commanded_steering_angle;
-    steering_report.data.torque = torque_sum;
-    steering_report.data.enabled = (uint8_t) steering_control_state.enabled;
+    steering_report.data.angle = g_steering_control_state.steering_angle;
+    steering_report.data.override = (uint8_t) g_steering_control_state.operator_override;
+    steering_report.data.angle_command = g_steering_control_state.commanded_steering_angle;
+    steering_report.data.torque = g_torque_sum;
+    steering_report.data.enabled = (uint8_t) g_steering_control_state.enabled;
 
-    control_can.sendMsgBuf(
+    g_control_can.sendMsgBuf(
         steering_report.id,
         CAN_STANDARD,
         steering_report.dlc,
@@ -103,11 +109,11 @@ static void process_steering_command(
             disable_control( );
         }
 
-        steering_control_state.commanded_steering_angle =
+        g_steering_control_state.commanded_steering_angle =
             (steering_command_data->steering_wheel_angle_command / 9.0);
 
         DEBUG_PRINT( "controller commanded steering wheel angle: " );
-        DEBUG_PRINTLN( steering_control_state.commanded_steering_angle );
+        DEBUG_PRINTLN( g_steering_control_state.commanded_steering_angle );
 
         update_steering( );
 
@@ -125,10 +131,10 @@ static void process_chassis_state_1_report(
                 (oscc_report_chassis_state_1_data_s *) data;
 
         float raw_angle = (float)chassis_state_1_data->steering_wheel_angle;
-        steering_control_state.steering_angle = raw_angle * 0.0076294;
+        g_steering_control_state.steering_angle = raw_angle * 0.0076294;
 
         // Convert from 40 degree range to 470 degree range in 1 degree increments
-        steering_control_state.steering_angle *= 11.7;
+        g_steering_control_state.steering_angle *= 11.7;
     }
 }
 

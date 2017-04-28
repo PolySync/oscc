@@ -1,3 +1,9 @@
+/**
+ * @file init.cpp
+ *
+ */
+
+
 #include <Arduino.h>
 #include "serial.h"
 #include "can.h"
@@ -11,15 +17,15 @@
 
 void init_globals( void )
 {
-    memset( &steering_control_state,
+    memset( &g_steering_control_state,
             0,
-            sizeof(steering_control_state) );
+            sizeof(g_steering_control_state) );
 
     // Initialize the timestamps to avoid timeout warnings on start up
     g_steering_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 
-    pid_zeroize( &pid, PARAM_PID_WINDUP_GUARD );
+    pid_zeroize( &g_pid, PARAM_PID_WINDUP_GUARD );
 }
 
 
@@ -45,5 +51,5 @@ void init_communication_interfaces( void )
     #endif
 
     DEBUG_PRINT( "init Control CAN - " );
-    init_can( control_can );
+    init_can( g_control_can );
 }

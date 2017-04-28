@@ -1,5 +1,11 @@
-#include <stdint.h>
+/**
+ * @file steering_control.cpp
+ *
+ */
+
+
 #include <Arduino.h>
+#include <stdint.h>
 #include "debug.h"
 #include "pid.h"
 
@@ -11,7 +17,7 @@ static int32_t get_analog_sample_average(
     const int32_t num_samples,
     const uint8_t pin );
 
-static void write_sample_averages_to_dac(
+static void write_sample_averages_to_g_dac(
     const int16_t num_samples,
     const uint8_t signal_pin_1,
     const uint8_t signal_pin_2 );
@@ -26,7 +32,7 @@ static void read_torque_sensor(
 
 void check_for_operator_override( void )
 {
-    if( steering_control_state.enabled == true )
+    if( g_steering_control_state.enabled == true )
     {
         // The parameters below; torque_filter_alpha and steering_wheel_max_torque,
         // can be used to modify how selective the steering override functionality
@@ -43,6 +49,31 @@ void check_for_operator_override( void )
         // direction of steering wheel movement and purposefully trying to cause
         // an unstable situation, the steering override is expected to be
         // triggered.
+
+        // This function checks the voltage input from the steering
+        // wheel's torque sensors to determine if the driver is attempting
+        // to steer the vehicle.  This must be done over time by taking
+        // periodic samples of the input torque voltage, calculating the
+        // difference between the two and then passing that difference
+        // through a basic exponential filter to smooth the input.
+
+        // The required response time for the filter is 250 ms, which at
+        // 50ms per sample is 5 samples.  As such, the alpha for the
+        // exponential filter is 0.5 to make the input go "close to" zero
+        // in 5 samples.
+
+        // The implementation is:
+        //     s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
+
+        // If the filtered torque exceeds the max torque, it is an
+        // indicator that there is feedback on the steering wheel and the
+        // control should be disabled.
+
+        // The final check determines if the a and b signals are opposite
+        // each other.  If they are not, it is an indicator that there is
+        // a problem with one of the sensors.  The check is looking for a
+        // 90% tolerance.
+
         static const float torque_filter_alpha = 0.5;
         static const float steering_wheel_max_torque = 3000.0;
 
@@ -63,13 +94,13 @@ void check_for_operator_override( void )
         {
             disable_control( );
 
-            steering_control_state.operator_override = true;
+            g_steering_control_state.operator_override = true;
 
             DEBUG_PRINTLN( "Operator override" );
         }
         else
         {
-            steering_control_state.operator_override = false;
+            g_steering_control_state.operator_override = false;
         }
     }
 }
@@ -77,37 +108,37 @@ void check_for_operator_override( void )
 
 void update_steering( void )
 {
-    if (steering_control_state.enabled == true )
+    if (g_steering_control_state.enabled == true )
     {
         // Calculate steering angle rates (degrees/microsecond)
         float steering_angle_rate =
-            ( steering_control_state.steering_angle -
-            steering_control_state.steering_angle_last ) / 0.05;
+            ( g_steering_control_state.steering_angle -
+            g_steering_control_state.steering_angle_last ) / 0.05;
 
         float steering_angle_rate_target =
-            ( steering_control_state.commanded_steering_angle -
-            steering_control_state.steering_angle ) / 0.05;
+            ( g_steering_control_state.commanded_steering_angle -
+            g_steering_control_state.steering_angle ) / 0.05;
 
         // Save the angle for next iteration
-        steering_control_state.steering_angle_last =
-            steering_control_state.steering_angle;
+        g_steering_control_state.steering_angle_last =
+            g_steering_control_state.steering_angle;
 
         steering_angle_rate_target =
             constrain( steering_angle_rate_target,
                     ( float )-PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC,
                     ( float )PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC );
 
-        pid.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
-        pid.integral_gain = PARAM_PID_INTEGRAL_GAIN;
-        pid.derivative_gain = PARAM_PID_DERIVATIVE_GAIN;
+        g_pid.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
+        g_pid.integral_gain = PARAM_PID_INTEGRAL_GAIN;
+        g_pid.derivative_gain = PARAM_PID_DERIVATIVE_GAIN;
 
         pid_update(
-                &pid,
+                &g_pid,
                 steering_angle_rate_target,
                 steering_angle_rate,
                 0.050 );
 
-        float control = pid.control;
+        float control = g_pid.control;
 
         control = constrain( control,
                             -1500.0f,
@@ -117,22 +148,22 @@ void update_steering( void )
 
         calculate_torque_spoof( control, &torque_spoof );
 
-        torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
+        g_torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
 
-        dac.outputA( torque_spoof.low );
-        dac.outputB( torque_spoof.high );
+        g_dac.outputA( torque_spoof.low );
+        g_dac.outputB( torque_spoof.high );
     }
 }
 
 
 void enable_control( void )
 {
-    if( steering_control_state.enabled == false )
+    if( g_steering_control_state.enabled == false )
     {
         // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
         // signal discontinuity when the SCM takes over
         static uint16_t num_samples = 20;
-        write_sample_averages_to_dac(
+        write_sample_averages_to_g_dac(
             num_samples,
             PIN_TORQUE_SENSOR_HIGH,
             PIN_TORQUE_SENSOR_LOW );
@@ -140,7 +171,7 @@ void enable_control( void )
         // Enable the signal interrupt relays
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
 
-        steering_control_state.enabled = true;
+        g_steering_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
     }
@@ -149,12 +180,12 @@ void enable_control( void )
 
 void disable_control( void )
 {
-    if( steering_control_state.enabled == true )
+    if( g_steering_control_state.enabled == true )
     {
         // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
         // signal discontinuity when the SCM takes over
         static uint16_t num_samples = 20;
-        write_sample_averages_to_dac(
+        write_sample_averages_to_g_dac(
             num_samples,
             PIN_TORQUE_SENSOR_HIGH,
             PIN_TORQUE_SENSOR_LOW );
@@ -162,9 +193,9 @@ void disable_control( void )
         // Disable the signal interrupt relays
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
-        steering_control_state.enabled =false;
+        g_steering_control_state.enabled =false;
 
-        pid_zeroize( &pid, PARAM_PID_WINDUP_GUARD );
+        pid_zeroize( &g_pid, PARAM_PID_WINDUP_GUARD );
 
         DEBUG_PRINTLN( "Control disabled" );
     }
@@ -195,7 +226,7 @@ static int32_t get_analog_sample_average(
 }
 
 
-static void write_sample_averages_to_dac(
+static void write_sample_averages_to_g_dac(
     const int16_t num_samples,
     const uint8_t signal_pin_1,
     const uint8_t signal_pin_2 )
@@ -206,8 +237,8 @@ static void write_sample_averages_to_dac(
     averages[1] = get_analog_sample_average( num_samples, signal_pin_2);
 
     // Write measured values to DAC to avoid a signal discontinuity when the SCM takes over
-    dac.outputA( averages[0] );
-    dac.outputB( averages[1] );
+    g_dac.outputA( averages[0] );
+    g_dac.outputB( averages[1] );
 }
 
 

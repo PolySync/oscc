@@ -1,5 +1,7 @@
-// Steering control ECU firmware
-// 2014 Kia Soul Motor Driven Power Steering (MDPS) system
+/**
+ * @file main.cpp
+ *
+ */
 
 
 #include <avr/wdt.h>
