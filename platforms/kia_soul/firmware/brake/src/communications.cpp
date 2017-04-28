@@ -68,6 +68,8 @@ static void publish_brake_report( void )
 {
     oscc_report_brake_s brake_report;
 
+    brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
+    brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
     brake_report.data.enabled = (uint8_t) brake_control_state.operator_override;
     brake_report.data.pedal_input = ( uint16_t )brake_state.can_pressure;
     brake_report.data.pedal_command = ( uint16_t )brake_state.pedal_command;

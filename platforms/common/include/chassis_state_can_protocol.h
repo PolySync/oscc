@@ -40,8 +40,8 @@ typedef struct
 
 typedef struct
 {
-    const uint32_t id = OSCC_REPORT_CHASSIS_STATE_1_CAN_ID;
-    const uint8_t dlc = OSCC_REPORT_CHASSIS_STATE_1_CAN_DLC;
+    uint32_t id;
+    uint8_t dlc;
     uint32_t timestamp;
     oscc_report_chassis_state_1_data_s data;
 } oscc_report_chassis_state_1_s;
@@ -58,8 +58,8 @@ typedef struct
 
 typedef struct
 {
-    const uint32_t id = OSCC_REPORT_CHASSIS_STATE_2_CAN_DLC;
-    const uint8_t dlc = OSCC_REPORT_CHASSIS_STATE_2_CAN_DLC;
+    uint32_t id;
+    uint8_t dlc;
     uint32_t timestamp;
     oscc_report_chassis_state_2_data_s data;
 } oscc_report_chassis_state_2_s;

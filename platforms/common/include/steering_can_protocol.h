@@ -163,8 +163,8 @@ typedef struct
 
 typedef struct
 {
-    const uint32_t id = OSCC_REPORT_STEERING_CAN_ID;
-    const uint8_t dlc = OSCC_REPORT_STEERING_CAN_DLC;
+    uint32_t id;
+    uint8_t dlc;
     uint32_t timestamp;
     oscc_report_steering_data_s data;
 } oscc_report_steering_s;

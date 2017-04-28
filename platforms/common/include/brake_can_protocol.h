@@ -184,8 +184,8 @@ typedef struct
 
 typedef struct
 {
-    const uint32_t id = OSCC_REPORT_BRAKE_CAN_ID;
-    const uint8_t dlc = OSCC_REPORT_BRAKE_CAN_DLC;
+    uint32_t id;
+    uint8_t dlc;
     uint32_t timestamp;
     oscc_report_brake_data_s data;
 } oscc_report_brake_s;

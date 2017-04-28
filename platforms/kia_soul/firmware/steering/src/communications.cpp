@@ -68,6 +68,8 @@ static void publish_steering_report( void )
 {
     oscc_report_steering_s steering_report;
 
+    steering_report.id = OSCC_REPORT_STEERING_CAN_ID;
+    steering_report.dlc = OSCC_REPORT_STEERING_CAN_DLC;
     steering_report.data.angle = steering_control_state.steering_angle;
     steering_report.data.override = (uint8_t) steering_control_state.operator_override;
     steering_report.data.angle_command = steering_control_state.commanded_steering_angle;

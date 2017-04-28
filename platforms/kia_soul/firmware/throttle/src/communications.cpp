@@ -65,6 +65,8 @@ static void publish_throttle_report( void )
     accelerator_position_s accelerator_position;
     read_accelerator_position_sensor( &accelerator_position );
 
+    throttle_report.id = OSCC_REPORT_THROTTLE_CAN_ID;
+    throttle_report.dlc = OSCC_REPORT_THROTTLE_CAN_DLC;
     throttle_report.data.enabled = (uint8_t) throttle_control_state.enabled;
     throttle_report.data.override = (uint8_t) throttle_control_state.operator_override;
     throttle_report.data.accelerator_input = (accelerator_position.low + accelerator_position.high);

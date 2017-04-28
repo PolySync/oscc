@@ -31,6 +31,8 @@ static void process_rx_frame(
 
 void publish_heartbeat_report( void )
 {
+    tx_heartbeat.id = (OSCC_REPORT_HEARTBEAT_CAN_ID + OSCC_MODULE_CAN_GATEWAY_NODE_ID);
+    tx_heartbeat.dlc = OSCC_REPORT_HEARTBEAT_CAN_DLC;
     tx_heartbeat.data.hardware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_HARDWARE;
     tx_heartbeat.data.firmware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_FIRMWARE;
 
@@ -135,6 +137,9 @@ void check_for_incoming_message( void )
 
 static void publish_chassis_state_1_report( void )
 {
+    tx_chassis_state_1.id = OSCC_REPORT_CHASSIS_STATE_1_CAN_ID;
+    tx_chassis_state_1.dlc = OSCC_REPORT_CHASSIS_STATE_1_CAN_DLC;
+
     control_can.sendMsgBuf(
             tx_chassis_state_1.id,
             CAN_STANDARD,
@@ -147,6 +152,9 @@ static void publish_chassis_state_1_report( void )
 
 static void publish_chassis_state_2_report( void)
 {
+    tx_chassis_state_2.id = OSCC_REPORT_CHASSIS_STATE_2_CAN_ID;
+    tx_chassis_state_2.dlc = OSCC_REPORT_CHASSIS_STATE_2_CAN_DLC;
+
     control_can.sendMsgBuf(
             tx_chassis_state_2.id,
             CAN_STANDARD,
