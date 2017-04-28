@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <Arduino.h>
 #include "debug.h"
-#include "PID.h"
+#include "pid.h"
 
 #include "globals.h"
 #include "steering_control.h"

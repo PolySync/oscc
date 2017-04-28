@@ -1,9 +1,13 @@
-#include "PID.h"
+/**
+ * @file pid.cpp
+ *
+ */
 
 
+#include "pid.h"
 
 
-void pid_zeroize( PID* pid, float integral_windup_guard )
+void pid_zeroize( pid_s* pid, float integral_windup_guard )
 {
     // set prev and integrated error to zero
     pid->prev_input = 0;
@@ -13,7 +17,7 @@ void pid_zeroize( PID* pid, float integral_windup_guard )
 }
 
 
-int pid_update( PID* pid, float setpoint, float input, float dt )
+int pid_update( pid_s* pid, float setpoint, float input, float dt )
 {
     float diff;
     float p_term;
@@ -59,4 +63,3 @@ int pid_update( PID* pid, float setpoint, float input, float dt )
 
     return PID_SUCCESS;
 }
-

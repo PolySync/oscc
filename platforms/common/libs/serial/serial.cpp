@@ -1,6 +1,13 @@
-#include <HardwareSerial.h>
-#include "serial.h"
+/**
+ * @file serial.h
+ *
+ */
+
+
+#include <Arduino.h>
 #include "debug.h"
+#include "serial.h"
+
 
 void init_serial( void )
 {

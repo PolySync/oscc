@@ -5,10 +5,10 @@ set(ARDUINO_DEFAULT_BOARD uno)
 generate_arduino_firmware(
     kia-soul-steering
     SRCS
-    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.c
+    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/DAC_MCP49xx/DAC_MCP49xx.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/PID/PID.c
+    ${CMAKE_SOURCE_DIR}/common/libs/pid/pid.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp
@@ -26,7 +26,7 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init
     ${CMAKE_SOURCE_DIR}/common/libs/DAC_MCP49xx
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
-    ${CMAKE_SOURCE_DIR}/common/libs/PID
+    ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/time)

@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include "DAC_MCP49xx.h"
 #include "mcp_can.h"
-#include "PID.h"
+#include "pid.h"
 
 #include "steering_control.h"
 
@@ -61,7 +61,7 @@ EXTERN uint32_t g_steering_report_last_tx_timestamp;
 
 EXTERN kia_soul_steering_control_state_s steering_control_state;
 
-EXTERN PID pid;
+EXTERN pid_s pid;
 EXTERN uint8_t torque_sum;
 
 

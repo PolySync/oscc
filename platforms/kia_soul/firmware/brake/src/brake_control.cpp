@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "debug.h"
 #include "time.h"
-#include "PID.h"
+#include "pid.h"
 
 #include "globals.h"
 #include "brake_control.h"
@@ -183,7 +183,7 @@ void brake_update( void )
 
         pressure_target = interpolate( brake_state.pedal_command, &pressure_ranges );
 
-        PID pid_params;
+        pid_s pid_params;
 
         // Initialize PID params
         pid_zeroize( &pid_params, PARAM_PID_WINDUP_GUARD );

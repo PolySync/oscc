@@ -5,7 +5,7 @@ set(ARDUINO_DEFAULT_BOARD uno)
 generate_arduino_firmware(
     kia-soul-throttle
     SRCS
-    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.c
+    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/DAC_MCP49xx/DAC_MCP49xx.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp

@@ -3,7 +3,7 @@
 #include "can.h"
 #include "debug.h"
 #include "time.h"
-#include "PID.h"
+#include "pid.h"
 
 #include "init.h"
 #include "globals.h"
