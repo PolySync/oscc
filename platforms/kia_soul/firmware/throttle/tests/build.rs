@@ -10,20 +10,18 @@ fn main() {
         .include("../include")
         .include("../../../../common/include")
         .include("../../../../common/libs/arduino_init")
-        .include("../../../../common/libs/DAC_MCP49xx")
-        .include("../../../../common/libs/mcp_can")
         .include("../../../../common/libs/serial")
         .include("../../../../common/libs/can")
         .include("../../../../common/libs/time")
         .include("/usr/lib/avr/include")
-        .file("src/SPI.cpp")
+        .file("src/SPI.cpp") // include Arduino lib mockups so that we can test on s/w only
         .file("src/Arduino.cpp")
+        .file("src/mcp_can.cpp")
+        .file("src/DAC_MCP49xx.cpp")
         .file("../src/communications.cpp")
         .file("../src/throttle_control.cpp")
         .file("../src/globals.cpp")
-        .file("../../../../common/libs/mcp_can/mcp_can.cpp")
-        .file("../../../../common/libs/DAC_MCP49xx/DAC_MCP49xx.cpp")
-        .compile("libbarf.a");
+        .compile("libcomm_test.a");
     
     let out_dir = env::var("OUT_DIR").unwrap();
 
@@ -31,9 +29,7 @@ fn main() {
         .header("include/wrapper.hpp")
         .generate_comments(false)
         .clang_arg("-Iinclude")
-        .clang_arg("-I../../../../common/libs/DAC_MCP49xx")
         .clang_arg("-I/usr/lib/avr/include")
-        .clang_arg("-I../../../../common/libs/mcp_can")
         .clang_arg("-I../../../../common/libs/can")
         .whitelisted_function("publish_throttle_report")
         .whitelisted_function("process_throttle_command")
