@@ -53,10 +53,10 @@ typedef struct
 // signals: ...
 typedef struct
 {
-    int16_t wheel_speed_lf; // 1/128 mph per bit
-    int16_t wheel_speed_rf;
-    int16_t wheel_speed_lr;
-    int16_t wheel_speed_rr;
+    int16_t wheel_speed_front_left; // 1/128 mph per bit
+    int16_t wheel_speed_front_right;
+    int16_t wheel_speed_rear_left;
+    int16_t wheel_speed_rear_right;
 } kia_soul_obd_wheel_speed_data_s;
 
 

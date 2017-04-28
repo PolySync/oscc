@@ -200,10 +200,10 @@ static void process_obd_wheel_speed(
 
         #warning "TODO - wheel speed unit conversion"
 
-        tx_chassis_state_2.data.wheel_speed_lf = wheel_speed_data->wheel_speed_lf;
-        tx_chassis_state_2.data.wheel_speed_rf = wheel_speed_data->wheel_speed_rf;
-        tx_chassis_state_2.data.wheel_speed_lr = wheel_speed_data->wheel_speed_lr;
-        tx_chassis_state_2.data.wheel_speed_rr = wheel_speed_data->wheel_speed_rr;
+        tx_chassis_state_2.data.wheel_speed_front_left = wheel_speed_data->wheel_speed_front_left;
+        tx_chassis_state_2.data.wheel_speed_front_right = wheel_speed_data->wheel_speed_front_right;
+        tx_chassis_state_2.data.wheel_speed_rear_left = wheel_speed_data->wheel_speed_rear_left;
+        tx_chassis_state_2.data.wheel_speed_rear_right = wheel_speed_data->wheel_speed_rear_right;
 
         obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS( );
     }
