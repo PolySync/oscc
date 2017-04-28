@@ -72,32 +72,38 @@ void brake_disable( void )
 
 void check_for_operator_override( void )
 {
-    static const float filter_alpha = 0.05;
-
-    static float filtered_input_1 = 0.0;
-    static float filtered_input_2 = 0.0;
-
-    float sensor_1 = ( float )( analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 ) );
-    float sensor_2 = ( float )( analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 ) );
-
-    sensor_1 = raw_adc_to_pressure( ( uint16_t )sensor_1 );
-    sensor_2 = raw_adc_to_pressure( ( uint16_t )sensor_2 );
-
-    filtered_input_1 = ( filter_alpha * sensor_1 ) +
-        ( ( 1.0 - filter_alpha ) * filtered_input_1 );
-
-    filtered_input_2 = ( filter_alpha * sensor_2 ) +
-        ( ( 1.0 - filter_alpha ) * filtered_input_2 );
-
-    if ( ( filtered_input_1 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
-         ( filtered_input_2 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+    if( brake_control_state.enabled == true )
     {
-        DEBUG_PRINTLN( "driver override" );
-        brake_control_state.operator_override = true;
-    }
-    else
-    {
-        brake_control_state.operator_override = false;
+        static const float filter_alpha = 0.05;
+
+        static float filtered_input_1 = 0.0;
+        static float filtered_input_2 = 0.0;
+
+        float sensor_1 = ( float )( analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 ) );
+        float sensor_2 = ( float )( analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 ) );
+
+        sensor_1 = raw_adc_to_pressure( ( uint16_t )sensor_1 );
+        sensor_2 = raw_adc_to_pressure( ( uint16_t )sensor_2 );
+
+        filtered_input_1 = ( filter_alpha * sensor_1 ) +
+            ( ( 1.0 - filter_alpha ) * filtered_input_1 );
+
+        filtered_input_2 = ( filter_alpha * sensor_2 ) +
+            ( ( 1.0 - filter_alpha ) * filtered_input_2 );
+
+        if ( ( filtered_input_1 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
+            ( filtered_input_2 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+        {
+            brake_disable( );
+
+            brake_control_state.operator_override = true;
+
+            DEBUG_PRINTLN( "Operator override" );
+        }
+        else
+        {
+            brake_control_state.operator_override = false;
+        }
     }
 }
 
