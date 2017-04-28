@@ -1,8 +1,6 @@
 #ifndef _OSCC_KIA_SOUL_THROTTLE_COMMUNICATIONS_H_
 #define _OSCC_KIA_SOUL_THROTTLE_COMMUNICATIONS_H_
 
-// just for testing
-void say_hello( void );
 
 void publish_throttle_report( void );
 
