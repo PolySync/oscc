@@ -1,3 +1,9 @@
+/**
+ * @file init.cpp
+ *
+ */
+
+
 #include <avr/wdt.h>
 #include "serial.h"
 #include "can.h"
@@ -11,30 +17,30 @@
 void init_globals( void )
 {
     memset(
-        &tx_heartbeat,
+        &g_tx_heartbeat,
         0,
-        sizeof(tx_heartbeat) );
+        sizeof(g_tx_heartbeat) );
 
     memset(
-        &tx_chassis_state_1,
+        &g_tx_chassis_state_1,
         0,
-        sizeof(tx_chassis_state_1) );
+        sizeof(g_tx_chassis_state_1) );
 
     memset(
-        &tx_chassis_state_2,
+        &g_tx_chassis_state_2,
         0,
-        sizeof(tx_chassis_state_2) );
+        sizeof(g_tx_chassis_state_2) );
 
     // initialize timestamps so that we don't get timeouts on start
-    obd_steering_wheel_angle_rx_timestamp = GET_TIMESTAMP_MS();
-    obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS();
-    obd_brake_pressure_rx_timestamp = GET_TIMESTAMP_MS();
-    obd_turn_signal_rx_timestamp = GET_TIMESTAMP_MS();
+    g_obd_steering_wheel_angle_rx_timestamp = GET_TIMESTAMP_MS();
+    g_obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS();
+    g_obd_brake_pressure_rx_timestamp = GET_TIMESTAMP_MS();
+    g_obd_turn_signal_rx_timestamp = GET_TIMESTAMP_MS();
 
     // wait a little between timestamps transmissions are offset
-    tx_chassis_state_1.timestamp = GET_TIMESTAMP_MS();
+    g_tx_chassis_state_1.timestamp = GET_TIMESTAMP_MS();
     SLEEP_MS(5);
-    tx_chassis_state_2.timestamp = GET_TIMESTAMP_MS();
+    g_tx_chassis_state_2.timestamp = GET_TIMESTAMP_MS();
     SLEEP_MS(5);
 }
 
@@ -46,8 +52,8 @@ void init_communication_interfaces( void )
     #endif
 
     DEBUG_PRINT( "init OBD CAN - ");
-    init_can( obd_can );
+    init_can( g_obd_can );
 
     DEBUG_PRINT( "init Control CAN - ");
-    init_can( control_can );
+    init_can( g_control_can );
 }

@@ -1,12 +1,5 @@
 /**
- * @file can_gateway.ino
- * @brief CAN Gateway Module Source.
- *
- * Board: Arduino Uno
- * Arduino Build/Version: 1.6.7 linux-x86_64
- *
- * @warning Requires watchdog reset support in the bootloader, which is NOT supported
- * in all Arduino bootloaders.
+ * @file main.cpp
  *
  */
 
@@ -15,6 +8,7 @@
 
 #include "arduino_init.h"
 #include "debug.h"
+#include "gateway_can_protocol.h"
 
 #include "globals.h"
 #include "communications.h"

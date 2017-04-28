@@ -1,3 +1,9 @@
+/**
+ * @file communications.cpp
+ *
+ */
+
+
 #include "gateway_can_protocol.h"
 #include "chassis_state_can_protocol.h"
 #include "mcp_can.h"
@@ -31,18 +37,18 @@ static void process_rx_frame(
 
 void publish_heartbeat_report( void )
 {
-    tx_heartbeat.id = (OSCC_REPORT_HEARTBEAT_CAN_ID + OSCC_MODULE_CAN_GATEWAY_NODE_ID);
-    tx_heartbeat.dlc = OSCC_REPORT_HEARTBEAT_CAN_DLC;
-    tx_heartbeat.data.hardware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_HARDWARE;
-    tx_heartbeat.data.firmware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_FIRMWARE;
+    g_tx_heartbeat.id = (OSCC_REPORT_HEARTBEAT_CAN_ID + OSCC_MODULE_CAN_GATEWAY_NODE_ID);
+    g_tx_heartbeat.dlc = OSCC_REPORT_HEARTBEAT_CAN_DLC;
+    g_tx_heartbeat.data.hardware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_HARDWARE;
+    g_tx_heartbeat.data.firmware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_FIRMWARE;
 
-    control_can.sendMsgBuf(
-            tx_heartbeat.id,
+    g_control_can.sendMsgBuf(
+            g_tx_heartbeat.id,
             CAN_STANDARD,
-            tx_heartbeat.dlc,
-            (uint8_t *) &tx_heartbeat.data );
+            g_tx_heartbeat.dlc,
+            (uint8_t *) &g_tx_heartbeat.data );
 
-    tx_heartbeat.timestamp = GET_TIMESTAMP_MS();
+    g_tx_heartbeat.timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -50,19 +56,19 @@ void publish_reports( void )
 {
     uint32_t delta = 0;
 
-    delta = get_time_delta( tx_heartbeat.timestamp, GET_TIMESTAMP_MS() );
+    delta = get_time_delta( g_tx_heartbeat.timestamp, GET_TIMESTAMP_MS() );
     if( delta >= OSCC_REPORT_HEARTBEAT_PUBLISH_INTERVAL_IN_MSEC )
     {
         publish_heartbeat_report( );
     }
 
-    delta = get_time_delta( tx_chassis_state_1.timestamp, GET_TIMESTAMP_MS() );
+    delta = get_time_delta( g_tx_chassis_state_1.timestamp, GET_TIMESTAMP_MS() );
     if( delta >= OSCC_REPORT_CHASSIS_STATE_1_PUBLISH_INTERVAL_IN_MSEC )
     {
         publish_chassis_state_1_report( );
     }
 
-    delta = get_time_delta( tx_chassis_state_2.timestamp, GET_TIMESTAMP_MS() );
+    delta = get_time_delta( g_tx_chassis_state_2.timestamp, GET_TIMESTAMP_MS() );
     if( delta >= OSCC_REPORT_CHASSIS_STATE_2_PUBLISH_INTERVAL_IN_MSEC )
     {
         publish_chassis_state_2_report( );
@@ -75,7 +81,7 @@ void check_for_controller_command_timeout( void )
     bool timeout = false;
 
     timeout = is_timeout(
-            obd_steering_wheel_angle_rx_timestamp,
+            g_obd_steering_wheel_angle_rx_timestamp,
             GET_TIMESTAMP_MS(),
             KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_RX_WARN_TIMEOUT_IN_MSEC);
 
@@ -87,7 +93,7 @@ void check_for_controller_command_timeout( void )
     }
 
     timeout = is_timeout(
-            obd_wheel_speed_rx_timestamp,
+            g_obd_wheel_speed_rx_timestamp,
             GET_TIMESTAMP_MS(),
             KIA_SOUL_OBD_WHEEL_SPEED_RX_WARN_TIMEOUT_IN_MSEC);
 
@@ -98,7 +104,7 @@ void check_for_controller_command_timeout( void )
     }
 
     timeout = is_timeout(
-            obd_brake_pressure_rx_timestamp,
+            g_obd_brake_pressure_rx_timestamp,
             GET_TIMESTAMP_MS(),
             KIA_SOUL_OBD_BRAKE_PRESSURE_RX_WARN_TIMEOUT_IN_MSEC);
 
@@ -109,7 +115,7 @@ void check_for_controller_command_timeout( void )
     }
 
     timeout = is_timeout(
-            obd_turn_signal_rx_timestamp,
+            g_obd_turn_signal_rx_timestamp,
             GET_TIMESTAMP_MS(),
             KIA_SOUL_OBD_TURN_SIGNAL_RX_WARN_TIMEOUT_IN_MSEC);
 
@@ -126,7 +132,7 @@ void check_for_controller_command_timeout( void )
 void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;
-    can_status_t ret = check_for_rx_frame( obd_can, &rx_frame );
+    can_status_t ret = check_for_rx_frame( g_obd_can, &rx_frame );
 
     if( ret == CAN_RX_FRAME_AVAILABLE )
     {
@@ -137,31 +143,31 @@ void check_for_incoming_message( void )
 
 static void publish_chassis_state_1_report( void )
 {
-    tx_chassis_state_1.id = OSCC_REPORT_CHASSIS_STATE_1_CAN_ID;
-    tx_chassis_state_1.dlc = OSCC_REPORT_CHASSIS_STATE_1_CAN_DLC;
+    g_tx_chassis_state_1.id = OSCC_REPORT_CHASSIS_STATE_1_CAN_ID;
+    g_tx_chassis_state_1.dlc = OSCC_REPORT_CHASSIS_STATE_1_CAN_DLC;
 
-    control_can.sendMsgBuf(
-            tx_chassis_state_1.id,
+    g_control_can.sendMsgBuf(
+            g_tx_chassis_state_1.id,
             CAN_STANDARD,
-            tx_chassis_state_1.dlc,
-            (uint8_t *) &tx_chassis_state_1.data );
+            g_tx_chassis_state_1.dlc,
+            (uint8_t *) &g_tx_chassis_state_1.data );
 
-    tx_chassis_state_1.timestamp = GET_TIMESTAMP_MS();
+    g_tx_chassis_state_1.timestamp = GET_TIMESTAMP_MS();
 }
 
 
 static void publish_chassis_state_2_report( void)
 {
-    tx_chassis_state_2.id = OSCC_REPORT_CHASSIS_STATE_2_CAN_ID;
-    tx_chassis_state_2.dlc = OSCC_REPORT_CHASSIS_STATE_2_CAN_DLC;
+    g_tx_chassis_state_2.id = OSCC_REPORT_CHASSIS_STATE_2_CAN_ID;
+    g_tx_chassis_state_2.dlc = OSCC_REPORT_CHASSIS_STATE_2_CAN_DLC;
 
-    control_can.sendMsgBuf(
-            tx_chassis_state_2.id,
+    g_control_can.sendMsgBuf(
+            g_tx_chassis_state_2.id,
             CAN_STANDARD,
-            tx_chassis_state_2.dlc,
-            (uint8_t *) &tx_chassis_state_2.data );
+            g_tx_chassis_state_2.dlc,
+            (uint8_t *) &g_tx_chassis_state_2.data );
 
-    tx_chassis_state_2.timestamp = GET_TIMESTAMP_MS();
+    g_tx_chassis_state_2.timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -179,10 +185,10 @@ static void process_obd_steering_wheel_angle(
 
         #warning "TODO - steering wheel angle conversion and rate calculation"
 
-        tx_chassis_state_1.data.steering_wheel_angle_rate = 0;
-        tx_chassis_state_1.data.steering_wheel_angle = steering_wheel_angle_data->steering_angle;
+        g_tx_chassis_state_1.data.steering_wheel_angle_rate = 0;
+        g_tx_chassis_state_1.data.steering_wheel_angle = steering_wheel_angle_data->steering_angle;
 
-        obd_steering_wheel_angle_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_obd_steering_wheel_angle_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
@@ -200,12 +206,12 @@ static void process_obd_wheel_speed(
 
         #warning "TODO - wheel speed unit conversion"
 
-        tx_chassis_state_2.data.wheel_speed_front_left = wheel_speed_data->wheel_speed_front_left;
-        tx_chassis_state_2.data.wheel_speed_front_right = wheel_speed_data->wheel_speed_front_right;
-        tx_chassis_state_2.data.wheel_speed_rear_left = wheel_speed_data->wheel_speed_rear_left;
-        tx_chassis_state_2.data.wheel_speed_rear_right = wheel_speed_data->wheel_speed_rear_right;
+        g_tx_chassis_state_2.data.wheel_speed_front_left = wheel_speed_data->wheel_speed_front_left;
+        g_tx_chassis_state_2.data.wheel_speed_front_right = wheel_speed_data->wheel_speed_front_right;
+        g_tx_chassis_state_2.data.wheel_speed_rear_left = wheel_speed_data->wheel_speed_rear_left;
+        g_tx_chassis_state_2.data.wheel_speed_rear_right = wheel_speed_data->wheel_speed_rear_right;
 
-        obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
@@ -223,9 +229,9 @@ static void process_obd_brake_pressure(
 
         #warning "TODO - brake pressure unit conversion"
 
-        tx_chassis_state_1.data.brake_pressure = brake_pressure_data->master_cylinder_pressure;
+        g_tx_chassis_state_1.data.brake_pressure = brake_pressure_data->master_cylinder_pressure;
 
-        obd_brake_pressure_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_obd_brake_pressure_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
@@ -253,7 +259,7 @@ static void process_obd_turn_signal(
             SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
         }
 
-        obd_turn_signal_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_obd_turn_signal_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
