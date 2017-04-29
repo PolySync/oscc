@@ -1,3 +1,9 @@
+/**
+ * @file brake_control.cpp
+ *
+ */
+
+
 #include <Arduino.h>
 #include "debug.h"
 #include "time.h"
@@ -37,11 +43,11 @@ void brake_command_release_solenoids( const uint16_t duty_cycle )
 
 void brake_enable( void )
 {
-    if ( brake_control_state.enabled == false )
+    if ( g_brake_control_state.enabled == false )
     {
         master_cylinder_close( );
         brake_command_release_solenoids( 0 );
-        brake_control_state.enabled = true;
+        g_brake_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
     }
@@ -50,7 +56,7 @@ void brake_enable( void )
 
 void brake_disable( void )
 {
-    if ( brake_control_state.enabled == true )
+    if ( g_brake_control_state.enabled == true )
     {
         brake_command_actuator_solenoids( 0 );
 
@@ -63,7 +69,7 @@ void brake_disable( void )
 
         brake_command_release_solenoids( 0 );
 
-        brake_control_state.enabled = false;
+        g_brake_control_state.enabled = false;
 
         DEBUG_PRINTLN( "Control disabled" );
     }
@@ -72,8 +78,26 @@ void brake_disable( void )
 
 void check_for_operator_override( void )
 {
-    if( brake_control_state.enabled == true )
+    if( g_brake_control_state.enabled == true )
     {
+        // This function checks the voltage input from the brake pedal
+        // sensors to determine if the driver is attempting to brake
+        // the vehicle.  This must be done over time by taking
+        // periodic samples of the input voltage, calculating the
+        // difference between the two and then passing that difference
+        // through a basic exponential filter to smooth the input.
+
+        // The required response time for the filter is 250 ms, which at
+        // 50ms per sample is 5 samples.  As such, the alpha for the
+        // exponential filter is 0.5 to make the input go "close to" zero
+        // in 5 samples.
+
+        // The implementation is:
+        //     s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
+
+        // If the filtered input exceeds the max voltage, it is an
+        // indicator that the driver is pressing on the brake pedal
+        // and the control should be disabled.
         static const float filter_alpha = 0.05;
 
         static float filtered_input_1 = 0.0;
@@ -96,13 +120,13 @@ void check_for_operator_override( void )
         {
             brake_disable( );
 
-            brake_control_state.operator_override = true;
+            g_brake_control_state.operator_override = true;
 
             DEBUG_PRINTLN( "Operator override" );
         }
         else
         {
-            brake_control_state.operator_override = false;
+            g_brake_control_state.operator_override = false;
         }
     }
 }
@@ -116,7 +140,7 @@ void brake_update_pressure( void )
     float pressure_left = raw_adc_to_pressure( raw_left_pressure );
     float pressure_right = raw_adc_to_pressure( raw_right_pressure );
 
-    brake_state.current_pressure = ( pressure_left + pressure_right ) / 2;
+    g_brake_control_state.current_pressure = ( pressure_left + pressure_right ) / 2;
 }
 
 
@@ -142,7 +166,7 @@ void brake_init( void )
 
 void brake_update( void )
 {
-    if ( brake_control_state.enabled == true )
+    if ( g_brake_control_state.enabled == true )
     {
         static float pressure_target = 0.0;
         static float pressure = 0.0;
@@ -179,9 +203,9 @@ void brake_update( void )
         static interpolate_range_s pressure_ranges =
             { 0.0, UINT16_MAX, 12.0, 878.3 };
 
-        pressure = brake_state.current_pressure;
+        pressure = g_brake_control_state.current_pressure;
 
-        pressure_target = interpolate( brake_state.pedal_command, &pressure_ranges );
+        pressure_target = interpolate( g_brake_control_state.commanded_pedal_position, &pressure_ranges );
 
         pid_s pid_params;
 
@@ -268,7 +292,7 @@ void brake_update( void )
             }
             else    // -10.0 < pid_output < 10.0
             {
-                if ( brake_state.pedal_command < 100 )
+                if ( g_brake_control_state.commanded_pedal_position < 100 )
                 {
                     brake_lights_off( );
                 }

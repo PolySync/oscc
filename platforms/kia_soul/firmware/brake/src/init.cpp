@@ -1,3 +1,9 @@
+/**
+ * @file init.cpp
+ *
+ */
+
+
 #include <Arduino.h>
 #include "serial.h"
 #include "can.h"
@@ -13,13 +19,9 @@
 
 void init_globals( void )
 {
-    memset( &brake_state,
+    memset( &g_brake_control_state,
             0,
-            sizeof(brake_state) );
-
-    memset( &brake_control_state,
-            0,
-            sizeof(brake_control_state) );
+            sizeof(g_brake_control_state) );
 
     // Initialize the timestamps to avoid timeout warnings on start up
     g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
@@ -46,5 +48,5 @@ void init_communication_interfaces( void )
     #endif
 
     DEBUG_PRINT( "init Control CAN - " );
-    init_can( can );
+    init_can( g_control_can );
 }

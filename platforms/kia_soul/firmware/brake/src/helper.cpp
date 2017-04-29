@@ -1,3 +1,9 @@
+/**
+ * @file helper.cpp
+ *
+ */
+
+
 #include <stdint.h>
 
 #include "globals.h"
@@ -22,7 +28,8 @@ float interpolate(
 }
 
 
-float raw_adc_to_pressure( const uint16_t input )
+float raw_adc_to_pressure(
+    const uint16_t input )
 {
     float pressure = ( float )input;
     pressure *= 2.4;

@@ -1,3 +1,9 @@
+/**
+ * @file communications.cpp
+ *
+ */
+
+
 #include "mcp_can.h"
 #include "chassis_state_can_protocol.h"
 #include "brake_can_protocol.h"
@@ -35,7 +41,7 @@ void publish_reports( void )
 
 void check_for_controller_command_timeout( void )
 {
-    if( brake_control_state.enabled == true )
+    if( g_brake_control_state.enabled == true )
     {
         bool timeout = is_timeout(
             g_brake_command_last_rx_timestamp,
@@ -55,7 +61,7 @@ void check_for_controller_command_timeout( void )
 void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;
-    can_status_t ret = check_for_rx_frame( can, &rx_frame );
+    can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
 
     if( ret == CAN_RX_FRAME_AVAILABLE )
     {
@@ -70,12 +76,12 @@ static void publish_brake_report( void )
 
     brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
     brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
-    brake_report.data.enabled = (uint8_t) brake_control_state.operator_override;
-    brake_report.data.pedal_input = ( uint16_t )brake_state.can_pressure;
-    brake_report.data.pedal_command = ( uint16_t )brake_state.pedal_command;
-    brake_report.data.pedal_output = ( uint16_t )brake_state.current_pressure;
+    brake_report.data.enabled = (uint8_t) g_brake_control_state.operator_override;
+    brake_report.data.pedal_input = ( uint16_t )g_brake_control_state.can_pressure;
+    brake_report.data.pedal_command = ( uint16_t )g_brake_control_state.commanded_pedal_position;
+    brake_report.data.pedal_output = ( uint16_t )g_brake_control_state.current_pressure;
 
-    can.sendMsgBuf(
+    g_control_can.sendMsgBuf(
         brake_report.id,
         CAN_STANDARD,
         brake_report.dlc,
@@ -103,10 +109,10 @@ static void process_brake_command(
             brake_disable( );
         }
 
-        brake_state.pedal_command = brake_command_data->pedal_command;
+        g_brake_control_state.commanded_pedal_position = brake_command_data->pedal_command;
 
         DEBUG_PRINT( "controller commanded brake pressure: " );
-        DEBUG_PRINTLN( brake_state.pedal_command );
+        DEBUG_PRINTLN( g_brake_control_state.commanded_pedal_position );
 
         brake_update( );
 
@@ -123,7 +129,7 @@ static void process_chassis_state_1(
         const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
                 (oscc_report_chassis_state_1_data_s *) data;
 
-        brake_state.can_pressure = chassis_state_1_data->brake_pressure;
+        g_brake_control_state.can_pressure = chassis_state_1_data->brake_pressure;
     }
 }
 
