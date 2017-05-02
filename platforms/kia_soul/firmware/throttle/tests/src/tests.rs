@@ -5,9 +5,38 @@ include!(concat!(env!("OUT_DIR"), "/communications.rs"));
 
 extern crate quickcheck;
 
+use std::mem;
+
+struct mock_can_frame {
+    id: u32,
+    dlc: u8,
+    data: oscc_report_msg_throttle
+}
+
+static mut can_msg: mock_can_frame = mock_can_frame {
+    id: 0,
+    dlc: 0,
+    data: oscc_report_msg_throttle{
+        accelerator_input: 0,
+        accelerator_command: 0,
+        accelerator_output: 0,
+        _bitfield_1: 0
+    }
+};
+
 #[allow(dead_code)]
-extern fn callback(a: i32) {
-    println!("I'm called from C with value {0}", a);
+extern fn retrieve_sent_can_msg( id: u32, dlc: u8, buf: *mut u8) {
+    unsafe { 
+        can_msg.id = id; 
+        can_msg.dlc = dlc;
+        can_msg.data.accelerator_input = mem::transmute([*buf, *buf.offset(1)]);
+        can_msg.data.accelerator_command = mem::transmute([*buf.offset(2), *buf.offset(3)]);
+        can_msg.data.accelerator_output = mem::transmute([*buf.offset(4), *buf.offset(5)]);
+        can_msg.data._bitfield_1 = mem::transmute([*buf.offset(6), *buf.offset(7)]);
+    }
+}
+
+fn main() {
 }
 
 #[cfg(test)]
@@ -53,9 +82,39 @@ mod tests {
         }
     }
 
-    fn prop_send_valid_can_fields() -> bool {
-        unsafe { publish_throttle_report() };
-        return true;
+    fn prop_send_valid_can_fields(
+            accelerator_pressed: bool, 
+            voltage: u16, 
+            control_enabled: bool, 
+            accel_pos_sensor_low: u16,
+            accel_pos_sensor_high: u16,
+            accel_pos_target: f32
+                ) -> bool 
+    {
+        unsafe {
+            override_flags.accelerator_pressed = accelerator_pressed;
+            override_flags.voltage = voltage;
+            control_state.enabled = control_enabled;
+            throttle_state.accel_pos_sensor_low = accel_pos_sensor_low;
+            throttle_state.accel_pos_sensor_high = accel_pos_sensor_high;
+            throttle_state.accel_pos_target = accel_pos_target;
+
+            let mut override_flag = 1;
+
+            if !accelerator_pressed && voltage == 0 {
+                override_flag = 0;
+            }
+
+            MCP_CAN_register_callback(&mut can, Some(retrieve_sent_can_msg));
+            publish_throttle_report();
+
+            return  can_msg.id == OSCC_CAN_ID_THROTTLE_REPORT &&
+                    can_msg.dlc == 8 &&
+                    can_msg.data.accelerator_input == (accel_pos_sensor_low + accel_pos_sensor_high) &&
+                    can_msg.data.accelerator_command == accel_pos_target as u16 &&
+                    can_msg.data.enabled() == control_enabled as u8 &&
+                    can_msg.data.override_() == override_flag
+        }
     }
 
     impl Arbitrary for can_frame_s {
@@ -129,6 +188,6 @@ mod tests {
     fn check_valid_can_frame() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_send_valid_can_fields as fn() -> bool)
+            .quickcheck(prop_send_valid_can_fields as fn(bool, u16, bool, u16, u16, f32) -> bool)
     }
 }
