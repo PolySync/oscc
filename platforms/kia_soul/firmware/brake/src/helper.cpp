@@ -10,6 +10,19 @@
 #include "helper.h"
 
 
+/*
+ * @brief Scalar for converting voltage to pressure.
+ *
+ */
+#define VOLTAGE_TO_PRESSURE_SCALAR (2.4)
+
+/*
+ * @brief Offset for converting voltage to pressure.
+ *
+ */
+#define VOLTAGE_TO_PRESSURE_OFFSET (-252.1)
+
+
 float interpolate(
     const float input,
     const interpolate_range_s * const range )
@@ -32,8 +45,8 @@ float raw_adc_to_pressure(
     const uint16_t input )
 {
     float pressure = ( float )input;
-    pressure *= 2.4;
-    pressure -= 252.1;
+    pressure *= VOLTAGE_TO_PRESSURE_SCALAR;
+    pressure += VOLTAGE_TO_PRESSURE_OFFSET;
 
     if ( pressure < PARAM_BRAKE_PRESSURE_MIN_IN_DECIBARS )
     {

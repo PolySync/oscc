@@ -62,7 +62,7 @@
  *
  */
 
-#define PARAM_ACCELERATOR_OVERRIDE_THRESHOLD_IN_DECIBARS ( 1000.0 )
+#define PARAM_ACCELERATOR_OVERRIDE_THRESHOLD ( 1000.0 )
 
 /*
  * @brief Amount of time after controller command that is considered a

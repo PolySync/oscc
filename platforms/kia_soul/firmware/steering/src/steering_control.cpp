@@ -13,6 +13,43 @@
 #include "steering_control.h"
 
 
+/*
+ * @brief Number of bits to shift to go from a 10-bit value to a 12-bit value.
+ *
+ */
+#define BIT_SHIFT_10BIT_TO_12BIT (2)
+
+/*
+ * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.
+ *
+ */
+#define STEPS_PER_VOLT (819.2)
+
+/*
+ * @brief Scalar value for the low spoof signal taken from a calibration curve.
+ *
+ */
+#define SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALAR (0.0008)
+
+/*
+ * @brief Offset value for the low spoof signal taken from a calibration curve.
+ *
+ */
+#define SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET (2.26)
+
+/*
+ * @brief Scalar value for the high spoof signal taken from a calibration curve.
+ *
+ */
+#define SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALAR (-0.0008)
+
+/*
+ * @brief Offset value for the high spoof signal taken from a calibration curve.
+ *
+ */
+#define SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET (2.5)
+
+
 static int32_t get_analog_sample_average(
     const int32_t num_samples,
     const uint8_t pin );
@@ -110,14 +147,18 @@ void update_steering( void )
 {
     if (g_steering_control_state.enabled == true )
     {
-        // Calculate steering angle rates (degrees/microsecond)
+        float time_between_loops_in_sec = 0.05;
+
+        // Calculate steering angle rates (millidegrees/microsecond)
         float steering_angle_rate =
-            ( g_steering_control_state.steering_angle -
-            g_steering_control_state.steering_angle_last ) / 0.05;
+            ( g_steering_control_state.steering_angle
+            - g_steering_control_state.steering_angle_last )
+            / time_between_loops_in_sec;
 
         float steering_angle_rate_target =
-            ( g_steering_control_state.commanded_steering_angle -
-            g_steering_control_state.steering_angle ) / 0.05;
+            ( g_steering_control_state.commanded_steering_angle
+            - g_steering_control_state.steering_angle )
+            / time_between_loops_in_sec;
 
         // Save the angle for next iteration
         g_steering_control_state.steering_angle_last =
@@ -125,8 +166,8 @@ void update_steering( void )
 
         steering_angle_rate_target =
             constrain( steering_angle_rate_target,
-                    ( float )-PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC,
-                    ( float )PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC );
+                    PARAM_STEERING_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC,
+                    PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC );
 
         g_pid.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
         g_pid.integral_gain = PARAM_PID_INTEGRAL_GAIN;
@@ -136,13 +177,13 @@ void update_steering( void )
                 &g_pid,
                 steering_angle_rate_target,
                 steering_angle_rate,
-                0.050 );
+                time_between_loops_in_sec );
 
         float control = g_pid.control;
 
         control = constrain( control,
-                            -1500.0f,
-                            1500.0f );
+                            PARAM_TORQUE_MIN_IN_NEWTON_METERS,
+                            PARAM_TORQUE_MAX_IN_NEWTON_METERS );
 
         steering_torque_s torque_spoof;
 
@@ -204,9 +245,8 @@ void disable_control( void )
 static void read_torque_sensor(
     steering_torque_s * value )
 {
-    // shifting required to go from 10 bit to 12 bit
-    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
-    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
+    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << BIT_SHIFT_10BIT_TO_12BIT;
+    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << BIT_SHIFT_10BIT_TO_12BIT;
 }
 
 
@@ -222,7 +262,7 @@ static int32_t get_analog_sample_average(
         sum += analogRead( pin );
     }
 
-    return ( (sum / num_samples) << 2 );
+    return (sum / num_samples) << BIT_SHIFT_10BIT_TO_12BIT;
 }
 
 
@@ -248,7 +288,14 @@ static void calculate_torque_spoof(
 {
     if( spoof != NULL )
     {
-        spoof->low = 819.2 * ( 0.0008 * torque_target + 2.26 );
-        spoof->high = 819.2 * ( -0.0008 * torque_target + 2.5 );
+        spoof->low =
+            STEPS_PER_VOLT
+            * ((SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALAR * torque_target)
+            + SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET);
+
+        spoof->high =
+            STEPS_PER_VOLT
+            * ((SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALAR * torque_target)
+            + SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET);
     }
 }

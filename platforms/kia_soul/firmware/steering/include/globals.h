@@ -77,10 +77,28 @@
 *******************************************************************************/
 
 /*
+ * @brief Minimum steering angle rate. [degrees/microsecond]
+ *
+ */
+#define PARAM_STEERING_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC ( -1000.0 )
+
+/*
  * @brief Maximum steering angle rate. [degrees/microsecond]
  *
  */
 #define PARAM_STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC ( 1000.0 )
+
+/*
+ * @brief Minimum steering angle rate. [Newton meters]
+ *
+ */
+#define PARAM_TORQUE_MIN_IN_NEWTON_METERS ( -1500.0 )
+
+/*
+ * @brief Maximum steering angle rate. [Newton meters]
+ *
+ */
+#define PARAM_TORQUE_MAX_IN_NEWTON_METERS ( 1500.0 )
 
 /*
  * @brief Value of the torque sensor that indicates operator override.

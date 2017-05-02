@@ -16,6 +16,20 @@
 #include "steering_control.h"
 
 
+/*
+ * @brief Scalar value to convert angle reported by OBD to human-readable value.
+ *
+ */
+#define RAW_ANGLE_SCALAR (0.0076294)
+
+/*
+ * @brief Scalar value to convert wheel angle (-40 to 40 degrees) to steering
+ *        wheel angle (-470 to 470) degrees.
+ *
+ */
+#define WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR (11.7)
+
+
 static void publish_steering_report( void );
 
 static void process_steering_command(
@@ -130,11 +144,11 @@ static void process_chassis_state_1_report(
         const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
                 (oscc_report_chassis_state_1_data_s *) data;
 
-        float raw_angle = (float)chassis_state_1_data->steering_wheel_angle;
-        g_steering_control_state.steering_angle = raw_angle * 0.0076294;
+        float raw_angle =
+            (float) chassis_state_1_data->steering_wheel_angle * RAW_ANGLE_SCALAR;
 
-        // Convert from 40 degree range to 470 degree range in 1 degree increments
-        g_steering_control_state.steering_angle *= 11.7;
+        g_steering_control_state.steering_angle =
+            raw_angle * WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR;
     }
 }
 

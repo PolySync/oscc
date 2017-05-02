@@ -167,28 +167,28 @@
 // have reached their stops.
 
 /*
- * @brief Maximum SLA duty cycle.
+ * @brief Maximum actuation solenoid duty cycle.
  *
  */
-#define PARAM_SLA_DUTY_CYCLE_MAX ( 105.0 )
+#define PARAM_ACTUATION_SOLENOID_DUTY_CYCLE_MAX ( 105.0 )
 
 /*
- * @brief Minimum SLA duty cycle.
+ * @brief Minimum actuation solenoid duty cycle.
  *
  */
-#define PARAM_SLA_DUTY_CYCLE_MIN ( 80.0 )
+#define PARAM_ACTUATION_SOLENOID_DUTY_CYCLE_MIN ( 80.0 )
 
 /*
- * @brief Maximum SLR duty cycle.
+ * @brief Maximum release solenoid duty cycle.
  *
  */
-#define PARAM_SLR_DUTY_CYCLE_MAX ( 100.0 )
+#define PARAM_RELEASE_SOLENOID_DUTY_CYCLE_MAX ( 100.0 )
 
 /*
- * @brief Minimum SLR duty cycle.
+ * @brief Minimum release solenoid duty cycle.
  *
  */
-#define PARAM_SLR_DUTY_CYCLE_MIN ( 50.0 )
+#define PARAM_RELEASE_SOLENOID_DUTY_CYCLE_MIN ( 50.0 )
 
 
 #ifdef GLOBAL_DEFINED
