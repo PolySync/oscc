@@ -30,6 +30,7 @@
 
 // #include <SPI.h>
 #include "DAC_MCP49xx.h"
+#include <stdio.h>
 
 DAC_MCP49xx::DAC_MCP49xx(DAC_MCP49xx::Model _model, int _ss_pin, int _LDAC_pin)
 {
@@ -81,10 +82,12 @@ void DAC_MCP49xx::output(unsigned short data) {
 
 // For MCP49x2
 void DAC_MCP49xx::outputA(unsigned short data) {
+  // printf("OutputA: %d\n", data);
 }
 
 // For MCP49x2
 void DAC_MCP49xx::outputB(unsigned short data) {
+    // printf("OutputB: %d\n", data);
 }
 
 // MCP49x2 (dual DAC) only.
