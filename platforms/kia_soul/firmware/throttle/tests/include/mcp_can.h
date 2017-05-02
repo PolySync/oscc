@@ -7,6 +7,7 @@
 
 class MCP_CAN
 {
+
 public:
     MCP_CAN(INT8U _CS);
     // INT8U begin(INT8U speedset);                                    /* init can                     */
@@ -21,6 +22,11 @@ public:
     // INT32U getCanId(void);                                          /* get can id when receive      */
     // INT8U isRemoteRequest(void);                                    /* get RR flag when receive     */
     // INT8U isExtendedFrame(void);                                    /* did we recieve 29bit frame?  */
+    // int32_t register_callback(rust_callback callback);
+
+    INT32U id;
+    INT8U len;
+    INT8U *buf;
 };
 
 #endif
