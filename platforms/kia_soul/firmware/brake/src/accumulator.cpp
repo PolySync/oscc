@@ -43,12 +43,12 @@ void accumulator_maintain_pressure( void )
         ( accumulator_alpha * pressure ) +
         ( ( 1.0 - accumulator_alpha ) * g_brake_control_state.accumulator_pressure );
 
-    if ( g_brake_control_state.accumulator_pressure < PARAM_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS )
+    if ( g_brake_control_state.accumulator_pressure < ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS )
     {
         accumulator_turn_pump_on( );
     }
 
-    if ( g_brake_control_state.accumulator_pressure > PARAM_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS )
+    if ( g_brake_control_state.accumulator_pressure > ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS )
     {
         accumulator_turn_pump_off( );
     }

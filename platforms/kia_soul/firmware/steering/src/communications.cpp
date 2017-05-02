@@ -16,20 +16,6 @@
 #include "steering_control.h"
 
 
-/*
- * @brief Scalar value to convert angle reported by OBD to human-readable value.
- *
- */
-#define RAW_ANGLE_SCALAR (0.0076294)
-
-/*
- * @brief Scalar value to convert wheel angle (-40 to 40 degrees) to steering
- *        wheel angle (-470 to 470) degrees.
- *
- */
-#define WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR (11.7)
-
-
 static void publish_steering_report( void );
 
 static void process_steering_command(
@@ -60,7 +46,7 @@ void check_for_controller_command_timeout( void )
         bool timeout = is_timeout(
                 g_steering_command_last_rx_timestamp,
                 GET_TIMESTAMP_MS( ),
-                PARAM_COMMAND_TIMEOUT_IN_MSEC);
+                COMMAND_TIMEOUT_IN_MSEC);
 
         if( timeout == true )
         {

@@ -21,7 +21,7 @@ void master_cylinder_init( void )
 
 void master_cylinder_open( void )
 {
-    analogWrite( PIN_MASTER_CYLINDER_SOLENOID, 0 );
+    analogWrite( PIN_MASTER_CYLINDER_SOLENOID, SOLENOID_PWM_OFF );
 
     DEBUG_PRINTLN( "Master Cylinder Open" );
 }
@@ -29,7 +29,7 @@ void master_cylinder_open( void )
 
 void master_cylinder_close( void )
 {
-    analogWrite( PIN_MASTER_CYLINDER_SOLENOID, 255 );
+    analogWrite( PIN_MASTER_CYLINDER_SOLENOID, SOLENOID_PWM_ON );
 
     DEBUG_PRINTLN( "Master Cylinder Close" );
 }

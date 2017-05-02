@@ -12,6 +12,19 @@
 #include <stdint.h>
 
 
+/*
+ * @brief Scalar for converting voltage to pressure.
+ *
+ */
+#define VOLTAGE_TO_PRESSURE_SCALAR ( 2.4 )
+
+/*
+ * @brief Offset for converting voltage to pressure.
+ *
+ */
+#define VOLTAGE_TO_PRESSURE_OFFSET ( -252.1 )
+
+
 /**
  * @brief Range of interpolation values.
  *

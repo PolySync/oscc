@@ -42,7 +42,7 @@ void check_for_controller_command_timeout( void )
         bool timeout = is_timeout(
                 g_throttle_command_last_rx_timestamp,
                 GET_TIMESTAMP_MS( ),
-                PARAM_COMMAND_TIMEOUT_IN_MSEC );
+                COMMAND_TIMEOUT_IN_MSEC );
 
         if( timeout == true )
         {

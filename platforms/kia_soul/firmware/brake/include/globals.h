@@ -101,94 +101,16 @@
 #define PIN_BRAKE_LIGHT ( 48 )
 
 /*
- * @brief Minimum accumulator presure. [decibars]
+ * @brief PWM value to turn a solenoid off.
  *
  */
-#define PARAM_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS ( 777.6 )
+#define SOLENOID_PWM_OFF ( 0 )
 
 /*
- * @brief Maximum accumulator pressure. [decibars]
+ * @brief PWM value to turn a solenoid on.
  *
  */
-#define PARAM_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS ( 878.3 )
-
-/*
- * @brief Minimum brake pressure. [decibars]
- *
- */
-#define PARAM_BRAKE_PRESSURE_MIN_IN_DECIBARS ( 12.0 )
-
-/*
- * @brief Maximum brake pressure. [decibars]
- *
- */
-#define PARAM_BRAKE_PRESSURE_MAX_IN_DECIBARS ( 947.9 )
-
-/*
- * @brief Value of brake pressure that indicates operator override. [decibars]
- *
- */
-#define PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ( 43.2 )
-
-/*
- * @brief Amount of time after controller command that is considered a
- *        timeout. [milliseconds]
- *
- */
-#define PARAM_COMMAND_TIMEOUT_IN_MSEC ( 2500 )
-
-/*
- * @brief Proportional gain of the PID controller.
- *
- */
-#define PARAM_PID_PROPORTIONAL_GAIN ( 0.5 )
-
-/*
- * @brief Integral gain of the PID controller.
- *
- */
-#define PARAM_PID_INTEGRAL_GAIN ( 0.2 )
-
-/*
- * @brief Derivative gain of the PID controller.
- *
- */
-#define PARAM_PID_DERIVATIVE_GAIN ( 0.001 )
-
-/*
- * @brief Windup guard of the PID controller.
- *
- */
-#define PARAM_PID_WINDUP_GUARD ( 30 )
-
-// The min/max duty cycle scalars used for 3.921 KHz PWM frequency.
-// These represent the minimum duty cycles that begin to actuate the
-// proportional solenoids and the maximum duty cycle where the solenoids
-// have reached their stops.
-
-/*
- * @brief Maximum actuation solenoid duty cycle.
- *
- */
-#define PARAM_ACTUATION_SOLENOID_DUTY_CYCLE_MAX ( 105.0 )
-
-/*
- * @brief Minimum actuation solenoid duty cycle.
- *
- */
-#define PARAM_ACTUATION_SOLENOID_DUTY_CYCLE_MIN ( 80.0 )
-
-/*
- * @brief Maximum release solenoid duty cycle.
- *
- */
-#define PARAM_RELEASE_SOLENOID_DUTY_CYCLE_MAX ( 100.0 )
-
-/*
- * @brief Minimum release solenoid duty cycle.
- *
- */
-#define PARAM_RELEASE_SOLENOID_DUTY_CYCLE_MIN ( 50.0 )
+#define SOLENOID_PWM_ON ( 255 )
 
 
 #ifdef GLOBAL_DEFINED

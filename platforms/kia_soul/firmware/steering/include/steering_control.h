@@ -12,6 +12,108 @@
 #include <stdint.h>
 
 
+/*******************************************************************************
+*   WARNING
+*
+*   The ranges selected to do steering control are carefully tested to
+*   ensure that a torque is not requested that the vehicles steering motor
+*   cannot handle. By changing any of this code you risk attempting to actuate
+*   a torque outside of the vehicles valid range. Actuating a torque outside of
+*   the vehicles valid range will, at best, cause the vehicle to go into an
+*   unrecoverable fault state. Clearing this fault state requires one of Kia's
+*   native diagnostics tools, and someone who knows how to clear DTC codes with
+*   said tool.
+*
+*   It is NOT recommended to modify any of the existing control ranges, or
+*   gains, without expert knowledge.
+*******************************************************************************/
+
+/*
+ * @brief Minimum steering angle rate. [degrees/microsecond]
+ *
+ */
+#define STEERING_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC ( -1000.0 )
+
+/*
+ * @brief Maximum steering angle rate. [degrees/microsecond]
+ *
+ */
+#define STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC ( 1000.0 )
+
+/*
+ * @brief Minimum steering angle rate. [Newton meters]
+ *
+ */
+#define TORQUE_MIN_IN_NEWTON_METERS ( -1500.0 )
+
+/*
+ * @brief Maximum steering angle rate. [Newton meters]
+ *
+ */
+#define TORQUE_MAX_IN_NEWTON_METERS ( 1500.0 )
+
+/*
+ * @brief Proportional gain of the PID controller.
+ *
+ */
+#define PID_PROPORTIONAL_GAIN ( 0.3 )
+
+/*
+ * @brief Integral gain of the PID controller.
+ *
+ */
+#define PID_INTEGRAL_GAIN ( 1.3 )
+
+/*
+ * @brief Derivative gain of the PID controller.
+ *
+ */
+#define PID_DERIVATIVE_GAIN ( 0.03 )
+
+/*
+ * @brief Value of the torque sensor that indicates operator override.
+          [degrees/microsecond]
+ *
+ */
+#define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 3000 )
+
+/*
+ * @brief Number of bits to shift to go from a 10-bit value to a 12-bit value.
+ *
+ */
+#define BIT_SHIFT_10BIT_TO_12BIT ( 2 )
+
+/*
+ * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.
+ *
+ */
+#define STEPS_PER_VOLT ( 819.2 )
+
+/*
+ * @brief Scalar value for the low spoof signal taken from a calibration curve.
+ *
+ */
+#define SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALAR ( 0.0008 )
+
+/*
+ * @brief Offset value for the low spoof signal taken from a calibration curve.
+ *
+ */
+#define SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.26 )
+
+/*
+ * @brief Scalar value for the high spoof signal taken from a calibration curve.
+ *
+ */
+#define SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALAR ( -0.0008 )
+
+/*
+ * @brief Offset value for the high spoof signal taken from a calibration curve.
+ *
+ */
+#define SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
+
+
 /**
  * @brief Torque values.
  *

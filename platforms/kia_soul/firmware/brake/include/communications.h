@@ -13,6 +13,14 @@
 #include "can.h"
 
 
+/*
+ * @brief Amount of time after controller command that is considered a
+ *        timeout. [milliseconds]
+ *
+ */
+#define COMMAND_TIMEOUT_IN_MSEC ( 2500 )
+
+
 // ****************************************************************************
 // Function:    publish_reports
 //

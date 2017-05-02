@@ -12,6 +12,129 @@
 #include <stdint.h>
 
 
+/*
+ * @brief Minimum value of an unsigned 16-bit integer.
+ *
+ */
+#define UINT16_MIN ( 0 )
+
+/*
+ * @brief Value of brake pressure that indicates operator override. [decibars]
+ *
+ */
+#define DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ( 43.2 )
+
+/*
+ * @brief Brake pressure threshold for when to enable the brake light.
+ *
+ */
+#define BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS (20.0)
+
+/*
+ * @brief Minimum possible pressure of brake system. [decibars]
+ *
+ */
+#define BRAKE_PRESSURE_MIN_IN_DECIBARS ( 12.0 )
+
+/*
+ * @brief Maximum possible pressure of brake system. [decibars]
+ *
+ */
+#define BRAKE_PRESSURE_MAX_IN_DECIBARS ( 878.3 )
+
+/*
+ * @brief Proportional gain of the PID controller.
+ *
+ */
+#define PID_PROPORTIONAL_GAIN ( 0.5 )
+
+/*
+ * @brief Integral gain of the PID controller.
+ *
+ */
+#define PID_INTEGRAL_GAIN ( 0.2 )
+
+/*
+ * @brief Derivative gain of the PID controller.
+ *
+ */
+#define PID_DERIVATIVE_GAIN ( 0.001 )
+
+/*
+ * @brief Windup guard of the PID controller.
+ *
+ */
+#define PID_WINDUP_GUARD ( 30 )
+
+/*
+ * @brief Minimum output value of PID to be within a valid pressure range.
+ *
+ */
+#define PID_OUTPUT_MIN ( -10 )
+
+/*
+ * @brief Maximum output value of PID to be within a valid pressure range.
+ *
+ */
+#define PID_OUTPUT_MAX ( 10 )
+
+/*
+ * @brief Minimum clamped PID value of the actuation solenoid.
+ *
+ */
+#define PID_ACTUATION_SOLENOID_CLAMPED_MIN ( 10.0 )
+
+/*
+ * @brief Maximum clamped PID value of the actuation solenoid.
+ *
+ */
+#define PID_ACTUATION_SOLENOID_CLAMPED_MAX ( 110.0 )
+
+/*
+ * @brief Minimum clamped PID value of the release solenoid.
+ *
+ */
+#define PID_RELEASE_SOLENOID_CLAMPED_MIN ( 0.0 )
+
+/*
+ * @brief Maximum clamped PID value of the release solenoid.
+ *
+ */
+#define PID_RELEASE_SOLENOID_CLAMPED_MAX ( 60.0 )
+
+/*
+ * @brief Minimum duty cycle that begins to actuate the actuation solenoid.
+ *
+ * 3.921 KHz PWM frequency
+ *
+ */
+#define ACTUATION_SOLENOID_DUTY_CYCLE_MIN ( 80.0 )
+
+/*
+ * @brief Maximum duty cycle where actuation solenoid has reached its stop.
+ *
+ * 3.921 KHz PWM frequency
+ *
+ */
+#define ACTUATION_SOLENOID_DUTY_CYCLE_MAX ( 105.0 )
+
+/*
+ * @brief Minimum duty cycle that begins to actuate the release solenoid.
+ *
+ * 3.921 KHz PWM frequency
+ *
+ */
+#define RELEASE_SOLENOID_DUTY_CYCLE_MIN ( 50.0 )
+
+/*
+ * @brief Maximum duty cycle where release solenoid has reached its stop.
+ *
+ * 3.921 KHz PWM frequency
+ *
+ */
+#define RELEASE_SOLENOID_DUTY_CYCLE_MAX ( 100.0 )
+
+
 /**
  * @brief Current brake control state.
  *

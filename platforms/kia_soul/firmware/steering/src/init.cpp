@@ -25,7 +25,7 @@ void init_globals( void )
     g_steering_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 
-    pid_zeroize( &g_pid, PARAM_PID_WINDUP_GUARD );
+    pid_zeroize( &g_pid, PID_WINDUP_GUARD );
 }
 
 

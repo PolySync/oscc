@@ -13,68 +13,6 @@
 #include "globals.h"
 
 
-/*
- * @brief Number of bits to shift to go from a 10-bit value to a 12-bit value.
- *
- */
-#define BIT_SHIFT_10BIT_TO_12BIT (2)
-
-/*
- * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.
- *
- */
-#define STEPS_PER_VOLT (819.2)
-
-/*
- * @brief Scalar value for the low spoof signal taken from a calibration curve.
- *
- */
-#define SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE (0.0004)
-
-/*
- * @brief Offset value for the low spoof signal taken from a calibration curve.
- *
- */
-#define SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET (0.366)
-
-/*
- * @brief Scalar value for the high spoof signal taken from a calibration curve.
- *
- */
-#define SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE (0.0008)
-
-/*
- * @brief Offset value for the high spoof signal taken from a calibration curve.
- *
- */
-#define SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET (0.732)
-
-/*
- * @brief Minimum allowed value for the low spoof signal value.
- *
- */
-#define SPOOF_LOW_SIGNAL_RANGE_MIN (0)
-
-/*
- * @brief Maximum allowed value for the low spoof signal value.
- *
- */
-#define SPOOF_LOW_SIGNAL_RANGE_MAX (1800)
-
-/*
- * @brief Minimum allowed value for the high spoof signal value.
- *
- */
-#define SPOOF_HIGH_SIGNAL_RANGE_MIN (0)
-
-/*
- * @brief Maximum allowed value for the high spoof signal value.
- *
- */
-#define SPOOF_HIGH_SIGNAL_RANGE_MAX (3500)
-
-
-
 static int32_t get_analog_sample_average(
     const int32_t num_samples,
     const uint8_t pin );
@@ -100,7 +38,7 @@ void check_for_operator_override( void )
         uint32_t accelerator_position_normalized =
             (accelerator_position.low + accelerator_position.high) / 2;
 
-        if ( accelerator_position_normalized > PARAM_ACCELERATOR_OVERRIDE_THRESHOLD )
+        if ( accelerator_position_normalized > ACCELERATOR_OVERRIDE_THRESHOLD )
         {
             disable_control( );
 

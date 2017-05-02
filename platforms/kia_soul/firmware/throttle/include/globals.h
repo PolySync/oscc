@@ -57,20 +57,6 @@
  */
 #define PIN_SPOOF_ENABLE ( 6 )
 
-/*
- * @brief Value of the accelerator position that indicates operator override.
- *
- */
-
-#define PARAM_ACCELERATOR_OVERRIDE_THRESHOLD ( 1000.0 )
-
-/*
- * @brief Amount of time after controller command that is considered a
- *        timeout. [milliseconds]
- *
- */
-#define PARAM_COMMAND_TIMEOUT_IN_MSEC ( 250 )
-
 
 #ifdef GLOBAL_DEFINED
     DAC_MCP49xx g_dac( DAC_MCP49xx::MCP4922, PIN_DAC_CHIP_SELECT );

@@ -15,79 +15,6 @@
 #include "helper.h"
 
 
-/*
- * @brief PWM value to turn a solenoid off.
- *
- */
-#define SOLENOID_PWM_OFF (0)
-
-/*
- * @brief PWM value to turn a solenoid on.
- *
- */
-#define SOLENOID_PWM_ON (255)
-
-/*
- * @brief Minimum possible pressure of brake system. [decibars]
- *
- */
-#define BRAKE_PRESSURE_MIN_IN_DECIBARS (12.0)
-
-/*
- * @brief Maximum possible pressure of brake system. [decibars]
- *
- */
-#define BRAKE_PRESSURE_MAX_IN_DECIBARS (878.3)
-
-/*
- * @brief Minimum output value of PID to be within a valid pressure range.
- *
- */
-#define PID_OUTPUT_MIN (-10)
-
-/*
- * @brief Maximum output value of PID to be within a valid pressure range.
- *
- */
-#define PID_OUTPUT_MAX (10)
-
-/*
- * @brief Minimum clamped PID value of the actuation solenoid.
- *
- */
-#define PID_ACTUATION_SOLENOID_CLAMPED_MIN (10.0)
-
-/*
- * @brief Maximum clamped PID value of the actuation solenoid.
- *
- */
-#define PID_ACTUATION_SOLENOID_CLAMPED_MAX (110.0)
-
-/*
- * @brief Minimum clamped PID value of the release solenoid.
- *
- */
-#define PID_RELEASE_SOLENOID_CLAMPED_MIN (0.0)
-
-/*
- * @brief Maximum clamped PID value of the release solenoid.
- *
- */
-#define PID_RELEASE_SOLENOID_CLAMPED_MAX (60.0)
-
-/*
- * @brief Brake pressure threshold for when to enable the brake light.
- *
- */
-#define BRAKE_LIGHT_PRESSURE_THRESHOLD (20.0)
-
-/*
- * @brief Minimum value of an unsigned 16-bit integer.
- *
- */
-#define UINT16_MIN (0)
-
-
 void brake_lights_off( void )
 {
     digitalWrite( PIN_BRAKE_LIGHT, LOW );
@@ -189,8 +116,8 @@ void check_for_operator_override( void )
         filtered_input_2 = ( filter_alpha * sensor_2 ) +
             ( ( 1.0 - filter_alpha ) * filtered_input_2 );
 
-        if ( ( filtered_input_1 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
-            ( filtered_input_2 > PARAM_DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+        if ( ( filtered_input_1 > DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
+            ( filtered_input_2 > DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
         {
             brake_disable( );
 
@@ -286,11 +213,11 @@ void brake_update( void )
 
         pid_s pid_params;
 
-        pid_zeroize( &pid_params, PARAM_PID_WINDUP_GUARD );
+        pid_zeroize( &pid_params, PID_WINDUP_GUARD );
 
-        pid_params.proportional_gain = PARAM_PID_PROPORTIONAL_GAIN;
-        pid_params.integral_gain     = PARAM_PID_INTEGRAL_GAIN;
-        pid_params.derivative_gain   = PARAM_PID_DERIVATIVE_GAIN;
+        pid_params.proportional_gain = PID_PROPORTIONAL_GAIN;
+        pid_params.integral_gain     = PID_INTEGRAL_GAIN;
+        pid_params.derivative_gain   = PID_DERIVATIVE_GAIN;
 
         int16_t ret = pid_update( &pid_params,
                                 pressure_target,
@@ -318,8 +245,8 @@ void brake_update( void )
                 static interpolate_range_s slr_ranges = {
                     PID_RELEASE_SOLENOID_CLAMPED_MIN,
                     PID_RELEASE_SOLENOID_CLAMPED_MAX,
-                    PARAM_RELEASE_SOLENOID_DUTY_CYCLE_MIN,
-                    PARAM_RELEASE_SOLENOID_DUTY_CYCLE_MAX };
+                    RELEASE_SOLENOID_DUTY_CYCLE_MIN,
+                    RELEASE_SOLENOID_DUTY_CYCLE_MAX };
 
                 uint16_t slr_duty_cycle = 0;
 
@@ -328,9 +255,9 @@ void brake_update( void )
                 pid_output = -pid_output;
                 slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
 
-                if ( slr_duty_cycle > ( uint16_t )PARAM_RELEASE_SOLENOID_DUTY_CYCLE_MAX )
+                if ( slr_duty_cycle > ( uint16_t )RELEASE_SOLENOID_DUTY_CYCLE_MAX )
                 {
-                    slr_duty_cycle = ( uint16_t )PARAM_RELEASE_SOLENOID_DUTY_CYCLE_MAX;
+                    slr_duty_cycle = ( uint16_t )RELEASE_SOLENOID_DUTY_CYCLE_MAX;
                 }
 
                 brake_command_release_solenoids( slr_duty_cycle );
@@ -338,7 +265,7 @@ void brake_update( void )
                 DEBUG_PRINT(",0,");
                 DEBUG_PRINT(slr_duty_cycle);
 
-                if ( pressure_target < BRAKE_LIGHT_PRESSURE_THRESHOLD )
+                if ( pressure_target < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
                 {
                     brake_lights_off( );
                 }
@@ -350,8 +277,8 @@ void brake_update( void )
                 static interpolate_range_s sla_ranges = {
                     PID_ACTUATION_SOLENOID_CLAMPED_MIN,
                     PID_ACTUATION_SOLENOID_CLAMPED_MAX,
-                    PARAM_ACTUATION_SOLENOID_DUTY_CYCLE_MIN,
-                    PARAM_ACTUATION_SOLENOID_DUTY_CYCLE_MAX };
+                    ACTUATION_SOLENOID_DUTY_CYCLE_MIN,
+                    ACTUATION_SOLENOID_DUTY_CYCLE_MAX };
 
                 uint16_t sla_duty_cycle = 0;
 
@@ -361,9 +288,9 @@ void brake_update( void )
 
                 sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
 
-                if ( sla_duty_cycle > ( uint16_t )PARAM_ACTUATION_SOLENOID_DUTY_CYCLE_MAX )
+                if ( sla_duty_cycle > ( uint16_t )ACTUATION_SOLENOID_DUTY_CYCLE_MAX )
                 {
-                    sla_duty_cycle = ( uint16_t )PARAM_ACTUATION_SOLENOID_DUTY_CYCLE_MAX;
+                    sla_duty_cycle = ( uint16_t )ACTUATION_SOLENOID_DUTY_CYCLE_MAX;
                 }
 
                 brake_command_actuator_solenoids( sla_duty_cycle );
@@ -376,7 +303,7 @@ void brake_update( void )
             // pressure within valid range
             else
             {
-                if ( pressure_target < BRAKE_LIGHT_PRESSURE_THRESHOLD )
+                if ( pressure_target < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
                 {
                     brake_lights_off( );
                 }
