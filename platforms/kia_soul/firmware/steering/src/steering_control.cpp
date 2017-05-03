@@ -8,19 +8,11 @@
 #include <stdint.h>
 #include "debug.h"
 #include "pid.h"
+#include "dac.h"
 
 #include "globals.h"
 #include "steering_control.h"
 
-
-static int32_t get_analog_sample_average(
-    const int32_t num_samples,
-    const uint8_t pin );
-
-static void write_sample_averages_to_dac(
-    const int16_t num_samples,
-    const uint8_t signal_pin_1,
-    const uint8_t signal_pin_2 );
 
 static void calculate_torque_spoof(
     const float torque_target,
@@ -167,6 +159,7 @@ void enable_control( void )
         // signal discontinuity when the SCM takes over
         static uint16_t num_samples = 20;
         write_sample_averages_to_dac(
+            g_dac,
             num_samples,
             PIN_TORQUE_SENSOR_HIGH,
             PIN_TORQUE_SENSOR_LOW );
@@ -189,6 +182,7 @@ void disable_control( void )
         // signal discontinuity when the SCM takes over
         static uint16_t num_samples = 20;
         write_sample_averages_to_dac(
+            g_dac,
             num_samples,
             PIN_TORQUE_SENSOR_HIGH,
             PIN_TORQUE_SENSOR_LOW );
@@ -209,38 +203,6 @@ static void read_torque_sensor(
 {
     value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << BIT_SHIFT_10BIT_TO_12BIT;
     value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << BIT_SHIFT_10BIT_TO_12BIT;
-}
-
-
-static int32_t get_analog_sample_average(
-    const int32_t num_samples,
-    const uint8_t pin )
-{
-    int32_t sum = 0;
-    int32_t i = 0;
-
-    for ( i = 0; i < num_samples; ++i )
-    {
-        sum += analogRead( pin );
-    }
-
-    return (sum / num_samples) << BIT_SHIFT_10BIT_TO_12BIT;
-}
-
-
-static void write_sample_averages_to_dac(
-    const int16_t num_samples,
-    const uint8_t signal_pin_1,
-    const uint8_t signal_pin_2 )
-{
-    int32_t averages[ 2 ] = { 0, 0 };
-
-    averages[0] = get_analog_sample_average( num_samples, signal_pin_1);
-    averages[1] = get_analog_sample_average( num_samples, signal_pin_2);
-
-    // Write measured values to DAC to avoid a signal discontinuity when the SCM takes over
-    g_dac.outputA( averages[0] );
-    g_dac.outputB( averages[1] );
 }
 
 

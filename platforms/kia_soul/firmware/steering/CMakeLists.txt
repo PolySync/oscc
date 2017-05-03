@@ -12,6 +12,7 @@ generate_arduino_firmware(
     ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/dac/dac.cpp
     src/main.cpp
     src/globals.cpp
     src/init.cpp
@@ -29,6 +30,7 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
-    ${CMAKE_SOURCE_DIR}/common/libs/time)
+    ${CMAKE_SOURCE_DIR}/common/libs/time
+    ${CMAKE_SOURCE_DIR}/common/libs/dac)
 
 add_subdirectory(tests)
