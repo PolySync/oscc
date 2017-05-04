@@ -111,7 +111,12 @@ mod tests {
         let pid_prev_input = pid.prev_input;
         unsafe{ pid_update(&mut pid, setpoint, input, dt) };
         let d_term = pid.derivative_gain * ((input - pid_prev_input) / dt);
-        TestResult::from_bool(d_term == pid.control)
+        // currently, we subtract the d_term from our control calculation
+        // to mitigate derivative kick, hence our control term = -d_term if
+        // i_tem and p_term are 0. 
+        // this could probably use some cleanup to make the functionality
+        // more clear to developers.
+        TestResult::from_bool(d_term == -pid.control)
     }
 
     fn prop_control_approaches_difference( mut pid: PID, setpoint: f32, input: f32, dt: f32 ) -> TestResult {
@@ -143,7 +148,6 @@ mod tests {
     }
 
     #[test]
-    // #[ignore]
     fn check_zeroize(){
         QuickCheck::new()
             .tests(1000)
@@ -184,6 +188,13 @@ mod tests {
         QuickCheck::new()
             .tests(1000)
             .quickcheck(prop_integral_term as fn(PID, f32, f32, f32) -> TestResult)
+    }
+
+    #[test]
+    fn check_derivative_term() {
+        QuickCheck::new()
+            .tests(1000)
+            .quickcheck(prop_derivative_term as fn(PID, f32, f32, f32) -> TestResult)
     }
 
     #[test]
