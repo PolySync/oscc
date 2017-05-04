@@ -1,12 +1,12 @@
 /**
- * @file time.cpp
+ * @file oscc_time.cpp
  *
  */
 
 
 #include <stdint.h>
 
-#include "time.h"
+#include "oscc_time.h"
 
 
 uint32_t get_time_delta(

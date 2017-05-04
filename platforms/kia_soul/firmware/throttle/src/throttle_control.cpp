@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "debug.h"
 #include "DAC_MCP49xx.h"
-#include "dac.h"
+#include "oscc_dac.h"
 
 #include "throttle_control.h"
 #include "globals.h"

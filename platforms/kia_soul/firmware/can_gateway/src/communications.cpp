@@ -7,8 +7,8 @@
 #include "gateway_can_protocol.h"
 #include "chassis_state_can_protocol.h"
 #include "mcp_can.h"
-#include "can.h"
-#include "time.h"
+#include "oscc_can.h"
+#include "oscc_time.h"
 
 #include "globals.h"
 #include "communications.h"

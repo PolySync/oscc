@@ -6,8 +6,8 @@
 
 #include <Arduino.h>
 #include "debug.h"
-#include "time.h"
-#include "pid.h"
+#include "oscc_time.h"
+#include "oscc_pid.h"
 
 #include "globals.h"
 #include "brake_control.h"

@@ -7,10 +7,10 @@ generate_arduino_firmware(
     SRCS
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/pid/pid.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
     src/main.cpp
     src/globals.cpp
     src/accumulator.cpp
@@ -38,10 +38,10 @@ generate_arduino_firmware(
     SRCS
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/pid/pid.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/serial/serial.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/can/can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/time/time.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
     tests/brake_controller_r0_test.cpp
     src/globals.cpp
     src/accumulator.cpp

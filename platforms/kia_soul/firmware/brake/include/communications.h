@@ -10,7 +10,7 @@
 
 
 #include <stdint.h>
-#include "can.h"
+#include "oscc_can.h"
 
 
 /*

@@ -1,8 +1,10 @@
+#include <string.h>
+
 #include "mcp_can.h"
 #include "debug.h"
-#include "time.h"
+#include "oscc_time.h"
 
-#include "can.h"
+#include "oscc_can.h"
 
 
 void init_can( MCP_CAN &can )

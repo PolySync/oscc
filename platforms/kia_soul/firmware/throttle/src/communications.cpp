@@ -5,9 +5,9 @@
 
 
 #include "mcp_can.h"
-#include "can.h"
+#include "oscc_can.h"
 #include "throttle_can_protocol.h"
-#include "time.h"
+#include "oscc_time.h"
 #include "debug.h"
 
 #include "globals.h"

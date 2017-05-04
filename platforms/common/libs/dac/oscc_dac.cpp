@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "dac.h"
+#include "oscc_dac.h"
 
 
 static int32_t get_analog_sample_average(
@@ -17,10 +17,10 @@ void write_sample_averages_to_dac(
     int32_t averages[ 2 ] = { 0, 0 };
 
     averages[0] = get_analog_sample_average( num_samples, signal_pin_1)
-        << BIT_SHIFT_10BIT_TO_12BIT;
+        << DAC_BIT_SHIFT_10BIT_TO_12BIT;
 
     averages[1] = get_analog_sample_average( num_samples, signal_pin_2)
-        << BIT_SHIFT_10BIT_TO_12BIT;
+        << DAC_BIT_SHIFT_10BIT_TO_12BIT;
 
     // Write measured values to DAC to avoid a signal discontinuity when the SCM takes over
     dac.outputA( averages[0] );

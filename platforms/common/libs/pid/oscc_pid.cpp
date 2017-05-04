@@ -1,10 +1,10 @@
 /**
- * @file pid.cpp
+ * @file oscc_pid.cpp
  *
  */
 
 
-#include "pid.h"
+#include "oscc_pid.h"
 
 
 void pid_zeroize( pid_s* pid, float integral_windup_guard )

@@ -9,6 +9,9 @@
 #define _OSCC_TIME_H_
 
 
+#include <stdint.h>
+
+
 /*
  * @brief Get current system timestamp in milliseconds.
  *

@@ -15,7 +15,7 @@
  * @brief Number of bits to shift to go from a 10-bit value to a 12-bit value.
  *
  */
-#define BIT_SHIFT_10BIT_TO_12BIT ( 2 )
+#define DAC_BIT_SHIFT_10BIT_TO_12BIT ( 2 )
 
 
 // ****************************************************************************

@@ -5,10 +5,10 @@
 
 
 #include <Arduino.h>
-#include "serial.h"
-#include "can.h"
+#include "oscc_serial.h"
+#include "oscc_can.h"
 #include "debug.h"
-#include "time.h"
+#include "oscc_time.h"
 
 #include "globals.h"
 #include "init.h"

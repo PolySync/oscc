@@ -6,7 +6,7 @@
 
 #include <Arduino.h>
 #include "debug.h"
-#include "serial.h"
+#include "oscc_serial.h"
 
 
 void init_serial( void )

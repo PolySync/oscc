@@ -7,8 +7,8 @@
 #include "mcp_can.h"
 #include "chassis_state_can_protocol.h"
 #include "brake_can_protocol.h"
-#include "can.h"
-#include "time.h"
+#include "oscc_can.h"
+#include "oscc_time.h"
 #include "debug.h"
 
 #include "globals.h"

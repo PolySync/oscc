@@ -5,10 +5,10 @@
 
 
 #include "mcp_can.h"
-#include "can.h"
+#include "oscc_can.h"
 #include "chassis_state_can_protocol.h"
 #include "steering_can_protocol.h"
-#include "time.h"
+#include "oscc_time.h"
 #include "debug.h"
 
 #include "globals.h"

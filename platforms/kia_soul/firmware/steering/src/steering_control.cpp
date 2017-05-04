@@ -7,8 +7,8 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include "debug.h"
-#include "pid.h"
-#include "dac.h"
+#include "oscc_pid.h"
+#include "oscc_dac.h"
 
 #include "globals.h"
 #include "steering_control.h"
