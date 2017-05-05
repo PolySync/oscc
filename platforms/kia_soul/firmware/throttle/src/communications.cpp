@@ -65,6 +65,7 @@ void check_for_incoming_message( void )
     }
 }
 
+
 static void publish_throttle_report( void )
 {
     oscc_report_throttle_s throttle_report;
@@ -111,8 +112,6 @@ static void process_throttle_command(
 
         DEBUG_PRINT( "controller commanded accelerator position: " );
         DEBUG_PRINTLN( g_throttle_control_state.commanded_accelerator_position );
-
-        update_throttle( );
 
         g_throttle_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
