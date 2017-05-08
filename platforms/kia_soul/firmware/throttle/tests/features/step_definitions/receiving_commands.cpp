@@ -25,9 +25,9 @@ THEN("^the accelerator target command should be parsed$")
     oscc_command_throttle_data_s * throttle_command_data =
         (oscc_command_throttle_data_s *) g_mock_mcp_can_read_msg_buf_buf;
 
-    assert_that_double(
+    assert_that(
         g_throttle_control_state.commanded_accelerator_position,
-        is_equal_to_double(throttle_command_data->accelerator_command));
+        is_equal_to(throttle_command_data->accelerator_command));
 }
 
 

@@ -15,7 +15,7 @@
 
 
 static void calculate_accelerator_spoof(
-    const float accelerator_target,
+    const uint16_t accelerator_target,
     accelerator_position_s * const spoof );
 
 
@@ -120,7 +120,7 @@ void read_accelerator_position_sensor(
 
 
 static void calculate_accelerator_spoof(
-    const float accelerator_target,
+    const uint16_t accelerator_target,
     accelerator_position_s * const spoof )
 {
     if ( spoof != NULL )

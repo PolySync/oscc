@@ -108,8 +108,8 @@ typedef struct
     bool operator_override; /* Flag indicating whether accelerator was manually
                                pressed by operator. */
 
-    float commanded_accelerator_position; /* Position of accelerator commanded
-                                             by the controller. */
+    uint16_t commanded_accelerator_position; /* Position of accelerator commanded
+                                                by the controller. */
 } kia_soul_throttle_control_state_s;
 
 
