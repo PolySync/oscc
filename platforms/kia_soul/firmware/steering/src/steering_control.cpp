@@ -6,6 +6,7 @@
 
 #include <Arduino.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "debug.h"
 #include "oscc_pid.h"
 #include "oscc_dac.h"
@@ -15,7 +16,7 @@
 
 
 static void calculate_torque_spoof(
-    const float torque_target,
+    const int16_t torque_target,
     steering_torque_s * const spoof );
 
 static void read_torque_sensor(
@@ -80,8 +81,8 @@ void check_for_operator_override( void )
             ( torque_filter_alpha * torque.low ) +
                 ( ( 1.0 - torque_filter_alpha ) * filtered_torque_b );
 
-        if ( (abs(filtered_torque_a) > OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC)
-            || (abs(filtered_torque_b) > OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC) )
+        if ( (abs(filtered_torque_a) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC)
+            || (abs(filtered_torque_b) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC) )
         {
             disable_control( );
 
@@ -207,7 +208,7 @@ static void read_torque_sensor(
 
 
 static void calculate_torque_spoof(
-    const float torque_target,
+    const int16_t torque_target,
     steering_torque_s * const spoof )
 {
     if( spoof != NULL )

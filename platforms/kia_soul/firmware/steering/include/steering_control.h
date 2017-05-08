@@ -141,12 +141,12 @@ typedef struct
     bool operator_override; /* Flag indicating whether steering wheel was
                                manually turned by operator. */
 
-    float commanded_steering_angle; /* Angle of steering wheel commanded by
-                                       controller. */
+    int16_t commanded_steering_angle; /* Angle of steering wheel commanded by
+                                         controller. */
 
-    float steering_angle; /* Current steering angle as reported by the vehicle. */
+    int16_t steering_angle; /* Current steering angle as reported by the vehicle. */
 
-    float steering_angle_last; /* Last steering angle recorded. */
+    int16_t steering_angle_last; /* Last steering angle recorded. */
 } kia_soul_steering_control_state_s;
 
 
