@@ -115,8 +115,6 @@ static void process_steering_command(
         DEBUG_PRINT( "controller commanded steering wheel angle: " );
         DEBUG_PRINTLN( g_steering_control_state.commanded_steering_angle );
 
-        update_steering( );
-
         g_steering_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
