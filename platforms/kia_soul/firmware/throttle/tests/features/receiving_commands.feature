@@ -49,11 +49,17 @@ Feature: Receiving commands
     When the accelerator target command <command> is received
 
     Then the accelerator target command should be parsed
-    And <spoof_val_a> should be written to DAC A
-    And <spoof_val_b> should be written to DAC B
+    And <spoof_val_high> should be written to DAC A
+    And <spoof_val_low> should be written to DAC B
 
     Examples:
-      | command | spoof_val_a | spoof_val_b |
-      |  0      |  599        |  299        |
-      |  50     |  632        |  316        |
-      |  100    |  665        |  332        |
+      | command  | spoof_val_high | spoof_val_low |
+      |  0       |  599           |  299          |
+      |  1000    |  1255          |  627          |
+      |  2000    |  1910          |  955          |
+      |  3000    |  2565          |  1282         |
+      |  4000    |  3221          |  1610         |
+      |  5000    |  3500          |  1800         |
+      |  10000   |  3500          |  1800         |
+      |  15000   |  3500          |  1800         |
+      |  19660   |  3500          |  1800         |
