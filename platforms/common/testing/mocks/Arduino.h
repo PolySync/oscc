@@ -27,6 +27,8 @@ class _Serial
         void print(const char[]);
         void println(const char[]);
         void println(float f);
+        void println(uint16_t d);
+        void println(int16_t d);
 };
 
 extern _Serial Serial;

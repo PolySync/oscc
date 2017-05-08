@@ -45,4 +45,14 @@ void _Serial::println(float f)
     printf("%f\n", f);
 }
 
+void _Serial::println(uint16_t d)
+{
+    printf("%d\n", d);
+}
+
+void _Serial::println(int16_t d)
+{
+    printf("%d\n", d);
+}
+
 _Serial Serial;
