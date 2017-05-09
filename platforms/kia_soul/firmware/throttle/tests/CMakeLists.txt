@@ -1,21 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
-
 project(kia-soul-throttle-tests)
-
-find_package(
-    Boost
-    COMPONENTS
-    thread
-    system
-    regex
-    date_time
-    program_options
-    filesystem
-    REQUIRED)
-
-if(DEBUG)
-    add_definitions(-DDEBUG)
-endif()
 
 add_library(
     kia-soul-throttle

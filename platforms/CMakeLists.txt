@@ -1,6 +1,23 @@
 if(TESTS)
     cmake_minimum_required(VERSION 2.8)
 
+    project(tests)
+
+    find_package(
+        Boost
+        COMPONENTS
+        thread
+        system
+        regex
+        date_time
+        program_options
+        filesystem
+        REQUIRED)
+
+    if(DEBUG)
+        add_definitions(-DDEBUG)
+    endif()
+
     add_subdirectory(kia_soul/firmware/throttle/tests)
 
     add_custom_target(
