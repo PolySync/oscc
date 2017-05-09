@@ -68,4 +68,9 @@ target_include_directories(
     /opt/cucumber-cpp/include
     /opt/cgreen/include)
 
-
+add_custom_target(
+    run-throttle-tests
+    DEPENDS
+    kia-soul-throttle-test
+    COMMAND
+    kia-soul-throttle-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
