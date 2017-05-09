@@ -18,11 +18,13 @@ if(TESTS)
         add_definitions(-DDEBUG)
     endif()
 
+    add_subdirectory(kia_soul/firmware/steering/tests)
     add_subdirectory(kia_soul/firmware/throttle/tests)
 
     add_custom_target(
         run-tests
         DEPENDS
+        run-steering-tests
         run-throttle-tests)
 else()
     set(CMAKE_TOOLCHAIN_FILE common/toolchain/ArduinoToolchain.cmake)

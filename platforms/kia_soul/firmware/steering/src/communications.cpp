@@ -128,10 +128,10 @@ static void process_chassis_state_1_report(
         const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
                 (oscc_report_chassis_state_1_data_s *) data;
 
-        int16_t raw_angle = chassis_state_1_data->steering_wheel_angle * RAW_ANGLE_SCALAR;
-
         g_steering_control_state.current_steering_wheel_angle =
-            raw_angle * WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR;
+            chassis_state_1_data->steering_wheel_angle
+            * RAW_ANGLE_SCALAR
+            * WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR;
     }
 }
 

@@ -73,11 +73,14 @@ void check_for_operator_override( void )
 
         read_torque_sensor( &torque );
 
-        static float filtered_torque_a =
+        static float filtered_torque_a = 0;
+        static float filtered_torque_b = 0;
+
+        filtered_torque_a =
             ( torque_filter_alpha * torque.high ) +
                 ( ( 1.0 - torque_filter_alpha ) * filtered_torque_a );
 
-        static float filtered_torque_b =
+        filtered_torque_b =
             ( torque_filter_alpha * torque.low ) +
                 ( ( 1.0 - torque_filter_alpha ) * filtered_torque_b );
 
