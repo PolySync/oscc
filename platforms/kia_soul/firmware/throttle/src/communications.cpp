@@ -70,15 +70,18 @@ static void publish_throttle_report( void )
 {
     oscc_report_throttle_s throttle_report;
 
-    accelerator_position_s accelerator_position;
-    read_accelerator_position_sensor( &accelerator_position );
+    accelerator_position_s current_accelerator_position;
+    read_accelerator_position_sensor( &current_accelerator_position );
 
     throttle_report.id = OSCC_REPORT_THROTTLE_CAN_ID;
     throttle_report.dlc = OSCC_REPORT_THROTTLE_CAN_DLC;
     throttle_report.data.enabled = (uint8_t) g_throttle_control_state.enabled;
     throttle_report.data.override = (uint8_t) g_throttle_control_state.operator_override;
-    throttle_report.data.accelerator_input = (accelerator_position.low + accelerator_position.high);
-    throttle_report.data.accelerator_command = g_throttle_control_state.commanded_accelerator_position;
+    throttle_report.data.current_accelerator_position =
+        current_accelerator_position.low + current_accelerator_position.high;
+    throttle_report.data.commanded_accelerator_position =
+        g_throttle_control_state.commanded_accelerator_position;
+    throttle_report.data.spoofed_accelerator_output = g_accelerator_spoof_output_sum;
 
     g_control_can.sendMsgBuf(
             throttle_report.id,
@@ -108,7 +111,7 @@ static void process_throttle_command(
         }
 
         g_throttle_control_state.commanded_accelerator_position =
-            throttle_command_data->accelerator_command;
+            throttle_command_data->commanded_accelerator_position;
 
         DEBUG_PRINT( "controller commanded accelerator position: " );
         DEBUG_PRINTLN( g_throttle_control_state.commanded_accelerator_position );

@@ -32,13 +32,13 @@
  * @brief Minimum steering angle rate. [degrees/microsecond]
  *
  */
-#define STEERING_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC ( -1000.0 )
+#define STEERING_WHEEL_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC ( -1000.0 )
 
 /*
  * @brief Maximum steering angle rate. [degrees/microsecond]
  *
  */
-#define STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC ( 1000.0 )
+#define STEERING_WHEEL_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC ( 1000.0 )
 
 /*
  * @brief Minimum steering angle rate. [Newton meters]
@@ -141,12 +141,13 @@ typedef struct
     bool operator_override; /* Flag indicating whether steering wheel was
                                manually turned by operator. */
 
-    int16_t commanded_steering_angle; /* Angle of steering wheel commanded by
-                                         controller. */
+    int16_t current_steering_wheel_angle; /* Current steering angle as reported
+                                             by the vehicle. */
 
-    int16_t steering_angle; /* Current steering angle as reported by the vehicle. */
+    int16_t previous_steering_wheel_angle; /* Last steering angle recorded. */
 
-    int16_t steering_angle_last; /* Last steering angle recorded. */
+    int16_t commanded_steering_wheel_angle; /* Angle of steering wheel commanded
+                                               by controller. */
 } kia_soul_steering_control_state_s;
 
 

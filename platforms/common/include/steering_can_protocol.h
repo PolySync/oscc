@@ -45,11 +45,19 @@
  */
 typedef struct
 {
-    int16_t steering_wheel_angle_command; /*!< Steering wheel angle command.
-                                           * Positive means to the
-                                           * left (counter clockwise). [0.1 degrees per bit] */
+    int16_t commanded_steering_wheel_angle; /*!< Steering wheel angle command.
+                                             * Positive means to the
+                                             * left (counter clockwise).
+                                             * [0.1 degrees per bit] */
 
-    uint8_t enabled : 1; /*!< This steering control command/request enabled.
+    uint8_t commanded_steering_wheel_angle_rate; /*!< Steering wheel angle rate
+                                                  * command.
+                                                  * Value zero means no limit.
+                                                  * Value 0x01 means 2 degrees/second.
+                                                  * Value 0xFA means 500 degrees/second.
+                                                  * [2 degrees/second per bit] */
+
+    uint8_t enabled : 1; /*!< Steering control command/request enabled.
                           * Value zero means off/disabled.
                           * Value one means on/enabled. */
 
@@ -63,13 +71,9 @@ typedef struct
 
     uint8_t reserved_0 : 5; /*!< Reserved. */
 
-    uint8_t steering_wheel_max_velocity; /*!< Steering wheel
-                                          * maximum velocity command.
-                                          * Value zero means no limit.
-                                          * Value 0x01 means 2 degrees/second.
-                                          * Value 0xFA means 500 degrees/second. [2 degrees/second per bit] */
+    uint8_t reserved_1; /*!< Reserved. */
 
-    uint16_t torque; /*!< Reserved. */
+    uint8_t reserved_2; /*!< Reserved. */
 
     uint8_t reserved_3; /*!< Reserved. */
 
@@ -100,17 +104,21 @@ typedef struct
 typedef struct
 {
 
-    int16_t angle; /*!< Steering wheel angle.
-                    * Positive means to the
-                    * left (counter clockwise). [0.1 degrees per bit] */
+    int16_t current_steering_wheel_angle; /*!< Steering wheel angle reported by
+                                           * vehicle.
+                                           * Positive means to the left
+                                           * (counter clockwise).
+                                           * [0.1 degrees per bit] */
 
-    int16_t angle_command; /*!< Steering wheel angle command.
-                            * Positive means to the
-                            * left (counter clockwise). [0.1 degrees per bit] */
+    int16_t commanded_steering_wheel_angle; /*!< Steering wheel angle command.
+                                             * Positive means to the left
+                                             * (counter clockwise).
+                                             * [0.1 degrees per bit] */
 
     uint16_t vehicle_speed; /*!< Vehicle speed. [0.01 kilometers/hour per bit] */
 
-    int8_t torque; /*!< Steering wheel torque. [0.0625 Newton meters per bit] */
+    int8_t spoofed_torque_output; /*!< Spoofed steering wheel torque output to the
+                                   * vehicle. [0.0625 Newton meters per bit] */
 
     uint8_t enabled : 1; /*!< Steering controls enabled state.
                           * Value zero means off/disabled (commands are ignored).

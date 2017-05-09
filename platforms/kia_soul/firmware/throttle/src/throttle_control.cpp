@@ -56,6 +56,9 @@ void update_throttle( void )
                 g_throttle_control_state.commanded_accelerator_position,
                 &accelerator_spoof );
 
+        g_accelerator_spoof_output_sum =
+            accelerator_spoof.high + accelerator_spoof.low;
+
         g_dac.outputA( accelerator_spoof.high );
         g_dac.outputB( accelerator_spoof.low );
     }

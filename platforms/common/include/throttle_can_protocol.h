@@ -45,11 +45,12 @@
  */
 typedef struct
 {
-    uint16_t accelerator_command; /*!< Accelerator command. [65535 == 100%] */
+    uint16_t commanded_accelerator_position; /*!< Accelerator position command.
+                                            * [65535 == 100%] */
 
     uint8_t reserved_0; /*!< Reserved. */
 
-    uint8_t enabled : 1; /*!< This throttle control command/request enabled.
+    uint8_t enabled : 1; /*!< Throttle control command/request enabled.
                           * Value zero means off/disabled.
                           * Value one means on/enabled. */
 
@@ -95,15 +96,17 @@ typedef struct
  */
 typedef struct
 {
-    uint16_t accelerator_input; /*!< Accelerator input value from
-                                 * the physical accelerator. [65535 == 100%] */
+    uint16_t current_accelerator_position; /*!< Current accelerator position as
+                                            * read by the acceleration position
+                                            * sensor. [65535 == 100%] */
 
-    uint16_t accelerator_command; /*!< Accelerator command value from
-                                   * the command message. [65535 == 100%] */
+    uint16_t commanded_accelerator_position; /*!< Commanded accelerator position
+                                              * from the throttle command message.
+                                              * [65535 == 100%] */
 
-    uint16_t accelerator_output; /*!< Accelerator output value.
-                                  * Set the maximum of
-                                  * accelerator_input and accelerator command. [65535 == 100%] */
+    uint16_t spoofed_accelerator_output; /*!< Spoof accelerator value output to
+                                          * the vehicle.
+                                          * [65535 == 100%] */
 
     uint8_t reserved_0 : 4; /*!< Reserved. */
 

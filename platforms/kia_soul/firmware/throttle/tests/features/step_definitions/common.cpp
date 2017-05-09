@@ -74,15 +74,15 @@ GIVEN("^the accelerator position sensors have a reading of (.*)$")
 }
 
 
-GIVEN("^the accelerator target command (.*) is received$")
+GIVEN("^the accelerator position command (.*) is received$")
 {
-    REGEX_PARAM(int, accelerator_target_command);
+    REGEX_PARAM(int, commanded_accelerator_position);
 
     oscc_command_throttle_data_s * throttle_command_data =
         (oscc_command_throttle_data_s *) g_mock_mcp_can_read_msg_buf_buf;
 
     throttle_command_data->enabled = 1;
-    throttle_command_data->accelerator_command = accelerator_target_command;
+    throttle_command_data->commanded_accelerator_position = commanded_accelerator_position;
 
     check_for_incoming_message();
 
@@ -90,11 +90,11 @@ GIVEN("^the accelerator target command (.*) is received$")
 }
 
 
-GIVEN("^the previous accelerator command was (.*)$")
+GIVEN("^the previous accelerator position command was (.*)$")
 {
-    REGEX_PARAM(int, accelerator_command);
+    REGEX_PARAM(int, commanded_accelerator_position);
 
-    g_throttle_control_state.commanded_accelerator_position = accelerator_command;
+    g_throttle_control_state.commanded_accelerator_position = commanded_accelerator_position;
 }
 
 

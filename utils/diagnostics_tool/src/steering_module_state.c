@@ -36,7 +36,7 @@ static int analyze_command_frame(
 
     // TODO: analyze count
 
-    // TODO: check steering_wheel_max_velocity, steering_wheel_angle_command, torque for valid ranges
+    // TODO: check steering_wheel_max_velocity, commanded_steering_wheel_angle, torque for valid ranges
 
     return module_state;
 }

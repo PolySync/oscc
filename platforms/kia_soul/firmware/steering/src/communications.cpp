@@ -76,11 +76,11 @@ static void publish_steering_report( void )
 
     steering_report.id = OSCC_REPORT_STEERING_CAN_ID;
     steering_report.dlc = OSCC_REPORT_STEERING_CAN_DLC;
-    steering_report.data.angle = g_steering_control_state.steering_angle;
-    steering_report.data.override = (uint8_t) g_steering_control_state.operator_override;
-    steering_report.data.angle_command = g_steering_control_state.commanded_steering_angle;
-    steering_report.data.torque = g_torque_sum;
     steering_report.data.enabled = (uint8_t) g_steering_control_state.enabled;
+    steering_report.data.override = (uint8_t) g_steering_control_state.operator_override;
+    steering_report.data.current_steering_wheel_angle = g_steering_control_state.current_steering_wheel_angle;
+    steering_report.data.commanded_steering_wheel_angle = g_steering_control_state.commanded_steering_wheel_angle;
+    steering_report.data.spoofed_torque_output = g_spoofed_torque_output_sum;
 
     g_control_can.sendMsgBuf(
         steering_report.id,
@@ -109,11 +109,11 @@ static void process_steering_command(
             disable_control( );
         }
 
-        g_steering_control_state.commanded_steering_angle =
-            (steering_command_data->steering_wheel_angle_command / 9.0);
+        g_steering_control_state.commanded_steering_wheel_angle =
+            (steering_command_data->commanded_steering_wheel_angle / 9.0);
 
         DEBUG_PRINT( "controller commanded steering wheel angle: " );
-        DEBUG_PRINTLN( g_steering_control_state.commanded_steering_angle );
+        DEBUG_PRINTLN( g_steering_control_state.commanded_steering_wheel_angle );
 
         g_steering_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
@@ -130,7 +130,7 @@ static void process_chassis_state_1_report(
 
         int16_t raw_angle = chassis_state_1_data->steering_wheel_angle * RAW_ANGLE_SCALAR;
 
-        g_steering_control_state.steering_angle =
+        g_steering_control_state.current_steering_wheel_angle =
             raw_angle * WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR;
     }
 }

@@ -180,14 +180,14 @@ int oscc_interface_set_defaults( )
     oscc_interface_data.throttle_cmd.count = 0;
     oscc_interface_data.throttle_cmd.enabled = 0;
     oscc_interface_data.throttle_cmd.ignore = 0;
-    oscc_interface_data.throttle_cmd.accelerator_command = 0;
+    oscc_interface_data.throttle_cmd.commanded_accelerator_position = 0;
 
     oscc_interface_data.steering_cmd.clear = 0;
     oscc_interface_data.steering_cmd.count = 0;
     oscc_interface_data.steering_cmd.enabled = 0;
     oscc_interface_data.steering_cmd.ignore = 0;
-    oscc_interface_data.steering_cmd.steering_wheel_angle_command = 0;
-    oscc_interface_data.steering_cmd.steering_wheel_max_velocity = 0;
+    oscc_interface_data.steering_cmd.commanded_steering_wheel_angle = 0;
+    oscc_interface_data.steering_cmd.commanded_steering_wheel_angle_rate = 0;
 
     return ( return_code );
 }
@@ -311,7 +311,7 @@ int oscc_interface_command_throttle( unsigned int throttle_setpoint )
 
     if ( oscc != NULL )
     {
-        oscc->throttle_cmd.accelerator_command = ( uint16_t )throttle_setpoint;
+        oscc->throttle_cmd.commanded_accelerator_position = ( uint16_t )throttle_setpoint;
 
         return_code = oscc_can_write( OSCC_COMMAND_THROTTLE_CAN_ID,
                                       (void *) &oscc->throttle_cmd,
@@ -342,8 +342,8 @@ int oscc_interface_command_steering( int angle, unsigned int rate )
 
     if ( oscc != NULL )
     {
-        oscc->steering_cmd.steering_wheel_angle_command = ( int16_t )angle;
-        oscc->steering_cmd.steering_wheel_max_velocity = ( uint16_t )rate;
+        oscc->steering_cmd.commanded_steering_wheel_angle = ( int16_t )angle;
+        oscc->steering_cmd.commanded_steering_wheel_angle_rate = ( uint16_t )rate;
 
         return_code = oscc_can_write( OSCC_COMMAND_STEERING_CAN_ID,
                                       (void *) &oscc->steering_cmd,
@@ -401,7 +401,7 @@ int oscc_interface_disable_throttle( )
         oscc->throttle_cmd.enabled = 0;
 
         printf( "throttle: %d %d\n", oscc->throttle_cmd.enabled,
-                oscc->throttle_cmd.accelerator_command );
+                oscc->throttle_cmd.commanded_accelerator_position );
 
         return_code = oscc_interface_command_throttle( 0 );
     }
@@ -430,8 +430,8 @@ int oscc_interface_disable_steering( )
 
         printf( "steering: %d %d %d\n",
                 oscc->steering_cmd.enabled,
-                oscc->steering_cmd.steering_wheel_angle_command,
-                oscc->steering_cmd.steering_wheel_max_velocity );
+                oscc->steering_cmd.commanded_steering_wheel_angle,
+                oscc->steering_cmd.commanded_steering_wheel_angle_rate );
 
         return_code = oscc_interface_command_steering( 0, 0 );
     }

@@ -85,7 +85,7 @@ EXTERN uint32_t g_steering_report_last_tx_timestamp;
 EXTERN kia_soul_steering_control_state_s g_steering_control_state;
 
 EXTERN pid_s g_pid;
-EXTERN uint8_t g_torque_sum;
+EXTERN uint16_t g_spoofed_torque_output_sum;
 
 
 #endif

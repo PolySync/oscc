@@ -29,21 +29,21 @@ THEN("^a throttle report should be published to the control CAN bus$")
 
 THEN("^the report's command field should be set to (.*)$")
 {
-    REGEX_PARAM(int, accelerator_command);
+    REGEX_PARAM(int, commanded_accelerator_position);
 
     oscc_report_throttle_data_s * throttle_report_data =
     (oscc_report_throttle_data_s *) g_mock_mcp_can_send_msg_buf_buf;
 
-    assert_that(throttle_report_data->accelerator_command, is_equal_to(accelerator_command));
+    assert_that(throttle_report_data->commanded_accelerator_position, is_equal_to(commanded_accelerator_position));
 }
 
 
-THEN("^the report's accelerator_input field should be set to (.*)$")
+THEN("^the report's current_accelerator_position field should be set to (.*)$")
 {
-    REGEX_PARAM(int, accelerator_input);
+    REGEX_PARAM(int, current_accelerator_position);
 
     oscc_report_throttle_data_s * throttle_report_data =
     (oscc_report_throttle_data_s *) g_mock_mcp_can_send_msg_buf_buf;
 
-    assert_that(throttle_report_data->accelerator_input, is_equal_to(accelerator_input));
+    assert_that(throttle_report_data->current_accelerator_position, is_equal_to(current_accelerator_position));
 }

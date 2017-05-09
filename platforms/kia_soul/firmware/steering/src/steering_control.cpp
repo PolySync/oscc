@@ -105,24 +105,24 @@ void update_steering( void )
         float time_between_loops_in_sec = 0.05;
 
         // Calculate steering angle rates (millidegrees/microsecond)
-        float steering_angle_rate =
-            ( g_steering_control_state.steering_angle
-            - g_steering_control_state.steering_angle_last )
+        float steering_wheel_angle_rate =
+            ( g_steering_control_state.current_steering_wheel_angle
+            - g_steering_control_state.previous_steering_wheel_angle )
             / time_between_loops_in_sec;
 
-        float steering_angle_rate_target =
-            ( g_steering_control_state.commanded_steering_angle
-            - g_steering_control_state.steering_angle )
+        float steering_wheel_angle_rate_target =
+            ( g_steering_control_state.commanded_steering_wheel_angle
+            - g_steering_control_state.current_steering_wheel_angle )
             / time_between_loops_in_sec;
 
         // Save the angle for next iteration
-        g_steering_control_state.steering_angle_last =
-            g_steering_control_state.steering_angle;
+        g_steering_control_state.previous_steering_wheel_angle =
+            g_steering_control_state.current_steering_wheel_angle;
 
-        steering_angle_rate_target =
-            constrain( steering_angle_rate_target,
-                    STEERING_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC,
-                    STEERING_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC );
+        steering_wheel_angle_rate_target =
+            constrain( steering_wheel_angle_rate_target,
+                       STEERING_WHEEL_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC,
+                       STEERING_WHEEL_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC );
 
         g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
         g_pid.integral_gain = PID_INTEGRAL_GAIN;
@@ -130,21 +130,21 @@ void update_steering( void )
 
         pid_update(
                 &g_pid,
-                steering_angle_rate_target,
-                steering_angle_rate,
+                steering_wheel_angle_rate_target,
+                steering_wheel_angle_rate,
                 time_between_loops_in_sec );
 
         float control = g_pid.control;
 
         control = constrain( control,
-                            TORQUE_MIN_IN_NEWTON_METERS,
-                            TORQUE_MAX_IN_NEWTON_METERS );
+                             TORQUE_MIN_IN_NEWTON_METERS,
+                             TORQUE_MAX_IN_NEWTON_METERS );
 
         steering_torque_s torque_spoof;
 
         calculate_torque_spoof( control, &torque_spoof );
 
-        g_torque_sum = (uint8_t) ( torque_spoof.low + torque_spoof.high );
+        g_spoofed_torque_output_sum = torque_spoof.low + torque_spoof.high;
 
         g_dac.outputA( torque_spoof.low );
         g_dac.outputB( torque_spoof.high );

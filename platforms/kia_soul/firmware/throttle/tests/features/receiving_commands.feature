@@ -43,12 +43,12 @@ Feature: Receiving commands
       |  1024      |  4096       |  4096       |
 
 
-  Scenario Outline: Accelerator target command sent from controller
+  Scenario Outline: Accelerator position command sent from controller
     Given throttle control is enabled
 
-    When the accelerator target command <command> is received
+    When the accelerator position command <command> is received
 
-    Then the accelerator target command should be parsed
+    Then the accelerator position command should be parsed
     And <spoof_val_high> should be written to DAC A
     And <spoof_val_low> should be written to DAC B
 
