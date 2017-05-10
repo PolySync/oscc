@@ -151,8 +151,6 @@ typedef struct
     uint16_t commanded_pedal_position; /* Brake pedal position commanded by
                                           controller. */
 
-    float accumulator_pressure; /* Pressure in the accumulator. */
-
     float current_pressure; /* Current brake pressure. */
 
     float can_pressure; /* Pressure reported by chassis state. */

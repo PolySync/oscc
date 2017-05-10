@@ -39,16 +39,16 @@ void accumulator_maintain_pressure( void )
 
     float pressure = raw_adc_to_pressure( raw_accumulator_data );
 
-    g_brake_control_state.accumulator_pressure =
+    float accumulator_pressure =
         ( accumulator_alpha * pressure ) +
-        ( ( 1.0 - accumulator_alpha ) * g_brake_control_state.accumulator_pressure );
+        ( ( 1.0 - accumulator_alpha ) * accumulator_pressure );
 
-    if ( g_brake_control_state.accumulator_pressure < ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS )
+    if ( accumulator_pressure < ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS )
     {
         accumulator_turn_pump_on( );
     }
 
-    if ( g_brake_control_state.accumulator_pressure > ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS )
+    if ( accumulator_pressure > ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS )
     {
         accumulator_turn_pump_off( );
     }
