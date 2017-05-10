@@ -1,4 +1,4 @@
-GIVEN("^the time since the last received controller command exceeds the timeout$")
+WHEN("^the time since the last received controller command exceeds the timeout$")
 {
     g_throttle_command_last_rx_timestamp = 0;
 
@@ -9,7 +9,7 @@ GIVEN("^the time since the last received controller command exceeds the timeout$
 }
 
 
-GIVEN("^the operator applies (.*) to the accelerator$")
+WHEN("^the operator applies (.*) to the accelerator$")
 {
 
     REGEX_PARAM(int, throttle_sensor_val);

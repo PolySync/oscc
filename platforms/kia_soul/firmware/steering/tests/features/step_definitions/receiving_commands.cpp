@@ -1,4 +1,4 @@
-GIVEN("^an enable steering command is received$")
+WHEN("^an enable steering command is received$")
 {
     oscc_command_steering_data_s * steering_command_data =
         (oscc_command_steering_data_s *) g_mock_mcp_can_read_msg_buf_buf;
@@ -12,7 +12,7 @@ GIVEN("^an enable steering command is received$")
 }
 
 
-GIVEN("^a disable steering command is received$")
+WHEN("^a disable steering command is received$")
 {
     oscc_command_steering_data_s * steering_command_data =
         (oscc_command_steering_data_s *) g_mock_mcp_can_read_msg_buf_buf;
@@ -26,7 +26,7 @@ GIVEN("^a disable steering command is received$")
 }
 
 
-GIVEN("^the steering wheel angle command (.*) is received$")
+WHEN("^the steering wheel angle command (.*) is received$")
 {
     REGEX_PARAM(int, command);
 

@@ -1,4 +1,4 @@
-GIVEN("^the time since the last report publishing exceeds (.*)$")
+WHEN("^the time since the last report publishing exceeds (.*)$")
 {
     REGEX_PARAM(std::string, interval);
 

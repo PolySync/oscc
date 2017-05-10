@@ -1,4 +1,4 @@
-GIVEN("^the time since the last received controller command exceeds the timeout$")
+WHEN("^the time since the last received controller command exceeds the timeout$")
 {
     g_steering_command_last_rx_timestamp = 0;
 
@@ -9,7 +9,7 @@ GIVEN("^the time since the last received controller command exceeds the timeout$
 }
 
 
-GIVEN("^the operator applies (.*) to the steering wheel$")
+WHEN("^the operator applies (.*) to the steering wheel$")
 {
     REGEX_PARAM(int, torque_sensor_val);
 

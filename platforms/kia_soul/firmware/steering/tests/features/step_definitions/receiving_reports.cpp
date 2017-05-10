@@ -1,4 +1,4 @@
-GIVEN("^a Chassis State 1 report is received with steering wheel angle (.*)$")
+WHEN("^a Chassis State 1 report is received with steering wheel angle (.*)$")
 {
     REGEX_PARAM(int, raw_angle);
 

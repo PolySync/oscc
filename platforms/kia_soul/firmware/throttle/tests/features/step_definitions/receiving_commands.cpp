@@ -1,4 +1,4 @@
-GIVEN("^an enable throttle command is received$")
+WHEN("^an enable throttle command is received$")
 {
     oscc_command_throttle_data_s * throttle_command_data =
         (oscc_command_throttle_data_s *) g_mock_mcp_can_read_msg_buf_buf;
@@ -9,7 +9,7 @@ GIVEN("^an enable throttle command is received$")
 }
 
 
-GIVEN("^a disable throttle command is received$")
+WHEN("^a disable throttle command is received$")
 {
     oscc_command_throttle_data_s * throttle_command_data =
         (oscc_command_throttle_data_s *) g_mock_mcp_can_read_msg_buf_buf;
@@ -20,7 +20,7 @@ GIVEN("^a disable throttle command is received$")
 }
 
 
-GIVEN("^the accelerator position command (.*) is received$")
+WHEN("^the accelerator position command (.*) is received$")
 {
     REGEX_PARAM(int, commanded_accelerator_position);
 
