@@ -6,25 +6,25 @@ add_library(
     ../src/communications.cpp
     ../src/globals.cpp
     ../src/steering_control.cpp
-    ../../../../common/libs/time/oscc_time.cpp
-    ../../../../common/libs/can/oscc_can.cpp
-    ../../../../common/libs/dac/oscc_dac.cpp
-    ../../../../common/libs/pid/oscc_pid.cpp
-    ../../../../common/testing/mocks/
-    ../../../../common/testing/mocks/Arduino_mock.cpp
-    ../../../../common/testing/mocks/mcp_can_mock.cpp
-    ../../../../common/testing/mocks/DAC_MCP49xx_mock.cpp)
+    ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/mcp_can_mock.cpp
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/DAC_MCP49xx_mock.cpp)
 
 target_include_directories(
     kia-soul-steering
     PRIVATE
     ../include
-    ../../../../common/include
-    ../../../../common/libs/can
-    ../../../../common/libs/time
-    ../../../../common/libs/dac
-    ../../../../common/libs/pid
-    ../../../../common/testing/mocks)
+    ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/time
+    ${CMAKE_SOURCE_DIR}/common/libs/dac
+    ${CMAKE_SOURCE_DIR}/common/libs/pid
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks)
 
 add_executable(
     kia-soul-steering-test
@@ -47,10 +47,10 @@ target_include_directories(
     kia-soul-steering-test
     PRIVATE
     ../include
-    ../../../../common/include
-    ../../../../common/libs/can
-    ../../../../common/libs/pid
-    ../../../../common/testing/mocks
+    ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/pid
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks
     /opt/cucumber-cpp/include
     /opt/cgreen/include)
 

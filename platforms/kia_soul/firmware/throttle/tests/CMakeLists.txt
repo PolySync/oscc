@@ -6,23 +6,23 @@ add_library(
     ../src/communications.cpp
     ../src/globals.cpp
     ../src/throttle_control.cpp
-    ../../../../common/libs/time/oscc_time.cpp
-    ../../../../common/libs/can/oscc_can.cpp
-    ../../../../common/libs/dac/oscc_dac.cpp
-    ../../../../common/testing/mocks/
-    ../../../../common/testing/mocks/Arduino_mock.cpp
-    ../../../../common/testing/mocks/mcp_can_mock.cpp
-    ../../../../common/testing/mocks/DAC_MCP49xx_mock.cpp)
+    ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/mcp_can_mock.cpp
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/DAC_MCP49xx_mock.cpp)
 
 target_include_directories(
     kia-soul-throttle
     PRIVATE
     ../include
-    ../../../../common/include
-    ../../../../common/libs/can
-    ../../../../common/libs/time
-    ../../../../common/libs/dac
-    ../../../../common/testing/mocks)
+    ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/time
+    ${CMAKE_SOURCE_DIR}/common/libs/dac
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks)
 
 add_executable(
     kia-soul-throttle-test
@@ -45,9 +45,9 @@ target_include_directories(
     kia-soul-throttle-test
     PRIVATE
     ../include
-    ../../../../common/include
-    ../../../../common/libs/can
-    ../../../../common/testing/mocks
+    ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks
     /opt/cucumber-cpp/include
     /opt/cgreen/include)
 
