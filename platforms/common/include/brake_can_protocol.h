@@ -96,7 +96,7 @@ typedef struct
  */
 typedef struct
 {
-    uint16_t pedal_input; /*!< Pedal input value from
+    int16_t pedal_input; /*!< Pedal input value from
                            * the physical pedal. [65535 == 100%] */
 
     uint16_t pedal_command; /*!< Pedal command value from
