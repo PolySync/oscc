@@ -148,12 +148,14 @@ typedef struct
     bool operator_override; /* Flag indicating whether brake pedal was
                                manually pressed by operator. */
 
+    uint16_t current_sensor_brake_pressure; /* Current brake pressure as read
+                                               from the brake pressure sensor. */
+
+    int16_t current_vehicle_brake_pressure; /* Current brake pressure as reported
+                                               by the vehicle. */
+
     uint16_t commanded_pedal_position; /* Brake pedal position commanded by
                                           controller. */
-
-    float current_pressure; /* Current brake pressure. */
-
-    float can_pressure; /* Pressure reported by chassis state. */
 } kia_soul_brake_control_state_s;
 
 

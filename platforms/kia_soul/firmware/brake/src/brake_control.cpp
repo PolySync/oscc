@@ -141,7 +141,8 @@ void brake_update_pressure( void )
     float pressure_left = raw_adc_to_pressure( raw_left_pressure );
     float pressure_right = raw_adc_to_pressure( raw_right_pressure );
 
-    g_brake_control_state.current_pressure = ( pressure_left + pressure_right ) / 2;
+    g_brake_control_state.current_sensor_brake_pressure =
+        pressure_left + pressure_right / 2.0;
 }
 
 
@@ -205,7 +206,7 @@ void brake_update( void )
         static interpolate_range_s pressure_ranges =
             { UINT16_MIN, UINT16_MAX, BRAKE_PRESSURE_MIN_IN_DECIBARS, BRAKE_PRESSURE_MAX_IN_DECIBARS };
 
-        pressure = g_brake_control_state.current_pressure;
+        pressure = g_brake_control_state.current_sensor_brake_pressure;
 
         pressure_target = interpolate(
             g_brake_control_state.commanded_pedal_position,

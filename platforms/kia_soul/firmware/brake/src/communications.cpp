@@ -77,9 +77,9 @@ static void publish_brake_report( void )
     brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
     brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
     brake_report.data.enabled = (uint8_t) g_brake_control_state.operator_override;
-    brake_report.data.pedal_input = ( uint16_t )g_brake_control_state.can_pressure;
-    brake_report.data.pedal_command = ( uint16_t )g_brake_control_state.commanded_pedal_position;
-    brake_report.data.pedal_output = ( uint16_t )g_brake_control_state.current_pressure;
+    brake_report.data.pedal_input = ( uint16_t )g_brake_control_state.current_vehicle_brake_pressure;
+    brake_report.data.pedal_command = g_brake_control_state.commanded_pedal_position;
+    brake_report.data.pedal_output = g_brake_control_state.current_sensor_brake_pressure;
 
     g_control_can.sendMsgBuf(
         brake_report.id,
@@ -129,7 +129,8 @@ static void process_chassis_state_1(
         const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
                 (oscc_report_chassis_state_1_data_s *) data;
 
-        g_brake_control_state.can_pressure = chassis_state_1_data->brake_pressure;
+        g_brake_control_state.current_vehicle_brake_pressure =
+            chassis_state_1_data->brake_pressure;
     }
 }
 
