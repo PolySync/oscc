@@ -18,12 +18,14 @@ if(TESTS)
         add_definitions(-DDEBUG)
     endif()
 
+    add_subdirectory(kia_soul/firmware/brake/tests)
     add_subdirectory(kia_soul/firmware/steering/tests)
     add_subdirectory(kia_soul/firmware/throttle/tests)
 
     add_custom_target(
         run-tests
         DEPENDS
+        run-brake-tests
         run-steering-tests
         run-throttle-tests)
 else()

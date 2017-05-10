@@ -41,5 +41,7 @@ int main( void )
         check_for_operator_override( );
 
         publish_reports( );
+
+        brake_update( );
     }
 }

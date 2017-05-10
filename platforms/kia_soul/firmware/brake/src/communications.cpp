@@ -76,8 +76,9 @@ static void publish_brake_report( void )
 
     brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
     brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
-    brake_report.data.enabled = (uint8_t) g_brake_control_state.operator_override;
-    brake_report.data.pedal_input = ( uint16_t )g_brake_control_state.current_vehicle_brake_pressure;
+    brake_report.data.enabled = (uint8_t) g_brake_control_state.enabled;
+    brake_report.data.override = (uint8_t) g_brake_control_state.operator_override;
+    brake_report.data.pedal_input = g_brake_control_state.current_vehicle_brake_pressure;
     brake_report.data.pedal_command = g_brake_control_state.commanded_pedal_position;
     brake_report.data.pedal_output = g_brake_control_state.current_sensor_brake_pressure;
 
@@ -103,8 +104,7 @@ static void process_brake_command(
         {
             brake_enable( );
         }
-
-        if( brake_command_data->enabled == false )
+        else
         {
             brake_disable( );
         }
@@ -113,8 +113,6 @@ static void process_brake_command(
 
         DEBUG_PRINT( "controller commanded brake pressure: " );
         DEBUG_PRINTLN( g_brake_control_state.commanded_pedal_position );
-
-        brake_update( );
 
         g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }

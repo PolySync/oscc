@@ -5,6 +5,7 @@
 
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "globals.h"
 #include "helper.h"

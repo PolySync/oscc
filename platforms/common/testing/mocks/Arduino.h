@@ -9,14 +9,19 @@
 #define A1 1
 #define LOW 0
 #define HIGH 1
+#define OUTPUT 1
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 unsigned long millis(void);
 
+void pinMode(uint8_t, uint8_t);
+
 void digitalWrite(uint8_t pin, uint8_t val);
 
 int analogRead(uint8_t pin);
+
+void analogWrite(uint8_t pin, int val);
 
 void delay(unsigned long ms);
 
