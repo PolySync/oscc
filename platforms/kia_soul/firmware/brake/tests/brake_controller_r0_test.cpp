@@ -217,7 +217,7 @@ static void process_serial_byte( uint8_t incoming_byte )
 
         case 'j':
 
-            brake_command_actuator_solenoids( 255 );
+            brake_command_accumulator_solenoids( 255 );
 
             DEBUG_PRINTLN("opened SLAs");
 
@@ -225,7 +225,7 @@ static void process_serial_byte( uint8_t incoming_byte )
 
         case 'k':
 
-            brake_command_actuator_solenoids( 0 );
+            brake_command_accumulator_solenoids( 0 );
 
             DEBUG_PRINTLN("closed SLAs");
 

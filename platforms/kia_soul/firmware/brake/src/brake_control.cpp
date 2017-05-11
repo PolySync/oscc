@@ -27,7 +27,7 @@ void brake_lights_on( void )
 }
 
 
-void brake_command_actuator_solenoids( const uint16_t duty_cycle )
+void brake_command_accumulator_solenoids( const uint16_t duty_cycle )
 {
     analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, duty_cycle );
     analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, duty_cycle );
@@ -58,7 +58,7 @@ void brake_disable( void )
 {
     if ( g_brake_control_state.enabled == true )
     {
-        brake_command_actuator_solenoids( SOLENOID_PWM_OFF );
+        brake_command_accumulator_solenoids( SOLENOID_PWM_OFF );
 
         brake_command_release_solenoids( SOLENOID_PWM_ON );
 
@@ -159,7 +159,7 @@ void brake_init( void )
     pinMode( PIN_RELEASE_SOLENOID_FRONT_RIGHT, OUTPUT );
 
     brake_command_release_solenoids( SOLENOID_PWM_OFF );
-    brake_command_actuator_solenoids( SOLENOID_PWM_OFF );
+    brake_command_accumulator_solenoids( SOLENOID_PWM_OFF );
 
     brake_lights_off( );
     pinMode( PIN_BRAKE_LIGHT, OUTPUT );
@@ -243,7 +243,7 @@ void brake_update( void )
 
                 uint16_t slr_duty_cycle = 0;
 
-                brake_command_actuator_solenoids( SOLENOID_PWM_OFF );
+                brake_command_accumulator_solenoids( SOLENOID_PWM_OFF );
 
                 pid_output = -pid_output;
                 slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
@@ -268,10 +268,10 @@ void brake_update( void )
             else if ( pid_output > PID_OUTPUT_MAX )
             {
                 static interpolate_range_s sla_ranges = {
-                    PID_ACTUATION_SOLENOID_CLAMPED_MIN,
-                    PID_ACTUATION_SOLENOID_CLAMPED_MAX,
-                    ACTUATION_SOLENOID_DUTY_CYCLE_MIN,
-                    ACTUATION_SOLENOID_DUTY_CYCLE_MAX };
+                    PID_ACCUMULATOR_SOLENOID_CLAMPED_MIN,
+                    PID_ACCUMULATOR_SOLENOID_CLAMPED_MAX,
+                    ACCUMULATOR_SOLENOID_DUTY_CYCLE_MIN,
+                    ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX };
 
                 uint16_t sla_duty_cycle = 0;
 
@@ -281,12 +281,12 @@ void brake_update( void )
 
                 sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
 
-                if ( sla_duty_cycle > ( uint16_t )ACTUATION_SOLENOID_DUTY_CYCLE_MAX )
+                if ( sla_duty_cycle > ( uint16_t )ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX )
                 {
-                    sla_duty_cycle = ( uint16_t )ACTUATION_SOLENOID_DUTY_CYCLE_MAX;
+                    sla_duty_cycle = ( uint16_t )ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX;
                 }
 
-                brake_command_actuator_solenoids( sla_duty_cycle );
+                brake_command_accumulator_solenoids( sla_duty_cycle );
 
                 DEBUG_PRINT(",");
                 DEBUG_PRINT(sla_duty_cycle);

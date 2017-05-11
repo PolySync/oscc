@@ -82,13 +82,13 @@
  * @brief Minimum clamped PID value of the actuation solenoid.
  *
  */
-#define PID_ACTUATION_SOLENOID_CLAMPED_MIN ( 10.0 )
+#define PID_ACCUMULATOR_SOLENOID_CLAMPED_MIN ( 10.0 )
 
 /*
  * @brief Maximum clamped PID value of the actuation solenoid.
  *
  */
-#define PID_ACTUATION_SOLENOID_CLAMPED_MAX ( 110.0 )
+#define PID_ACCUMULATOR_SOLENOID_CLAMPED_MAX ( 110.0 )
 
 /*
  * @brief Minimum clamped PID value of the release solenoid.
@@ -108,7 +108,7 @@
  * 3.921 KHz PWM frequency
  *
  */
-#define ACTUATION_SOLENOID_DUTY_CYCLE_MIN ( 80.0 )
+#define ACCUMULATOR_SOLENOID_DUTY_CYCLE_MIN ( 80.0 )
 
 /*
  * @brief Maximum duty cycle where actuation solenoid has reached its stop.
@@ -116,7 +116,7 @@
  * 3.921 KHz PWM frequency
  *
  */
-#define ACTUATION_SOLENOID_DUTY_CYCLE_MAX ( 105.0 )
+#define ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX ( 105.0 )
 
 /*
  * @brief Minimum duty cycle that begins to actuate the release solenoid.
@@ -186,9 +186,9 @@ void brake_lights_on( void );
 
 
 // ****************************************************************************
-// Function:    brake_command_actuator_solenoids
+// Function:    brake_command_accumulator_solenoids
 //
-// Purpose:     Set the PWM that controls the "actuator" solenoids to the
+// Purpose:     Set the PWM that controls the "accumulator" solenoids to the
 //              the specified value.
 //
 // Returns:     void
@@ -196,7 +196,7 @@ void brake_lights_on( void );
 // Parameters:  [in] duty_cycle - value to send to the PWM
 //
 // ****************************************************************************
-void brake_command_actuator_solenoids(
+void brake_command_accumulator_solenoids(
     const uint16_t duty_cycle );
 
 
