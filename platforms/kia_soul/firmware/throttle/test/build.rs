@@ -1,0 +1,65 @@
+extern crate gcc;
+extern crate bindgen;
+
+use std::env;
+use std::path::Path;
+
+fn main() {
+    gcc::Config::new()
+        .flag("-w")
+        .include("usr/include")
+        .include("include")
+        .include("../include")
+        .include("../../../../common/include")
+        .include("../../../../common/libs/arduino_init")
+        .include("../../../../common/libs/serial")
+        .include("../../../../common/libs/can")
+        .include("../../../../common/libs/time")
+        .include("../../../../common/libs/dac")
+        .include("/usr/lib/avr/include")
+        .file("src/mocks/Arduino.cpp")
+        .file("src/mocks/SPI.cpp")
+        .file("src/mocks/mcp_can.cpp")
+        .file("src/mocks/DAC_MCP49xx.cpp")
+        .file("../src/communications.cpp")
+        .file("../src/throttle_control.cpp")
+        .file("../src/globals.cpp")
+        .file("../../../../common/libs/time/oscc_time.cpp")
+        .file("../../../../common/libs/can/oscc_can.cpp")
+        .file("../../../../common/libs/dac/oscc_dac.cpp")
+        .cpp(true)
+        .compiler("/usr/bin/g++")
+        .compile("libcomm_test.a");
+    
+    let out_dir = env::var("OUT_DIR").unwrap();
+
+    let _ = bindgen::builder()
+        .header("include/wrapper.hpp")
+        .generate_comments(false)
+        .clang_arg("-Iinclude")
+        .clang_arg("-I/usr/include")
+        .clang_arg("-I/usr/lib/avr/include")
+        .clang_arg("-I../../../../common/libs/can")
+        .clang_arg("-I../../../../common/libs/dac")
+        .clang_arg("-I../../../../common/libs/time")
+        .whitelisted_function("publish_reports")
+        .whitelisted_function("check_for_incoming_message")
+        .whitelisted_function("*register_callback*")
+        .whitelisted_function("*register_signal_callbacks*")
+        .whitelisted_function("*register_can_frame*")
+        .whitelisted_var("g_throttle_control_state")
+        .whitelisted_var("OSCC_REPORT_THROTTLE_CAN_ID")
+        .whitelisted_var("OSCC_REPORT_THROTTLE_CAN_DLC")
+        .whitelisted_var("OSCC_COMMAND_THROTTLE_CAN_ID")
+        .whitelisted_var("OSCC_COMMAND_THROTTLE_CAN_DLC")
+        .whitelisted_var("CAN_STANDARD")
+        .whitelisted_var("g_control_can")
+        .whitelisted_type("oscc_report_throttle_data_s")
+        .whitelisted_type("oscc_report_throttle_s")
+        .whitelisted_type("oscc_command_throttle_data_s")
+        .whitelisted_type("oscc_command_throttle_s")
+        .whitelisted_type("can_frame_s")
+        .generate().unwrap()
+        .write_to_file(Path::new(&out_dir).join("communications.rs"))
+        .expect("Unable to generate bindings");
+}
