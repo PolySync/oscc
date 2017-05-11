@@ -26,6 +26,12 @@ void init_globals( void )
     // Initialize the timestamps to avoid timeout warnings on start up
     g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
+
+    pid_zeroize( &g_pid, PID_WINDUP_GUARD );
+
+    g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
+    g_pid.integral_gain     = PID_INTEGRAL_GAIN;
+    g_pid.derivative_gain   = PID_DERIVATIVE_GAIN;
 }
 
 

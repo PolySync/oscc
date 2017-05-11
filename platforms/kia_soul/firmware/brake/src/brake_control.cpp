@@ -212,15 +212,7 @@ void brake_update( void )
             g_brake_control_state.commanded_pedal_position,
             &pressure_ranges );
 
-        pid_s pid_params;
-
-        pid_zeroize( &pid_params, PID_WINDUP_GUARD );
-
-        pid_params.proportional_gain = PID_PROPORTIONAL_GAIN;
-        pid_params.integral_gain     = PID_INTEGRAL_GAIN;
-        pid_params.derivative_gain   = PID_DERIVATIVE_GAIN;
-
-        int16_t ret = pid_update( &pid_params,
+        int16_t ret = pid_update( &g_pid,
                                 pressure_target,
                                 pressure,
                                 loop_delta_t );
@@ -234,11 +226,11 @@ void brake_update( void )
 
         // PID output
         DEBUG_PRINT(",");
-        DEBUG_PRINT( pid_params.control );
+        DEBUG_PRINT( g_pid.control );
 
         if ( ret == PID_SUCCESS )
         {
-            float pid_output = pid_params.control;
+            float pid_output = g_pid.control;
 
             // pressure too high
             if ( pid_output < PID_OUTPUT_MIN )
