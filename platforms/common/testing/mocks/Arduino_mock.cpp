@@ -5,6 +5,7 @@
 
 
 unsigned long g_mock_arduino_millis_return;
+unsigned long g_mock_arduino_micros_return;
 uint8_t g_mock_arduino_digital_write_pin;
 uint8_t g_mock_arduino_digital_write_val;
 int g_mock_arduino_analog_read_return;
@@ -17,6 +18,11 @@ int g_mock_arduino_analog_write_count;
 unsigned long millis(void)
 {
     return g_mock_arduino_millis_return;
+}
+
+unsigned long micros(void)
+{
+    return g_mock_arduino_micros_return;
 }
 
 void pinMode(uint8_t, uint8_t)

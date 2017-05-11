@@ -15,6 +15,8 @@
 
 unsigned long millis(void);
 
+unsigned long micros(void);
+
 void pinMode(uint8_t, uint8_t);
 
 void digitalWrite(uint8_t pin, uint8_t val);
