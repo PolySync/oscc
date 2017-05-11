@@ -46,7 +46,7 @@
  * @brief Proportional gain of the PID controller.
  *
  */
-#define PID_PROPORTIONAL_GAIN ( 0.5 )
+#define PID_PROPORTIONAL_GAIN ( 0.58 )
 
 /*
  * @brief Integral gain of the PID controller.
@@ -124,7 +124,7 @@
  * 3.921 KHz PWM frequency
  *
  */
-#define RELEASE_SOLENOID_DUTY_CYCLE_MIN ( 50.0 )
+#define RELEASE_SOLENOID_DUTY_CYCLE_MIN ( 65.0 )
 
 /*
  * @brief Maximum duty cycle where release solenoid has reached its stop.
