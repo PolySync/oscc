@@ -1,4 +1,4 @@
 #include "../../include/globals.h"
-#include "../../../common/include/gateway_protocol_can.h"
 #include "../../include/communications.h"
-#include "../../../common/include/steering_protocol_can.h"
+#include "../../../common/libs/can/oscc_can.h"
+#include "../../../common/include/steering_can_protocol.h"

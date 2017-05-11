@@ -10,82 +10,54 @@ extern crate lazy_static;
 
 use std::mem;
 
+#[derive(Debug)]
 struct mock_can_frame {
     id: u32,
+    ext: u8,
     dlc: u8,
-    data: oscc_command_msg_steering
+    data: oscc_report_steering_data_s
 }
 
-// static mut can_msg: mock_can_frame = mock_can_frame {
-//     id: 0,
-//     dlc: 0,
-//     data: oscc_report_msg_steering{
-//         accelerator_input: 0,
-//         accelerator_command: 0,
-//         accelerator_output: 0,
-//         _bitfield_1: 0
-//     }
-// };
+// have a static can message that our callback function can populate and check values against
+static mut can_msg: mock_can_frame = mock_can_frame {
+    id: 0,
+    ext: 0,
+    dlc: 0,
+    data: oscc_report_steering_data_s{
+        angle: 0,
+        angle_command: 0,
+        vehicle_speed: 0,
+        torque: 0,
+        _bitfield_1: 0
+    }
+};
 
-// #[allow(dead_code)]
-// extern fn retrieve_sent_can_msg( id: u32, dlc: u8, buf: *mut u8) {
-//     unsafe { 
-//         can_msg.id = id; 
-//         can_msg.dlc = dlc;
-//         // endianness is important here
-//         can_msg.data.accelerator_input = mem::transmute([*buf, *buf.offset(1)]);
-//         can_msg.data.accelerator_command = mem::transmute([*buf.offset(2), *buf.offset(3)]);
-//         can_msg.data.accelerator_output = mem::transmute([*buf.offset(4), *buf.offset(5)]);
-//         can_msg.data._bitfield_1 = mem::transmute([*buf.offset(6), *buf.offset(7)]);
-//     }
-// }
+#[allow(dead_code)]
+extern fn retrieve_sent_can_msg( id: u32, ext: u8, dlc: u8, buf: *mut u8) {
+    unsafe { 
+        can_msg.id = id; 
+        can_msg.ext = ext;
+        can_msg.dlc = dlc;
+        // endianness is important here
+        can_msg.data.angle = mem::transmute([*buf, *buf.offset(1)]);
+        can_msg.data.angle_command = mem::transmute([*buf.offset(2), *buf.offset(3)]);
+        can_msg.data.vehicle_speed = mem::transmute([*buf.offset(4), *buf.offset(5)]);
+        can_msg.data.torque = mem::transmute(*buf.offset(6));
+        can_msg.data._bitfield_1 = mem::transmute(*buf.offset(7));
+    }
+}
 
-fn main() {
-    println!("hi");
-//             // ************************************** process enable command
-//         let mut command_msg = oscc_command_msg_throttle {
-//             // halp how can we get numbers bigger than 100 from this freaking dude?
-//             accelerator_command: 83,
-//             reserved_0: 72,
-//             _bitfield_1: 38,
-//             reserved_2: 85,
-//             reserved_3: 18,
-//             reserved_4: 67,
-//             count: 56
-//         };
+static mut spoof_low_signal: i16 = 0;
+static mut spoof_high_signal: i16 = 0;
 
-//         command_msg.set_enabled(1); // we're going to recieve an enable command
-//         let pointer = &command_msg as *const _;
-//         unsafe {
-//             process_throttle_command( pointer as *const u8);
-//             println!("control state: {}", control_state.enabled);
-//         }
+#[allow(dead_code)]
+extern fn spoof_analog_read_low() -> i16 {
+    unsafe { spoof_low_signal }
+}
 
-//     // ********************************** check valid can frame
-//         // unsafe {
-//         //     override_flags.accelerator_pressed = true;
-//         //     override_flags.voltage = 28;
-//         //     control_state.enabled = true;
-//         //     throttle_state.accel_pos_sensor_low = 79;
-//         //     throttle_state.accel_pos_sensor_high = 38;
-//         //     throttle_state.accel_pos_target = 65.157394;
-
-//         //     let mut override_flag = 1;
-
-//         //     if !override_flags.accelerator_pressed && override_flags.voltage == 0 {
-//         //         override_flag = 0;
-//         //     }
-
-//         //     MCP_CAN_register_callback(&mut can, Some(retrieve_sent_can_msg));
-//         //     publish_throttle_report();
-
-//         //     println!("{} == {} ? {}", can_msg.id, OSCC_CAN_ID_THROTTLE_REPORT, can_msg.id == OSCC_CAN_ID_THROTTLE_REPORT);
-//         //     println!("{} == {} ? {}", can_msg.dlc, 8, can_msg.dlc == 8);
-//         //     println!("{} == {} ? {}", can_msg.data.accelerator_input, (throttle_state.accel_pos_sensor_low + throttle_state.accel_pos_sensor_high), can_msg.data.accelerator_input == (throttle_state.accel_pos_sensor_low + throttle_state.accel_pos_sensor_high));
-//         //     println!("{} == {} ? {}", can_msg.data.accelerator_command, throttle_state.accel_pos_target as u16 , can_msg.data.accelerator_command == throttle_state.accel_pos_target as u16);
-//         //     println!("{} == {} ? {}", can_msg.data.enabled(), control_state.enabled as u8, can_msg.data.enabled() == control_state.enabled as u8);
-//         //     println!("{} == {} ? {}", can_msg.data.override_(), override_flag, can_msg.data.override_() == override_flag);
-//         // }
+#[allow(dead_code)]
+extern fn spoof_analog_read_high() -> i16 {
+    unsafe { spoof_high_signal }
 }
 
 #[cfg(test)]
@@ -98,36 +70,111 @@ mod tests {
         static ref LOCK: Mutex<bool> = Mutex::new(true);
     }
 
-    fn prop_only_process_valid_messages( rx_can_msg: can_frame_s, current_steering_target: f32, current_max_angle_rate: f32 ) -> TestResult {
-        // if we generate a throttle can message, ignore the result
-        if rx_can_msg.id == OSCC_CAN_ID_STEERING_COMMAND {
+    fn prop_only_process_valid_messages( mut rx_can_msg: can_frame_s, current_target: f32 ) -> TestResult {
+        // if we generate a steering can message, ignore the result
+        if rx_can_msg.id == OSCC_COMMAND_STEERING_CAN_ID {
             return TestResult::discard()
         }
-        unsafe {
-            let lock_acquired = LOCK.lock().unwrap();
-            if *lock_acquired {
-                steering_state.steering_angle_target = current_steering_target;
-                steering_state.steering_angle_rate_max = current_max_angle_rate;
-                handle_ready_rx_frame( &rx_can_msg );
-                TestResult::from_bool(  steering_state.steering_angle_target == current_steering_target &&
-                                        steering_state.steering_angle_rate_max == current_max_angle_rate)
-            } else {
-                return TestResult::discard();
-            }
-        }
-    }
 
-    fn prop_no_invalid_targets( command_msg: oscc_command_msg_steering ) -> TestResult { 
-        let pointer = &command_msg as *const _;
+        let buf_addr = &mut rx_can_msg.data as *const _;
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
             unsafe {
-                process_steering_command( pointer as *const u8);
+                g_steering_control_state.commanded_steering_angle = current_target;
+
+                // get MCP can to store our mocked message, so our comms module can retrieve it
+                MCP_CAN_register_can_frame(&mut g_control_can, rx_can_msg.id as u64, CAN_STANDARD as u8, rx_can_msg.dlc, buf_addr as *mut u8);
+
+                check_for_incoming_message();
+
+                TestResult::from_bool(g_steering_control_state.commanded_steering_angle == current_target)
+            }
+        } else {
+            return TestResult::discard();
+        }
+    }
+
+    fn prop_no_invalid_targets( mut command_msg: oscc_command_steering_s ) -> TestResult { 
+        let buf_addr = &mut command_msg.data as *const _;
+        let lock_acquired = LOCK.lock().unwrap();
+        if *lock_acquired {
+            unsafe {
+                // get MCP can to store our mocked message, so our comms module can retrieve it
+                MCP_CAN_register_can_frame(&mut g_control_can, OSCC_COMMAND_STEERING_CAN_ID as u64, CAN_STANDARD as u8, OSCC_REPORT_STEERING_CAN_DLC as u8, buf_addr as *mut u8);
+
+                check_for_incoming_message();
+                
+                TestResult::from_bool(g_steering_control_state.commanded_steering_angle == (command_msg.data.steering_wheel_angle_command as f32) / 9.0)
+            }
+        } else {
+            return TestResult::discard();
+        }
+    }
+
+    fn prop_process_enable_command( mut command_msg: oscc_command_steering_s ) -> TestResult {
+        command_msg.data.set_enabled(1); // we're going to recieve an enable command
+        let buf_addr = &mut command_msg.data as *const _;
+        let lock_acquired = LOCK.lock().unwrap();
+        if *lock_acquired {
+            unsafe {
+                // get MCP can to store our mocked message, so our comms module can retrieve it
+                MCP_CAN_register_can_frame(&mut g_control_can, OSCC_COMMAND_STEERING_CAN_ID as u64, CAN_STANDARD as u8, OSCC_REPORT_STEERING_CAN_DLC as u8, buf_addr as *mut u8);
+
+                check_for_incoming_message();
+                
+                TestResult::from_bool(g_steering_control_state.enabled)
+            }
+        } else {
+            return TestResult::discard();
+        }
+    }
+
+    fn prop_process_disable_command( mut command_msg: oscc_command_steering_s ) -> TestResult {
+        command_msg.data.set_enabled(0);
+        let buf_addr = &mut command_msg.data as *const _;
+        let lock_acquired = LOCK.lock().unwrap();
+        if *lock_acquired {
+            unsafe {
+                // get MCP can to store our mocked message, so our comms module can retrieve it
+                MCP_CAN_register_can_frame(&mut g_control_can, OSCC_COMMAND_STEERING_CAN_ID as u64, CAN_STANDARD as u8, OSCC_REPORT_STEERING_CAN_DLC as u8, buf_addr as *mut u8);
+
+                check_for_incoming_message();
+                
+                TestResult::from_bool(!g_steering_control_state.enabled)
+            }
+        } else {
+            return TestResult::discard();
+        }
+    }
+
+    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, steering_angle: f32, commanded_steering_angle: f32, spoof_low: i16, spoof_high: i16) -> TestResult 
+    {
+        let lock_acquired = LOCK.lock().unwrap();
+        if *lock_acquired {
+            unsafe {
+                // set global state
+                g_steering_control_state.enabled = control_enabled;
+                g_steering_control_state.operator_override = operator_override;
+                g_steering_control_state.commanded_steering_angle = commanded_steering_angle;
+                g_steering_control_state.steering_angle = steering_angle;
+
+                spoof_high_signal = spoof_high;
+                spoof_low_signal = spoof_low;
+
+                // register analog read callbacks
+                register_signal_callbacks(Some(spoof_analog_read_low), Some(spoof_analog_read_high));
+
+                MCP_CAN_register_callback(&mut g_control_can, Some(retrieve_sent_can_msg));
+                publish_reports();
+
                 TestResult::from_bool(
-                    steering_state.steering_angle_target == 
-                        command_msg.steering_wheel_angle_command / 9.0 && 
-                    steering_state.steering_angle_rate_max ==
-                        command_msg.steering_wheel_max_velocity * 9.0
+                    (can_msg.id == OSCC_REPORT_STEERING_CAN_ID) &&
+                    (can_msg.ext == (CAN_STANDARD as u8)) &&
+                    (can_msg.dlc == (OSCC_REPORT_STEERING_CAN_DLC as u8)) &&
+                    (can_msg.data.angle == (steering_angle as i16)) &&
+                    (can_msg.data.angle_command == (commanded_steering_angle as i16)) &&
+                    (can_msg.data.enabled() == (control_enabled as u8)) &&
+                    (can_msg.data.override_() == (operator_override as u8))
                 )
             }
         } else {
@@ -135,73 +182,51 @@ mod tests {
         }
     }
 
-    fn prop_process_enable_command( mut command_msg: oscc_command_msg_steering ) -> TestResult {
-        command_msg.set_enabled(1); // we're going to recieve an enable command
-        let pointer = &command_msg as *const _;
-        let lock_acquired = LOCK.lock().unwrap();
-        if *lock_acquired {
-            unsafe {
-                control_state.emergency_stop = false;
-                process_steering_command( pointer as *const u8);
-                TestResult::from_bool(control_state.enabled)
+    impl Arbitrary for oscc_report_steering_data_s {
+        fn arbitrary<G: Gen>(g: &mut G) -> oscc_report_steering_data_s {
+            oscc_report_steering_data_s {
+                angle: i16::arbitrary(g),
+                angle_command: i16::arbitrary(g),
+                vehicle_speed: u16::arbitrary(g),
+                torque: i8::arbitrary(g),
+                _bitfield_1: u8::arbitrary(g)
             }
-        } else {
-            return TestResult::discard();
         }
     }
 
-    // fn prop_process_disable_command( mut command_msg: oscc_command_msg_throttle ) -> TestResult {
-    //     command_msg.set_enabled(0);
-    //     let pointer = &command_msg as *const _;
-    //     let lock_acquired = LOCK.lock().unwrap();
-    //     if *lock_acquired {
-    //         unsafe {
-    //             process_throttle_command( pointer as *const u8 );
-    //             TestResult::from_bool(control_state.enabled == false)
-    //         }
-    //     } else {
-    //         return TestResult::discard();
-    //     }
-    // }
+    impl Arbitrary for oscc_report_steering_s {
+        fn arbitrary<G: Gen>(g: &mut G) -> oscc_report_steering_s {
+            oscc_report_steering_s {
+                id: u32::arbitrary(g),
+                dlc: u8::arbitrary(g),
+                timestamp: u32::arbitrary(g),
+                data: oscc_report_steering_data_s::arbitrary(g)
+            }
+        }
+    }
 
-    // fn prop_send_valid_can_fields(
-    //         (accelerator_pressed, voltage, control_enabled): (bool, u16, bool), 
-    //         (accel_pos_sensor_low, accel_pos_sensor_high, accel_pos_target): (u16, u16, f32)
-    //             ) -> TestResult 
-    // {
-    //     // MUTEX.lock().unwrap();
-    //     let lock_acquired = LOCK.lock().unwrap();
-    //     if *lock_acquired {
-    //         unsafe {
-    //             override_flags.accelerator_pressed = accelerator_pressed;
-    //             override_flags.voltage = voltage;
-    //             control_state.enabled = control_enabled;
-    //             throttle_state.accel_pos_sensor_low = accel_pos_sensor_low;
-    //             throttle_state.accel_pos_sensor_high = accel_pos_sensor_high;
-    //             throttle_state.accel_pos_target = accel_pos_target;
+    impl Arbitrary for oscc_command_steering_data_s {
+        fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_steering_data_s {
+            oscc_command_steering_data_s {
+                steering_wheel_angle_command: i16::arbitrary(g),
+                _bitfield_1: u8::arbitrary(g),
+                steering_wheel_max_velocity: u8::arbitrary(g),
+                torque: u16::arbitrary(g),
+                reserved_3: u8::arbitrary(g),
+                count: u8::arbitrary(g)
+            }
+        }
+    }
 
-    //             let mut override_flag = 1;
+    impl Arbitrary for oscc_command_steering_s {
+        fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_steering_s {
+            oscc_command_steering_s {
+                timestamp: u32::arbitrary(g),
+                data: oscc_command_steering_data_s::arbitrary(g)
+            }
+        }
+    }
 
-    //             if !accelerator_pressed && voltage == 0 {
-    //                 override_flag = 0;
-    //             }
-
-    //             MCP_CAN_register_callback(&mut can, Some(retrieve_sent_can_msg));
-    //             publish_throttle_report();
-
-    //             TestResult::from_bool(
-    //                 (can_msg.id == OSCC_CAN_ID_THROTTLE_REPORT) &&
-    //                 (can_msg.dlc == 8) &&
-    //                 (can_msg.data.accelerator_input == (accel_pos_sensor_low + accel_pos_sensor_high)) &&
-    //                 (can_msg.data.accelerator_command == accel_pos_target as u16) &&
-    //                 (can_msg.data.enabled() == control_enabled as u8) &&
-    //                 (can_msg.data.override_() == override_flag)
-    //             )
-    //         }
-    //     } else {
-    //         return TestResult::discard();
-    //     }
-    // }
 
     impl Arbitrary for can_frame_s {
         fn arbitrary<G: Gen>(g: &mut G) -> can_frame_s {
@@ -223,56 +248,51 @@ mod tests {
         }
     }
 
-    impl Arbitrary for oscc_command_msg_steering {
-        fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_msg_steering {
-            oscc_command_msg_steering {
-                steering_wheel_angle_command: i16::arbitrary(g),
-                _bitfield_1: u8::arbitrary(g),
-                steering_wheel_max_velocity: u8::arbitrary(g),
-                torque: u16::arbitrary(g),
-                reserved_3: u8::arbitrary(g),
-                count: u8::arbitrary(g)
-            }
-        }
-    }
-
+    /// the steering firmware should not attempt processing any messages that are not steering commands
     #[test]
     // #[ignore]
     fn check_message_type_validity() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, f32, f32) -> TestResult)
+            .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, f32) -> TestResult)
     }
 
+    /// the steering firmware should set the commanded accelerator position
+    /// upon reciept of a valid command steering message
     #[test]
     // #[ignore]
     fn check_accel_pos_validity() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_no_invalid_targets as fn(oscc_command_msg_steering) -> TestResult)
+            .quickcheck(prop_no_invalid_targets as fn(oscc_command_steering_s) -> TestResult)
     }
 
-    // #[test]
+    /// the steering firmware should set the control state as enabled
+    /// upon reciept of a valid command steering message telling it to enable
+    #[test]
     // #[ignore]
-    // fn check_process_enable_command() {
-    //     QuickCheck::new()
-    //         .tests(1000)
-    //         .quickcheck(prop_process_enable_command as fn(oscc_command_msg_throttle) -> TestResult)
-    // }
+    fn check_process_enable_command() {
+        QuickCheck::new()
+            .tests(1000)
+            .quickcheck(prop_process_enable_command as fn(oscc_command_steering_s) -> TestResult)
+    }
 
-    // #[test]
+    /// the steering firmware should set the control state as disabled
+    /// upon reciept of a valid command steering message telling it to disable
+    #[test]
     // #[ignore]
-    // fn check_process_disable_command() {
-    //     QuickCheck::new()
-    //         .tests(1000)
-    //         .quickcheck(prop_process_disable_command as fn(oscc_command_msg_throttle) -> TestResult)
-    // }
+    fn check_process_disable_command() {
+        QuickCheck::new()
+            .tests(1000)
+            .quickcheck(prop_process_disable_command as fn(oscc_command_steering_s) -> TestResult)
+    }
 
-    // #[test]
+    /// the steering firmware should create only valid CAN frames
+    #[test]
     // #[ignore]
-    // fn check_valid_can_frame() {
-    //     QuickCheck::new()
-    //         .tests(1000)
-    //         .quickcheck(prop_send_valid_can_fields as fn((bool, u16, bool), (u16, u16, f32)) -> TestResult)
-    // }
+    fn check_valid_can_frame() {
+        QuickCheck::new()
+            .tests(1000)
+            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, f32, f32, i16, i16) -> TestResult)
+    }
 }

@@ -1,5 +1,5 @@
 [package]
-name = "steering_comms_pb_tests"
+name = "brake_comms_pb_tests"
 version = "0.0.1"
 authors = ["Katie Cleary <kcleary@polysync.io>"]
 build = "build.rs"
