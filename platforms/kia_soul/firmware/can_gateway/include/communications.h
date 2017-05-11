@@ -91,17 +91,18 @@ void publish_reports( void );
 
 
 // ****************************************************************************
-// Function:    check_for_controller_command_timeout
+// Function:    check_for_obd_timeout
 //
-// Purpose:     Check if the last command received from the controller exceeds
-//              the timeout and disable control if it does.
+// Purpose:     Check if the last message received from the vehicle's OBD CAN
+//              bus exceeds the timeout and set appropriate heartbeat and chassis
+//              flags.
 //
 // Returns:     void
 //
 // Parameters:  void
 //
 // ****************************************************************************
-void check_for_controller_command_timeout( void );
+void check_for_obd_timeout( void );
 
 
 // ****************************************************************************

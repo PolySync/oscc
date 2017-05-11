@@ -35,7 +35,7 @@ int main( void )
 
         check_for_incoming_message( );
 
-        check_for_controller_command_timeout( );
+        check_for_obd_timeout( );
 
         publish_reports( );
     }

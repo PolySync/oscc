@@ -76,7 +76,7 @@ void publish_reports( void )
 }
 
 
-void check_for_controller_command_timeout( void )
+void check_for_obd_timeout( void )
 {
     bool timeout = false;
 
