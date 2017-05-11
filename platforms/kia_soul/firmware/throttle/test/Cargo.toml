@@ -1,5 +1,5 @@
 [package]
-name = "rust_tests"
+name = "throttle_comms_pb_tests"
 version = "0.0.1"
 authors = ["Katie Cleary <kcleary@polysync.io>"]
 build = "build.rs"
@@ -13,5 +13,5 @@ lazy_static = "*"
 bindgen = "0.20.0"
 gcc = "0.3"
 
-[[bin]]
+[lib]
 name = "tests"

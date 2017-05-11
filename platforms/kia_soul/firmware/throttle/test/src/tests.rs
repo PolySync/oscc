@@ -58,22 +58,6 @@ extern fn spoof_analog_read_high() -> u16 {
     unsafe { spoof_high_signal }
 }
 
-fn main () {
-    unsafe {
-        check_for_incoming_message();
-        check_for_incoming_message();
-        // println!("{:?}", (&mut can_msg.data as *const _) as *const u8);
-        println!("{:?}", can_msg);
-        MCP_CAN_register_callback(&mut g_control_can, Some(retrieve_sent_can_msg));
-        MCP_CAN_sendMsgBuf1(&mut g_control_can, can_msg.id as u64, CAN_STANDARD as u8, can_msg.dlc, (&mut can_msg.data as *const _) as *mut u8);
-        // publish_reports();
-        println!("{:?}", can_msg);
-        println!("published a report... should have msg now");
-        check_for_incoming_message();
-        check_for_incoming_message();
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -125,9 +109,6 @@ mod tests {
         }
     }
 
-
-    // send command to enable system
-    // make sure it's been enabled
     fn prop_process_enable_command( mut command_msg: oscc_command_throttle_s ) -> TestResult {
         command_msg.data.set_enabled(1); // we're going to recieve an enable command
         let buf_addr = &mut command_msg.data as *const _;

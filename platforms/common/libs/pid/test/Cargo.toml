@@ -1,5 +1,5 @@
 [package]
-name = "pid_rust_tests"
+name = "pid_pb_tests"
 version = "0.0.1"
 authors = ["Katie Cleary <kcleary@polysync.io>"]
 build = "build.rs"
@@ -9,7 +9,7 @@ libc = "*"
 quickcheck = "0.3"
 
 [build-dependencies]
-bindgen = "0.20.0"
+bindgen = "0.23"
 gcc = "0.3"
 
 [lib]

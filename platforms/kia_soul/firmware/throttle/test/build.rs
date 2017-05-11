@@ -7,6 +7,7 @@ use std::path::Path;
 fn main() {
     gcc::Config::new()
         .flag("-w")
+        .define("__STDC_LIMIT_MACROS", None)
         .include("usr/include")
         .include("include")
         .include("../include")

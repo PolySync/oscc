@@ -8,12 +8,14 @@ fn main() {
     gcc::Config::new()
         .flag("-w")
         .file("../oscc_pid.cpp")
+        .cpp(true)
+        .compiler("/usr/bin/g++")
         .compile("libpid_test.a");
     
     let out_dir = env::var("OUT_DIR").unwrap();
 
-    let _ = bindgen::builder()
-        .header("../oscc_pid.h")
+    let _ = bindgen::Builder::default()
+        .header("include/wrapper.hpp")
         .whitelisted_function("pid_zeroize")
         .whitelisted_function("pid_update")
         .generate().unwrap()
