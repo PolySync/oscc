@@ -142,7 +142,7 @@ void brake_update_pressure( void )
     float pressure_right = raw_adc_to_pressure( raw_right_pressure );
 
     g_brake_control_state.current_sensor_brake_pressure =
-        pressure_left + pressure_right / 2.0;
+        (pressure_left + pressure_right) / 2.0;
 }
 
 
@@ -175,11 +175,14 @@ void brake_update( void )
 
         static uint32_t control_loop_time = 0;
 
-        float loop_delta_t =
-            (float) get_time_delta( control_loop_time, GET_TIMESTAMP_MS() );
+        uint32_t current_time = GET_TIMESTAMP_US();
 
-        loop_delta_t /= 1000.0;
-        loop_delta_t /= 1000.0;
+        float loop_delta_t = 0.02;
+
+        // control_loop_time = current_time;
+
+        // loop_delta_t /= 1000.0;
+        // loop_delta_t /= 1000.0;
 
         brake_update_pressure( );
 

@@ -17,6 +17,7 @@ using namespace cgreen;
 
 
 extern unsigned long g_mock_arduino_millis_return;
+extern unsigned long g_mock_arduino_micros_return;
 extern uint8_t g_mock_arduino_analog_write_pins[100];
 extern int g_mock_arduino_analog_write_val[100];
 extern int g_mock_arduino_analog_write_count;

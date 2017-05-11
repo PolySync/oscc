@@ -148,7 +148,7 @@ typedef struct
     bool operator_override; /* Flag indicating whether brake pedal was
                                manually pressed by operator. */
 
-    uint16_t current_sensor_brake_pressure; /* Current brake pressure as read
+    float current_sensor_brake_pressure; /* Current brake pressure as read
                                                from the brake pressure sensor. */
 
     int16_t current_vehicle_brake_pressure; /* Current brake pressure as reported

@@ -4,7 +4,7 @@ Feature: Receiving commands
 
   Commands received from a controller should be processed and acted upon.
 
-
+  @enable_command
   Scenario: Enable brake command sent from controller
     Given brake control is disabled
 
@@ -13,7 +13,7 @@ Feature: Receiving commands
     Then control should be enabled
     And the last command timestamp should be set
 
-
+  @disable_command
   Scenario: Disable brake command sent from controller
     Given brake control is enabled
 
@@ -25,19 +25,21 @@ Feature: Receiving commands
 
   Scenario Outline: Brake pedal command sent from controller
     Given brake control is enabled
-    And the current sensor reported brake pressure is <pressure>
+    And the left brake sensor reads <left_pressure>
+    And the right brake sensor reads <right_pressure>
 
     When the brake pedal command <command> is received
 
     Then the brake pedal command should be parsed
+    And the <solenoid> solenoid should be activated with duty cycle <duty_cycle>
 
     Examples:
-      | pressure | command |
-      |  0       |  -4700  |
-      |  25      |  -4000  |
-      |  50      |  -3000  |
-      |  100     |  -2000  |
-      |  80      |  -1000  |
-      |  60      |  0      |
-      |  75      |  1000   |
-      |  80      |  2000   |
+      | left_pressure | right_pressure | command | solenoid     | duty_cycle |
+      |  120          |  120           |  20000  |  ACCUMULATOR |  105       |
+      |  160          |  160           |  20000  |  ACCUMULATOR |  97        |
+      |  190          |  190           |  20000  |  ACCUMULATOR |  87        |
+      |  230          |  230           |  20000  |  RELEASE     |  74        |
+      |  200          |  200           |  20000  |  ACCUMULATOR |  85        |
+      |  220          |  220           |  20000  |  NONE        |  0         |
+      |  205          |  205           |  20000  |  ACCUMULATOR |  83        |
+      |  215          |  215           |  20000  |  NONE        |  0         |
