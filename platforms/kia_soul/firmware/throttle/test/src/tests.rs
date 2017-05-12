@@ -24,9 +24,9 @@ static mut can_msg: mock_can_frame = mock_can_frame {
     ext: 0,
     dlc: 0,
     data: oscc_report_throttle_data_s{
-        accelerator_input: 0,
-        accelerator_command: 0,
-        accelerator_output: 0,
+        current_accelerator_position: 0,
+        commanded_accelerator_position: 0,
+        spoofed_accelerator_output: 0,
         _bitfield_1: 0
     }
 };
@@ -38,9 +38,9 @@ extern fn retrieve_sent_can_msg( id: u32, ext: u8, dlc: u8, buf: *mut u8) {
         can_msg.ext = ext;
         can_msg.dlc = dlc;
         // endianness is important here
-        can_msg.data.accelerator_input = mem::transmute([*buf, *buf.offset(1)]);
-        can_msg.data.accelerator_command = mem::transmute([*buf.offset(2), *buf.offset(3)]);
-        can_msg.data.accelerator_output = mem::transmute([*buf.offset(4), *buf.offset(5)]);
+        can_msg.data.current_accelerator_position = mem::transmute([*buf, *buf.offset(1)]);
+        can_msg.data.commanded_accelerator_position = mem::transmute([*buf.offset(2), *buf.offset(3)]);
+        can_msg.data.spoofed_accelerator_output = mem::transmute([*buf.offset(4), *buf.offset(5)]);
         can_msg.data._bitfield_1 = mem::transmute([*buf.offset(6), *buf.offset(7)]);
     }
 }
@@ -68,7 +68,7 @@ mod tests {
         static ref LOCK: Mutex<bool> = Mutex::new(true);
     }
 
-    fn prop_only_process_valid_messages( mut rx_can_msg: can_frame_s, current_target: f32 ) -> TestResult {
+    fn prop_only_process_valid_messages( mut rx_can_msg: can_frame_s, current_target: u16 ) -> TestResult {
         // if we generate a throttle can message, ignore the result
         if rx_can_msg.id == OSCC_COMMAND_THROTTLE_CAN_ID {
             return TestResult::discard()
@@ -102,7 +102,7 @@ mod tests {
 
                 check_for_incoming_message();
                 
-                TestResult::from_bool(g_throttle_control_state.commanded_accelerator_position == (command_msg.data.accelerator_command as f32))
+                TestResult::from_bool(g_throttle_control_state.commanded_accelerator_position == command_msg.data.commanded_accelerator_position)
             }
         } else {
             return TestResult::discard();
@@ -145,7 +145,7 @@ mod tests {
         }
     }
 
-    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, commanded_accelerator_position: f32, spoof_low: u16, spoof_high: u16) -> TestResult 
+    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, commanded_accelerator_position: u16, spoof_low: u16, spoof_high: u16) -> TestResult 
     {
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
@@ -168,10 +168,10 @@ mod tests {
                     (can_msg.id == OSCC_REPORT_THROTTLE_CAN_ID) &&
                     (can_msg.ext == (CAN_STANDARD as u8)) &&
                     (can_msg.dlc == (OSCC_REPORT_THROTTLE_CAN_DLC as u8)) &&
-                    (can_msg.data.accelerator_command == (commanded_accelerator_position as u16)) &&
+                    (can_msg.data.commanded_accelerator_position == commanded_accelerator_position) &&
                     (can_msg.data.enabled() == (control_enabled as u8)) &&
                     (can_msg.data.override_() == (operator_override as u8)) &&
-                    (can_msg.data.accelerator_input == ((spoof_low_signal << 2) + (spoof_high_signal << 2)))
+                    (can_msg.data.current_accelerator_position == ((spoof_low_signal << 2) + (spoof_high_signal << 2)))
                 )
             }
         } else {
@@ -182,9 +182,9 @@ mod tests {
     impl Arbitrary for oscc_report_throttle_data_s {
         fn arbitrary<G: Gen>(g: &mut G) -> oscc_report_throttle_data_s {
             oscc_report_throttle_data_s {
-                accelerator_input: u16::arbitrary(g),
-                accelerator_command: u16::arbitrary(g),
-                accelerator_output: u16::arbitrary(g),
+                current_accelerator_position: u16::arbitrary(g),
+                commanded_accelerator_position: u16::arbitrary(g),
+                spoofed_accelerator_output: u16::arbitrary(g),
                 _bitfield_1: u16::arbitrary(g)
             }
         }
@@ -204,7 +204,7 @@ mod tests {
     impl Arbitrary for oscc_command_throttle_data_s {
         fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_throttle_data_s {
             oscc_command_throttle_data_s {
-                accelerator_command: u16::arbitrary(g),
+                commanded_accelerator_position: u16::arbitrary(g),
                 reserved_0: u8::arbitrary(g),
                 _bitfield_1: u8::arbitrary(g),
                 reserved_2: u8::arbitrary(g),
@@ -251,7 +251,7 @@ mod tests {
     fn check_message_type_validity() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, f32) -> TestResult)
+            .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, u16) -> TestResult)
     }
 
     /// the throttle firmware should set the commanded accelerator position
@@ -290,6 +290,6 @@ mod tests {
     fn check_valid_can_frame() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, f32, u16, u16) -> TestResult)
+            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, u16, u16, u16) -> TestResult)
     }
 }

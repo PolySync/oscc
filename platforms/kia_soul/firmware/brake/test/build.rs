@@ -47,6 +47,7 @@ fn main() {
         .clang_arg("-I../../../../common/libs/can")
         .clang_arg("-I../../../../common/libs/dac")
         .clang_arg("-I../../../../common/libs/time")
+        .clang_arg("-I../../../../common/libs/pid")
         .whitelisted_function("publish_reports")
         .whitelisted_function("check_for_incoming_message")
         .whitelisted_function("*register_callback*")

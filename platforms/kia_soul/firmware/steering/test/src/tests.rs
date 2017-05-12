@@ -24,10 +24,10 @@ static mut can_msg: mock_can_frame = mock_can_frame {
     ext: 0,
     dlc: 0,
     data: oscc_report_steering_data_s{
-        angle: 0,
-        angle_command: 0,
+        current_steering_wheel_angle: 0,
+        commanded_steering_wheel_angle: 0,
         vehicle_speed: 0,
-        torque: 0,
+        spoofed_torque_output: 0,
         _bitfield_1: 0
     }
 };
@@ -39,10 +39,10 @@ extern fn retrieve_sent_can_msg( id: u32, ext: u8, dlc: u8, buf: *mut u8) {
         can_msg.ext = ext;
         can_msg.dlc = dlc;
         // endianness is important here
-        can_msg.data.angle = mem::transmute([*buf, *buf.offset(1)]);
-        can_msg.data.angle_command = mem::transmute([*buf.offset(2), *buf.offset(3)]);
+        can_msg.data.current_steering_wheel_angle = mem::transmute([*buf, *buf.offset(1)]);
+        can_msg.data.commanded_steering_wheel_angle = mem::transmute([*buf.offset(2), *buf.offset(3)]);
         can_msg.data.vehicle_speed = mem::transmute([*buf.offset(4), *buf.offset(5)]);
-        can_msg.data.torque = mem::transmute(*buf.offset(6));
+        can_msg.data.spoofed_torque_output = mem::transmute(*buf.offset(6));
         can_msg.data._bitfield_1 = mem::transmute(*buf.offset(7));
     }
 }
@@ -70,7 +70,7 @@ mod tests {
         static ref LOCK: Mutex<bool> = Mutex::new(true);
     }
 
-    fn prop_only_process_valid_messages( mut rx_can_msg: can_frame_s, current_target: f32 ) -> TestResult {
+    fn prop_only_process_valid_messages( mut rx_can_msg: can_frame_s, current_target: i16 ) -> TestResult {
         // if we generate a steering can message, ignore the result
         if rx_can_msg.id == OSCC_COMMAND_STEERING_CAN_ID {
             return TestResult::discard()
@@ -80,14 +80,14 @@ mod tests {
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
             unsafe {
-                g_steering_control_state.commanded_steering_angle = current_target;
+                g_steering_control_state.commanded_steering_wheel_angle = current_target;
 
                 // get MCP can to store our mocked message, so our comms module can retrieve it
                 MCP_CAN_register_can_frame(&mut g_control_can, rx_can_msg.id as u64, CAN_STANDARD as u8, rx_can_msg.dlc, buf_addr as *mut u8);
 
                 check_for_incoming_message();
 
-                TestResult::from_bool(g_steering_control_state.commanded_steering_angle == current_target)
+                TestResult::from_bool(g_steering_control_state.commanded_steering_wheel_angle == current_target)
             }
         } else {
             return TestResult::discard();
@@ -104,7 +104,7 @@ mod tests {
 
                 check_for_incoming_message();
                 
-                TestResult::from_bool(g_steering_control_state.commanded_steering_angle == (command_msg.data.steering_wheel_angle_command as f32) / 9.0)
+                TestResult::from_bool(g_steering_control_state.commanded_steering_wheel_angle == command_msg.data.commanded_steering_wheel_angle / 9.0 as i16)
             }
         } else {
             return TestResult::discard();
@@ -147,7 +147,7 @@ mod tests {
         }
     }
 
-    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, steering_angle: f32, commanded_steering_angle: f32, spoof_low: i16, spoof_high: i16) -> TestResult 
+    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, current_steering_wheel_angle: i16, commanded_steering_wheel_angle: i16, spoof_low: i16, spoof_high: i16) -> TestResult 
     {
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
@@ -155,8 +155,8 @@ mod tests {
                 // set global state
                 g_steering_control_state.enabled = control_enabled;
                 g_steering_control_state.operator_override = operator_override;
-                g_steering_control_state.commanded_steering_angle = commanded_steering_angle;
-                g_steering_control_state.steering_angle = steering_angle;
+                g_steering_control_state.commanded_steering_wheel_angle = commanded_steering_wheel_angle;
+                g_steering_control_state.current_steering_wheel_angle = current_steering_wheel_angle;
 
                 spoof_high_signal = spoof_high;
                 spoof_low_signal = spoof_low;
@@ -171,8 +171,8 @@ mod tests {
                     (can_msg.id == OSCC_REPORT_STEERING_CAN_ID) &&
                     (can_msg.ext == (CAN_STANDARD as u8)) &&
                     (can_msg.dlc == (OSCC_REPORT_STEERING_CAN_DLC as u8)) &&
-                    (can_msg.data.angle == (steering_angle as i16)) &&
-                    (can_msg.data.angle_command == (commanded_steering_angle as i16)) &&
+                    (can_msg.data.current_steering_wheel_angle == current_steering_wheel_angle) &&
+                    (can_msg.data.commanded_steering_wheel_angle == commanded_steering_wheel_angle) &&
                     (can_msg.data.enabled() == (control_enabled as u8)) &&
                     (can_msg.data.override_() == (operator_override as u8))
                 )
@@ -185,10 +185,10 @@ mod tests {
     impl Arbitrary for oscc_report_steering_data_s {
         fn arbitrary<G: Gen>(g: &mut G) -> oscc_report_steering_data_s {
             oscc_report_steering_data_s {
-                angle: i16::arbitrary(g),
-                angle_command: i16::arbitrary(g),
+                current_steering_wheel_angle: i16::arbitrary(g),
+                commanded_steering_wheel_angle: i16::arbitrary(g),
                 vehicle_speed: u16::arbitrary(g),
-                torque: i8::arbitrary(g),
+                spoofed_torque_output: i8::arbitrary(g),
                 _bitfield_1: u8::arbitrary(g)
             }
         }
@@ -208,10 +208,11 @@ mod tests {
     impl Arbitrary for oscc_command_steering_data_s {
         fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_steering_data_s {
             oscc_command_steering_data_s {
-                steering_wheel_angle_command: i16::arbitrary(g),
+                commanded_steering_wheel_angle: i16::arbitrary(g),
+                commanded_steering_wheel_angle_rate: u8::arbitrary(g),
                 _bitfield_1: u8::arbitrary(g),
-                steering_wheel_max_velocity: u8::arbitrary(g),
-                torque: u16::arbitrary(g),
+                reserved_1: u8::arbitrary(g),
+                reserved_2: u8::arbitrary(g),
                 reserved_3: u8::arbitrary(g),
                 count: u8::arbitrary(g)
             }
@@ -254,7 +255,7 @@ mod tests {
     fn check_message_type_validity() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, f32) -> TestResult)
+            .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, i16) -> TestResult)
     }
 
     /// the steering firmware should set the commanded accelerator position
@@ -293,6 +294,6 @@ mod tests {
     fn check_valid_can_frame() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, f32, f32, i16, i16) -> TestResult)
+            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, i16, i16, i16, i16) -> TestResult)
     }
 }

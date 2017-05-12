@@ -181,7 +181,7 @@ mod tests {
     impl Arbitrary for oscc_report_brake_data_s {
         fn arbitrary<G: Gen>(g: &mut G) -> oscc_report_brake_data_s {
             oscc_report_brake_data_s {
-                pedal_input: u16::arbitrary(g),
+                pedal_input: i16::arbitrary(g),
                 pedal_command: u16::arbitrary(g),
                 pedal_output: u16::arbitrary(g),
                 _bitfield_1: u16::arbitrary(g)
