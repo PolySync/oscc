@@ -19,6 +19,7 @@ if(TESTS)
     endif()
 
     add_subdirectory(kia_soul/firmware/brake/tests)
+    add_subdirectory(kia_soul/firmware/can_gateway/tests)
     add_subdirectory(kia_soul/firmware/steering/tests)
     add_subdirectory(kia_soul/firmware/throttle/tests)
 
@@ -26,6 +27,7 @@ if(TESTS)
         run-tests
         DEPENDS
         run-brake-tests
+        run-can-gateway-tests
         run-steering-tests
         run-throttle-tests)
 else()
