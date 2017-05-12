@@ -9,6 +9,7 @@
 #define _OSCC_TIME_H_
 
 
+#include <Arduino.h>
 #include <stdint.h>
 
 
