@@ -65,19 +65,6 @@
 
 
 // ****************************************************************************
-// Function:    publish_heartbeat_report
-//
-// Purpose:     Fill out heartbeat report and publish it to the CAN bus.
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// ****************************************************************************
-void publish_heartbeat_report( void );
-
-
-// ****************************************************************************
 // Function:    publish_reports
 //
 // Purpose:     Publish all valid reports to CAN bus.

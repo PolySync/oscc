@@ -15,6 +15,8 @@
 #include "obd_can_protocol.h"
 
 
+static void publish_heartbeat_report( void );
+
 static void publish_chassis_state_1_report( void );
 
 static void publish_chassis_state_2_report( void );
@@ -33,23 +35,6 @@ static void process_obd_turn_signal(
 
 static void process_rx_frame(
     const can_frame_s * const rx_frame );
-
-
-void publish_heartbeat_report( void )
-{
-    g_tx_heartbeat.id = (OSCC_REPORT_HEARTBEAT_CAN_ID + OSCC_MODULE_CAN_GATEWAY_NODE_ID);
-    g_tx_heartbeat.dlc = OSCC_REPORT_HEARTBEAT_CAN_DLC;
-    g_tx_heartbeat.data.hardware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_HARDWARE;
-    g_tx_heartbeat.data.firmware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_FIRMWARE;
-
-    g_control_can.sendMsgBuf(
-            g_tx_heartbeat.id,
-            CAN_STANDARD,
-            g_tx_heartbeat.dlc,
-            (uint8_t *) &g_tx_heartbeat.data );
-
-    g_tx_heartbeat.timestamp = GET_TIMESTAMP_MS();
-}
 
 
 void publish_reports( void )
@@ -141,6 +126,23 @@ void check_for_incoming_message( void )
 }
 
 
+void static publish_heartbeat_report( void )
+{
+    g_tx_heartbeat.id = (OSCC_REPORT_HEARTBEAT_CAN_ID + OSCC_MODULE_CAN_GATEWAY_NODE_ID);
+    g_tx_heartbeat.dlc = OSCC_REPORT_HEARTBEAT_CAN_DLC;
+    g_tx_heartbeat.data.hardware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_HARDWARE;
+    g_tx_heartbeat.data.firmware_version = OSCC_MODULE_CAN_GATEWAY_VERSION_FIRMWARE;
+
+    g_control_can.sendMsgBuf(
+        g_tx_heartbeat.id,
+        CAN_STANDARD,
+        g_tx_heartbeat.dlc,
+        (uint8_t *) &g_tx_heartbeat.data );
+
+    g_tx_heartbeat.timestamp = GET_TIMESTAMP_MS();
+}
+
+
 static void publish_chassis_state_1_report( void )
 {
     g_tx_chassis_state_1.id = OSCC_REPORT_CHASSIS_STATE_1_CAN_ID;
@@ -156,7 +158,7 @@ static void publish_chassis_state_1_report( void )
 }
 
 
-static void publish_chassis_state_2_report( void)
+static void publish_chassis_state_2_report( void )
 {
     g_tx_chassis_state_2.id = OSCC_REPORT_CHASSIS_STATE_2_CAN_ID;
     g_tx_chassis_state_2.dlc = OSCC_REPORT_CHASSIS_STATE_2_CAN_DLC;
