@@ -124,8 +124,8 @@ void update_steering( void )
 
         steering_wheel_angle_rate_target =
             constrain( steering_wheel_angle_rate_target,
-                       STEERING_WHEEL_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC,
-                       STEERING_WHEEL_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC );
+                       -g_steering_control_state.commanded_steering_wheel_angle_rate,
+                       g_steering_control_state.commanded_steering_wheel_angle_rate );
 
         g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
         g_pid.integral_gain = PID_INTEGRAL_GAIN;

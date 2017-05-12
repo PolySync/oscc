@@ -112,6 +112,9 @@ static void process_steering_command(
         g_steering_control_state.commanded_steering_wheel_angle =
             (steering_command_data->commanded_steering_wheel_angle / 9.0);
 
+        g_steering_control_state.commanded_steering_wheel_angle_rate =
+            (steering_command_data->commanded_steering_wheel_angle_rate * 9.0);
+
         DEBUG_PRINT( "controller commanded steering wheel angle: " );
         DEBUG_PRINTLN( g_steering_control_state.commanded_steering_wheel_angle );
 

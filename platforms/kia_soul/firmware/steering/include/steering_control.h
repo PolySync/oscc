@@ -29,18 +29,6 @@
 *******************************************************************************/
 
 /*
- * @brief Minimum steering angle rate. [degrees/microsecond]
- *
- */
-#define STEERING_WHEEL_ANGLE_RATE_MIN_IN_DEGREES_PER_USEC ( -1000.0 )
-
-/*
- * @brief Maximum steering angle rate. [degrees/microsecond]
- *
- */
-#define STEERING_WHEEL_ANGLE_RATE_MAX_IN_DEGREES_PER_USEC ( 1000.0 )
-
-/*
  * @brief Minimum steering angle rate. [Newton meters]
  *
  */
@@ -148,6 +136,9 @@ typedef struct
 
     int16_t commanded_steering_wheel_angle; /* Angle of steering wheel commanded
                                                by controller. */
+
+    float commanded_steering_wheel_angle_rate; /* Rate of the steering wheel
+                                                  angle commanded by controller. */
 } kia_soul_steering_control_state_s;
 
 

@@ -26,9 +26,10 @@ WHEN("^a disable steering command is received$")
 }
 
 
-WHEN("^the steering wheel angle command (.*) is received$")
+WHEN("^the steering wheel angle command (.*) with angle rate (.*) is received$")
 {
     REGEX_PARAM(int, command);
+    REGEX_PARAM(int, rate);
 
     oscc_command_steering_data_s * steering_command_data =
         (oscc_command_steering_data_s *) g_mock_mcp_can_read_msg_buf_buf;
@@ -38,6 +39,7 @@ WHEN("^the steering wheel angle command (.*) is received$")
 
     steering_command_data->enabled = 1;
     steering_command_data->commanded_steering_wheel_angle = command;
+    steering_command_data->commanded_steering_wheel_angle_rate = rate;
 
     check_for_incoming_message();
 

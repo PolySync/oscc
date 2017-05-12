@@ -47,7 +47,7 @@ Feature: Receiving commands
     Given steering control is enabled
     And the current steering wheel angle is <angle>
 
-    When the steering wheel angle command <command> is received
+    When the steering wheel angle command <command> with angle rate 111 is received
 
     Then the steering wheel angle command should be parsed
     And <spoof_val_low> should be written to DAC A
