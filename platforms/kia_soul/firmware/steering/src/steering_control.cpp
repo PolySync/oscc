@@ -127,10 +127,6 @@ void update_steering( void )
                        -g_steering_control_state.commanded_steering_wheel_angle_rate,
                        g_steering_control_state.commanded_steering_wheel_angle_rate );
 
-        g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
-        g_pid.integral_gain = PID_INTEGRAL_GAIN;
-        g_pid.derivative_gain = PID_DERIVATIVE_GAIN;
-
         pid_update(
                 &g_pid,
                 steering_wheel_angle_rate_target,

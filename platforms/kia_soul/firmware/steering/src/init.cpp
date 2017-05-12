@@ -26,6 +26,9 @@ void init_globals( void )
     g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 
     pid_zeroize( &g_pid, PID_WINDUP_GUARD );
+    g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
+    g_pid.integral_gain = PID_INTEGRAL_GAIN;
+    g_pid.derivative_gain = PID_DERIVATIVE_GAIN;
 }
 
 

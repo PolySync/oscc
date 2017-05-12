@@ -1,3 +1,8 @@
+// variables needed to preserve the state of the PID controller between scenarios
+float mock_pid_int_error;
+float mock_pid_prev_input;
+
+
 WHEN("^an enable steering command is received$")
 {
     oscc_command_steering_data_s * steering_command_data =
@@ -41,6 +46,16 @@ WHEN("^the steering wheel angle command (.*) with angle rate (.*) is received$")
     steering_command_data->commanded_steering_wheel_angle = command;
     steering_command_data->commanded_steering_wheel_angle_rate = rate;
 
+    pid_zeroize( &g_pid, PID_WINDUP_GUARD );
+
+    g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
+    g_pid.integral_gain     = PID_INTEGRAL_GAIN;
+    g_pid.derivative_gain   = PID_DERIVATIVE_GAIN;
+
+    // restore PID params needed for next scenario
+    g_pid.prev_input = mock_pid_prev_input;
+    g_pid.int_error = mock_pid_int_error;
+
     check_for_incoming_message();
 
     update_steering();
@@ -51,6 +66,10 @@ THEN("^the steering wheel angle command should be parsed$")
 {
     oscc_command_steering_data_s * steering_command_data =
         (oscc_command_steering_data_s *) g_mock_mcp_can_read_msg_buf_buf;
+
+    // save PID params from last scenario needed for the next scenario
+    mock_pid_prev_input = g_pid.prev_input;
+    mock_pid_int_error = g_pid.int_error;
 
     assert_that(
         g_steering_control_state.commanded_steering_wheel_angle,
