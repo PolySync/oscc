@@ -30,13 +30,14 @@ fn main() {
         .file("../../../../common/libs/dac/oscc_dac.cpp")
         .cpp(true)
         .compiler("/usr/bin/g++")
-        .compile("libcomm_test.a");
+        .compile("libthrottle_test.a");
     
     let out_dir = env::var("OUT_DIR").unwrap();
 
     let _ = bindgen::builder()
         .header("include/wrapper.hpp")
         .generate_comments(false)
+        // .layout_tests(false) // this currently breaks our linking for some reason, so leave it out until we can pinpoint the drama
         .clang_arg("-Iinclude")
         .clang_arg("-I/usr/include")
         .clang_arg("-I/usr/lib/avr/include")
@@ -48,11 +49,13 @@ fn main() {
         .whitelisted_function("*register_callback*")
         .whitelisted_function("*register_signal_callbacks*")
         .whitelisted_function("*register_can_frame*")
+        .whitelisted_function("check_for_operator_override")
         .whitelisted_var("g_throttle_control_state")
         .whitelisted_var("OSCC_REPORT_THROTTLE_CAN_ID")
         .whitelisted_var("OSCC_REPORT_THROTTLE_CAN_DLC")
         .whitelisted_var("OSCC_COMMAND_THROTTLE_CAN_ID")
         .whitelisted_var("OSCC_COMMAND_THROTTLE_CAN_DLC")
+        .whitelisted_var("ACCELERATOR_OVERRIDE_THRESHOLD")
         .whitelisted_var("CAN_STANDARD")
         .whitelisted_var("g_control_can")
         .whitelisted_type("oscc_report_throttle_data_s")
@@ -61,6 +64,6 @@ fn main() {
         .whitelisted_type("oscc_command_throttle_s")
         .whitelisted_type("can_frame_s")
         .generate().unwrap()
-        .write_to_file(Path::new(&out_dir).join("communications.rs"))
+        .write_to_file(Path::new(&out_dir).join("throttle_test.rs"))
         .expect("Unable to generate bindings");
 }

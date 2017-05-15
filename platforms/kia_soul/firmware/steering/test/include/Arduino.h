@@ -106,7 +106,7 @@ unsigned long millis(void);
 unsigned long micros(void);
 void delay(unsigned long);
 
-typedef int16_t (*rust_callback)(void);
+typedef uint16_t (*rust_callback)(void);
 
 void register_signal_callbacks(rust_callback low_signal_callback, rust_callback high_signal_callback);
 

@@ -1,9 +1,10 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-include!(concat!(env!("OUT_DIR"), "/communications.rs"));
+include!(concat!(env!("OUT_DIR"), "/throttle_test.rs"));
 
 extern crate quickcheck;
+extern crate rand;
 
 #[macro_use]
 extern crate lazy_static;
@@ -61,7 +62,7 @@ extern fn spoof_analog_read_high() -> u16 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use quickcheck::{QuickCheck, TestResult, Arbitrary, Gen};
+    use quickcheck::{QuickCheck, TestResult, Arbitrary, StdGen, Gen};
     use std::sync::Mutex;
 
     lazy_static! {
@@ -179,6 +180,37 @@ mod tests {
         }
     }
 
+    fn prop_check_operator_override(spoof_low: u16, spoof_high: u16) -> TestResult{
+        let lock_acquired = LOCK.lock().unwrap();
+        if *lock_acquired {
+            unsafe {
+                g_throttle_control_state.enabled = true;
+
+                spoof_high_signal = spoof_high;
+                spoof_low_signal = spoof_low;
+
+                // register analog read callbacks
+                register_signal_callbacks(Some(spoof_analog_read_low), Some(spoof_analog_read_high));
+
+                check_for_operator_override();
+
+                let accel_pos_normalized: u32 = ((spoof_low << 2) as u32 + (spoof_high << 2) as u32) / 2;
+
+                if accel_pos_normalized >= ACCELERATOR_OVERRIDE_THRESHOLD as u32 {
+                    TestResult::from_bool(
+                        g_throttle_control_state.operator_override == true &&
+                        g_throttle_control_state.enabled == false
+                    )
+                }
+                else {
+                    TestResult::from_bool(g_throttle_control_state.operator_override == false)
+                }
+            }
+        } else {
+            TestResult::discard()
+        }
+    }
+
     impl Arbitrary for oscc_report_throttle_data_s {
         fn arbitrary<G: Gen>(g: &mut G) -> oscc_report_throttle_data_s {
             oscc_report_throttle_data_s {
@@ -291,5 +323,15 @@ mod tests {
         QuickCheck::new()
             .tests(1000)
             .quickcheck(prop_send_valid_can_fields as fn(bool, bool, u16, u16, u16) -> TestResult)
+    }
+
+    // the throttle firmware should be able to correctly and consistently
+    // detect operator overrides
+    #[test]
+    fn check_operator_override() {
+        QuickCheck::new()
+            .tests(1000)
+            .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
+            .quickcheck(prop_check_operator_override as fn(u16, u16) -> TestResult)
     }
 }

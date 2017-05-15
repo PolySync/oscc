@@ -11,17 +11,10 @@ static unsigned long last_time = 0;
 rust_callback get_low_signal;
 rust_callback get_high_signal;
 
-/*
- * @brief High signal pin of the accelerator position sensor.
- *
- */
 #define PIN_ACCELERATOR_POSITION_SENSOR_HIGH ( A0 )
-
-/*
- * @brief Low signal pin of the accelerator position sensor.
- *
- */
 #define PIN_ACCELERATOR_POSITION_SENSOR_LOW ( A1 )
+#define PIN_TORQUE_SENSOR_HIGH ( A0 )
+#define PIN_TORQUE_SENSOR_LOW ( A1 )
 
 // just sending a new time 20 ms after our last time
 unsigned long millis() {
@@ -41,7 +34,8 @@ int digitalRead(uint8_t a) {
 //     printf("Digital Read: %d\n", a);
 }
 int analogRead(uint8_t a) {
-        if (a == PIN_ACCELERATOR_POSITION_SENSOR_LOW) {
+        if (a == PIN_ACCELERATOR_POSITION_SENSOR_LOW ||
+            a == PIN_TORQUE_SENSOR_LOW ) {
                 if(get_low_signal) {
                         return get_low_signal();
                 }
@@ -50,7 +44,8 @@ int analogRead(uint8_t a) {
                         return rand() % 1800;
                 }
         }
-        else if (a == PIN_ACCELERATOR_POSITION_SENSOR_HIGH) {
+        else if (a == PIN_ACCELERATOR_POSITION_SENSOR_HIGH || 
+                a == PIN_TORQUE_SENSOR_HIGH ) {
                 // return value bw 0, 3500 inclusive
                 if(get_high_signal) {
                         return get_high_signal();

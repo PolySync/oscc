@@ -4,6 +4,7 @@
 include!(concat!(env!("OUT_DIR"), "/communications.rs"));
 
 extern crate quickcheck;
+extern crate rand;
 
 #[macro_use]
 extern crate lazy_static;
@@ -47,23 +48,23 @@ extern fn retrieve_sent_can_msg( id: u32, ext: u8, dlc: u8, buf: *mut u8) {
     }
 }
 
-static mut spoof_low_signal: i16 = 0;
-static mut spoof_high_signal: i16 = 0;
+static mut spoof_low_signal: u16 = 0;
+static mut spoof_high_signal: u16 = 0;
 
 #[allow(dead_code)]
-extern fn spoof_analog_read_low() -> i16 {
+extern fn spoof_analog_read_low() -> u16 {
     unsafe { spoof_low_signal }
 }
 
 #[allow(dead_code)]
-extern fn spoof_analog_read_high() -> i16 {
+extern fn spoof_analog_read_high() -> u16 {
     unsafe { spoof_high_signal }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use quickcheck::{QuickCheck, TestResult, Arbitrary, Gen};
+    use quickcheck::{QuickCheck, TestResult, Arbitrary, Gen, StdGen};
     use std::sync::Mutex;
 
     lazy_static! {
@@ -147,7 +148,7 @@ mod tests {
         }
     }
 
-    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, current_steering_wheel_angle: i16, commanded_steering_wheel_angle: i16, spoof_low: i16, spoof_high: i16) -> TestResult 
+    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, current_steering_wheel_angle: i16, commanded_steering_wheel_angle: i16, spoof_low: u16, spoof_high: u16) -> TestResult 
     {
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
@@ -179,6 +180,47 @@ mod tests {
             }
         } else {
             return TestResult::discard();
+        }
+    }
+
+
+    fn prop_check_operator_override(spoof_low: u16, spoof_high: u16) -> TestResult{
+        let lock_acquired = LOCK.lock().unwrap();
+        if *lock_acquired {
+            static mut filtered_torque_a: f32 = 0.0;
+            static mut filtered_torque_b: f32 = 0.0;
+            const torque_filter_alpha: f32 = 0.5;
+            unsafe {
+                g_steering_control_state.enabled = true;
+
+                spoof_high_signal = spoof_high;
+                spoof_low_signal = spoof_low;
+
+                // register analog read callbacks
+                register_signal_callbacks(Some(spoof_analog_read_low), Some(spoof_analog_read_high));
+
+                check_for_operator_override();
+
+                filtered_torque_a = (torque_filter_alpha * (spoof_high << 2) as f32) + 
+                                    ((1.0 - torque_filter_alpha) * filtered_torque_a);
+
+                filtered_torque_b = (torque_filter_alpha * (spoof_low << 2) as f32) + 
+                                    (1.0 - torque_filter_alpha * filtered_torque_b);
+
+                if filtered_torque_a.abs() >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as f32
+                    || filtered_torque_b.abs() >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as f32
+                 {
+                    TestResult::from_bool(
+                        g_steering_control_state.operator_override == true && 
+                        g_steering_control_state.enabled == false
+                    )
+                }
+                else {
+                    TestResult::from_bool(g_steering_control_state.operator_override == false)
+                }
+            }
+        } else {
+            TestResult::discard()
         }
     }
 
@@ -294,6 +336,16 @@ mod tests {
     fn check_valid_can_frame() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, i16, i16, i16, i16) -> TestResult)
+            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, i16, i16, u16, u16) -> TestResult)
+    }
+
+    // the steering firmware should be able to correctly and consistently
+    // detect operator overrides
+    #[test]
+    fn check_operator_override() {
+        QuickCheck::new()
+            .tests(1000)
+            .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
+            .quickcheck(prop_check_operator_override as fn(u16, u16) -> TestResult)
     }
 }
