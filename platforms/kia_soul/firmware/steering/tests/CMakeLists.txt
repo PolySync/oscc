@@ -34,14 +34,8 @@ target_link_libraries(
     kia-soul-steering-test
     PRIVATE
     kia-soul-steering
-    /opt/cucumber-cpp/lib/libcucumber-cpp.a
-    /opt/cgreen/lib/libcgreen.so
-    ${Boost_THREAD_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_REGEX_LIBRARY}
-    ${Boost_DATE_TIME_LIBRARY}
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY})
+    ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/lib/libcucumber-cpp.a
+    ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/lib/libcgreen.so)
 
 target_include_directories(
     kia-soul-steering-test
@@ -51,8 +45,8 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/testing/mocks
-    /opt/cucumber-cpp/include
-    /opt/cgreen/include)
+    ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/include
+    ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include)
 
 add_custom_target(
     run-steering-tests

@@ -3,17 +3,6 @@ if(TESTS)
 
     project(tests)
 
-    find_package(
-        Boost
-        COMPONENTS
-        thread
-        system
-        regex
-        date_time
-        program_options
-        filesystem
-        REQUIRED)
-
     if(DEBUG)
         add_definitions(-DDEBUG)
     endif()

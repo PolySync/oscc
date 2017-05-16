@@ -10,10 +10,10 @@ information.
 
 Repository Contents
 -------------------
-* **/3d_models** - Technical drawings and 3D files for board enclosures and other useful parts
-* **/boards** - PCB schematics and board designs for control modules
-* **/platforms** - Arduino code and relevant files for the specific platforms
-* **/utils** - Utilities for controlling and interfacing with a platform
+* **3d_models** - Technical drawings and 3D files for board enclosures and other useful parts
+* **boards** - PCB schematics and board designs for control modules
+* **platforms** - Arduino code and relevant files for the specific platforms
+* **utils** - Utilities for controlling and interfacing with a platform
 
 Within a specific platform (e.g., `kia_soul`), there are:
 * **3d_models** - Technical drawings and 3D files related to that platform
@@ -23,10 +23,10 @@ Within a specific platform (e.g., `kia_soul`), there are:
 Boards
 -----
 The sensor interface and actuator control board schematics and design files are located in the
-`OSCC/boards/` directory. If you don't have the time or fabrication resources, the boards can be
+`boards` directory. If you don't have the time or fabrication resources, the boards can be
 purchased as a kit from the [OSCC website](http://oscc.io).
 
-Thanks to [Trey German](https://www.PolymorphicLabs.com) and [Macrofab](https://macrofab.com/) for
+Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://macrofab.com/) for
 help designing the boards and getting the boards made.
 
 
@@ -43,7 +43,7 @@ sent over a CAN bus from a computer running a control program.
 your machine.
 
 ```
-sudo apt-get install arduino-core cmake
+sudo apt install arduino-core cmake
 ```
 
 OSCC uses CMake to avoid some of the limitations of the Arduino IDE. Using this method you can build
@@ -53,28 +53,24 @@ Check out [Arduino CMake](https://github.com/queezythegreat/arduino-cmake) for m
 
 **Building the Firmware**
 
-Navigate to the platform directory for which you wish to compile firmware. For example, if compiling
-the firmware for a Kia Soul:
+Navigate to the `platforms` directory and create a build directory inside of it:
 
 ```
-cd $OSCC-PROJECT-DIR/firmware/kia_soul
-```
-
-Make a build directory and go into it.
-
-```
+cd platforms
 mkdir build
 cd build
 ```
 
-To generate Makefiles, tell CMake which firmware to build:
+To generate Makefiles, tell CMake which platform to build firmware for. If you want to build
+the firmware for the Kia Soul:
 
 ```
 cmake -DBUILD_KIA_SOUL=ON ..
 ```
 
 By default, your firmware will have debug symbols which is good for debugging but increases
-the size of the firmware significantly. To compile without debug symbols, use the following instead:
+the size of the firmware significantly. To compile without debug symbols and optimizatons
+enabled, use the following instead:
 
 ```
 cmake -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release ..
@@ -115,7 +111,8 @@ error thrown initially, wait a little bit and then retry the command.
 **Monitoring Arduino modules**
 
 It is sometimes useful to monitor individual Arduino modules to check for proper operation and to
-debug.
+debug. If the modules have been built with the flag `-DCMAKE_BUILD_TYPE=Debug`, their debug
+printing functionality will be enabled and they will print status information to the serial interface.
 
 The GNU utility `screen` is one option to communicate with the Arduino via serial over USB. It can
 be used to both receive the output of any `Serial.print` statements in your Arduino code, and to
@@ -123,7 +120,7 @@ push commands over serial to the Arduino. If you don't already have it installed
 with the following command:
 
 ```
-sudo apt-get install screen
+sudo apt install screen
 ```
 
 You can connect to the serial interface (assuming a port of `/dev/ttyACM0` and a baudrate of
@@ -138,6 +135,95 @@ You can exit screen with `C-a \`.
 To do more in-depth debugging you can use any of a number of serial monitoring applications.
 Processing can be used quite effectively to provide output plots of data incoming across a serial
 connection.
+
+Be aware that using serial printing can affect the timing of the firmware. You may experience
+strange behavior while printing that does not occur otherwise.
+
+
+Unit Tests
+------------
+
+Each module has a suite of unit tests that use **Cucumber** with **Cgreen**. There are prebuilt
+64-bit Linux versions in `platforms/common/testing/framework`. Boost is required for Cucumber-CPP
+and has been statically linked into `libcucumber-cpp.a`. If you need to build your own versions
+you can use the provided script `build_test_framework.sh` which will install the Boost dependencies
+(needed for building), clone the needed repositories with specific hashes, build the Cgreen and
+Cucumber-CPP libraries, and place static Boost in the Cucumber-CPP library. The built will be placed
+in an `oscc_test_framework` directory in the directory that you ran the script from. You can then copy
+`oscc_test_framework/cucumber-cpp` and `oscc_test_framework/cgreen` to
+`platforms/common/testing/framework`.
+
+
+**Running the Tests**
+
+You must have **Cucumber** installed to run the tests:
+
+```
+sudo apt install ruby-dev
+sudo gem install cucumber -v 2.0.0
+```
+
+Building and running the tests is similar to the firmware itself, but you must instead tell
+CMake to build the tests instead of the firmware with the `-DTESTS=ON` flag. We also pass
+the `-DCMAKE_BUILD_TYPE=Release` flag so that CMake will disable debug symbols and enable
+optimizations, good things to do when running tests to ensure nothing breaks with
+optimizations.
+
+We first need a build directory in the `platforms` directory:
+
+```
+cd platforms
+mkdir build
+cd build
+```
+
+Then we tell CMake that we're going to be building tests:
+
+```
+cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release
+```
+
+Finally we make the `run-tests` target which will build the tests for each module and
+run them:
+
+```
+make run-tests
+```
+
+Each module's test can also be run individually:
+
+```
+make run-brake-tests
+make run-can-gateway-tests
+make run-steering-tests
+make run-throttle-tests
+```
+
+If everything works correctly you should see something like this:
+
+```
+# language: en
+Feature: Receiving commands
+
+  Commands received from a controller should be processed and acted upon.
+
+  Scenario Outline: Enable throttle command sent from controller        # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:8
+    Given throttle control is disabled                                  # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:9
+    And the accelerator position sensors have a reading of <sensor_val> # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:10
+    When an enable throttle command is received                         # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:12
+    Then control should be enabled                                      # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:14
+    And the last command timestamp should be set                        # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:15
+    And <dac_a_val> should be written to DAC A                          # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:16
+    And <dac_b_val> should be written to DAC B                          # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:17
+
+    Examples:
+      | sensor_val | dac_a_val | dac_b_val |
+      | 0          | 0         | 0         |
+      | 256        | 1024      | 1024      |
+      | 512        | 2048      | 2048      |
+      | 1024       | 4096      | 4096      |
+```
+
 
 Controlling Your Vehicle
 ------------
@@ -157,7 +243,7 @@ is also required.
 Install the SDL2 library with the command below.
 
 ```
-sudo apt-get install libsdl2-dev
+sudo apt install libsdl2-dev
 ```
 
 Install the CANlib SDK via the following procedure.
@@ -169,7 +255,7 @@ Install the CANlib SDK via the following procedure.
 Navigate to the directory for the joystick commander code.
 
 ```
-cd $OSCC-PROJECT-DIR/control/joystick_commander
+cd utils/joystick_commander
 ```
 
 Once you are in the home directory of the joystick commander, build the code using CMake.
@@ -226,8 +312,8 @@ Additional Vehicles & Contributing
 OSCC currently has information regarding the Kia Soul PS (2014-2016), but we want to grow! The
 repository is structured to facilitate including more vehicles as more is learned about them.
 
-
 Please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 
 License Information
 -------------------
@@ -241,6 +327,7 @@ MIT License (MIT) unless otherwise noted (e.g. 3rd party dependencies, etc.).
 
 Please see [LICENSE.md](LICENSE.md) for more details.
 
+
 Contact Information
 -------------------
 
@@ -248,4 +335,4 @@ Please direct questions regarding OSCC and/or licensing to help@polysync.io.
 
 *Distributed as-is; no warranty is given.*
 
-Copyright (c) 2016 PolySync Technologies, Inc.  All Rights Reserved.
+Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved.
