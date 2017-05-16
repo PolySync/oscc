@@ -17,7 +17,7 @@ node('arduino') {
     }
     stage('Test') {
       parallel 'unit tests': {
-        //sh 'make test'
+        sh 'cd platforms && mkdir build && cd build && cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-tests'
         echo 'Unit Tests Complete!'
       }, 'acceptance tests': {
         echo 'Acceptance Tests Complete!'
