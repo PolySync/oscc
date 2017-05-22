@@ -1,87 +1,61 @@
+#![allow(non_upper_case_globals)]
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+#![allow(unused_variables)]
+include!(concat!(env!("OUT_DIR"), "/brake_test.rs"));
+
 extern crate quickcheck;
 extern crate rand;
 
+#[allow(unused_imports)]
 #[macro_use]
 extern crate lazy_static;
 
+extern "C" {
+    #[link_name = "g_mock_mcp_can_check_receive_return"]
+    pub static mut g_mock_mcp_can_check_receive_return: u8;
+    #[link_name = "g_mock_mcp_can_read_msg_buf_id"]
+    pub static mut g_mock_mcp_can_read_msg_buf_id: ::std::os::raw::c_ulong;
+    #[link_name = "g_mock_mcp_can_read_msg_buf_buf"]
+    pub static mut g_mock_mcp_can_read_msg_buf_buf: [u8; 8usize];
+    #[link_name = "g_mock_mcp_can_send_msg_buf_id"]
+    pub static mut g_mock_mcp_can_send_msg_buf_id: ::std::os::raw::c_ulong;
+    #[link_name = "g_mock_mcp_can_send_msg_buf_ext"]
+    pub static mut g_mock_mcp_can_send_msg_buf_ext: u8;
+    #[link_name = "g_mock_mcp_can_send_msg_buf_len"]
+    pub static mut g_mock_mcp_can_send_msg_buf_len: u8;
+    #[link_name = "g_mock_mcp_can_send_msg_buf_buf"]
+    pub static mut g_mock_mcp_can_send_msg_buf_buf: *mut u8;
+    #[link_name = "g_mock_arduino_millis_return"]
+    pub static mut g_mock_arduino_millis_return: ::std::os::raw::c_ulong;
+    #[link_name = "g_mock_arduino_analog_read_return"]
+    pub static mut g_mock_arduino_analog_read_return: u16;
+}
+
 #[cfg(test)]
 mod tests {
-    #![allow(non_upper_case_globals)]
-    #![allow(non_camel_case_types)]
-    #![allow(non_snake_case)]
-    #[allow(dead_code)]
-    include!(concat!(env!("OUT_DIR"), "/brake_test.rs"));
-
     use super::*;
     use quickcheck::{QuickCheck, TestResult, Arbitrary, Gen, StdGen};
     use std::sync::Mutex;
-
-    use std::mem;
-
-    #[derive(Debug)]
-    struct mock_can_frame {
-        id: u32,
-        ext: u8,
-        dlc: u8,
-        data: oscc_report_brake_data_s
-    }
-
-    // have a static can message that our callback function can populate and check values against
-    static mut can_msg: mock_can_frame = mock_can_frame {
-        id: 0,
-        ext: 0,
-        dlc: 0,
-        data: oscc_report_brake_data_s{
-            pedal_input: 0,
-            pedal_command: 0,
-            pedal_output: 0,
-            _bitfield_1: 0
-        }
-    };
-
-    
-    extern fn retrieve_sent_can_msg( id: u32, ext: u8, dlc: u8, buf: *mut u8) {
-        unsafe { 
-            can_msg.id = id; 
-            can_msg.ext = ext;
-            can_msg.dlc = dlc;
-            // endianness is important here
-            can_msg.data.pedal_input = mem::transmute([*buf, *buf.offset(1)]);
-            can_msg.data.pedal_command = mem::transmute([*buf.offset(2), *buf.offset(3)]);
-            can_msg.data.pedal_output = mem::transmute([*buf.offset(4), *buf.offset(5)]);
-            can_msg.data._bitfield_1 = mem::transmute([*buf.offset(6), *buf.offset(7)]);
-        }
-    }
-
-    static mut spoof_low_signal: u16 = 0;
-    static mut spoof_high_signal: u16 = 0;
-
-    extern fn spoof_analog_read_low() -> u16 {
-        unsafe { spoof_low_signal }
-    }
-
-    extern fn spoof_analog_read_high() -> u16 {
-        unsafe { spoof_high_signal }
-    }
 
     lazy_static! {
         static ref LOCK: Mutex<bool> = Mutex::new(true);
     }
 
-    fn prop_only_process_valid_messages( mut rx_can_msg: can_frame_s, current_target: u16 ) -> TestResult {
+    fn prop_only_process_valid_messages( rx_can_msg: can_frame_s, current_target: u16 ) -> TestResult {
         // if we generate a throttle can message, ignore the result
         if rx_can_msg.id == OSCC_COMMAND_BRAKE_CAN_ID {
             return TestResult::discard()
         }
-
-        let buf_addr = &mut rx_can_msg.data as *const _;
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
             unsafe {
                 g_brake_control_state.commanded_pedal_position = current_target;
 
-                // get MCP can to store our mocked message, so our comms module can retrieve it
-                MCP_CAN_register_can_frame(&mut g_control_can, rx_can_msg.id as u64, CAN_STANDARD as u8, rx_can_msg.dlc, buf_addr as *mut u8);
+                g_mock_mcp_can_read_msg_buf_id = rx_can_msg.id as u64;
+                g_mock_mcp_can_read_msg_buf_buf = rx_can_msg.data;
+                g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
                 check_for_incoming_message();
 
@@ -92,85 +66,87 @@ mod tests {
         }
     }
 
-    fn prop_no_invalid_targets( mut command_msg: oscc_command_brake_s ) -> TestResult { 
-        let buf_addr = &mut command_msg.data as *const _;
+    fn prop_no_invalid_targets( command_brake_msg: oscc_command_brake_s ) -> TestResult { 
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
             unsafe {
-                // get MCP can to store our mocked message, so our comms module can retrieve it
-                MCP_CAN_register_can_frame(&mut g_control_can, OSCC_COMMAND_BRAKE_CAN_ID as u64, CAN_STANDARD as u8, OSCC_REPORT_BRAKE_CAN_DLC as u8, buf_addr as *mut u8);
+                g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_BRAKE_CAN_ID as u64;
+                g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_brake_msg.data);
+                g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
                 check_for_incoming_message();
-                
-                TestResult::from_bool(g_brake_control_state.commanded_pedal_position == command_msg.data.pedal_command)
+
+                TestResult::from_bool(g_brake_control_state.commanded_pedal_position == command_brake_msg.data.pedal_command)
             }
         } else {
             return TestResult::discard();
         }
     }
 
-    fn prop_process_enable_command( mut command_msg: oscc_command_brake_s ) -> TestResult {
-        command_msg.data.set_enabled(1); // we're going to recieve an enable command
-        let buf_addr = &mut command_msg.data as *const _;
+    fn prop_process_enable_command( command_brake_msg: oscc_command_brake_s ) -> TestResult {
         let lock_acquired = LOCK.lock().unwrap();
-        if *lock_acquired {
+        if *lock_acquired && command_brake_msg.data.enabled() == 1 {
             unsafe {
-                // get MCP can to store our mocked message, so our comms module can retrieve it
-                MCP_CAN_register_can_frame(&mut g_control_can, OSCC_COMMAND_BRAKE_CAN_ID as u64, CAN_STANDARD as u8, OSCC_REPORT_BRAKE_CAN_DLC as u8, buf_addr as *mut u8);
+                g_brake_control_state.enabled = false;
+                
+                g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_BRAKE_CAN_ID as u64;
+                g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_brake_msg.data);
+                g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
                 check_for_incoming_message();
                 
-                TestResult::from_bool(g_brake_control_state.enabled)
+                TestResult::from_bool(g_brake_control_state.enabled == true)
             }
         } else {
             return TestResult::discard();
         }
     }
 
-    fn prop_process_disable_command( mut command_msg: oscc_command_brake_s ) -> TestResult {
-        command_msg.data.set_enabled(0);
-        let buf_addr = &mut command_msg.data as *const _;
+    fn prop_process_disable_command( command_brake_msg: oscc_command_brake_s ) -> TestResult {
         let lock_acquired = LOCK.lock().unwrap();
-        if *lock_acquired {
+        if *lock_acquired && command_brake_msg.data.enabled() == 0 {
             unsafe {
-                // get MCP can to store our mocked message, so our comms module can retrieve it
-                MCP_CAN_register_can_frame(&mut g_control_can, OSCC_COMMAND_BRAKE_CAN_ID as u64, CAN_STANDARD as u8, OSCC_REPORT_BRAKE_CAN_DLC as u8, buf_addr as *mut u8);
+                g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_BRAKE_CAN_ID as u64;
+                g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_brake_msg.data);
+                g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
                 check_for_incoming_message();
                 
-                TestResult::from_bool(!g_brake_control_state.enabled)
+                TestResult::from_bool(g_brake_control_state.enabled == false)
             }
         } else {
             return TestResult::discard();
         }
     }
 
-    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, commanded_pedal_position: u16, spoof_low: u16, spoof_high: u16) -> TestResult 
-    {
+    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, commanded_pedal_position: u16 ) -> TestResult {
+        static mut time: u64 = 0;
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
             unsafe {
-                // set global state
-                g_brake_control_state.enabled = control_enabled;
                 g_brake_control_state.operator_override = operator_override;
                 g_brake_control_state.commanded_pedal_position = commanded_pedal_position;
 
-                spoof_high_signal = spoof_high;
-                spoof_low_signal = spoof_low;
+                time = time + OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC as u64;
 
-                // register analog read callbacks
-                register_signal_callbacks(Some(spoof_analog_read_low), Some(spoof_analog_read_high));
+                g_mock_arduino_millis_return = time;
 
-                MCP_CAN_register_callback(&mut g_control_can, Some(retrieve_sent_can_msg));
                 publish_reports();
 
+                let brake_data = oscc_report_brake_data_s {
+                    pedal_input: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf, *g_mock_mcp_can_send_msg_buf_buf.offset(1)]),
+                    pedal_command: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(2), *g_mock_mcp_can_send_msg_buf_buf.offset(3)]),
+                    pedal_output: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(4), *g_mock_mcp_can_send_msg_buf_buf.offset(5)]),
+                    _bitfield_1: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(6), *g_mock_mcp_can_send_msg_buf_buf.offset(7)])
+                };
+
                 TestResult::from_bool(
-                    (can_msg.id == OSCC_REPORT_BRAKE_CAN_ID) &&
-                    (can_msg.ext == (CAN_STANDARD as u8)) &&
-                    (can_msg.dlc == (OSCC_REPORT_BRAKE_CAN_DLC as u8)) &&
-                    (can_msg.data.pedal_command == commanded_pedal_position) &&
-                    (can_msg.data.enabled() == (control_enabled as u8)) &&
-                    (can_msg.data.override_() == (operator_override as u8))
+                    (g_mock_mcp_can_send_msg_buf_id == OSCC_REPORT_BRAKE_CAN_ID as u64) &&
+                    (g_mock_mcp_can_send_msg_buf_ext == (CAN_STANDARD as u8)) &&
+                    (g_mock_mcp_can_send_msg_buf_len == (OSCC_REPORT_BRAKE_CAN_DLC as u8)) &&
+                    (brake_data.pedal_command == commanded_pedal_position) && 
+                    (brake_data.enabled() == g_brake_control_state.enabled as u8) &&
+                    (brake_data.override_() == operator_override as u8)
                 )
             }
         } else {
@@ -178,28 +154,25 @@ mod tests {
         }
     }
 
-    fn prop_check_operator_override(spoof_low: u16, spoof_high: u16) -> TestResult{
+    fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
         let lock_acquired = LOCK.lock().unwrap();
-        if *lock_acquired {
-            static mut filtered_torque_a: f32 = 0.0;
-            static mut filtered_torque_b: f32 = 0.0;
-            const torque_filter_alpha: f32 = 0.5;
-            unsafe {
-                g_brake_control_state.enabled = true;
+        unsafe {
+            if *lock_acquired && g_brake_control_state.enabled == true {
+                static mut filtered_torque_a: f32 = 0.0;
+                static mut filtered_torque_b: f32 = 0.0;
+                const torque_filter_alpha: f32 = 0.5;
 
-                spoof_high_signal = spoof_high;
-                spoof_low_signal = spoof_low;
+                // g_brake_control_state.enabled = 1;
 
-                // register analog read callbacks
-                register_signal_callbacks(Some(spoof_analog_read_low), Some(spoof_analog_read_high));
+                g_mock_arduino_analog_read_return = analog_read_spoof;
 
-                check_for_operator_override();
-
-                filtered_torque_a = (torque_filter_alpha * raw_adc_to_pressure((spoof_high << 2) as u16)) + 
+                filtered_torque_a = (torque_filter_alpha * raw_adc_to_pressure((analog_read_spoof << 2) as u16)) + 
                                     ((1.0 - torque_filter_alpha) * filtered_torque_a);
 
-                filtered_torque_b = (torque_filter_alpha * raw_adc_to_pressure((spoof_low << 2) as u16)) + 
+                filtered_torque_b = (torque_filter_alpha * raw_adc_to_pressure((analog_read_spoof << 2) as u16)) + 
                                     (1.0 - torque_filter_alpha * filtered_torque_b);
+
+                check_for_operator_override();
 
                 if filtered_torque_a.abs() >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS as f32
                     || filtered_torque_b.abs() >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS as f32
@@ -212,9 +185,9 @@ mod tests {
                 else {
                     TestResult::from_bool(g_brake_control_state.operator_override == false)
                 }
+            } else {
+                TestResult::discard()
             }
-        } else {
-            TestResult::discard()
         }
     }
 
@@ -289,6 +262,7 @@ mod tests {
     fn check_message_type_validity() {
         QuickCheck::new()
             .tests(1000)
+            .gen(StdGen::new(rand::thread_rng(), u32::max_value() as usize))
             .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, u16) -> TestResult)
     }
 
@@ -299,6 +273,7 @@ mod tests {
     fn check_accel_pos_validity() {
         QuickCheck::new()
             .tests(1000)
+            // .gen(StdGen::new(rand::thread_rng(), u32::max_value() as usize))
             .quickcheck(prop_no_invalid_targets as fn(oscc_command_brake_s) -> TestResult)
     }
 
@@ -309,6 +284,7 @@ mod tests {
     fn check_process_enable_command() {
         QuickCheck::new()
             .tests(1000)
+            // .gen(StdGen::new(rand::thread_rng(), u32::max_value() as usize))
             .quickcheck(prop_process_enable_command as fn(oscc_command_brake_s) -> TestResult)
     }
 
@@ -319,6 +295,7 @@ mod tests {
     fn check_process_disable_command() {
         QuickCheck::new()
             .tests(1000)
+            .gen(StdGen::new(rand::thread_rng(), u32::max_value() as usize))
             .quickcheck(prop_process_disable_command as fn(oscc_command_brake_s) -> TestResult)
     }
 
@@ -328,16 +305,18 @@ mod tests {
     fn check_valid_can_frame() {
         QuickCheck::new()
             .tests(1000)
-            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, u16, u16, u16) -> TestResult)
+            .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
+            .quickcheck(prop_send_valid_can_fields as fn(bool, bool, u16) -> TestResult)
     }
 
     // the brake firmware should be able to correctly and consistently
     // detect operator overrides
     #[test]
+    // #[ignore]
     fn check_operator_override() {
         QuickCheck::new()
             .tests(1000)
             .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
-            .quickcheck(prop_check_operator_override as fn(u16, u16) -> TestResult)
+            .quickcheck(prop_check_operator_override as fn(u16) -> TestResult)
     }
 }
