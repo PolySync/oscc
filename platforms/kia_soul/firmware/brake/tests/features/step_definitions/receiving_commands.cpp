@@ -102,6 +102,13 @@ THEN("^the (.*) solenoid should be activated with duty cycle (.*)$")
     REGEX_PARAM(std::string, solenoid);
     REGEX_PARAM(int, duty_cycle);
 
+    static unsigned long timestamp = 20000;
+
+    // micros() mock must return 20000 more than last time to always get a
+    // timestamp delta of 20000 microseconds so brake update is deterministic
+    g_mock_arduino_micros_return = timestamp;
+    timestamp += 20000;
+
     // save number of analog writes that have occurred so far to be restored later
     mock_arduino_analog_write_count = g_mock_arduino_analog_write_count;
 

@@ -177,12 +177,13 @@ void brake_update( void )
 
         uint32_t current_time = GET_TIMESTAMP_US();
 
-        float loop_delta_t = 0.02;
+        float loop_delta_t =
+            (float) get_time_delta( control_loop_time, current_time );
 
-        // control_loop_time = current_time;
+        control_loop_time = current_time;
 
-        // loop_delta_t /= 1000.0;
-        // loop_delta_t /= 1000.0;
+        loop_delta_t /= 1000.0;
+        loop_delta_t /= 1000.0;
 
         brake_update_pressure( );
 
