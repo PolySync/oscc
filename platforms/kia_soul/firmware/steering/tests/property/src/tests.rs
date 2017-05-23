@@ -48,7 +48,7 @@ mod tests {
                 commanded_steering_wheel_angle: i16::arbitrary(g),
                 vehicle_speed: u16::arbitrary(g),
                 spoofed_torque_output: i8::arbitrary(g),
-                _bitfield_1: u8::arbitrary(g)
+                _bitfield_1: u8::arbitrary(g),
             }
         }
     }
@@ -59,7 +59,7 @@ mod tests {
                 id: u32::arbitrary(g),
                 dlc: u8::arbitrary(g),
                 timestamp: u32::arbitrary(g),
-                data: oscc_report_steering_data_s::arbitrary(g)
+                data: oscc_report_steering_data_s::arbitrary(g),
             }
         }
     }
@@ -73,7 +73,7 @@ mod tests {
                 reserved_1: u8::arbitrary(g),
                 reserved_2: u8::arbitrary(g),
                 reserved_3: u8::arbitrary(g),
-                count: u8::arbitrary(g)
+                count: u8::arbitrary(g),
             }
         }
     }
@@ -82,7 +82,7 @@ mod tests {
         fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_steering_s {
             oscc_command_steering_s {
                 timestamp: u32::arbitrary(g),
-                data: oscc_command_steering_data_s::arbitrary(g)
+                data: oscc_command_steering_data_s::arbitrary(g),
             }
         }
     }
@@ -94,25 +94,26 @@ mod tests {
                 id: u32::arbitrary(g),
                 dlc: u8::arbitrary(g),
                 timestamp: u32::arbitrary(g),
-                data: [
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g)
-                ]
+                data: [u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g)],
             }
         }
     }
 
-    /// the steering firmware should not attempt processing any messages that are not steering commands
-    fn prop_only_process_valid_messages( rx_can_msg: can_frame_s, current_target: i16 ) -> TestResult {
+    /// the steering firmware should not attempt processing any messages
+    /// that are not steering commands
+    fn prop_only_process_valid_messages(rx_can_msg: can_frame_s,
+                                        current_target: i16)
+                                        -> TestResult {
         // if we generate a steering can message, ignore the result
         if rx_can_msg.id == OSCC_COMMAND_STEERING_CAN_ID {
-            return TestResult::discard()
+            return TestResult::discard();
         }
 
         let lock_acquired = LOCK.lock().unwrap();
@@ -123,10 +124,11 @@ mod tests {
                 g_mock_mcp_can_read_msg_buf_id = rx_can_msg.id as u64;
                 g_mock_mcp_can_read_msg_buf_buf = rx_can_msg.data;
                 g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
-               
+
                 check_for_incoming_message();
 
-                TestResult::from_bool(g_steering_control_state.commanded_steering_wheel_angle == current_target)
+                TestResult::from_bool(g_steering_control_state.commanded_steering_wheel_angle ==
+                                      current_target)
             }
         } else {
             return TestResult::discard();
@@ -142,7 +144,7 @@ mod tests {
 
     /// the steering firmware should set the commanded accelerator position
     /// upon reciept of a valid command steering message
-    fn prop_no_invalid_targets( command_steering_msg: oscc_command_steering_s ) -> TestResult { 
+    fn prop_no_invalid_targets(command_steering_msg: oscc_command_steering_s) -> TestResult {
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
             unsafe {
@@ -151,15 +153,17 @@ mod tests {
                 g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
                 check_for_incoming_message();
-                
-                TestResult::from_bool(g_steering_control_state.commanded_steering_wheel_angle == (command_steering_msg.data.commanded_steering_wheel_angle / 9) as i16)
+
+                TestResult::from_bool(g_steering_control_state.commanded_steering_wheel_angle ==
+                                      (command_steering_msg.data.commanded_steering_wheel_angle /
+                                       9) as i16)
             }
         } else {
             return TestResult::discard();
         }
     }
 
-    #[test]    
+    #[test]
     fn check_accel_pos_validity() {
         QuickCheck::new()
             .tests(1000)
@@ -168,17 +172,17 @@ mod tests {
 
     /// the steering firmware should set the control state as enabled
     /// upon reciept of a valid command steering message telling it to enable
-    fn prop_process_enable_command( command_steering_msg: oscc_command_steering_s ) -> TestResult {
+    fn prop_process_enable_command(command_steering_msg: oscc_command_steering_s) -> TestResult {
         // command_steering_msg.data.set_enabled(1); // we're going to recieve an enable command
         let lock_acquired = LOCK.lock().unwrap();
-        if *lock_acquired && command_steering_msg.data.enabled() == 1{
+        if *lock_acquired && command_steering_msg.data.enabled() == 1 {
             unsafe {
                 g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_STEERING_CAN_ID as u64;
                 g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_steering_msg.data);
                 g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
-                
+
                 check_for_incoming_message();
-                
+
                 TestResult::from_bool(g_steering_control_state.enabled == true)
             }
         } else {
@@ -195,7 +199,7 @@ mod tests {
 
     /// the steering firmware should set the control state as disabled
     /// upon reciept of a valid command steering message telling it to disable
-    fn prop_process_disable_command( command_steering_msg: oscc_command_steering_s ) -> TestResult {
+    fn prop_process_disable_command(command_steering_msg: oscc_command_steering_s) -> TestResult {
         // command_steering_msg.data.set_enabled(0);
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired && command_steering_msg.data.enabled() == 0 {
@@ -205,7 +209,7 @@ mod tests {
                 g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
                 check_for_incoming_message();
-                
+
                 TestResult::from_bool(g_steering_control_state.enabled == false)
             }
         } else {
@@ -221,14 +225,19 @@ mod tests {
     }
 
     /// the steering firmware should create only valid CAN frames
-    fn prop_send_valid_can_fields(operator_override: bool, current_steering_wheel_angle: i16, commanded_steering_wheel_angle: i16) -> TestResult {
+    fn prop_send_valid_can_fields(operator_override: bool,
+                                  current_steering_wheel_angle: i16,
+                                  commanded_steering_wheel_angle: i16)
+                                  -> TestResult {
         static mut time: u64 = 0;
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
             unsafe {
                 g_steering_control_state.operator_override = operator_override;
-                g_steering_control_state.commanded_steering_wheel_angle = commanded_steering_wheel_angle;
-                g_steering_control_state.current_steering_wheel_angle = current_steering_wheel_angle;
+                g_steering_control_state.commanded_steering_wheel_angle =
+                    commanded_steering_wheel_angle;
+                g_steering_control_state.current_steering_wheel_angle =
+                    current_steering_wheel_angle;
 
                 time = time + OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC as u64;
 
@@ -237,22 +246,33 @@ mod tests {
                 publish_reports();
 
                 let steering_data = oscc_report_steering_data_s {
-                    current_steering_wheel_angle: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf, *g_mock_mcp_can_send_msg_buf_buf.offset(1)]),
-                    commanded_steering_wheel_angle: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(2), *g_mock_mcp_can_send_msg_buf_buf.offset(3)]),
-                    vehicle_speed: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(4), *g_mock_mcp_can_send_msg_buf_buf.offset(5)]),
-                    spoofed_torque_output: std::mem::transmute(*g_mock_mcp_can_send_msg_buf_buf.offset(6)),
-                    _bitfield_1: std::mem::transmute(*g_mock_mcp_can_send_msg_buf_buf.offset(7))
+                    current_steering_wheel_angle:
+                        std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf,
+                                             *g_mock_mcp_can_send_msg_buf_buf.offset(1)]),
+                    commanded_steering_wheel_angle:
+                        std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(2),
+                                             *g_mock_mcp_can_send_msg_buf_buf.offset(3)]),
+                    vehicle_speed: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf
+                                                             .offset(4),
+                                                        *g_mock_mcp_can_send_msg_buf_buf
+                                                             .offset(5)]),
+                    spoofed_torque_output: std::mem::transmute(*g_mock_mcp_can_send_msg_buf_buf
+                                                                    .offset(6)),
+                    _bitfield_1: std::mem::transmute(*g_mock_mcp_can_send_msg_buf_buf.offset(7)),
                 };
 
-                TestResult::from_bool(
-                    (g_mock_mcp_can_send_msg_buf_id == OSCC_REPORT_STEERING_CAN_ID as u64) &&
-                    (g_mock_mcp_can_send_msg_buf_ext == (CAN_STANDARD as u8)) &&
-                    (g_mock_mcp_can_send_msg_buf_len == (OSCC_REPORT_STEERING_CAN_DLC as u8)) &&
-                    (steering_data.current_steering_wheel_angle == current_steering_wheel_angle) &&
-                    (steering_data.commanded_steering_wheel_angle == commanded_steering_wheel_angle) &&
-                    (steering_data.enabled() == (g_steering_control_state.enabled as u8)) &&
-                    (steering_data.override_() == (operator_override as u8))
-                )
+                TestResult::from_bool((g_mock_mcp_can_send_msg_buf_id ==
+                                       OSCC_REPORT_STEERING_CAN_ID as u64) &&
+                                      (g_mock_mcp_can_send_msg_buf_ext == (CAN_STANDARD as u8)) &&
+                                      (g_mock_mcp_can_send_msg_buf_len ==
+                                       (OSCC_REPORT_STEERING_CAN_DLC as u8)) &&
+                                      (steering_data.current_steering_wheel_angle ==
+                                       current_steering_wheel_angle) &&
+                                      (steering_data.commanded_steering_wheel_angle ==
+                                       commanded_steering_wheel_angle) &&
+                                      (steering_data.enabled() ==
+                                       (g_steering_control_state.enabled as u8)) &&
+                                      (steering_data.override_() == (operator_override as u8)))
             }
         } else {
             return TestResult::discard();
@@ -268,7 +288,7 @@ mod tests {
 
     // the steering firmware should be able to correctly and consistently
     // detect operator overrides
-    fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult{
+    fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
         let lock_acquired = LOCK.lock().unwrap();
         unsafe {
             if *lock_acquired && g_steering_control_state.enabled == true {
@@ -279,21 +299,17 @@ mod tests {
 
                 check_for_operator_override();
 
-                filtered_torque_a = (torque_filter_alpha * (analog_read_spoof << 2) as f32) + 
+                filtered_torque_a = (torque_filter_alpha * (analog_read_spoof << 2) as f32) +
                                     ((1.0 - torque_filter_alpha) * filtered_torque_a);
 
-                filtered_torque_b = (torque_filter_alpha * (analog_read_spoof << 2) as f32) + 
+                filtered_torque_b = (torque_filter_alpha * (analog_read_spoof << 2) as f32) +
                                     (1.0 - torque_filter_alpha * filtered_torque_b);
 
-                if filtered_torque_a.abs() >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as f32
-                    || filtered_torque_b.abs() >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as f32
-                {
-                    TestResult::from_bool(
-                        g_steering_control_state.operator_override == true && 
-                        g_steering_control_state.enabled == false
-                    )
-                }
-                else {
+                if filtered_torque_a.abs() >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as f32 ||
+                   filtered_torque_b.abs() >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as f32 {
+                    TestResult::from_bool(g_steering_control_state.operator_override == true &&
+                                          g_steering_control_state.enabled == false)
+                } else {
                     TestResult::from_bool(g_steering_control_state.operator_override == false)
                 }
             } else {

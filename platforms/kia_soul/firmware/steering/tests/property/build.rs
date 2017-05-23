@@ -37,7 +37,7 @@ fn main() {
         .cpp(true)
         .compiler("/usr/bin/g++")
         .compile("libcomm_test.a");
-    
+
     let out_dir = env::var("OUT_DIR").unwrap();
 
     let _ = bindgen::builder()
@@ -70,7 +70,8 @@ fn main() {
         .whitelisted_type("oscc_command_steering_data_s")
         .whitelisted_type("oscc_command_steering_s")
         .whitelisted_type("can_frame_s")
-        .generate().unwrap()
+        .generate()
+        .unwrap()
         .write_to_file(Path::new(&out_dir).join("steering_test.rs"))
         .expect("Unable to generate bindings");
 }

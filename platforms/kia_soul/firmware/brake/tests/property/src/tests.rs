@@ -49,7 +49,7 @@ mod tests {
                 pedal_input: i16::arbitrary(g),
                 pedal_command: u16::arbitrary(g),
                 pedal_output: u16::arbitrary(g),
-                _bitfield_1: u16::arbitrary(g)
+                _bitfield_1: u16::arbitrary(g),
             }
         }
     }
@@ -60,7 +60,7 @@ mod tests {
                 id: u32::arbitrary(g),
                 dlc: u8::arbitrary(g),
                 timestamp: u32::arbitrary(g),
-                data: oscc_report_brake_data_s::arbitrary(g)
+                data: oscc_report_brake_data_s::arbitrary(g),
             }
         }
     }
@@ -73,7 +73,7 @@ mod tests {
                 reserved_2: u8::arbitrary(g),
                 reserved_3: u8::arbitrary(g),
                 reserved_4: u8::arbitrary(g),
-                count: u8::arbitrary(g)
+                count: u8::arbitrary(g),
             }
         }
     }
@@ -82,7 +82,7 @@ mod tests {
         fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_brake_s {
             oscc_command_brake_s {
                 timestamp: u32::arbitrary(g),
-                data: oscc_command_brake_data_s::arbitrary(g)
+                data: oscc_command_brake_data_s::arbitrary(g),
             }
         }
     }
@@ -94,25 +94,26 @@ mod tests {
                 id: u32::arbitrary(g),
                 dlc: u8::arbitrary(g),
                 timestamp: u32::arbitrary(g),
-                data: [
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g),
-                    u8::arbitrary(g)
-                ]
+                data: [u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g),
+                       u8::arbitrary(g)],
             }
         }
     }
 
-    /// the throttle firmware should not attempt processing any messages that are not throttle commands
-    fn prop_only_process_valid_messages( rx_can_msg: can_frame_s, current_target: u16 ) -> TestResult {
+    /// the throttle firmware should not attempt processing any messages
+    /// that are not throttle commands
+    fn prop_only_process_valid_messages(rx_can_msg: can_frame_s,
+                                        current_target: u16)
+                                        -> TestResult {
         // if we generate a throttle can message, ignore the result
         if rx_can_msg.id == OSCC_COMMAND_BRAKE_CAN_ID {
-            return TestResult::discard()
+            return TestResult::discard();
         }
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
@@ -125,7 +126,8 @@ mod tests {
 
                 check_for_incoming_message();
 
-                TestResult::from_bool(g_brake_control_state.commanded_pedal_position == current_target)
+                TestResult::from_bool(g_brake_control_state.commanded_pedal_position ==
+                                      current_target)
             }
         } else {
             return TestResult::discard();
@@ -142,7 +144,7 @@ mod tests {
 
     /// the throttle firmware should set the commanded pedal position
     /// upon reciept of a valid command throttle message
-    fn prop_no_invalid_targets( command_brake_msg: oscc_command_brake_s ) -> TestResult { 
+    fn prop_no_invalid_targets(command_brake_msg: oscc_command_brake_s) -> TestResult {
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
             unsafe {
@@ -152,7 +154,8 @@ mod tests {
 
                 check_for_incoming_message();
 
-                TestResult::from_bool(g_brake_control_state.commanded_pedal_position == command_brake_msg.data.pedal_command)
+                TestResult::from_bool(g_brake_control_state.commanded_pedal_position ==
+                                      command_brake_msg.data.pedal_command)
             }
         } else {
             return TestResult::discard();
@@ -168,18 +171,18 @@ mod tests {
 
     /// the throttle firmware should set the control state as enabled
     /// upon reciept of a valid command throttle message telling it to enable
-    fn prop_process_enable_command( command_brake_msg: oscc_command_brake_s ) -> TestResult {
+    fn prop_process_enable_command(command_brake_msg: oscc_command_brake_s) -> TestResult {
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired && command_brake_msg.data.enabled() == 1 {
             unsafe {
                 g_brake_control_state.enabled = false;
-                
+
                 g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_BRAKE_CAN_ID as u64;
                 g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_brake_msg.data);
                 g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
                 check_for_incoming_message();
-                
+
                 TestResult::from_bool(g_brake_control_state.enabled == true)
             }
         } else {
@@ -196,7 +199,7 @@ mod tests {
 
     /// the throttle firmware should set the control state as disabled
     /// upon reciept of a valid command throttle message telling it to disable
-    fn prop_process_disable_command( command_brake_msg: oscc_command_brake_s ) -> TestResult {
+    fn prop_process_disable_command(command_brake_msg: oscc_command_brake_s) -> TestResult {
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired && command_brake_msg.data.enabled() == 0 {
             unsafe {
@@ -205,7 +208,7 @@ mod tests {
                 g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
                 check_for_incoming_message();
-                
+
                 TestResult::from_bool(g_brake_control_state.enabled == false)
             }
         } else {
@@ -222,7 +225,10 @@ mod tests {
     }
 
     /// the throttle firmware should create only valid CAN frames
-    fn prop_send_valid_can_fields(control_enabled: bool, operator_override: bool, commanded_pedal_position: u16 ) -> TestResult {
+    fn prop_send_valid_can_fields(control_enabled: bool,
+                                  operator_override: bool,
+                                  commanded_pedal_position: u16)
+                                  -> TestResult {
         static mut time: u64 = 0;
         let lock_acquired = LOCK.lock().unwrap();
         if *lock_acquired {
@@ -237,20 +243,27 @@ mod tests {
                 publish_reports();
 
                 let brake_data = oscc_report_brake_data_s {
-                    pedal_input: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf, *g_mock_mcp_can_send_msg_buf_buf.offset(1)]),
-                    pedal_command: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(2), *g_mock_mcp_can_send_msg_buf_buf.offset(3)]),
-                    pedal_output: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(4), *g_mock_mcp_can_send_msg_buf_buf.offset(5)]),
-                    _bitfield_1: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(6), *g_mock_mcp_can_send_msg_buf_buf.offset(7)])
+                    pedal_input: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf,
+                                                      *g_mock_mcp_can_send_msg_buf_buf.offset(1)]),
+                    pedal_command: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf
+                                                             .offset(2),
+                                                        *g_mock_mcp_can_send_msg_buf_buf
+                                                             .offset(3)]),
+                    pedal_output: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(4),
+                                                       *g_mock_mcp_can_send_msg_buf_buf.offset(5)]),
+                    _bitfield_1: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(6),
+                                                      *g_mock_mcp_can_send_msg_buf_buf.offset(7)]),
                 };
 
-                TestResult::from_bool(
-                    (g_mock_mcp_can_send_msg_buf_id == OSCC_REPORT_BRAKE_CAN_ID as u64) &&
-                    (g_mock_mcp_can_send_msg_buf_ext == (CAN_STANDARD as u8)) &&
-                    (g_mock_mcp_can_send_msg_buf_len == (OSCC_REPORT_BRAKE_CAN_DLC as u8)) &&
-                    (brake_data.pedal_command == commanded_pedal_position) && 
-                    (brake_data.enabled() == g_brake_control_state.enabled as u8) &&
-                    (brake_data.override_() == operator_override as u8)
-                )
+                TestResult::from_bool((g_mock_mcp_can_send_msg_buf_id ==
+                                       OSCC_REPORT_BRAKE_CAN_ID as u64) &&
+                                      (g_mock_mcp_can_send_msg_buf_ext == (CAN_STANDARD as u8)) &&
+                                      (g_mock_mcp_can_send_msg_buf_len ==
+                                       (OSCC_REPORT_BRAKE_CAN_DLC as u8)) &&
+                                      (brake_data.pedal_command == commanded_pedal_position) &&
+                                      (brake_data.enabled() ==
+                                       g_brake_control_state.enabled as u8) &&
+                                      (brake_data.override_() == operator_override as u8))
             }
         } else {
             return TestResult::discard();
@@ -279,23 +292,21 @@ mod tests {
 
                 g_mock_arduino_analog_read_return = analog_read_spoof;
 
-                filtered_torque_a = (torque_filter_alpha * raw_adc_to_pressure((analog_read_spoof << 2) as u16)) + 
+                filtered_torque_a = (torque_filter_alpha *
+                                     raw_adc_to_pressure((analog_read_spoof << 2) as u16)) +
                                     ((1.0 - torque_filter_alpha) * filtered_torque_a);
 
-                filtered_torque_b = (torque_filter_alpha * raw_adc_to_pressure((analog_read_spoof << 2) as u16)) + 
+                filtered_torque_b = (torque_filter_alpha *
+                                     raw_adc_to_pressure((analog_read_spoof << 2) as u16)) +
                                     (1.0 - torque_filter_alpha * filtered_torque_b);
 
                 check_for_operator_override();
 
-                if filtered_torque_a.abs() >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS as f32
-                    || filtered_torque_b.abs() >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS as f32
-                 {
-                    TestResult::from_bool(
-                        g_brake_control_state.operator_override == true && 
-                        g_brake_control_state.enabled == false
-                    )
-                }
-                else {
+                if filtered_torque_a.abs() >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS as f32 ||
+                   filtered_torque_b.abs() >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS as f32 {
+                    TestResult::from_bool(g_brake_control_state.operator_override == true &&
+                                          g_brake_control_state.enabled == false)
+                } else {
                     TestResult::from_bool(g_brake_control_state.operator_override == false)
                 }
             } else {
