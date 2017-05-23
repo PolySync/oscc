@@ -125,10 +125,10 @@ void check_for_operator_override( void )
 
             DEBUG_PRINTLN( "Operator override" );
         }
-        else
-        {
-            g_brake_control_state.operator_override = false;
-        }
+    }
+    else
+    {
+        g_brake_control_state.operator_override = false;
     }
 }
 
