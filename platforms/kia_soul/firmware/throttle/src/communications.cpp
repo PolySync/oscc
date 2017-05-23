@@ -111,7 +111,7 @@ static void process_throttle_command(
         }
 
         g_throttle_control_state.commanded_accelerator_position =
-            throttle_command_data->commanded_accelerator_position;
+            throttle_command_data->commanded_accelerator_position / 24;
 
         DEBUG_PRINT( "controller commanded accelerator position: " );
         DEBUG_PRINTLN( g_throttle_control_state.commanded_accelerator_position );
