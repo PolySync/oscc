@@ -7,8 +7,10 @@
 #include <avr/wdt.h>
 #include "arduino_init.h"
 #include "debug.h"
+#include "oscc_time.h"
 
 #include "init.h"
+#include "globals.h"
 #include "communications.h"
 #include "steering_control.h"
 
@@ -35,10 +37,19 @@ int main( void )
 
         check_for_controller_command_timeout( );
 
-        check_for_operator_override( );
+        uint32_t time_since_last_control_loop_in_msec = get_time_delta(
+            g_last_control_loop_timestamp,
+            GET_TIMESTAMP_MS());
+
+        if( time_since_last_control_loop_in_msec > CONTROL_LOOP_INTERVAL_IN_MSEC )
+        {
+            check_for_operator_override( );
+
+            update_steering( );
+
+            g_last_control_loop_timestamp = GET_TIMESTAMP_MS();
+        }
 
         publish_reports( );
-
-        update_steering( );
     }
 }

@@ -65,6 +65,13 @@
  */
 #define PID_WINDUP_GUARD ( 1500 )
 
+/*
+ *
+ * @brief Time between steering control updates (operator override checks and
+ *        steering output updates).
+ */
+ #define CONTROL_LOOP_INTERVAL_IN_MSEC ( 50 )
+
 
 #ifdef GLOBAL_DEFINED
     DAC_MCP49xx g_dac( DAC_MCP49xx::MCP4922, PIN_DAC_CHIP_SELECT );
@@ -81,6 +88,7 @@
 
 EXTERN uint32_t g_steering_command_last_rx_timestamp;
 EXTERN uint32_t g_steering_report_last_tx_timestamp;
+EXTERN uint32_t g_last_control_loop_timestamp;
 
 EXTERN kia_soul_steering_control_state_s g_steering_control_state;
 

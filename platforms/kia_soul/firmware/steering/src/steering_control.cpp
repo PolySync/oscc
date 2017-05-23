@@ -15,6 +15,9 @@
 #include "steering_control.h"
 
 
+#define MSEC_TO_SEC(msec) ( (msec) / 1000.0 )
+
+
 static void calculate_torque_spoof(
     const int16_t torque_target,
     steering_torque_s * const spoof );
@@ -105,7 +108,8 @@ void update_steering( void )
 {
     if (g_steering_control_state.enabled == true )
     {
-        float time_between_loops_in_sec = 0.05;
+        float time_between_loops_in_sec =
+            MSEC_TO_SEC( CONTROL_LOOP_INTERVAL_IN_MSEC );
 
         // Calculate steering angle rates (millidegrees/microsecond)
         float steering_wheel_angle_rate =
