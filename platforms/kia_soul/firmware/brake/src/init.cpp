@@ -30,8 +30,8 @@ void init_globals( void )
     pid_zeroize( &g_pid, PID_WINDUP_GUARD );
 
     g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
-    g_pid.integral_gain     = PID_INTEGRAL_GAIN;
-    g_pid.derivative_gain   = PID_DERIVATIVE_GAIN;
+    g_pid.integral_gain = PID_INTEGRAL_GAIN;
+    g_pid.derivative_gain = PID_DERIVATIVE_GAIN;
 }
 
 
@@ -44,6 +44,12 @@ void init_devices( void )
     accumulator_init( );
     master_cylinder_init( );
     brake_init( );
+
+    accumulator_turn_pump_off( );
+    master_cylinder_open( );
+
+    brake_command_release_solenoids( SOLENOID_PWM_OFF );
+    brake_command_accumulator_solenoids( SOLENOID_PWM_OFF );
 }
 
 
