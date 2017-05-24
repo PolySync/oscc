@@ -43,7 +43,8 @@ void brake_command_release_solenoids( const uint16_t duty_cycle )
 
 void brake_enable( void )
 {
-    if ( g_brake_control_state.enabled == false )
+    if ( g_brake_control_state.enabled == false
+         && g_brake_control_state.operator_override == false )
     {
         master_cylinder_close( );
         brake_command_release_solenoids( SOLENOID_PWM_OFF );
@@ -79,7 +80,8 @@ void brake_disable( void )
 
 void check_for_operator_override( void )
 {
-    if( g_brake_control_state.enabled == true )
+    if( g_brake_control_state.enabled == true
+        || g_brake_control_state.operator_override == true )
     {
         // This function checks the voltage input from the brake pedal
         // sensors to determine if the driver is attempting to brake
@@ -116,8 +118,8 @@ void check_for_operator_override( void )
         filtered_input_2 = ( filter_alpha * sensor_2 ) +
             ( ( 1.0 - filter_alpha ) * filtered_input_2 );
 
-        if ( ( filtered_input_1 > DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
-            ( filtered_input_2 > DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+        if ( ( filtered_input_1 >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
+            ( filtered_input_2 >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
         {
             brake_disable( );
 
@@ -125,10 +127,10 @@ void check_for_operator_override( void )
 
             DEBUG_PRINTLN( "Operator override" );
         }
-    }
-    else
-    {
-        g_brake_control_state.operator_override = false;
+        else
+        {
+            g_brake_control_state.operator_override = false;
+        }
     }
 }
 

@@ -21,7 +21,8 @@ static void calculate_accelerator_spoof(
 
 void check_for_operator_override( void )
 {
-    if ( g_throttle_control_state.enabled == true )
+    if ( g_throttle_control_state.enabled == true
+        || g_throttle_control_state.operator_override == true )
     {
         accelerator_position_s accelerator_position;
 
@@ -38,10 +39,10 @@ void check_for_operator_override( void )
 
             DEBUG_PRINTLN( "Operator override" );
         }
-    }
-    else
-    {
-        g_throttle_control_state.operator_override = false;
+        else
+        {
+            g_throttle_control_state.operator_override = false;
+        }
     }
 }
 
@@ -67,7 +68,8 @@ void update_throttle( void )
 
 void enable_control( void )
 {
-    if( g_throttle_control_state.enabled == false )
+    if( g_throttle_control_state.enabled == false
+        && g_throttle_control_state.operator_override == false )
     {
         // Sample the current values, smooth them, and write measured accelerator position values to DAC to avoid a
         // signal discontinuity when the SCM takes over

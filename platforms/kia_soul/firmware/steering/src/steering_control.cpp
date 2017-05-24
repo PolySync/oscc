@@ -28,7 +28,8 @@ static void read_torque_sensor(
 
 void check_for_operator_override( void )
 {
-    if( g_steering_control_state.enabled == true )
+    if( g_steering_control_state.enabled == true
+        || g_steering_control_state.operator_override == true )
     {
         // The parameters below; torque_filter_alpha and steering_wheel_max_torque,
         // can be used to modify how selective the steering override functionality
@@ -96,10 +97,10 @@ void check_for_operator_override( void )
 
             DEBUG_PRINTLN( "Operator override" );
         }
-    }
-    else
-    {
-        g_steering_control_state.operator_override = false;
+        else
+        {
+            g_steering_control_state.operator_override = false;
+        }
     }
 }
 
@@ -157,7 +158,8 @@ void update_steering( void )
 
 void enable_control( void )
 {
-    if( g_steering_control_state.enabled == false )
+    if( g_steering_control_state.enabled == false
+        && g_steering_control_state.operator_override == false )
     {
         // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
         // signal discontinuity when the SCM takes over
