@@ -19,7 +19,7 @@
  * @brief Maximum accumulator pressure. [decibars]
  *
  */
-#define ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS ( 878.3 )
+#define ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS ( 878.0 )
 
 
 // ****************************************************************************
