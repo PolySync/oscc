@@ -71,10 +71,10 @@ static void publish_brake_report( void )
     brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
     brake_report.data.enabled = (uint8_t) g_brake_control_state.enabled;
     brake_report.data.override = (uint8_t) g_brake_control_state.operator_override;
-    brake_report.data.pedal_input = g_brake_control_state.current_vehicle_brake_pressure;
-    brake_report.data.pedal_command = g_brake_control_state.commanded_pedal_position;
-    brake_report.data.pedal_output = g_brake_control_state.current_sensor_brake_pressure;
-    brake_report.data.fault_obd_timeout = g_brake_control_state.obd_timeout;
+    brake_report.data.pedal_input = (int16_t) g_brake_control_state.current_vehicle_brake_pressure;
+    brake_report.data.pedal_command = (uint16_t) g_brake_control_state.commanded_pedal_position;
+    brake_report.data.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
+    brake_report.data.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
 
     g_control_can.sendMsgBuf(
         brake_report.id,

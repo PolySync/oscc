@@ -153,10 +153,10 @@ typedef struct
     float current_sensor_brake_pressure; /* Current brake pressure as read
                                                from the brake pressure sensor. */
 
-    int16_t current_vehicle_brake_pressure; /* Current brake pressure as reported
+    float current_vehicle_brake_pressure; /* Current brake pressure as reported
                                                by the vehicle. */
 
-    uint16_t commanded_pedal_position; /* Brake pedal position commanded by
+    float commanded_pedal_position; /* Brake pedal position commanded by
                                           controller. */
 } kia_soul_brake_control_state_s;
 

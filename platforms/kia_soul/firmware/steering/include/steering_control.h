@@ -131,13 +131,13 @@ typedef struct
 
     bool obd_timeout; /* Flag indicating whether an OBD timeout has occurred. */
 
-    int16_t current_steering_wheel_angle; /* Current steering angle as reported
-                                             by the vehicle. */
+    float current_steering_wheel_angle; /* Current steering angle as reported
+                                           by the vehicle. */
 
-    int16_t previous_steering_wheel_angle; /* Last steering angle recorded. */
+    float previous_steering_wheel_angle; /* Last steering angle recorded. */
 
-    int16_t commanded_steering_wheel_angle; /* Angle of steering wheel commanded
-                                               by controller. */
+    float commanded_steering_wheel_angle; /* Angle of steering wheel commanded
+                                             by controller. */
 
     float commanded_steering_wheel_angle_rate; /* Rate of the steering wheel
                                                   angle commanded by controller. */
