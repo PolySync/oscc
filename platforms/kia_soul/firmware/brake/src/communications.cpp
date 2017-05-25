@@ -27,6 +27,10 @@ static void process_brake_command(
 static void process_chassis_state_1(
     const uint8_t * const data );
 
+static void check_for_controller_command_timeout( void );
+
+static void check_for_chassis_state_1_report_timeout( void );
+
 
 void publish_reports( void )
 {
@@ -35,25 +39,6 @@ void publish_reports( void )
     if ( delta >= OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC )
     {
         publish_brake_report( );
-    }
-}
-
-
-void check_for_controller_command_timeout( void )
-{
-    if( g_brake_control_state.enabled == true )
-    {
-        bool timeout = is_timeout(
-            g_brake_command_last_rx_timestamp,
-            GET_TIMESTAMP_MS( ),
-            COMMAND_TIMEOUT_IN_MSEC );
-
-        if ( timeout == true )
-        {
-            brake_disable( );
-
-            DEBUG_PRINTLN( "Timeout" );
-        }
     }
 }
 
@@ -70,6 +55,14 @@ void check_for_incoming_message( void )
 }
 
 
+void check_for_timeouts( void )
+{
+    check_for_controller_command_timeout( );
+
+    check_for_chassis_state_1_report_timeout( );
+}
+
+
 static void publish_brake_report( void )
 {
     oscc_report_brake_s brake_report;
@@ -81,6 +74,7 @@ static void publish_brake_report( void )
     brake_report.data.pedal_input = g_brake_control_state.current_vehicle_brake_pressure;
     brake_report.data.pedal_command = g_brake_control_state.commanded_pedal_position;
     brake_report.data.pedal_output = g_brake_control_state.current_sensor_brake_pressure;
+    brake_report.data.fault_obd_timeout = g_brake_control_state.obd_timeout;
 
     g_control_can.sendMsgBuf(
         brake_report.id,
@@ -127,8 +121,14 @@ static void process_chassis_state_1(
         const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
                 (oscc_report_chassis_state_1_data_s *) data;
 
-        g_brake_control_state.current_vehicle_brake_pressure =
-            chassis_state_1_data->brake_pressure;
+        if( chassis_state_1_data->flags
+            & OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID )
+        {
+            g_brake_control_state.current_vehicle_brake_pressure =
+                chassis_state_1_data->brake_pressure;
+
+            g_chassis_state_1_report_last_rx_timestamp = GET_TIMESTAMP_MS( );
+        }
     }
 }
 
@@ -146,5 +146,46 @@ static void process_rx_frame(
         {
             process_chassis_state_1( frame->data );
         }
+    }
+}
+
+
+static void check_for_controller_command_timeout( void )
+{
+    if( g_brake_control_state.enabled == true )
+    {
+        bool timeout = is_timeout(
+            g_brake_command_last_rx_timestamp,
+            GET_TIMESTAMP_MS( ),
+            COMMAND_TIMEOUT_IN_MSEC );
+
+        if ( timeout == true )
+        {
+            brake_disable( );
+
+            DEBUG_PRINTLN( "Timeout - controller command" );
+        }
+    }
+}
+
+
+static void check_for_chassis_state_1_report_timeout( void )
+{
+    bool timeout = is_timeout(
+            g_chassis_state_1_report_last_rx_timestamp,
+            GET_TIMESTAMP_MS( ),
+            CHASSIS_STATE_1_REPORT_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        brake_disable( );
+
+        g_brake_control_state.obd_timeout = true;
+
+        DEBUG_PRINTLN( "Timeout - Chassis State 1 report" );
+    }
+    else
+    {
+        g_brake_control_state.obd_timeout = false;
     }
 }

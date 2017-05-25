@@ -141,13 +141,11 @@ typedef struct
                             * Value zero means no fault.
                             * Value one means fault active. */
 
-    uint8_t fault_1 : 1; /*!< Channel 1 fault state.
-                          * Value zero means no fault.
-                          * Value one means fault active. */
+    uint8_t fault_obd_timeout : 1; /*!< OBD timeout indicator.
+                                   * Value zero means no timeout occurred.
+                                   * Value one means timeout occurred. */
 
-    uint8_t fault_2 : 1; /*!< Channel 2 fault state.
-                          * Value zero means no fault.
-                          * Value one means fault active. */
+    uint8_t reserved : 1; /*!< Reserved */
 
     uint8_t fault_brake : 1; /*!< Brake on-off connector fault state.
                               * Value zero means no fault.

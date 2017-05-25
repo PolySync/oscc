@@ -35,7 +35,7 @@ int main( void )
 
         check_for_incoming_message( );
 
-        check_for_controller_command_timeout( );
+        check_for_timeouts( );
 
         uint32_t time_since_last_control_loop_in_msec = get_time_delta(
             g_last_control_loop_timestamp,

@@ -26,6 +26,7 @@ void init_globals( void )
     // Initialize the timestamps to avoid timeout warnings on start up
     g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
+    g_chassis_state_1_report_last_rx_timestamp = GET_TIMESTAMP_MS( );
 
     pid_zeroize( &g_pid, PID_WINDUP_GUARD );
 

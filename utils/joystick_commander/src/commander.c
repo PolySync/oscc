@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "macros.h"
 #include "joystick.h"
@@ -730,12 +731,33 @@ int commander_high_frequency_update( )
 
     int oscc_override = 0;
 
-    return_code = oscc_interface_update_status( &oscc_override );
+    oscc_status_s status;
 
-    if ( oscc_override == 1 )
+    memset( &status,
+            0,
+            sizeof(status) );
+
+    return_code = oscc_interface_update_status( &status );
+
+    if ( status.operator_override == true )
     {
         printf( "Driver Override Detected\n" );
         return_code = commander_disable_controls( );
     }
+
+    if ( status.obd_timeout_brake == true )
+    {
+        printf( "Brake - OBD Timeout Detected\n" );
+        return_code = oscc_interface_disable_brakes( );
+
+    }
+
+    if ( status.obd_timeout_brake == true )
+    {
+        printf( "Steering - OBD Timeout Detected\n" );
+
+        return_code = oscc_interface_disable_steering( );
+    }
+
     return return_code;
 }

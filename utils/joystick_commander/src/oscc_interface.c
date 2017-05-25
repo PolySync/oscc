@@ -17,6 +17,7 @@
 #include "brake_can_protocol.h"
 #include "throttle_can_protocol.h"
 #include "steering_can_protocol.h"
+#include "oscc_interface.h"
 
 
 // *****************************************************
@@ -149,6 +150,77 @@ static int oscc_init_can( int channel )
         printf( "canOpenChannel %d failed\n", channel );
     }
     return return_code;
+}
+
+// *****************************************************
+// Function:    oscc_interface_check_for_operator_override
+//
+// Purpose:     Checks report messages for override flag.
+//
+// Returns:     bool - override occurred flag
+//
+// Parameters:  can_id - ID of CAN frame containing the report
+//              buffer - Buffer of CAN frame containing the report
+//
+// *****************************************************
+static bool oscc_interface_check_for_operator_override(
+    oscc_status_s * status,
+    long can_id,
+    unsigned char * buffer )
+{
+    if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
+    {
+        oscc_report_brake_data_s* brake_report_data =
+            ( oscc_report_brake_data_s* )buffer;
+
+        status->operator_override = (bool) brake_report_data->override;
+    }
+    else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
+    {
+        oscc_report_throttle_data_s* throttle_report_data =
+            ( oscc_report_throttle_data_s* )buffer;
+
+        status->operator_override = (bool) throttle_report_data->override;
+    }
+    else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
+    {
+        oscc_report_steering_data_s* steering_report_data =
+            ( oscc_report_steering_data_s* )buffer;
+
+        status->operator_override = (bool) steering_report_data->override;
+    }
+}
+
+// *****************************************************
+// Function:    oscc_interface_check_for_obd_timeouts
+//
+// Purpose:     Checks report messages for OBD timeout flag.
+//
+// Returns:     bool - timeout occurred flag
+//
+// Parameters:  can_id - ID of CAN frame containing the report
+//              buffer - Buffer of CAN frame containing the report
+//
+// *****************************************************
+static void oscc_interface_check_for_obd_timeout(
+    oscc_status_s * status,
+    long can_id,
+    unsigned char * buffer )
+{
+    if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
+    {
+        oscc_report_brake_data_s* brake_report_data =
+            ( oscc_report_brake_data_s* )buffer;
+
+        status->obd_timeout_brake = (bool) brake_report_data->fault_obd_timeout;
+    }
+    else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
+    {
+        oscc_report_steering_data_s* steering_report_data =
+            ( oscc_report_steering_data_s* )buffer;
+
+        status->obd_timeout_steering = (bool) steering_report_data->fault_obd_timeout;
+    }
 }
 
 // *****************************************************
@@ -471,8 +543,8 @@ int oscc_interface_disable( )
 // *****************************************************
 // Function:    oscc_interface_update_status
 //
-// Purpose:     Read CAN messages from the OSCC modules and check for any
-//              driver overrides
+// Purpose:     Read CAN messages from the OSCC modules and check for  status
+//              changes.
 //
 // Returns:     int - ERROR or NOERR
 //
@@ -480,7 +552,7 @@ int oscc_interface_disable( )
 //              the OSCC modules indicate any override status
 //
 // *****************************************************
-int oscc_interface_update_status( int* override )
+int oscc_interface_update_status( oscc_status_s * status )
 {
     int return_code = ERROR;
 
@@ -492,47 +564,22 @@ int oscc_interface_update_status( int* override )
         unsigned long tstamp;
         unsigned char buffer[ 8 ];
 
-        canStatus status = canRead( oscc->can_handle,
-                                    &can_id,
-                                    buffer,
-                                    &msg_dlc,
-                                    &msg_flag,
-                                    &tstamp );
+        canStatus can_status = canRead( oscc->can_handle,
+                                        &can_id,
+                                        buffer,
+                                        &msg_dlc,
+                                        &msg_flag,
+                                        &tstamp );
 
-        if ( status == canOK )
+        if ( can_status == canOK )
         {
             return_code = NOERR;
 
-            int local_override = 0;
+            oscc_interface_check_for_operator_override( status, can_id, buffer );
 
-            if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
-            {
-                oscc_report_brake_data_s* brake_report_data =
-                    ( oscc_report_brake_data_s* )buffer;
-
-                local_override = (int) brake_report_data->override;
-            }
-            else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
-            {
-                oscc_report_throttle_data_s* throttle_report_data =
-                    ( oscc_report_throttle_data_s* )buffer;
-
-                local_override = (int) throttle_report_data->override;
-            }
-            else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
-            {
-                oscc_report_steering_data_s* steering_report_data =
-                    ( oscc_report_steering_data_s* )buffer;
-
-                local_override = (int) steering_report_data->override;
-            }
-
-            if ( ( *override ) == 0 )
-            {
-                *override = local_override;
-            }
+            oscc_interface_check_for_obd_timeout( status, can_id, buffer );
         }
-        else if( ( status == canERR_NOMSG ) || ( status == canERR_TIMEOUT ) )
+        else if( ( can_status == canERR_NOMSG ) || ( can_status == canERR_TIMEOUT ) )
         {
             // Do nothing
             return_code = NOERR;
@@ -544,4 +591,3 @@ int oscc_interface_update_status( int* override )
     }
     return return_code;
 }
-

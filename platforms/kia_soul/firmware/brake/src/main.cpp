@@ -36,7 +36,7 @@ int main( void )
 
         accumulator_maintain_pressure( );
 
-        check_for_controller_command_timeout( );
+        check_for_timeouts( );
 
         check_for_operator_override( );
 

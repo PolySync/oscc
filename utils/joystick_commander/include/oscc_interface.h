@@ -12,6 +12,16 @@
 #ifndef OSCC_INTERFACE_H
 #define OSCC_INTERFACE_H
 
+#include <stdbool.h>
+
+
+typedef struct
+{
+    bool operator_override;
+    bool obd_timeout_brake;
+    bool obd_timeout_steering;
+} oscc_status_s;
+
 
 /**
  * @brief Initialize the OSCC interface - This call must occur
@@ -176,7 +186,7 @@ int oscc_interface_command_steering( int angle, unsigned int rate );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_update_status( int* override );
+int oscc_interface_update_status( oscc_status_s * status );
 
 #endif /* OSCC_INTERFACE_H */
 

@@ -196,7 +196,7 @@ void disable_control( void )
         // Disable the signal interrupt relays
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
-        g_steering_control_state.enabled =false;
+        g_steering_control_state.enabled = false;
 
         pid_zeroize( &g_pid, PID_WINDUP_GUARD );
 

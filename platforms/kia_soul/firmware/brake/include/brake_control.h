@@ -70,13 +70,13 @@
  * @brief Minimum output value of PID to be within a valid pressure range.
  *
  */
-#define PID_OUTPUT_MIN ( -10 )
+#define PID_OUTPUT_MIN ( -10.0 )
 
 /*
  * @brief Maximum output value of PID to be within a valid pressure range.
  *
  */
-#define PID_OUTPUT_MAX ( 10 )
+#define PID_OUTPUT_MAX ( 10.0 )
 
 /*
  * @brief Minimum clamped PID value of the actuation solenoid.
@@ -147,6 +147,8 @@ typedef struct
 
     bool operator_override; /* Flag indicating whether brake pedal was
                                manually pressed by operator. */
+
+    bool obd_timeout; /* Flag indicating whether an OBD timeout has occurred. */
 
     float current_sensor_brake_pressure; /* Current brake pressure as read
                                                from the brake pressure sensor. */

@@ -27,6 +27,10 @@ static void process_chassis_state_1_report(
 static void process_rx_frame(
     can_frame_s * const frame );
 
+static void check_for_controller_command_timeout( void );
+
+static void check_for_chassis_state_1_report_timeout( void );
+
 
 void publish_reports( void )
 {
@@ -35,25 +39,6 @@ void publish_reports( void )
     if ( delta >= OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC )
     {
         publish_steering_report( );
-    }
-}
-
-
-void check_for_controller_command_timeout( void )
-{
-    if( g_steering_control_state.enabled == true )
-    {
-        bool timeout = is_timeout(
-                g_steering_command_last_rx_timestamp,
-                GET_TIMESTAMP_MS( ),
-                COMMAND_TIMEOUT_IN_MSEC);
-
-        if( timeout == true )
-        {
-            disable_control( );
-
-            DEBUG_PRINTLN( "Timeout waiting for controller command" );
-        }
     }
 }
 
@@ -70,6 +55,14 @@ void check_for_incoming_message( void )
 }
 
 
+void check_for_timeouts( void )
+{
+    check_for_controller_command_timeout( );
+
+    check_for_chassis_state_1_report_timeout( );
+}
+
+
 static void publish_steering_report( void )
 {
     oscc_report_steering_s steering_report;
@@ -80,6 +73,7 @@ static void publish_steering_report( void )
     steering_report.data.override = (uint8_t) g_steering_control_state.operator_override;
     steering_report.data.current_steering_wheel_angle = g_steering_control_state.current_steering_wheel_angle;
     steering_report.data.commanded_steering_wheel_angle = g_steering_control_state.commanded_steering_wheel_angle;
+    steering_report.data.fault_obd_timeout = g_steering_control_state.obd_timeout;
     steering_report.data.spoofed_torque_output = g_spoofed_torque_output_sum;
 
     g_control_can.sendMsgBuf(
@@ -131,10 +125,16 @@ static void process_chassis_state_1_report(
         const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
                 (oscc_report_chassis_state_1_data_s *) data;
 
-        g_steering_control_state.current_steering_wheel_angle =
-            chassis_state_1_data->steering_wheel_angle
-            * RAW_ANGLE_SCALAR
-            * WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR;
+        if( chassis_state_1_data->flags
+            & OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_VALID )
+        {
+            g_steering_control_state.current_steering_wheel_angle =
+                chassis_state_1_data->steering_wheel_angle
+                * RAW_ANGLE_SCALAR
+                * WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR;
+
+            g_chassis_state_1_report_last_rx_timestamp = GET_TIMESTAMP_MS( );
+        }
     }
 }
 
@@ -152,5 +152,46 @@ static void process_rx_frame(
         {
             process_chassis_state_1_report( frame->data );
         }
+    }
+}
+
+
+static void check_for_controller_command_timeout( void )
+{
+    if( g_steering_control_state.enabled == true )
+    {
+        bool timeout = is_timeout(
+                g_steering_command_last_rx_timestamp,
+                GET_TIMESTAMP_MS( ),
+                COMMAND_TIMEOUT_IN_MSEC);
+
+        if( timeout == true )
+        {
+            disable_control( );
+
+            DEBUG_PRINTLN( "Timeout - controller command" );
+        }
+    }
+}
+
+
+static void check_for_chassis_state_1_report_timeout( void )
+{
+    bool timeout = is_timeout(
+            g_chassis_state_1_report_last_rx_timestamp,
+            GET_TIMESTAMP_MS( ),
+            CHASSIS_STATE_1_REPORT_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        disable_control( );
+
+        g_steering_control_state.obd_timeout = true;
+
+        DEBUG_PRINTLN( "Timeout - Chassis State 1 report" );
+    }
+    else
+    {
+        g_steering_control_state.obd_timeout = false;
     }
 }

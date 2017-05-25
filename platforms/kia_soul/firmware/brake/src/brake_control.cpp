@@ -302,7 +302,7 @@ void brake_update( void )
             // pressure within valid range
             else
             {
-                if ( pressure_target < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
+                if ( g_brake_control_state.commanded_pedal_position < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
                 {
                     brake_lights_off( );
                 }

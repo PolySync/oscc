@@ -31,6 +31,14 @@
 #define COMMAND_TIMEOUT_IN_MSEC ( 250 )
 
 
+/*
+ * @brief Amount of time after a Chassis State 1 report that is considered a
+ *        timeout. [milliseconds]
+ *
+ */
+#define CHASSIS_STATE_1_REPORT_TIMEOUT_IN_MSEC ( 500 )
+
+
 // ****************************************************************************
 // Function:    publish_reports
 //
@@ -45,17 +53,16 @@ void publish_reports( void );
 
 
 // ****************************************************************************
-// Function:    check_for_controller_command_timeout
+// Function:    check_for_timeouts
 //
-// Purpose:     Check if the last command received from the controller exceeds
-//              the timeout and disable control if it does.
+// Purpose:     Check for command and report timeouts.
 //
 // Returns:     void
 //
 // Parameters:  void
 //
 // ****************************************************************************
-void check_for_controller_command_timeout( void );
+void check_for_timeouts( void );
 
 
 // ****************************************************************************

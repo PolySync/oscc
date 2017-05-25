@@ -129,6 +129,8 @@ typedef struct
     bool operator_override; /* Flag indicating whether steering wheel was
                                manually turned by operator. */
 
+    bool obd_timeout; /* Flag indicating whether an OBD timeout has occurred. */
+
     int16_t current_steering_wheel_angle; /* Current steering angle as reported
                                              by the vehicle. */
 
