@@ -18,7 +18,7 @@
  *        timeout. [milliseconds]
  *
  */
-#define COMMAND_TIMEOUT_IN_MSEC ( 250 )
+#define COMMAND_TIMEOUT_IN_MSEC ( 650 )
 
 
 /*

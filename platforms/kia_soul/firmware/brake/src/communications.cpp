@@ -105,9 +105,6 @@ static void process_brake_command(
 
         g_brake_control_state.commanded_pedal_position = brake_command_data->pedal_command;
 
-        DEBUG_PRINT( "controller commanded brake pressure: " );
-        DEBUG_PRINTLN( g_brake_control_state.commanded_pedal_position );
-
         g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
