@@ -15,6 +15,14 @@ Feature: Timeouts and overrides
     Then control should be disabled
 
 
+  Scenario: Chassis State 1 report timeout
+    Given brake control is enabled
+
+    When the time since the last received Chassis State 1 report exceeds the timeout
+
+    Then control should be disabled
+
+
   Scenario Outline: Operator override
     Given brake control is enabled
 

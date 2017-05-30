@@ -91,9 +91,9 @@ THEN("^the brake pedal command should be parsed$")
     oscc_command_brake_data_s * brake_command_data =
         (oscc_command_brake_data_s *) g_mock_mcp_can_read_msg_buf_buf;
 
-    assert_that(
+    assert_that_double(
         g_brake_control_state.commanded_pedal_position,
-        is_equal_to(brake_command_data->pedal_command));
+        is_equal_to_double(brake_command_data->pedal_command));
 }
 
 
