@@ -35,17 +35,14 @@ All vehicle specific directories should be recreated for each additional vehicle
 Below is a sample of how additional vehicle directories should be created.
 
 ```
- .
-├── firmware
-│   ├── ...
-│   ├── brake
-│   │   ├──kia_soul_ps
-│   │   ├──<my_new_car>       # Brake firmware for vehicle you're adding
-│   ├── ...
-├── vehicle_info
-│   ├──kia_soul_ps
-│   ├──<my_new_car>           # Vehicle specific information for vehicle you're adding
-└── ...
+.
+├── platforms
+│   └── <my_new_car>       # Name of vehicle you're adding
+│       └── firmware
+│           ├── brake
+│           ├── can_gateway
+│           ├── steering
+│           └── throttle
 ```
 
 ## Getting Started
@@ -170,7 +167,7 @@ To build the various components in the system, please see the README.md
 
 # Release Process
 
-Any changes to the OSCC modules must undergo a series of tests that conclude with a "stress test" on the vehicle itself.  What is included here is the process by which code modifications are incorporated into the main source branch (devel) and what the system tests constitute.  One of the key problems that this process is intended to solve is that any source code change must be tested on the vehicle before it can be merged with the "devel" branch.  
+Any changes to the OSCC modules must undergo a series of tests that conclude with a "stress test" on the vehicle itself.  What is included here is the process by which code modifications are incorporated into the main source branch (devel) and what the system tests constitute.  One of the key problems that this process is intended to solve is that any source code change must be tested on the vehicle before it can be merged with the "devel" branch.
 
 **Merging code before it is tested is dangerous to users and must be avoided at all costs.**
 
@@ -538,7 +535,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 5. Structure, union, and enumeration tags must be unique
 
 6. Variable, macro and function naming should use “snake case”
-   1. Variables and functions should use descriptive names which are all lowercase and separated by an underscore 
+   1. Variables and functions should use descriptive names which are all lowercase and separated by an underscore
        - variable: `int32_t range_max;`
        - function: `int16_t send_can_frame( can_frame* transmit_frame );`
    1. Macros should use descriptive names which are all uppercase and separated by an underscore
@@ -579,7 +576,6 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
       float    float_array[2];
       double   double_array[1];
   };
-
   ```
 
 ### 6. Declarations
