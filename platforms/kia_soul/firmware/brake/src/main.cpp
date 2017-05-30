@@ -42,6 +42,6 @@ int main( void )
 
         publish_reports( );
 
-        brake_update( );
+        update_brake( );
     }
 }

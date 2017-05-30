@@ -49,8 +49,8 @@ void init_devices( void )
     accumulator_turn_pump_off( );
     master_cylinder_open( );
 
-    brake_command_release_solenoids( SOLENOID_PWM_OFF );
-    brake_command_accumulator_solenoids( SOLENOID_PWM_OFF );
+    set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
+    set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 }
 
 

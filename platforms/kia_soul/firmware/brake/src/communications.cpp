@@ -96,11 +96,11 @@ static void process_brake_command(
 
         if( brake_command_data->enabled == true )
         {
-            brake_enable( );
+            enable_control( );
         }
         else
         {
-            brake_disable( );
+            disable_control( );
         }
 
         g_brake_control_state.commanded_pedal_position = brake_command_data->pedal_command;
@@ -158,7 +158,7 @@ static void check_for_controller_command_timeout( void )
 
         if ( timeout == true )
         {
-            brake_disable( );
+            disable_control( );
 
             DEBUG_PRINTLN( "Timeout - controller command" );
         }
@@ -175,7 +175,7 @@ static void check_for_chassis_state_1_report_timeout( void )
 
     if( timeout == true )
     {
-        brake_disable( );
+        disable_control( );
 
         g_brake_control_state.obd_timeout = true;
 

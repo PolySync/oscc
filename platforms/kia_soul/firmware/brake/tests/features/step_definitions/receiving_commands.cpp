@@ -1,5 +1,5 @@
 // variable needed to track number of times analog pins have been written
-// to for the brake_update() tests which span multiple scenarios
+// to for the update_brake() tests which span multiple scenarios
 int mock_arduino_analog_write_count;
 
 // variables needed to preserve the state of the PID controller between scenarios
@@ -82,7 +82,7 @@ WHEN("^the brake pedal command (.*) is received$")
 
     g_mock_arduino_micros_return += 20000;
 
-    brake_update();
+    update_brake();
 }
 
 

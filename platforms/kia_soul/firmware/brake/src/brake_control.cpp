@@ -15,39 +15,34 @@
 #include "helper.h"
 
 
-void brake_lights_off( void )
-{
-    digitalWrite( PIN_BRAKE_LIGHT, LOW );
-}
+static void disable_brake_lights( void );
+
+static void enable_brake_lights( void );
 
 
-void brake_lights_on( void )
-{
-    digitalWrite( PIN_BRAKE_LIGHT, HIGH );
-}
-
-
-void brake_command_accumulator_solenoids( const uint16_t duty_cycle )
+void set_accumulator_solenoid_duty_cycle( const uint16_t duty_cycle )
 {
     analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, duty_cycle );
     analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, duty_cycle );
 }
 
 
-void brake_command_release_solenoids( const uint16_t duty_cycle )
+void set_release_solenoid_duty_cycle( const uint16_t duty_cycle )
 {
     analogWrite( PIN_RELEASE_SOLENOID_FRONT_LEFT, duty_cycle );
     analogWrite( PIN_RELEASE_SOLENOID_FRONT_RIGHT, duty_cycle );
 }
 
 
-void brake_enable( void )
+void enable_control( void )
 {
     if ( g_brake_control_state.enabled == false
          && g_brake_control_state.operator_override == false )
     {
         master_cylinder_close( );
-        brake_command_release_solenoids( SOLENOID_PWM_OFF );
+
+        set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
+
         g_brake_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
@@ -55,21 +50,21 @@ void brake_enable( void )
 }
 
 
-void brake_disable( void )
+void disable_control( void )
 {
     if ( g_brake_control_state.enabled == true )
     {
-        brake_command_accumulator_solenoids( SOLENOID_PWM_OFF );
+        set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
-        brake_command_release_solenoids( SOLENOID_PWM_ON );
+        set_release_solenoid_duty_cycle( SOLENOID_PWM_ON );
 
-        brake_lights_off( );
+        disable_brake_lights( );
 
         delay( 15 );
 
         master_cylinder_open( );
 
-        brake_command_release_solenoids( SOLENOID_PWM_OFF );
+        set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
         g_brake_control_state.enabled = false;
 
@@ -121,7 +116,7 @@ void check_for_operator_override( void )
         if ( ( filtered_input_1 >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
             ( filtered_input_2 >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
         {
-            brake_disable( );
+            disable_control( );
 
             g_brake_control_state.operator_override = true;
 
@@ -135,7 +130,7 @@ void check_for_operator_override( void )
 }
 
 
-void brake_update_pressure( void )
+void read_pressure_sensor( void )
 {
     uint16_t raw_left_pressure = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
     uint16_t raw_right_pressure = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
@@ -160,15 +155,15 @@ void brake_init( void )
     pinMode( PIN_RELEASE_SOLENOID_FRONT_LEFT, OUTPUT );
     pinMode( PIN_RELEASE_SOLENOID_FRONT_RIGHT, OUTPUT );
 
-    brake_command_release_solenoids( SOLENOID_PWM_OFF );
-    brake_command_accumulator_solenoids( SOLENOID_PWM_OFF );
+    set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
+    set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
-    brake_lights_off( );
+    disable_brake_lights( );
     pinMode( PIN_BRAKE_LIGHT, OUTPUT );
 }
 
 
-void brake_update( void )
+void update_brake( void )
 {
     if ( g_brake_control_state.enabled == true )
     {
@@ -187,7 +182,7 @@ void brake_update( void )
         loop_delta_t /= 1000.0;
         loop_delta_t /= 1000.0;
 
-        brake_update_pressure( );
+        read_pressure_sensor( );
 
         // ********************************************************************
         //
@@ -249,7 +244,7 @@ void brake_update( void )
 
                 uint16_t slr_duty_cycle = 0;
 
-                brake_command_accumulator_solenoids( SOLENOID_PWM_OFF );
+                set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
                 pid_output = -pid_output;
                 slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
@@ -259,14 +254,14 @@ void brake_update( void )
                     slr_duty_cycle = ( uint16_t )RELEASE_SOLENOID_DUTY_CYCLE_MAX;
                 }
 
-                brake_command_release_solenoids( slr_duty_cycle );
+                set_release_solenoid_duty_cycle( slr_duty_cycle );
 
                 DEBUG_PRINT(",0,");
                 DEBUG_PRINT(slr_duty_cycle);
 
                 if ( pressure_target < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
                 {
-                    brake_lights_off( );
+                    disable_brake_lights( );
                 }
             }
 
@@ -281,9 +276,9 @@ void brake_update( void )
 
                 uint16_t sla_duty_cycle = 0;
 
-                brake_lights_on( );
+                enable_brake_lights( );
 
-                brake_command_release_solenoids( SOLENOID_PWM_OFF );
+                set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
                 sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
 
@@ -292,7 +287,7 @@ void brake_update( void )
                     sla_duty_cycle = ( uint16_t )ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX;
                 }
 
-                brake_command_accumulator_solenoids( sla_duty_cycle );
+                set_accumulator_solenoid_duty_cycle( sla_duty_cycle );
 
                 DEBUG_PRINT(",");
                 DEBUG_PRINT(sla_duty_cycle);
@@ -304,11 +299,23 @@ void brake_update( void )
             {
                 if ( g_brake_control_state.commanded_pedal_position < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
                 {
-                    brake_lights_off( );
+                    disable_brake_lights( );
                 }
             }
         }
 
         DEBUG_PRINTLN("");
     }
+}
+
+
+static void disable_brake_lights( void )
+{
+    digitalWrite( PIN_BRAKE_LIGHT, LOW );
+}
+
+
+static void enable_brake_lights( void )
+{
+    digitalWrite( PIN_BRAKE_LIGHT, HIGH );
 }

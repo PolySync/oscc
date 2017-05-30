@@ -162,33 +162,7 @@ typedef struct
 
 
 // ****************************************************************************
-// Function:    brake_lights_off
-//
-// Purpose:     Turn the brake lights off.
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// ****************************************************************************
-void brake_lights_off( void );
-
-
-// ****************************************************************************
-// Function:    brake_lights_on
-//
-// Purpose:     Turn the brake lights on.
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// ****************************************************************************
-void brake_lights_on( void );
-
-
-// ****************************************************************************
-// Function:    brake_command_accumulator_solenoids
+// Function:    set_accumulator_solenoid_duty_cycle
 //
 // Purpose:     Set the PWM that controls the "accumulator" solenoids to the
 //              the specified value.
@@ -198,12 +172,12 @@ void brake_lights_on( void );
 // Parameters:  [in] duty_cycle - value to send to the PWM
 //
 // ****************************************************************************
-void brake_command_accumulator_solenoids(
+void set_accumulator_solenoid_duty_cycle(
     const uint16_t duty_cycle );
 
 
 // ****************************************************************************
-// Function:    brake_command_release_solenoids
+// Function:    set_release_solenoid_duty_cycle
 //
 // Purpose:     Set the PWM that controls the "release" solenoids to the
 //              the specified value.
@@ -213,12 +187,12 @@ void brake_command_accumulator_solenoids(
 // Parameters:  [in] duty_cycle - value to send to the PWM
 //
 // ****************************************************************************
-void brake_command_release_solenoids(
+void set_release_solenoid_duty_cycle(
     const uint16_t duty_cycle );
 
 
 // ****************************************************************************
-// Function:    brake_enable
+// Function:    enable_control
 //
 // Purpose:     Enable control of the brake system.
 //
@@ -227,11 +201,11 @@ void brake_command_release_solenoids(
 // Parameters:  void
 //
 // ****************************************************************************
-void brake_enable( void );
+void enable_control( void );
 
 
 // ****************************************************************************
-// Function:    brake_disable
+// Function:    disable_control
 //
 // Purpose:     Disable control of the brake system.
 //
@@ -240,7 +214,7 @@ void brake_enable( void );
 // Parameters:  void
 //
 // ****************************************************************************
-void brake_disable( void );
+void disable_control( void );
 
 
 // ****************************************************************************
@@ -258,7 +232,7 @@ void check_for_operator_override( void );
 
 
 // ****************************************************************************
-// Function:    brake_update_pressure
+// Function:    read_pressure_sensor
 //
 // Purpose:     Update brake pressure.
 //
@@ -267,7 +241,7 @@ void check_for_operator_override( void );
 // Parameters:  void
 //
 // ****************************************************************************
-void brake_update_pressure( void );
+void read_pressure_sensor( void );
 
 
 // ****************************************************************************
@@ -284,7 +258,7 @@ void brake_init( void );
 
 
 // ****************************************************************************
-// Function:    brake_update
+// Function:    update_brake
 //
 // Purpose:     Write brake spoof values to DAC.
 //
@@ -293,7 +267,7 @@ void brake_init( void );
 // Parameters:  void
 //
 // ****************************************************************************
-void brake_update( void );
+void update_brake( void );
 
 
 #endif /* _OSCC_KIA_SOUL_BRAKE_CONTROL_H_ */

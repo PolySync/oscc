@@ -217,7 +217,7 @@ static void process_serial_byte( uint8_t incoming_byte )
 
         case 'j':
 
-            brake_command_accumulator_solenoids( 255 );
+            set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_ON );
 
             DEBUG_PRINTLN("opened SLAs");
 
@@ -225,7 +225,7 @@ static void process_serial_byte( uint8_t incoming_byte )
 
         case 'k':
 
-            brake_command_accumulator_solenoids( 0 );
+            set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
             DEBUG_PRINTLN("closed SLAs");
 
@@ -233,7 +233,7 @@ static void process_serial_byte( uint8_t incoming_byte )
 
         case 'm':
 
-            brake_command_release_solenoids( 255 );
+            set_release_solenoid_duty_cycle( SOLENOID_PWM_ON );
 
             DEBUG_PRINTLN("opened SLRs");
 
@@ -241,7 +241,7 @@ static void process_serial_byte( uint8_t incoming_byte )
 
         case ',':
 
-            brake_command_release_solenoids( 0 );
+            set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
             DEBUG_PRINTLN("closed SLRs");
 
@@ -310,7 +310,7 @@ int main( void )
 
         process_serial( );
 
-        brake_update_pressure( );
+        read_pressure_sensor( );
 
         accumulator_read_pressure( );
 
