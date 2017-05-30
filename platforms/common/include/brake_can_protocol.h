@@ -9,6 +9,9 @@
 #define _OSCC_BRAKE_CAN_PROTOCOL_H_
 
 
+#include <stdint.h>
+
+
 /*
  * @brief Brake command message (CAN frame) ID.
  *

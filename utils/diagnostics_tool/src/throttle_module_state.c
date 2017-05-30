@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "throttle_can_protocol.h"
 
 #include "macros.h"
 #include "can_monitor.h"
@@ -26,7 +27,7 @@
 //
 static int analyze_command_frame(
         throttle_module_state_s * const state,
-        const ps_ctrl_throttle_command_msg * const throttle_command )
+        const oscc_command_throttle_data_s * const throttle_command )
 {
     int module_state = STATE_OK;
 
@@ -38,7 +39,7 @@ static int analyze_command_frame(
 //
 static int analyze_report_frame(
         throttle_module_state_s * const state,
-        const ps_ctrl_throttle_report_msg * const throttle_report )
+        const oscc_report_throttle_data_s * const throttle_report )
 {
     int module_state = STATE_OK;
 
@@ -76,12 +77,12 @@ int analyze_throttle_state(
 
     analyze_command_frame(
             state,
-            (ps_ctrl_throttle_command_msg*)
+            (oscc_command_throttle_data_s*)
                     throttle_command_frame->frame_contents.buffer ); // TODO : do we need this?
 
     state->module_state = analyze_report_frame(
             state,
-            (ps_ctrl_throttle_report_msg*)
+            (oscc_report_throttle_data_s*)
                     throttle_report_frame->frame_contents.buffer );
 
     return ret;

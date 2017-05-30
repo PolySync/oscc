@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include "macros.h"
-#include "control_protocol_can.h"
 #include "can_monitor.h"
 #include "terminal_print.h"
 #include "system_state.h"

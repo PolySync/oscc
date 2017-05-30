@@ -15,7 +15,6 @@
 
 #include <stdint.h>
 
-#include "control_protocol_can.h"
 #include "steering_module_state.h"
 #include "throttle_module_state.h"
 #include "brake_module_state.h"

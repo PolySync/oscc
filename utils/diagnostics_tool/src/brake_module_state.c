@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "brake_can_protocol.h"
 
 #include "macros.h"
 #include "can_monitor.h"
@@ -26,7 +27,7 @@
 //
 static int analyze_command_frame(
         brake_module_state_s * const state,
-        const ps_ctrl_brake_command_msg * const brake_command )
+        const oscc_command_brake_data_s * const brake_command )
 {
     int module_state = STATE_OK;
 
@@ -38,7 +39,7 @@ static int analyze_command_frame(
 //
 static int analyze_report_frame(
         brake_module_state_s * const state,
-        const ps_ctrl_brake_report_msg * const brake_report )
+        const oscc_report_brake_data_s * const brake_report )
 {
     int module_state = STATE_OK;
 
@@ -47,8 +48,7 @@ static int analyze_report_frame(
     state->override_triggered = brake_report->override;
 
     if( brake_report->fault_wdc == 1 ||
-        brake_report->fault_1 == 1 ||
-        brake_report->fault_2 == 1 ||
+        brake_report->fault_obd_timeout == 1 ||
         brake_report->fault_brake == 1 ||
         brake_report->fault_connector == 1 )
     {
@@ -77,12 +77,12 @@ int analyze_brake_state(
 
     analyze_command_frame(
             state,
-            (ps_ctrl_brake_command_msg*)
+            (oscc_command_brake_data_s*)
                     brake_command_frame->frame_contents.buffer ); // TODO : do we need this?
 
     state->module_state = analyze_report_frame(
             state,
-            (ps_ctrl_brake_report_msg*)
+            (oscc_report_brake_data_s*)
                     brake_report_frame->frame_contents.buffer );
 
     return ret;

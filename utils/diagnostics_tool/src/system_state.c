@@ -14,6 +14,11 @@
 #include "can_monitor.h"
 #include "terminal_print.h"
 #include "system_state.h"
+#include "brake_can_protocol.h"
+#include "chassis_state_can_protocol.h"
+#include "gateway_can_protocol.h"
+#include "steering_can_protocol.h"
+#include "throttle_can_protocol.h"
 
 
 
@@ -39,10 +44,10 @@ static int update_steering_state()
     int ret = ERROR;
 
     const can_frame_s * const steering_command_frame =
-            get_can_msg_array_index_reference( PS_CTRL_MSG_ID_STEERING_COMMAND );
+            get_can_msg_array_index_reference( OSCC_COMMAND_STEERING_CAN_ID );
 
     const can_frame_s * const steering_report_frame =
-            get_can_msg_array_index_reference( PS_CTRL_MSG_ID_STEERING_REPORT );
+            get_can_msg_array_index_reference( OSCC_REPORT_STEERING_CAN_ID );
 
     if( steering_command_frame != NULL  ||  steering_report_frame != NULL )
     {
@@ -62,10 +67,10 @@ static int update_throttle_state()
     int ret = ERROR;
 
     const can_frame_s * const throttle_command_frame =
-            get_can_msg_array_index_reference( PS_CTRL_THROTTLE_COMMAND_ID );
+            get_can_msg_array_index_reference( OSCC_COMMAND_THROTTLE_CAN_ID );
 
     const can_frame_s * const throttle_report_frame =
-            get_can_msg_array_index_reference( PS_CTRL_MSG_ID_THROTTLE_REPORT );
+            get_can_msg_array_index_reference( OSCC_REPORT_THROTTLE_CAN_ID );
 
     if( throttle_command_frame != NULL || throttle_report_frame != NULL )
     {
@@ -85,10 +90,10 @@ static int update_brake_state()
     int ret = ERROR;
 
     const can_frame_s * const brake_command_frame =
-            get_can_msg_array_index_reference( PS_CTRL_MSG_ID_BRAKE_COMMAND );
+            get_can_msg_array_index_reference( OSCC_COMMAND_BRAKE_CAN_ID );
 
     const can_frame_s * const brake_report_frame =
-            get_can_msg_array_index_reference( PS_CTRL_MSG_ID_BRAKE_REPORT );
+            get_can_msg_array_index_reference( OSCC_REPORT_BRAKE_CAN_ID );
 
     if( brake_command_frame != NULL  ||  brake_report_frame != NULL )
     {
@@ -108,13 +113,13 @@ static int update_gateway_state()
     int ret = ERROR;
 
     const can_frame_s * const heartbeat_msg_frame =
-            get_can_msg_array_index_reference( PSVC_HEARTBEAT_MSG_BASE_ID );
+            get_can_msg_array_index_reference( OSCC_REPORT_HEARTBEAT_CAN_ID );
 
     const can_frame_s * const chassis_state1_frame =
-            get_can_msg_array_index_reference( PSVC_CHASSIS_STATE1_MSG_ID );
+            get_can_msg_array_index_reference( OSCC_REPORT_CHASSIS_STATE_1_CAN_ID );
 
     const can_frame_s * const chassis_state2_frame =
-            get_can_msg_array_index_reference( PSVC_CHASSIS_STATE2_MSG_ID );
+            get_can_msg_array_index_reference( OSCC_REPORT_CHASSIS_STATE_2_CAN_ID );
 
     if( heartbeat_msg_frame != NULL ||
             chassis_state1_frame != NULL ||

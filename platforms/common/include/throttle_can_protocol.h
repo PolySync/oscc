@@ -9,6 +9,9 @@
 #define _OSCC_THROTTLE_CAN_PROTOCOL_H_
 
 
+#include <stdint.h>
+
+
 /*
  * @brief Throttle command message (CAN frame) ID.
  *

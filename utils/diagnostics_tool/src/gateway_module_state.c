@@ -9,6 +9,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "gateway_can_protocol.h"
+#include "chassis_state_can_protocol.h"
 
 #include "macros.h"
 #include "can_monitor.h"
@@ -26,7 +28,7 @@
 //
 static int analyze_heartbeat_msg_frame(
         gateway_module_state_s * const state,
-        const psvc_heartbeat_data_s * const heartbeat_msg )
+        const oscc_report_heartbeat_data_s * const heartbeat_msg )
 {
     int module_state = STATE_OK;
 
@@ -37,7 +39,7 @@ static int analyze_heartbeat_msg_frame(
 //
 static int analyze_chassis_state1_frame(
         gateway_module_state_s * const state,
-        const psvc_chassis_state1_data_s * const chassis_state1 )
+        const oscc_report_chassis_state_1_data_s * const chassis_state1 )
 {
     int module_state = STATE_OK;
 
@@ -50,7 +52,7 @@ static int analyze_chassis_state1_frame(
 //
 static int analyze_chassis_state2_frame(
         gateway_module_state_s * const state,
-        const psvc_chassis_state2_data_s * const chassis_state2 )
+        const oscc_report_chassis_state_2_data_s * const chassis_state2 )
 {
     int module_state = STATE_OK;
 
@@ -78,17 +80,17 @@ int analyze_gateway_state(
 
     analyze_heartbeat_msg_frame(
             state,
-            (psvc_heartbeat_data_s*)
+            (oscc_report_heartbeat_data_s*)
                     heartbeat_msg_frame->frame_contents.buffer );
 
     analyze_chassis_state1_frame(
             state,
-            (psvc_chassis_state1_data_s*)
+            (oscc_report_chassis_state_1_data_s*)
                     chassis_state1_frame->frame_contents.buffer );
 
     analyze_chassis_state2_frame(
             state,
-            (psvc_chassis_state2_data_s*)
+            (oscc_report_chassis_state_2_data_s*)
                     chassis_state2_frame->frame_contents.buffer );
 
     return ret;

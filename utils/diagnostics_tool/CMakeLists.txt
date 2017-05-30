@@ -20,7 +20,7 @@ target_include_directories(
     diagnostics-tool
     PRIVATE
     include
-    ../../firmware/arduino_libraries/control_protocol_can
+    ../../platforms/common/include
     ${SDL2_INCLUDE_DIRS})
 
 target_link_libraries(
