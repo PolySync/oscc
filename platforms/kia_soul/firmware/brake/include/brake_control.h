@@ -46,19 +46,19 @@
  * @brief Proportional gain of the PID controller.
  *
  */
-#define PID_PROPORTIONAL_GAIN ( 0.58 )
+#define PID_PROPORTIONAL_GAIN ( 0.62 )
 
 /*
  * @brief Integral gain of the PID controller.
  *
  */
-#define PID_INTEGRAL_GAIN ( 0.2 )
+#define PID_INTEGRAL_GAIN ( 1.0 )
 
 /*
  * @brief Derivative gain of the PID controller.
  *
  */
-#define PID_DERIVATIVE_GAIN ( 0.001 )
+#define PID_DERIVATIVE_GAIN ( 0.00135 )
 
 /*
  * @brief Windup guard of the PID controller.
