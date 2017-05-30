@@ -12,6 +12,10 @@ node('arduino') {
     stage('Build') {
       parallel 'kia soul firmware': {
         sh 'cd platforms && mkdir build && cd build && cmake .. -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release && make'
+      }, 'joystick commander': {
+        sh 'cd utils/joystick_commander && mkdir build && cd build && cmake .. && make'
+      }, 'diagnostics tool': {
+        sh 'cd utils/diagnostics_tool && mkdir build && cd build && cmake .. && make'
       }
       echo 'Build Complete!'
     }
