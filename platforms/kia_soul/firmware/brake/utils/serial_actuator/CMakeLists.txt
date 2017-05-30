@@ -1,9 +1,7 @@
-project(kia-soul-brake)
-
-set(ARDUINO_DEFAULT_BOARD mega2560)
+project(kia-soul-brake-utils-serial-actuator)
 
 generate_arduino_firmware(
-    kia-soul-brake
+    kia-soul-brake-utils-serial-actuator
     SRCS
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
@@ -11,19 +9,19 @@ generate_arduino_firmware(
     ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
-    src/main.cpp
-    src/globals.cpp
-    src/accumulator.cpp
-    src/helper.cpp
-    src/master_cylinder.cpp
-    src/brake_control.cpp
-    src/communications.cpp
-    src/init.cpp)
+    ../../src/globals.cpp
+    ../../src/accumulator.cpp
+    ../../src/helper.cpp
+    ../../src/master_cylinder.cpp
+    ../../src/brake_control.cpp
+    ../../src/communications.cpp
+    ../../src/init.cpp
+    serial_actuator.cpp)
 
 target_include_directories(
-    kia-soul-brake
+    kia-soul-brake-utils-serial-actuator
     PRIVATE
-    include
+    ../../git include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
@@ -31,5 +29,3 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/time)
-
-add_subdirectory(utils)
