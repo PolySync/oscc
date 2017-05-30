@@ -43,7 +43,7 @@ THEN("^the accelerator position command should be parsed$")
 
     assert_that(
         g_throttle_control_state.commanded_accelerator_position,
-        is_equal_to(throttle_command_data->commanded_accelerator_position));
+        is_equal_to(throttle_command_data->commanded_accelerator_position/24));
 }
 
 
