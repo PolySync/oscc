@@ -5,7 +5,18 @@ WHEN("^the time since the last received controller command exceeds the timeout$"
     g_mock_arduino_millis_return =
         COMMAND_TIMEOUT_IN_MSEC;
 
-    check_for_controller_command_timeout();
+    check_for_timeouts();
+}
+
+
+WHEN("^the time since the last received Chassis State 1 report exceeds the timeout$")
+{
+    g_chassis_state_1_report_last_rx_timestamp = 0;
+
+    g_mock_arduino_millis_return =
+        CHASSIS_STATE_1_REPORT_TIMEOUT_IN_MSEC;
+
+    check_for_timeouts();
 }
 
 

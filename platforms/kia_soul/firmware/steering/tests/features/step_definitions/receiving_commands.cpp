@@ -71,9 +71,10 @@ THEN("^the steering wheel angle command should be parsed$")
     mock_pid_prev_input = g_pid.prev_input;
     mock_pid_int_error = g_pid.int_error;
 
-    assert_that(
+    significant_figures_for_assert_double_are(4);
+    assert_that_double(
         g_steering_control_state.commanded_steering_wheel_angle,
-        is_equal_to(steering_command_data->commanded_steering_wheel_angle/9.0));
+        is_equal_to_double(steering_command_data->commanded_steering_wheel_angle/9.0));
 }
 
 
