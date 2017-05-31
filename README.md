@@ -240,7 +240,7 @@ To run the tests, first navigate into the folder of the module to be tested.
 For example, to run the PID tests: 
 
 ```
-cd platforms/common/libs/pid/property/tests
+cd platforms/common/libs/pid/tests/property
 ```
 
 Cargo is then used to build the tests, including fetching any needed dependencies:
