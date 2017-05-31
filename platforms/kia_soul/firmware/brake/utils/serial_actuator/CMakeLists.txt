@@ -16,12 +16,12 @@ generate_arduino_firmware(
     ../../src/brake_control.cpp
     ../../src/communications.cpp
     ../../src/init.cpp
-    serial_actuator.cpp)
+    src/serial_actuator.cpp)
 
 target_include_directories(
     kia-soul-brake-utils-serial-actuator
     PRIVATE
-    ../../git include
+    ../../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
