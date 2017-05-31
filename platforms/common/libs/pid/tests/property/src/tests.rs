@@ -52,9 +52,9 @@ fn prop_reverse_inputs(mut pid: pid_s, setpoint: f32, input: f32, dt: f32) -> Te
 
     let mut original = pid.clone();
     unsafe { pid_update(&mut original, setpoint, input, dt) };
-    let first_control = original.control;
+    let first_control_size = original.control;
     unsafe { pid_update(&mut pid, input, setpoint, dt) };
-    TestResult::from_bool(first_control == -pid.control)
+    TestResult::from_bool(first_control_size == -pid.control)
 }
 
 #[test]
@@ -68,9 +68,9 @@ fn check_reversed_inputs() {
 fn prop_same_control_for_same_inputs(mut pid: pid_s, setpoint: f32, input: f32, dt: f32) -> bool {
     let mut original = pid.clone();
     unsafe { pid_update(&mut original, setpoint, input, dt) };
-    let first_control = original.control;
+    let first_control_size = original.control;
     unsafe { pid_update(&mut pid, setpoint, input, dt) };
-    first_control == pid.control
+    first_control_size == pid.control
 }
 
 #[test]
@@ -78,24 +78,6 @@ fn check_same_control_for_same_inputs() {
     QuickCheck::new()
         .tests(1000)
         .quickcheck(prop_same_control_for_same_inputs as fn(pid_s, f32, f32, f32) -> bool)
-}
-
-// if the setpoint is the same as the current input, we should not get any value back
-fn prop_same_setpoint_and_input(mut pid: pid_s, setpoint: f32, dt: f32) -> TestResult {
-    if dt <= 0.0 {
-        return TestResult::discard();
-    }
-    pid.prev_input = setpoint;
-    unsafe { pid_update(&mut pid, setpoint, setpoint, dt) };
-    TestResult::from_bool(pid.control == 0.0)
-}
-
-#[test]
-#[ignore]
-fn check_same_setpoint_and_input() {
-    QuickCheck::new()
-        .tests(1000)
-        .quickcheck(prop_same_setpoint_and_input as fn(pid_s, f32, f32) -> TestResult)
 }
 
 /// check proportional term validity with standard formula
@@ -166,30 +148,4 @@ fn check_derivative_term() {
     QuickCheck::new()
         .tests(1000)
         .quickcheck(prop_derivative_term as fn(pid_s, f32, f32, f32) -> TestResult)
-}
-
-/// after consecutive calls, control should approach the initial difference
-/// between setpoint and input
-fn prop_control_approaches_difference(mut pid: pid_s,
-                                      setpoint: f32,
-                                      input: f32,
-                                      dt: f32)
-                                      -> TestResult {
-    if dt <= 0.0 || setpoint == input {
-        return TestResult::discard();
-    }
-    unsafe { pid_zeroize(&mut pid, pid.windup_guard) };
-    unsafe { pid_update(&mut pid, setpoint, input, dt) };
-    let first_control = pid.control;
-    unsafe { pid_update(&mut pid, setpoint, (input + pid.control), dt) };
-    let second_control = pid.control;
-    TestResult::from_bool(first_control.abs() < second_control.abs())
-}
-
-#[test]
-#[ignore]
-fn check_control_approaches_difference() {
-    QuickCheck::new()
-        .tests(1000)
-        .quickcheck(prop_control_approaches_difference as fn(pid_s, f32, f32, f32) -> TestResult)
 }

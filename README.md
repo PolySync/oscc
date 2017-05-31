@@ -225,6 +225,58 @@ Feature: Receiving commands
 ```
 
 
+Property-Based Tests
+------------
+
+The throttle, steering, and brake modules, along with the PID controller library, also contain a series of
+property based tests.
+These tests use [QuickCheck for Rust](http://burntsushi.net/rustdoc/quickcheck/), so **Rust** and **Cargo** 
+need to be [installed](https://www.rust-lang.org/en-US/install.html) in order to run them locally.
+
+
+**Running the Tests**
+
+To run the tests, first navigate into the folder of the module to be tested.
+For example, to run the PID tests: 
+
+```
+cd platforms/common/libs/pid/property/tests
+```
+
+Cargo is then used to build the tests, including fetching any needed dependencies:
+
+```
+cargo build
+```
+
+The property based tests are also run by Cargo:
+
+```
+cargo test
+```
+
+Once the tests have completed, the output should look similar to the following:
+
+```
+running 7 tests
+test bindgen_test_layout_pid_s ... ok
+test check_integral_term ... ok
+test check_derivative_term ... ok
+test check_proportional_term ... ok
+test check_reversed_inputs ... ok
+test check_same_control_for_same_inputs ... ok
+test check_zeroize ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured
+
+   Doc-tests tests
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
+```
+
+
 Controlling Your Vehicle
 ------------
 

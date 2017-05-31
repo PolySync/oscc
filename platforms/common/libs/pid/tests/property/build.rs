@@ -7,7 +7,7 @@ use std::path::Path;
 fn main() {
     gcc::Config::new()
         .flag("-w")
-        .file("../oscc_pid.cpp")
+        .file("../../oscc_pid.cpp")
         .cpp(true)
         .compiler("/usr/bin/g++")
         .compile("libpid_test.a");
@@ -16,7 +16,7 @@ fn main() {
 
     let _ = bindgen::Builder::default()
         .header("include/wrapper.hpp")
-        .clang_arg("-I..")
+        .clang_arg("-I../../")
         .whitelisted_function("pid_zeroize")
         .whitelisted_function("pid_update")
         .generate()
