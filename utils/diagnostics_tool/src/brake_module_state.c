@@ -47,10 +47,7 @@ static int analyze_report_frame(
 
     state->override_triggered = brake_report->override;
 
-    if( brake_report->fault_wdc == 1 ||
-        brake_report->fault_obd_timeout == 1 ||
-        brake_report->fault_brake == 1 ||
-        brake_report->fault_connector == 1 )
+    if( brake_report->fault_obd_timeout == 1 )
     {
         module_state = STATE_FAULT;
     }

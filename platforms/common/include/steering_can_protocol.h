@@ -61,23 +61,19 @@ typedef struct
                           * Value zero means off/disabled.
                           * Value one means on/enabled. */
 
-    uint8_t clear : 1; /*!< Clear driver override flag.
-                        * Value zero means do not clear (normal operation).
-                        * Value one means request clear of driver override. */
+    uint8_t reserved_0 : 1; /*!< Reserved. */
 
-    uint8_t ignore : 1; /*!< Ignore driver override flag.
-                         * Value zero means do not ignore (normal operation).
-                         * Value one means ignore the driver override. */
+    uint8_t reserved_1 : 1; /*!< Reserved. */
 
-    uint8_t reserved_0 : 5; /*!< Reserved. */
-
-    uint8_t reserved_1; /*!< Reserved. */
-
-    uint8_t reserved_2; /*!< Reserved. */
+    uint8_t reserved_2 : 5; /*!< Reserved. */
 
     uint8_t reserved_3; /*!< Reserved. */
 
-    uint8_t count; /*!< Optional watchdog counter. */
+    uint8_t reserved_4; /*!< Reserved. */
+
+    uint8_t reserved_5; /*!< Reserved. */
+
+    uint8_t reserved_6; /*!< Reserved. */
 } oscc_command_steering_data_s;
 
 
@@ -115,7 +111,7 @@ typedef struct
                                              * (counter clockwise).
                                              * [0.1 degrees per bit] */
 
-    uint16_t vehicle_speed; /*!< Vehicle speed. [0.01 kilometers/hour per bit] */
+    uint16_t reserved_0; /*!< Reserved. */
 
     int8_t spoofed_torque_output; /*!< Spoofed steering wheel torque output to the
                                    * vehicle. [0.0625 Newton meters per bit] */
@@ -128,27 +124,19 @@ typedef struct
                            * Value zero means controls are provided autonomously (no override).
                            * Value one means controls are provided by the driver. */
 
-    uint8_t driver_activity : 1; /*!< Driver activity.
-                                  * Value zero means no activity.
-                                  * Value one means driver activity. */
+    uint8_t reserved_1 : 1; /*!< Reserved. */
 
-    uint8_t fault_wdc : 1; /*!< Watchdog counter fault state.
-                            * Value zero means no fault.
-                            * Value one means fault active. */
+    uint8_t reserved_2 : 1; /*!< Reserved. */
 
     uint8_t fault_obd_timeout : 1; /*!< OBD timeout indicator.
                                    * Value zero means no timeout occurred.
                                    * Value one means timeout occurred. */
 
-    uint8_t reserved : 1; /*!< Reserved */
+    uint8_t reserved_3 : 1; /*!< Reserved */
 
-    uint8_t fault_calibration : 1; /*!< Calibration fault state.
-                                    * Value zero means no fault.
-                                    * Value one means fault active. */
+    uint8_t reserved_4 : 1; /*!< Reserved. */
 
-    uint8_t fault_connector : 1; /*!< Connector fault state.
-                                  * Value zero means no fault (CD pins shorted).
-                                  * Value one means fault active (CD pins not shorted). */
+    uint8_t reserved_5 : 1; /*!< Reserved. */
 } oscc_report_steering_data_s;
 
 

@@ -47,14 +47,6 @@ static int analyze_report_frame(
 
     state->override_triggered = throttle_report->override;
 
-    if( throttle_report->fault_wdc == 1 ||
-        throttle_report->fault_1 == 1 ||
-        throttle_report->fault_2 == 1 ||
-        throttle_report->fault_connector == 1 )
-    {
-        module_state = STATE_FAULT;
-    }
-
 
     return module_state;
 }

@@ -54,10 +54,7 @@ static int analyze_report_frame(
 
     state->override_triggered = steering_report->override;
 
-    if( steering_report->fault_wdc == 1 ||
-        steering_report->fault_obd_timeout == 1 ||
-        steering_report->fault_calibration == 1 ||
-        steering_report->fault_connector == 1 )
+    if( steering_report->fault_obd_timeout == 1 )
     {
         module_state = STATE_FAULT;
     }

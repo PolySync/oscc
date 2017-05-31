@@ -241,23 +241,13 @@ int oscc_interface_set_defaults( )
 {
     int return_code = NOERR;
 
-    oscc_interface_data.brake_cmd.brake_on = 0;
-    oscc_interface_data.brake_cmd.clear = 0;
-    oscc_interface_data.brake_cmd.count = 0;
     oscc_interface_data.brake_cmd.enabled = 0;
-    oscc_interface_data.brake_cmd.ignore = 0;
     oscc_interface_data.brake_cmd.pedal_command = 0;
 
-    oscc_interface_data.throttle_cmd.clear = 0;
-    oscc_interface_data.throttle_cmd.count = 0;
     oscc_interface_data.throttle_cmd.enabled = 0;
-    oscc_interface_data.throttle_cmd.ignore = 0;
     oscc_interface_data.throttle_cmd.commanded_accelerator_position = 0;
 
-    oscc_interface_data.steering_cmd.clear = 0;
-    oscc_interface_data.steering_cmd.count = 0;
     oscc_interface_data.steering_cmd.enabled = 0;
-    oscc_interface_data.steering_cmd.ignore = 0;
     oscc_interface_data.steering_cmd.commanded_steering_wheel_angle = 0;
     oscc_interface_data.steering_cmd.commanded_steering_wheel_angle_rate = 0;
 
