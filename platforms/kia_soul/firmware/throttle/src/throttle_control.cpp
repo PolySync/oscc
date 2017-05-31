@@ -71,16 +71,13 @@ void enable_control( void )
     if( g_throttle_control_state.enabled == false
         && g_throttle_control_state.operator_override == false )
     {
-        // Sample the current values, smooth them, and write measured accelerator position values to DAC to avoid a
-        // signal discontinuity when the SCM takes over
-        static uint16_t num_samples = 20;
-        write_sample_averages_to_dac(
+        const uint16_t num_samples = 20;
+        prevent_signal_discontinuity(
             g_dac,
             num_samples,
             PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
             PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 
-        // Enable the signal interrupt relays
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
 
         g_throttle_control_state.enabled = true;
@@ -94,16 +91,13 @@ void disable_control( void )
 {
     if( g_throttle_control_state.enabled == true )
     {
-        // Sample the current values, smooth them, and write measured accelerator position values to DAC to avoid a
-        // signal discontinuity when the SCM relinquishes control
-        static uint16_t num_samples = 20;
-        write_sample_averages_to_dac(
+        const uint16_t num_samples = 20;
+        prevent_signal_discontinuity(
             g_dac,
             num_samples,
             PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
             PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 
-        // Disable the signal interrupt relays
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
 
         g_throttle_control_state.enabled = false;

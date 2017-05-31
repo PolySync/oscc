@@ -19,9 +19,13 @@
 
 
 // ****************************************************************************
-// Function:    write_sample_averages_to_dac
+// Function:    prevent_signal_discontinuity
 //
-// Purpose:     Samples two analog pins and writes their averages to a DAC.
+// Purpose:     Samples the current values, smooths them, and writes the measured
+//              sensor values to the DAC to avoid a signal discontinuity when
+//              control changes from module to vehicle or vehicle to module. If
+//              a smoothing doesn't occur then there is the possibility of the
+//              vehicle going into a fault state when it detects an abrupt change.
 //
 // Returns:     void
 //
@@ -31,7 +35,7 @@
 //              [in] signal_pin_2 - Second signal pin to sample.
 //
 // ****************************************************************************
-void write_sample_averages_to_dac(
+void prevent_signal_discontinuity(
         DAC_MCP49xx & dac,
         const int16_t num_samples,
         const uint8_t signal_pin_1,

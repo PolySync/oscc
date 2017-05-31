@@ -161,10 +161,8 @@ void enable_control( void )
     if( g_steering_control_state.enabled == false
         && g_steering_control_state.operator_override == false )
     {
-        // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
-        // signal discontinuity when the SCM takes over
-        static uint16_t num_samples = 20;
-        write_sample_averages_to_dac(
+        const uint16_t num_samples = 20;
+        prevent_signal_discontinuity(
             g_dac,
             num_samples,
             PIN_TORQUE_SENSOR_HIGH,
@@ -184,10 +182,8 @@ void disable_control( void )
 {
     if( g_steering_control_state.enabled == true )
     {
-        // Sample the current values, smooth them, and write measured torque values to DAC to avoid a
-        // signal discontinuity when the SCM takes over
-        static uint16_t num_samples = 20;
-        write_sample_averages_to_dac(
+        const uint16_t num_samples = 20;
+        prevent_signal_discontinuity(
             g_dac,
             num_samples,
             PIN_TORQUE_SENSOR_HIGH,

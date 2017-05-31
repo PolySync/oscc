@@ -8,7 +8,7 @@ static int32_t get_analog_sample_average(
     const uint8_t pin );
 
 
-void write_sample_averages_to_dac(
+void prevent_signal_discontinuity(
         DAC_MCP49xx & dac,
         const int16_t num_samples,
         const uint8_t signal_pin_1,
@@ -22,7 +22,6 @@ void write_sample_averages_to_dac(
     averages[1] = get_analog_sample_average( num_samples, signal_pin_2)
         << DAC_BIT_SHIFT_10BIT_TO_12BIT;
 
-    // Write measured values to DAC to avoid a signal discontinuity when the SCM takes over
     dac.outputA( averages[0] );
     dac.outputB( averages[1] );
 }
