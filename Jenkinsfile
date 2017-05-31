@@ -23,6 +23,12 @@ node('arduino') {
       parallel 'unit tests': {
         sh 'cd platforms && mkdir build_tests && cd build_tests && cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-tests'
         echo 'Unit Tests Complete!'
+      }, 'property-based tests': {
+        sh 'cargo test --manifest-path platforms/kia_soul/firmware/steering/tests/property/Cargo.toml -- --test-threads=1'
+        sh 'cargo test --manifest-path platforms/kia_soul/firmware/brake/tests/property/Cargo.toml -- --test-threads=1'
+        sh 'cargo test --manifest-path platforms/kia_soul/firmware/throttle/tests/property/Cargo.toml -- --test-threads=1'
+        sh 'cargo test --manifest-path platforms/common/libs/pid/tests/Cargo.toml'
+        echo 'Property-Based Tests Complete!'
       }, 'acceptance tests': {
         echo 'Acceptance Tests Complete!'
       }

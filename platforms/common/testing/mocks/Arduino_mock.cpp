@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <sys/timeb.h>
+#include <stdio.h>
 
 #include "Arduino.h"
 
