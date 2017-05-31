@@ -96,6 +96,7 @@ static void process_steering_command(
 
         if ( steering_command_data->enabled == true )
         {
+            // divisor values found empirically to best match steering output
             g_steering_control_state.commanded_steering_wheel_angle =
                 (steering_command_data->commanded_steering_wheel_angle / 9.0);
 

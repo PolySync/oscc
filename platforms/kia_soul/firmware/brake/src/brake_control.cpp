@@ -138,8 +138,9 @@ void read_pressure_sensor( void )
     float pressure_left = raw_adc_to_pressure( raw_left_pressure );
     float pressure_right = raw_adc_to_pressure( raw_right_pressure );
 
-    g_brake_control_state.current_sensor_brake_pressure =
-        (pressure_left + pressure_right) / 2.0;
+    float pressure_average = ( pressure_left + pressure_right ) / 2.0;
+
+    g_brake_control_state.current_sensor_brake_pressure = pressure_average;
 }
 
 
@@ -218,17 +219,6 @@ void update_brake( void )
                                 pressure,
                                 loop_delta_t );
 
-        // Requested pressure
-        DEBUG_PRINT(pressure_target);
-
-        // Pressure at wheels (PFR and PFL)
-        DEBUG_PRINT(",");
-        DEBUG_PRINT(pressure);
-
-        // PID output
-        DEBUG_PRINT(",");
-        DEBUG_PRINT( g_pid.control );
-
         if ( ret == PID_SUCCESS )
         {
             float pid_output = g_pid.control;
@@ -255,9 +245,6 @@ void update_brake( void )
                 }
 
                 set_release_solenoid_duty_cycle( slr_duty_cycle );
-
-                DEBUG_PRINT(",0,");
-                DEBUG_PRINT(slr_duty_cycle);
 
                 if ( pressure_target < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
                 {
@@ -288,10 +275,6 @@ void update_brake( void )
                 }
 
                 set_accumulator_solenoid_duty_cycle( sla_duty_cycle );
-
-                DEBUG_PRINT(",");
-                DEBUG_PRINT(sla_duty_cycle);
-                DEBUG_PRINT(",0");
             }
 
             // pressure within valid range
@@ -303,8 +286,6 @@ void update_brake( void )
                 }
             }
         }
-
-        DEBUG_PRINTLN("");
     }
 }
 

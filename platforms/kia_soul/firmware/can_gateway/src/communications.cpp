@@ -185,8 +185,6 @@ static void process_obd_steering_wheel_angle(
         SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_VALID );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
 
-        #warning "TODO - steering wheel angle conversion and rate calculation"
-
         g_tx_chassis_state_1.data.steering_wheel_angle_rate = 0;
         g_tx_chassis_state_1.data.steering_wheel_angle = steering_wheel_angle_data->steering_angle;
 
@@ -205,8 +203,6 @@ static void process_obd_wheel_speed(
 
         CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_WHEEL_SPEED_HEARTBEAT_WARNING_BIT );
         SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_WHEEL_SPEED_VALID );
-
-        #warning "TODO - wheel speed unit conversion"
 
         g_tx_chassis_state_2.data.wheel_speed_front_left = wheel_speed_data->wheel_speed_front_left;
         g_tx_chassis_state_2.data.wheel_speed_front_right = wheel_speed_data->wheel_speed_front_right;
@@ -228,8 +224,6 @@ static void process_obd_brake_pressure(
 
         CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_BRAKE_PRESSURE_WARNING_BIT );
         SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID );
-
-        #warning "TODO - brake pressure unit conversion"
 
         g_tx_chassis_state_1.data.brake_pressure = brake_pressure_data->master_cylinder_pressure;
 

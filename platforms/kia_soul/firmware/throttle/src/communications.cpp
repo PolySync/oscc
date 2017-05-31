@@ -110,6 +110,7 @@ static void process_throttle_command(
             disable_control( );
         }
 
+        // divisor value found empirically to best match throttle output
         g_throttle_control_state.commanded_accelerator_position =
             throttle_command_data->commanded_accelerator_position / 24;
 

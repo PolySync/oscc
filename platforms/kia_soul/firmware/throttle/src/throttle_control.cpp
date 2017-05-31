@@ -28,10 +28,10 @@ void check_for_operator_override( void )
 
         read_accelerator_position_sensor( &accelerator_position );
 
-        uint32_t accelerator_position_normalized =
+        uint32_t accelerator_position_average =
             (accelerator_position.low + accelerator_position.high) / 2;
 
-        if ( accelerator_position_normalized >= ACCELERATOR_OVERRIDE_THRESHOLD )
+        if ( accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD )
         {
             disable_control( );
 
