@@ -36,10 +36,10 @@ Feature: Receiving commands
     Examples:
       | left_pressure | right_pressure | command | solenoid     | duty_cycle |
       |  120          |  120           |  20000  |  ACCUMULATOR |  105       |
-      |  160          |  160           |  20000  |  ACCUMULATOR |  97        |
-      |  190          |  190           |  20000  |  ACCUMULATOR |  87        |
-      |  230          |  230           |  20000  |  RELEASE     |  74        |
-      |  200          |  200           |  20000  |  ACCUMULATOR |  85        |
+      |  160          |  160           |  20000  |  ACCUMULATOR |  100       |
+      |  190          |  190           |  20000  |  ACCUMULATOR |  89        |
+      |  230          |  230           |  20000  |  RELEASE     |  72        |
+      |  200          |  200           |  20000  |  ACCUMULATOR |  88        |
       |  220          |  220           |  20000  |  NONE        |  0         |
-      |  205          |  205           |  20000  |  ACCUMULATOR |  83        |
+      |  205          |  205           |  20000  |  ACCUMULATOR |  86        |
       |  215          |  215           |  20000  |  NONE        |  0         |
