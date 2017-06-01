@@ -8,7 +8,7 @@
 #include "debug.h"
 #include "oscc_time.h"
 #include "oscc_pid.h"
-#include "signal_smoothing.h"
+#include "oscc_signal_smoothing.h"
 
 #include "globals.h"
 #include "brake_control.h"

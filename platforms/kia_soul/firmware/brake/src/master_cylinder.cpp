@@ -6,7 +6,7 @@
 
 #include <Arduino.h>
 #include "debug.h"
-#include "signal_smoothing.h"
+#include "oscc_signal_smoothing.h"
 
 #include "globals.h"
 #include "helper.h"
