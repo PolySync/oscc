@@ -1,0 +1,88 @@
+.mso www.tmac
+.TH CGREEN-RUNNER 1
+
+
+.SH NAME
+cgreen-runner \- an auto-discovering runner for the Cgreen unittest and mocking framework
+
+
+.SH SYNOPSIS
+.B cgreen\-runner
+[\fB\-\-colour\fR]
+[\fB\-\-xml\fR \fIprefix\fR]
+[\fB\-\-suite\fR \fIname\fR]
+[\fB\-\-verbose\fR]
+[\fB\-\-no\-run\fR]
+[\fB\-\-help\fR]
+( \fILIBRARY\fR [\fItest\fR] )+
+
+
+.SH DESCRIPTION
+.B Cgreen
+is a framework for creating and running compact and easy-to-read
+unittests for C and/or C++. After compiling your tests and linking
+them together with the code/class/subject under test (CUT/SUT) into a
+shared dynamically loadable \fILIBRARY\fR you can auto-discover and
+run all tests using the
+.B cgreen-runner
+without having to manually add each and every test that you write to a
+suite programatically.
+.PP
+This makes the TDD cycle even faster and less error-prone, one less thing to remember.
+
+
+.SS "Usage:"
+Discover and run all, or a single named, cgreen test(s) from one or multiple
+dynamically loadable library.
+.PP
+A single test can be run using the form [<context>:]<name> where <context> can
+be omitted if there is no context.
+
+
+.SH OPTIONS
+
+.TP
+.BR \-c ", " \-\-colours/colors
+Use colours to emphasis result (requires ANSI\-capable terminal)
+
+.TP
+.BR \-x ", " \-\-xml " " \fIprefix\fR
+Instead of messages on stdout, write results into one XML\-file per
+suite, compatible with Hudson/Jenkins CI. The filename(s) will
+be '\fIprefix\fR\-<suite>.xml'
+
+.TP
+.BI "\-s, \-\-suite " name
+Give the top level suite
+.I name
+instead of the name in the \fILIBRARY\fR.
+
+.TP
+.B "\-n, \-\-no\-run"
+Don't run the tests.
+
+.TP
+.B "\-v, \-\-verbose"
+Show progress information during run.
+
+.TP
+.B "\-V, \-\-version"
+Show version information and exit.
+
+.TP
+.B "\-h, \-\-help"
+Print some usage information and exit.
+
+.SH "SEE ALSO"
+cgreen(5)
+
+.PP
+The full documentation for
+.B cgreen-runner
+and
+.B the Cgreen framework
+is in the
+.B Cgreen
+manual available at
+.URL https://github.com/cgreen-devs/cgreen GitHub .
+

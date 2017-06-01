@@ -22,11 +22,12 @@
 ---
 
 ## Introduction
-There are many ways to contribute to the OSCC project; support for additional vehicles can be added, diagrams can be made to look better, car systems can be better described, CAN frames can be better detailed, PCBs can be optimized or code could be refactored and improved.
+There are many ways to contribute to the OSCC project: support for additional vehicles can be added, diagrams can be made to look better, car systems can be better described, CAN frames can be better detailed, PCBs can be optimized, or code could be refactored and improved.
 
 The directory structure of the project is created in such a way that adding support for additional vehicles should be simple and intuitive.
 
-All vehicle specific directories should be recreated for each additional vehicle. The naming convention is
+All vehicle specific directories should be recreated for each additional vehicle. The naming convention is:
+
 ```
 <make>_<model>_<generational identifier>
 ```
@@ -34,17 +35,14 @@ All vehicle specific directories should be recreated for each additional vehicle
 Below is a sample of how additional vehicle directories should be created.
 
 ```
- .
-├── firmware
-│   ├── ...
-│   ├── brake
-│   │   ├──kia_soul_ps
-│   │   ├──<my_new_car>       # Brake firmware for vehicle you're adding
-│   ├── ...
-├── vehicle_info
-│   ├──kia_soul_ps
-│   ├──<my_new_car>           # Vehicle specific information for vehicle you're adding
-└── ...
+.
+├── platforms
+│   └── <my_new_car>       # Name of vehicle you're adding
+│       └── firmware
+│           ├── brake
+│           ├── can_gateway
+│           ├── steering
+│           └── throttle
 ```
 
 ## Getting Started
@@ -64,8 +62,10 @@ Below is a sample of how additional vehicle directories should be created.
   git checkout -b fix/master/my_contribution master
   ```
 
-- Write a good commit message.
+- Write a good commit message
+
 #### Commit Messages
+
 - Use the present tense ("Add feature" not "Added feature")
 - Use the imperative mood ("Move resistor to..." not "Moves resistor to...")
 - Limit the first line to 72 characters or less
@@ -80,14 +80,14 @@ Below is a sample of how additional vehicle directories should be created.
 - Update your github issue to mark that you have submitted code and are ready for it to be reviewed (Status: Ready for Merge)
   - Include a link to the pull request in the ticket
 - The PolySync team will review all pull requests on a weekly basis
-- **Code contributed should include unit tests**- that demonstrate the code functions as expected
+- **Code contributed should include unit tests** that demonstrate the code functions as expected
 - For more details, please see the "Release Process" section below
 
 ### Contributing a Diagram
 
 - The diagrams were created using the [Eagle PCB Design tool](https://cadsoft.io)
     - All board diagrams should use this tool
-- Modifications should include tests to demonstrate the the modified board works as expected
+- Modifications should include tests to demonstrate that the modified board works as expected
 
 ### Submitting Enhancement Requests
 
@@ -103,6 +103,7 @@ Enhancement suggestions are tracked as GitHub issues:
     - The versions can be found in the Releases tab on GitHub
 
 ### Pull Request Labels
+
 - Fill in the required template
 - Follow the style guide
 - Code should be complete
@@ -128,19 +129,20 @@ This information is also available in the README.
 | ------------ | :--------------------------------------- |
 | 3d_tools     | Technical drawings and 3D files for board enclosures and other useful parts |
 | assets       | Diagrams and images used in the wiki     |
-| boards       | PCB schematics and board designs for control modules that are integrated with the vehicle, typically these are the throttle, steering and brake boards, but can include other items should they be contributed. |
+| boards       | PCB schematics and board designs for control modules that are integrated with the vehicle, typically these are the throttle, steering, and brake boards, but can include other items should they be contributed. |
 | control      | User Space applications to provide mechanisms for the user to control the vehicle directly via something like a PC.  Applications can be command-line or GUI based and include items like a joystick controller |
-| firmware     | Arduino code for the throttle, steering and brake functionality.  This directory also includes code for the CAN gateway module, which uses a stock Arduino board. The firmware should remain modular and portable to a a different Arduino board |
+| firmware     | Arduino code for the throttle, steering, and brake functionality.  This directory also includes code for the CAN gateway module, which uses a stock Arduino board. The firmware should remain modular and portable to a a different Arduino board |
 | vehicle_info | Information on specific vehicles such as sensor outputs and wiring diagrams.  Each additional vehicle should be in its own subdirectory |
 
 ## Diagrams
 
 Adding diagrams for new boards or other components should be located in the directory most appropriate for their function:
+
 - A new enclosure should go in the 3d_models directory
 - A new board diagram should go in the boards directory
 - Any new vehicle information should reside in the vehicle_info directory
 
-Existing diagrams should be edited using the [Autodesk Eagle](https://cadsoft.io) as mentioned above.
+Existing diagrams should be edited using the [Autodesk Eagle](https://cadsoft.io), as mentioned above.
 
 ## Building
 
@@ -150,7 +152,7 @@ To build the various components in the system, please see the README.md
 
 - Documentation updates are welcome
 - Documentation should be located in the `doc` directory where it is most applicable (See the Directory descriptions above)
-  - If the `doc` - directory does not exist, please create it as part of the submission
+  - If the `doc` directory does not exist, please create it as part of the submission
 - Documentation pull requests function in the same way as other pull requests
 - Documentation should be in markdown format
 
@@ -165,7 +167,7 @@ To build the various components in the system, please see the README.md
 
 # Release Process
 
-Any changes to the OSCC modules must undergo a series of tests that conclude with a "stress test" on the vehicle itself.  What is included here is the process by which code modifications are incorporated into the main source branch (devel) and what the system tests constitute.  One of the key problems that this process is intended to solve is that any source code change must be tested on the vehicle before it can be merged with the "devel" branch.  
+Any changes to the OSCC modules must undergo a series of tests that conclude with a "stress test" on the vehicle itself.  What is included here is the process by which code modifications are incorporated into the main source branch (devel) and what the system tests constitute.  One of the key problems that this process is intended to solve is that any source code change must be tested on the vehicle before it can be merged with the "devel" branch.
 
 **Merging code before it is tested is dangerous to users and must be avoided at all costs.**
 
@@ -402,7 +404,7 @@ For these tests, the vehicle is being controlled by a remote control computer or
 
 # OSCC Coding standard
 
-As this is an automotive initiative, this coding standard is based on the MISRA C-2012 standard. The reasoning for the given rule or directive in the coding standard is not included in this as it would create much too large a document.
+As this is an automotive initiative, this coding standard is based on the MISRA C-2012 standard. The reasoning for the given rule or directive in the coding standard is not included in this as it would create too large of a document.
 
 The MISRA standard is more exacting that the OSCC standard. It is not implied that compliance with this standard guarantees compliance with the MISRA standard.
 
@@ -507,7 +509,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 
 1. A project should contain no unreachable or dead code
 2. A project should not have any unused type declarations
-   1. Includes enumerations, unions, structures and native types
+   1. Includes enumerations, unions, structures, and native types
 3. A project should not contain any unused macros
 4. A project should not contain any unused labels
 5. A project should not contain any unused parameters
@@ -533,7 +535,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 5. Structure, union, and enumeration tags must be unique
 
 6. Variable, macro and function naming should use “snake case”
-   1. Variables and functions should use descriptive names which are all lowercase and separated by an underscore 
+   1. Variables and functions should use descriptive names which are all lowercase and separated by an underscore
        - variable: `int32_t range_max;`
        - function: `int16_t send_can_frame( can_frame* transmit_frame );`
    1. Macros should use descriptive names which are all uppercase and separated by an underscore
@@ -554,12 +556,12 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 2. String literals must be assigned to `const char*` variables
    1. This includes when being used as a parameter or return value
 
-3. Avoid type conversions between boolean values and other intrinsic  types
+3. Avoid type conversions between boolean values and other intrinsic types
 
-4. Operations should between objects of the same type (e.g. arithmetic operation should be performed on objects of the same type)
+4. Operations should occur between objects of the same type (e.g. arithmetic operation should be performed on objects of the same type)
 
 5. Prefer to capture the result of an operation in an object type of the same size
-   1. Exceptions exist when complying with a communication protocol or  hardware register width
+   1. Exceptions exist when complying with a communication protocol or hardware register width
    2. Rule applies to both narrowing and widening the result of an operation
 
 6. Unions (overlapped storage) are only allowed when the items in the union are all the same size
@@ -574,7 +576,6 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
       float    float_array[2];
       double   double_array[1];
   };
-
   ```
 
 ### 6. Declarations
@@ -614,14 +615,14 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 
 1. An automatic variable (e.g. a local variable) must not be read before it has been initialized
 
-2. Enclose initializations for array, structure or union variables with values enclosed in braces:
+2. Enclose initializations for array, structure, or union variables with values enclosed in braces:
    1. `int16_t my_array[ 4 ] = { 0, 1, 2, 3 };`
-   2. `char` Arrays may also be initialized with a string literal
-   3. The stipulation is that the initializer must be internally consistent with the target array, structure or union
+   2. `char` arrays may also be initialized with a string literal
+   3. The stipulation is that the initializer must be internally consistent with the target array, structure, or union
    4. If an array is statically initialized the size must be explicitly stated as in `my_array[ 4 ]` above
    5. Arrays shall not be partially initialized
 
-3. Static initialization shall not include any side effects (e.g. pointer dereference and increment which is allowed at run-time)
+3. Static initialization shall not include any side effects (e.g. pointer dereference and increment allowed at run-time)
 
 ### 8. Pointers
 
@@ -629,7 +630,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
    1. The conversion is between a pointer and bool
    2. The conversion is from a void type and an intrinsic type
    3. The conversion is between compatible types
-   4. The conversion is to a char or unsigned char so that the bytes of an object can be accessed directly
+   4. The conversion is to a char or unsigned char, so that the bytes of an object can be accessed directly
 
 2. Function pointers cannot be converted
 
@@ -677,12 +678,12 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 1. Always use spaces instead of tabs
    1. Use 4 space as the standard indent
 
-2. Include a space after an opening parenthesis, brace or bracket and a space before the closing match.
+2. Include a space after an opening parenthesis, brace, or bracket and a space before the closing match.
    1. Parentheses: `( to_b || not_to_b )`
    2. Brace: `array[ 4 ] = { 0, 1, 2, 3 };`
    3. Bracket: `array[ 4 ] = { 0, 1, 2, 3 };`
 
-3. Variable and function naming should use “snake case”, namely descriptive names which are all lowercase and separated by an underscore
+3. Variable and function naming should use “snake case,” namely descriptive names which are all lowercase and separated by an underscore
    1. `int32_t this_is_an_example_of_a_variable;`
 
 4. `if` statements shall have the following form:
@@ -835,7 +836,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 
 ### 15. Pointers and Arrays
 
-1. Check that pointer arithmetic does not go beyond the bounds of the array to which the pointer refers.
+1. Check that pointer arithmetic does not go beyond the bounds of the array to which the pointer refers
 
 2. Avoid pointer subtraction
 
@@ -843,7 +844,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 
 3. Avoid pointer comparison operations
 
-   1. Pointer comparison can be used to determine if a pointer is in the bounds of the array that it refers to.
+   1. Pointer comparison can be used to determine if a pointer is in the bounds of the array that it refers to
 
 4. Pointers should not go beyond two levels of nesting ( i.e. Pointers to pointers are allowed )
 
@@ -881,7 +882,7 @@ The MISRA standard is more exacting that the OSCC standard. It is not implied th
 
 1. Free all allocated memory
 
-2. Do not open files for read and write at the same time, file access is read-only or write only
+2. Do not open files for read and write at the same time, file access is read-only or write-only
 
 3. Do not dereference a FILE object pointer
 
