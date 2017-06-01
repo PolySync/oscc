@@ -27,7 +27,7 @@ node('arduino') {
         sh 'cargo test --manifest-path platforms/kia_soul/firmware/steering/tests/property/Cargo.toml -- --test-threads=1'
         sh 'cargo test --manifest-path platforms/kia_soul/firmware/brake/tests/property/Cargo.toml -- --test-threads=1'
         sh 'cargo test --manifest-path platforms/kia_soul/firmware/throttle/tests/property/Cargo.toml -- --test-threads=1'
-        sh 'cargo test --manifest-path platforms/common/libs/pid/tests/Cargo.toml'
+        sh 'cargo test --manifest-path platforms/common/libs/pid/tests/property/Cargo.toml'
         echo 'Property-Based Tests Complete!'
       }, 'acceptance tests': {
         echo 'Acceptance Tests Complete!'

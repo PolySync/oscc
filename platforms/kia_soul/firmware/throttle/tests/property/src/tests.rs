@@ -60,10 +60,10 @@ impl Arbitrary for oscc_command_throttle_data_s {
             commanded_accelerator_position: u16::arbitrary(g),
             reserved_0: u8::arbitrary(g),
             _bitfield_1: u8::arbitrary(g),
-            reserved_2: u8::arbitrary(g),
-            reserved_3: u8::arbitrary(g),
             reserved_4: u8::arbitrary(g),
-            count: u8::arbitrary(g),
+            reserved_5: u8::arbitrary(g),
+            reserved_6: u8::arbitrary(g),
+            reserved_7: u8::arbitrary(g),
         }
     }
 }
@@ -136,7 +136,7 @@ fn prop_no_invalid_targets(command_throttle_msg: oscc_command_throttle_s) -> Tes
         check_for_incoming_message();
 
         TestResult::from_bool(g_throttle_control_state.commanded_accelerator_position ==
-                              command_throttle_msg.data.commanded_accelerator_position)
+                              (command_throttle_msg.data.commanded_accelerator_position / 24))
     }
 }
 
@@ -152,6 +152,9 @@ fn check_accel_pos_validity() {
 fn prop_process_enable_command(mut command_throttle_msg: oscc_command_throttle_s) -> TestResult {
     unsafe {
         command_throttle_msg.data.set_enabled(1);
+
+        g_throttle_control_state.enabled = false;
+        g_throttle_control_state.operator_override = false;
 
         g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_THROTTLE_CAN_ID as u64;
         g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_throttle_msg.data);
