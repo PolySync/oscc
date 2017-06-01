@@ -37,7 +37,7 @@ impl Arbitrary for oscc_report_steering_data_s {
         oscc_report_steering_data_s {
             current_steering_wheel_angle: i16::arbitrary(g),
             commanded_steering_wheel_angle: i16::arbitrary(g),
-            vehicle_speed: u16::arbitrary(g),
+            reserved_0: u16::arbitrary(g),
             spoofed_torque_output: i8::arbitrary(g),
             _bitfield_1: u8::arbitrary(g),
         }
@@ -61,10 +61,10 @@ impl Arbitrary for oscc_command_steering_data_s {
             commanded_steering_wheel_angle: i16::arbitrary(g),
             commanded_steering_wheel_angle_rate: u8::arbitrary(g),
             _bitfield_1: u8::arbitrary(g),
-            reserved_1: u8::arbitrary(g),
-            reserved_2: u8::arbitrary(g),
             reserved_3: u8::arbitrary(g),
-            count: u8::arbitrary(g),
+            reserved_4: u8::arbitrary(g),
+            reserved_5: u8::arbitrary(g),
+            reserved_6: u8::arbitrary(g),
         }
     }
 }
@@ -99,7 +99,7 @@ impl Arbitrary for can_frame_s {
 
 /// the steering firmware should not attempt processing any messages
 /// that are not steering commands
-fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, current_target: i16) -> TestResult {
+fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, current_target: f32) -> TestResult {
     // if we generate a steering can message, ignore the result
     if rx_can_msg.id == OSCC_COMMAND_STEERING_CAN_ID {
         return TestResult::discard();
@@ -123,21 +123,28 @@ fn check_message_type_validity() {
     QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), i16::max_value() as usize))
-        .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, i16) -> TestResult)
+        .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, f32) -> TestResult)
 }
 
 /// the steering firmware should set the commanded accelerator position
 /// upon reciept of a valid command steering message
-fn prop_no_invalid_targets(command_steering_msg: oscc_command_steering_s) -> TestResult {
+fn prop_no_invalid_targets(mut command_steering_msg: oscc_command_steering_s) -> TestResult {
+    command_steering_msg.data.set_enabled(1);
     unsafe {
         g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_STEERING_CAN_ID as u64;
-        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_steering_msg.data);
         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_steering_msg.data);
 
         check_for_incoming_message();
 
         TestResult::from_bool(g_steering_control_state.commanded_steering_wheel_angle ==
-                              (command_steering_msg.data.commanded_steering_wheel_angle / 9) as i16)
+                              (command_steering_msg.data.commanded_steering_wheel_angle as
+                               f32 / 9.0) &&
+                              g_steering_control_state.commanded_steering_wheel_angle_rate ==
+                              (command_steering_msg
+                                   .data
+                                   .commanded_steering_wheel_angle_rate as
+                               f32 * 9.0))
     }
 }
 
@@ -154,9 +161,12 @@ fn prop_process_enable_command(mut command_steering_msg: oscc_command_steering_s
     unsafe {
         command_steering_msg.data.set_enabled(1);
 
+        g_steering_control_state.enabled = false;
+        g_steering_control_state.operator_override = false;
+
         g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_STEERING_CAN_ID as u64;
-        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_steering_msg.data);
         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_steering_msg.data);
 
         check_for_incoming_message();
 
@@ -196,8 +206,8 @@ fn check_process_disable_command() {
 
 /// the steering firmware should create only valid CAN frames
 fn prop_send_valid_can_fields(operator_override: bool,
-                              current_steering_wheel_angle: i16,
-                              commanded_steering_wheel_angle: i16)
+                              current_steering_wheel_angle: f32,
+                              commanded_steering_wheel_angle: f32)
                               -> TestResult {
     static mut time: u64 = 0;
     unsafe {
@@ -219,8 +229,8 @@ fn prop_send_valid_can_fields(operator_override: bool,
                                                                       .offset(2),
                                                                  *g_mock_mcp_can_send_msg_buf_buf
                                                                       .offset(3)]),
-            vehicle_speed: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(4),
-                                                *g_mock_mcp_can_send_msg_buf_buf.offset(5)]),
+            reserved_0: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(4),
+                                             *g_mock_mcp_can_send_msg_buf_buf.offset(5)]),
             spoofed_torque_output: std::mem::transmute(*g_mock_mcp_can_send_msg_buf_buf.offset(6)),
             _bitfield_1: std::mem::transmute(*g_mock_mcp_can_send_msg_buf_buf.offset(7)),
         };
@@ -231,9 +241,9 @@ fn prop_send_valid_can_fields(operator_override: bool,
                               (g_mock_mcp_can_send_msg_buf_len ==
                                (OSCC_REPORT_STEERING_CAN_DLC as u8)) &&
                               (steering_data.current_steering_wheel_angle ==
-                               current_steering_wheel_angle) &&
+                               current_steering_wheel_angle as i16) &&
                               (steering_data.commanded_steering_wheel_angle ==
-                               commanded_steering_wheel_angle) &&
+                               commanded_steering_wheel_angle as i16) &&
                               (steering_data.enabled() ==
                                (g_steering_control_state.enabled as u8)) &&
                               (steering_data.override_() == (operator_override as u8)))
@@ -245,7 +255,7 @@ fn check_valid_can_frame() {
     QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), i16::max_value() as usize))
-        .quickcheck(prop_send_valid_can_fields as fn(bool, i16, i16) -> TestResult)
+        .quickcheck(prop_send_valid_can_fields as fn(bool, f32, f32) -> TestResult)
 }
 
 // the steering firmware should be able to correctly and consistently
