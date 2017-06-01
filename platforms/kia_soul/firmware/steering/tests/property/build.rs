@@ -36,7 +36,7 @@ fn main() {
         .file("../../../../../common/libs/dac/oscc_dac.cpp")
         .cpp(true)
         .compiler("/usr/bin/g++")
-        .compile("libcomm_test.a");
+        .compile("libsteering_test.a");
 
     let out_dir = env::var("OUT_DIR").unwrap();
 
@@ -51,9 +51,6 @@ fn main() {
         .clang_arg("-I../../../../../common/testing/mocks")
         .whitelisted_function("publish_reports")
         .whitelisted_function("check_for_incoming_message")
-        .whitelisted_function("*register_callback*")
-        .whitelisted_function("*register_signal_callbacks*")
-        .whitelisted_function("*register_can_frame*")
         .whitelisted_function("check_for_operator_override")
         .whitelisted_var("g_steering_control_state")
         .whitelisted_var("OSCC_REPORT_STEERING_CAN_ID")

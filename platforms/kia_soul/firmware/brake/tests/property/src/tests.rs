@@ -59,10 +59,10 @@ impl Arbitrary for oscc_command_brake_data_s {
         oscc_command_brake_data_s {
             pedal_command: u16::arbitrary(g),
             _bitfield_1: u16::arbitrary(g),
-            reserved_2: u8::arbitrary(g),
-            reserved_3: u8::arbitrary(g),
-            reserved_4: u8::arbitrary(g),
-            count: u8::arbitrary(g),
+            reserved_5: u8::arbitrary(g),
+            reserved_6: u8::arbitrary(g),
+            reserved_7: u8::arbitrary(g),
+            reserved_8: u8::arbitrary(g),
         }
     }
 }
@@ -97,7 +97,7 @@ impl Arbitrary for can_frame_s {
 
 /// the throttle firmware should not attempt processing any messages
 /// that are not throttle commands
-fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, current_target: u16) -> TestResult {
+fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, current_target: f32) -> TestResult {
     // if we generate a throttle can message, ignore the result
     if rx_can_msg.id == OSCC_COMMAND_BRAKE_CAN_ID {
         return TestResult::discard();
@@ -120,7 +120,7 @@ fn check_message_type_validity() {
     QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
-        .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, u16) -> TestResult)
+        .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, f32) -> TestResult)
 }
 
 /// the throttle firmware should set the commanded pedal position
@@ -134,7 +134,7 @@ fn prop_no_invalid_targets(command_brake_msg: oscc_command_brake_s) -> TestResul
         check_for_incoming_message();
 
         TestResult::from_bool(g_brake_control_state.commanded_pedal_position ==
-                              command_brake_msg.data.pedal_command)
+                              command_brake_msg.data.pedal_command as f32)
     }
 }
 
@@ -194,7 +194,7 @@ fn check_process_disable_command() {
 /// the throttle firmware should create only valid CAN frames
 fn prop_send_valid_can_fields(control_enabled: bool,
                               operator_override: bool,
-                              commanded_pedal_position: u16)
+                              commanded_pedal_position: f32)
                               -> TestResult {
     static mut time: u64 = 0;
     unsafe {
@@ -222,7 +222,7 @@ fn prop_send_valid_can_fields(control_enabled: bool,
                               (g_mock_mcp_can_send_msg_buf_ext == (CAN_STANDARD as u8)) &&
                               (g_mock_mcp_can_send_msg_buf_len ==
                                (OSCC_REPORT_BRAKE_CAN_DLC as u8)) &&
-                              (brake_data.pedal_command == commanded_pedal_position) &&
+                              (brake_data.pedal_command == commanded_pedal_position as u16) &&
                               (brake_data.enabled() == g_brake_control_state.enabled as u8) &&
                               (brake_data.override_() == operator_override as u8))
     }
@@ -233,7 +233,7 @@ fn check_valid_can_frame() {
     QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
-        .quickcheck(prop_send_valid_can_fields as fn(bool, bool, u16) -> TestResult)
+        .quickcheck(prop_send_valid_can_fields as fn(bool, bool, f32) -> TestResult)
 }
 
 // the brake firmware should be able to correctly and consistently
