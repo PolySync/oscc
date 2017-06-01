@@ -21,6 +21,12 @@
  */
 #define ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS ( 878.0 )
 
+/*
+ * @brief Alpha term for the exponential filter used to smooth the sensor input.
+ *
+ */
+#define ACCUMULATOR_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.05 )
+
 
 // ****************************************************************************
 // Function:    accumulator_init
@@ -62,9 +68,22 @@ void accumulator_turn_pump_on( void );
 
 
 // ****************************************************************************
+// Function:    accumulator_read_pressure
+//
+// Purpose:     Reads the pressure of the accumulator.
+//
+// Returns:     float - pressure of the accumulator
+//
+// Parameters:  void
+//
+// ****************************************************************************
+float accumulator_read_pressure( void );
+
+
+// ****************************************************************************
 // Function:    accumulator_maintain_pressure
 //
-// Purpose:     Turn accumulator pump on or off to maintain pressure
+// Purpose:     Turn accumulator pump on or off to maintain pressure.
 //
 // Returns:     void
 //
