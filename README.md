@@ -255,8 +255,8 @@ The property based tests are also run by Cargo:
 cargo test -- --test-threads=1
 ```
 
-*note: If you are running the property-based tests on the firmware modules, the test-threads argument is required to
-prevent data corruption. If you are running the tests on the PID controller, it can be safely omitted.*
+*(note: If you are running the property-based tests on the firmware modules, the test-threads argument is required to
+prevent data corruption. If you are running the tests on the PID controller, it can be safely omitted.)*
 
 Once the tests have completed, the output should look similar to the following:
 
