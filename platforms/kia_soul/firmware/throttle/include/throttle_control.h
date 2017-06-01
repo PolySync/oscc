@@ -80,6 +80,12 @@
 #define ACCELERATOR_OVERRIDE_THRESHOLD ( 1000.0 )
 
 
+/*
+ * @brief Alpha term for the exponential filter used to smooth the sensor input.
+ *
+ */
+#define ACCELERATOR_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.5 )
+
 
 /**
  * @brief Accelerator position values.
