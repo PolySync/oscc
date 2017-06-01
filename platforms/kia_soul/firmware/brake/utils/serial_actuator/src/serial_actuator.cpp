@@ -24,14 +24,6 @@ struct accumulator_data_s
 };
 
 
-// master solenoid structure
-struct master_cylinder_data_s
-{
-    float pressure1;
-    float pressure2;
-};
-
-
 // pressure at tires structure
 struct pressure_at_tires_data_s
 {
@@ -63,7 +55,7 @@ struct accumulator_data_s accumulator =
 };
 
 
-struct master_cylinder_data_s master_cylinder =
+master_cylinder_pressure_s master_cylinder =
 {
     0.0,    // pressure1
     0.0     // pressure2
@@ -137,50 +129,6 @@ static void print_pressure_info()
 
     DEBUG_PRINT( ",PMC2," );
     DEBUG_PRINTLN( master_cylinder.pressure2 );
-}
-
-
-// *****************************************************
-// Function:    accumulator_maintain_pressure
-//
-// Purpose:     Turn accumulator pump on or off
-//              to maintain pressure
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// *****************************************************
-static void accumulator_read_pressure( )
-{
-    int16_t raw_accumulator_data = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
-
-    float pressure = raw_adc_to_voltage( raw_accumulator_data );
-
-    accumulator.pressure = pressure;
-}
-
-
-// *****************************************************
-// Function:    master_cylinder_init
-//
-// Purpose:     Initializes the master cylinder solenoid
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// *****************************************************
-static void master_cylinder_read_pressure( )
-{
-    int16_t raw_smc1_data = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 );
-    int16_t raw_smc2_data = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 );
-
-    float pressure_smc1 = raw_adc_to_voltage( raw_smc1_data );
-    float pressure_smc2 = raw_adc_to_voltage( raw_smc2_data );
-
-    master_cylinder.pressure1 = pressure_smc1;
-    master_cylinder.pressure2 = pressure_smc2;
 }
 
 
@@ -312,9 +260,9 @@ int main( void )
 
         read_pressure_sensor( );
 
-        accumulator_read_pressure( );
+        accumulator.pressure = accumulator_read_pressure( );
 
-        master_cylinder_read_pressure( );
+        master_cylinder_read_pressure( &master_cylinder );
 
         print_pressure_info( );
     }
