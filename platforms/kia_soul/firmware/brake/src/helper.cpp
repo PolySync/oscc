@@ -30,7 +30,7 @@ float interpolate(
 
 
 float raw_adc_to_pressure(
-    const uint16_t input )
+    const int input )
 {
     float pressure = ( float )input;
     pressure *= VOLTAGE_TO_PRESSURE_SCALAR;
