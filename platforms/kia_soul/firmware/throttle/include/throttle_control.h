@@ -84,7 +84,7 @@
  * @brief Alpha term for the exponential filter used to smooth the sensor input.
  *
  */
-#define ACCELERATOR_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.5 )
+#define ACCELERATOR_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.25 )
 
 
 /**

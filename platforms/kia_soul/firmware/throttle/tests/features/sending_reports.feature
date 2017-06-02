@@ -18,5 +18,5 @@ Feature: Sending reports
     Examples:
       | command | sensor_val | current_accelerator_position |
       |  0      |  0         |  0                           |
-      |  50     |  256       |  2048                        |
-      |  100    |  512       |  4096                        |
+      |  50     |  256       |  512                         |
+      |  100    |  512       |  1408                        |
