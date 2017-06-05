@@ -20,7 +20,7 @@ typedef struct
  * @brief Alpha term for the exponential filter used to smooth the sensor input.
  *
  */
-#define MASTER_CYLINDER_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.05 )
+#define MASTER_CYLINDER_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.1 )
 
 
 // ****************************************************************************
