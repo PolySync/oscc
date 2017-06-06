@@ -76,9 +76,4 @@ void master_cylinder_init( void );
 void master_cylinder_read_pressure( master_cylinder_pressure_s * pressure );
 
 
-
-
-
-
-
 #endif /* _OSCC_KIA_SOUL_BRAKE_MASTER_CYLINDER_H_ */
