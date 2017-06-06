@@ -23,6 +23,7 @@ fn main() {
         .include("../../../../../common/libs/time")
         .include("../../../../../common/libs/dac")
         .include("../../../../../common/libs/pid")
+        .include("../../../../../common/libs/signal_smoothing")
         .include("/usr/lib/avr/include")
         .file("../../../../../common/testing/mocks/Arduino_mock.cpp")
         .file("../../../../../common/testing/mocks/mcp_can_mock.cpp")
@@ -34,8 +35,8 @@ fn main() {
         .file("../../../../../common/libs/time/oscc_time.cpp")
         .file("../../../../../common/libs/can/oscc_can.cpp")
         .file("../../../../../common/libs/dac/oscc_dac.cpp")
+        .file("../../../../../common/libs/signal_smoothing/oscc_signal_smoothing.cpp")
         .cpp(true)
-        .compiler("/usr/bin/g++")
         .compile("libsteering_test.a");
 
     let out_dir = env::var("OUT_DIR").unwrap();

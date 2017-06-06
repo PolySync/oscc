@@ -255,12 +255,19 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
         g_throttle_control_state.enabled = true;
         g_mock_arduino_analog_read_return = analog_read_spoof;
 
+        let mut accelerator_position = accelerator_position_s {
+            low: 0,
+            high: 0
+        };
+
+        read_accelerator_position_sensor(&mut accelerator_position);
+
+        let accelerator_position_average: u32 = 
+            (accelerator_position.low as u32 + accelerator_position.high as u32) / 2;
+
         check_for_operator_override();
 
-        let accel_pos_normalized: u32 =
-            ((analog_read_spoof << 2) as u32 + (analog_read_spoof << 2) as u32) / 2;
-
-        if accel_pos_normalized >= ACCELERATOR_OVERRIDE_THRESHOLD as u32 {
+        if accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD as u32 {
             TestResult::from_bool(g_throttle_control_state.operator_override == true &&
                                   g_throttle_control_state.enabled == false)
         } else {
