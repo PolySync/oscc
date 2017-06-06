@@ -150,6 +150,8 @@ fn check_accel_pos_validity() {
 fn prop_process_enable_command(mut command_brake_msg: oscc_command_brake_s) -> TestResult {
     unsafe {
         command_brake_msg.data.set_enabled(1);
+        
+        g_brake_control_state.operator_override = false;
 
         g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_BRAKE_CAN_ID as u64;
         g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_brake_msg.data);
@@ -249,8 +251,8 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
 
         check_for_operator_override();
 
-        let sensor_1: f32 = raw_adc_to_pressure(analog_read_spoof);
-        let sensor_2: f32 = raw_adc_to_pressure(analog_read_spoof);
+        let sensor_1: f32 = raw_adc_to_pressure(analog_read_spoof as i32);
+        let sensor_2: f32 = raw_adc_to_pressure(analog_read_spoof as i32);
 
         filtered_input_1 = (filter_alpha * sensor_1) + ((1.0 - filter_alpha) * filtered_input_1);
 
