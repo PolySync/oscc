@@ -91,7 +91,7 @@ float interpolate(
 //
 // ****************************************************************************
 float raw_adc_to_pressure(
-    const uint16_t input );
+    const int input );
 
 
 #endif /* _OSCC_KIA_SOUL_BRAKE_HELPER_H_ */

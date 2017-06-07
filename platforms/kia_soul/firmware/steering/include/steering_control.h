@@ -60,10 +60,16 @@
 
 /*
  * @brief Value of the torque sensor that indicates operator override.
-          [degrees/microsecond]
+ *        [degrees/microsecond]
  *
  */
 #define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 3000 )
+
+/*
+ * @brief Alpha term for the exponential filter used to smooth the sensor input.
+ *
+ */
+#define TORQUE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.5 )
 
 /*
  * @brief Number of bits to shift to go from a 10-bit value to a 12-bit value.

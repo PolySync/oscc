@@ -22,6 +22,7 @@ fn main() {
         .include("../../../../../common/libs/can")
         .include("../../../../../common/libs/time")
         .include("../../../../../common/libs/pid")
+        .include("../../../../../common/libs/signal_smoothing")
         .include("/usr/lib/avr/include")
         .file("../../../../../common/testing/mocks/Arduino_mock.cpp")
         .file("../../../../../common/testing/mocks/mcp_can_mock.cpp")
@@ -32,6 +33,7 @@ fn main() {
         .file("../../src/helper.cpp")
         .file("../../../../../common/libs/time/oscc_time.cpp")
         .file("../../../../../common/libs/can/oscc_can.cpp")
+        .file("../../../../../common/libs/signal_smoothing/oscc_signal_smoothing.cpp")
         .cpp(true)
         .compiler("/usr/bin/g++")
         .compile("libbrake_test.a");

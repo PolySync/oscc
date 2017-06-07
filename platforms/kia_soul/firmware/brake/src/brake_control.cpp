@@ -8,6 +8,7 @@
 #include "debug.h"
 #include "oscc_time.h"
 #include "oscc_pid.h"
+#include "oscc_signal_smoothing.h"
 
 #include "globals.h"
 #include "brake_control.h"
@@ -78,43 +79,12 @@ void check_for_operator_override( void )
     if( g_brake_control_state.enabled == true
         || g_brake_control_state.operator_override == true )
     {
-        // This function checks the voltage input from the brake pedal
-        // sensors to determine if the driver is attempting to brake
-        // the vehicle.  This must be done over time by taking
-        // periodic samples of the input voltage, calculating the
-        // difference between the two and then passing that difference
-        // through a basic exponential filter to smooth the input.
+        master_cylinder_pressure_s master_cylinder_pressure;
 
-        // The required response time for the filter is 250 ms, which at
-        // 50ms per sample is 5 samples.  As such, the alpha for the
-        // exponential filter is 0.5 to make the input go "close to" zero
-        // in 5 samples.
+        master_cylinder_read_pressure( &master_cylinder_pressure );
 
-        // The implementation is:
-        //     s(t) = ( a * x(t) ) + ( ( 1 - a ) * s ( t - 1 ) )
-
-        // If the filtered input exceeds the max voltage, it is an
-        // indicator that the driver is pressing on the brake pedal
-        // and the control should be disabled.
-        static const float filter_alpha = 0.05;
-
-        static float filtered_input_1 = 0.0;
-        static float filtered_input_2 = 0.0;
-
-        float sensor_1 = ( float )( analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 ) );
-        float sensor_2 = ( float )( analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 ) );
-
-        sensor_1 = raw_adc_to_pressure( ( uint16_t )sensor_1 );
-        sensor_2 = raw_adc_to_pressure( ( uint16_t )sensor_2 );
-
-        filtered_input_1 = ( filter_alpha * sensor_1 ) +
-            ( ( 1.0 - filter_alpha ) * filtered_input_1 );
-
-        filtered_input_2 = ( filter_alpha * sensor_2 ) +
-            ( ( 1.0 - filter_alpha ) * filtered_input_2 );
-
-        if ( ( filtered_input_1 >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
-            ( filtered_input_2 >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+        if ( ( master_cylinder_pressure.sensor_1_pressure >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
+            ( master_cylinder_pressure.sensor_2_pressure >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
         {
             disable_control( );
 
@@ -132,13 +102,27 @@ void check_for_operator_override( void )
 
 void read_pressure_sensor( void )
 {
-    uint16_t raw_left_pressure = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
-    uint16_t raw_right_pressure = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
+    int raw_pressure_left = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
+    int raw_pressure_right = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
 
-    float pressure_left = raw_adc_to_pressure( raw_left_pressure );
-    float pressure_right = raw_adc_to_pressure( raw_right_pressure );
+    float unfiltered_pressure_left = raw_adc_to_pressure( raw_pressure_left );
+    float unfiltered_pressure_right = raw_adc_to_pressure( raw_pressure_right );
 
-    float pressure_average = ( pressure_left + pressure_right ) / 2.0;
+    const float filter_alpha = BRAKE_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA;
+    static float filtered_pressure_left = 0.0;
+    static float filtered_pressure_right = 0.0;
+
+    filtered_pressure_left = exponential_moving_average(
+        filter_alpha,
+        unfiltered_pressure_left,
+        filtered_pressure_left);
+
+    filtered_pressure_right = exponential_moving_average(
+        filter_alpha,
+        unfiltered_pressure_right,
+        filtered_pressure_right);
+
+    float pressure_average = ( filtered_pressure_left + filtered_pressure_right ) / 2.0;
 
     g_brake_control_state.current_sensor_brake_pressure = pressure_average;
 }

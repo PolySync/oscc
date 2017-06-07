@@ -43,22 +43,28 @@
 #define BRAKE_PRESSURE_MAX_IN_DECIBARS ( 878.3 )
 
 /*
+ * @brief Alpha term for the exponential filter used to smooth the sensor input.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.05 )
+
+/*
  * @brief Proportional gain of the PID controller.
  *
  */
-#define PID_PROPORTIONAL_GAIN ( 0.62 )
+#define PID_PROPORTIONAL_GAIN ( 0.65 )
 
 /*
  * @brief Integral gain of the PID controller.
  *
  */
-#define PID_INTEGRAL_GAIN ( 1.0 )
+#define PID_INTEGRAL_GAIN ( 1.75 )
 
 /*
  * @brief Derivative gain of the PID controller.
  *
  */
-#define PID_DERIVATIVE_GAIN ( 0.00135 )
+#define PID_DERIVATIVE_GAIN ( 0.001 )
 
 /*
  * @brief Windup guard of the PID controller.
