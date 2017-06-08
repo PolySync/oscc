@@ -123,14 +123,18 @@ with the following command:
 sudo apt install screen
 ```
 
-You can connect to the serial interface (assuming a port of `/dev/ttyACM0` and a baudrate of
-`115200`) with the following command:
+You can use `make monitor` to automatically run `screen`, or `make monitor-log`
+to run `screen` and output to a file called `screenlog.0` in your current directory:
 
 ```
-screen /dev/ttyACM0 115200
+make monitor
+make monitor-log
 ```
 
-You can exit screen with `C-a \`.
+The serial port and baudrate to use can be configured in `platforms/CMakeLists.txt`
+by modifying `ARDUINO_DEFAULT_PORT` and `ARDUINO_DEFAULT_BAUDRATE`.
+
+You can exit `screen` with `C-a \`.
 
 To do more in-depth debugging you can use any of a number of serial monitoring applications.
 Processing can be used quite effectively to provide output plots of data incoming across a serial
