@@ -11,14 +11,44 @@ if(TESTS)
     add_subdirectory(kia_soul/firmware/can_gateway/tests)
     add_subdirectory(kia_soul/firmware/steering/tests)
     add_subdirectory(kia_soul/firmware/throttle/tests)
+    add_subdirectory(common/libs/pid/tests)
 
     add_custom_target(
-        run-tests
+        run-kia-soul-unit-tests
         DEPENDS
-        run-brake-tests
-        run-can-gateway-tests
-        run-steering-tests
-        run-throttle-tests)
+        run-kia-soul-brake-unit-tests
+        run-kia-soul-can-gateway-unit-tests
+        run-kia-soul-steering-unit-tests
+        run-kia-soul-throttle-unit-tests)
+
+    add_custom_target(
+        run-kia-soul-property-tests
+        DEPENDS
+        run-kia-soul-brake-property-tests
+        run-kia-soul-steering-property-tests
+        run-kia-soul-throttle-property-tests)
+
+    add_custom_target(
+        run-library-property-tests
+        DEPENDS
+        run-pid-library-property-tests)
+
+    add_custom_target(
+        run-unit-tests
+        DEPENDS
+        run-kia-soul-unit-tests)
+
+    add_custom_target(
+        run-property-tests
+        DEPENDS
+        run-kia-soul-property-tests
+        run-library-property-tests)
+
+    add_custom_target(
+        run-all-tests
+        DEPENDS
+        run-unit-tests
+        run-property-tests)
 else()
     set(CMAKE_TOOLCHAIN_FILE common/toolchain/ArduinoToolchain.cmake)
 

@@ -1,4 +1,4 @@
-project(kia-soul-throttle-tests)
+project(kia-soul-throttle-unit-tests)
 
 add_library(
     kia-soul-throttle
@@ -27,18 +27,18 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/mocks)
 
 add_executable(
-    kia-soul-throttle-test
+    kia-soul-throttle-unit-test
     features/step_definitions/test.cpp)
 
 target_link_libraries(
-    kia-soul-throttle-test
+    kia-soul-throttle-unit-test
     PRIVATE
     kia-soul-throttle
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/lib/libcucumber-cpp.a
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/lib/libcgreen.so)
 
 target_include_directories(
-    kia-soul-throttle-test
+    kia-soul-throttle-unit-test
     PRIVATE
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
@@ -48,8 +48,14 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include)
 
 add_custom_target(
-    run-throttle-tests
+    run-kia-soul-throttle-unit-tests
     DEPENDS
-    kia-soul-throttle-test
+    kia-soul-throttle-unit-test
     COMMAND
-    kia-soul-throttle-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+    kia-soul-throttle-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+
+add_custom_target(
+    run-kia-soul-throttle-property-tests
+    COMMAND
+    cargo test -- --test-threads=1
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/property)

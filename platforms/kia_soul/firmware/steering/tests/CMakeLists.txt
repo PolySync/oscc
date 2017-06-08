@@ -1,4 +1,4 @@
-project(kia-soul-steering-tests)
+project(kia-soul-steering-unit-tests)
 
 add_library(
     kia-soul-steering
@@ -29,18 +29,18 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/mocks)
 
 add_executable(
-    kia-soul-steering-test
+    kia-soul-steering-unit-test
     features/step_definitions/test.cpp)
 
 target_link_libraries(
-    kia-soul-steering-test
+    kia-soul-steering-unit-test
     PRIVATE
     kia-soul-steering
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/lib/libcucumber-cpp.a
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/lib/libcgreen.so)
 
 target_include_directories(
-    kia-soul-steering-test
+    kia-soul-steering-unit-test
     PRIVATE
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
@@ -51,8 +51,14 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include)
 
 add_custom_target(
-    run-steering-tests
+    run-kia-soul-steering-unit-tests
     DEPENDS
-    kia-soul-steering-test
+    kia-soul-steering-unit-test
     COMMAND
-    kia-soul-steering-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+    kia-soul-steering-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+
+add_custom_target(
+    run-kia-soul-steering-property-tests
+    COMMAND
+    cargo test -- --test-threads=1
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/property)
