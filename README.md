@@ -144,8 +144,25 @@ Be aware that using serial printing can affect the timing of the firmware. You m
 strange behavior while printing that does not occur otherwise.
 
 
-Unit Tests
+Tests
 ------------
+
+There are two types of tests available: unit and property-based.
+
+Building and running the tests is similar to the firmware itself, but you must instead tell
+CMake to build the tests instead of the firmware with the `-DTESTS=ON` flag. We also pass
+the `-DCMAKE_BUILD_TYPE=Release` flag so that CMake will disable debug symbols and enable
+optimizations, good things to do when running tests to ensure nothing breaks with
+optimizations.
+
+```
+cd platforms
+mkdir build
+cd build
+cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release
+```
+
+**Unit Tests**
 
 Each module has a suite of unit tests that use **Cucumber** with **Cgreen**. There are prebuilt
 64-bit Linux versions in `platforms/common/testing/framework`. Boost is required for Cucumber-CPP
@@ -157,9 +174,6 @@ in an `oscc_test_framework` directory in the directory that you ran the script f
 `oscc_test_framework/cucumber-cpp` and `oscc_test_framework/cgreen` to
 `platforms/common/testing/framework`.
 
-
-**Running the Tests**
-
 You must have **Cucumber** installed to run the tests:
 
 ```
@@ -167,40 +181,25 @@ sudo apt install ruby-dev
 sudo gem install cucumber -v 2.0.0
 ```
 
-Building and running the tests is similar to the firmware itself, but you must instead tell
-CMake to build the tests instead of the firmware with the `-DTESTS=ON` flag. We also pass
-the `-DCMAKE_BUILD_TYPE=Release` flag so that CMake will disable debug symbols and enable
-optimizations, good things to do when running tests to ensure nothing breaks with
-optimizations.
-
-We first need a build directory in the `platforms` directory:
+We can run all of the unit tests available:
 
 ```
-cd platforms
-mkdir build
-cd build
-```
-
-Then we tell CMake that we're going to be building tests:
-
-```
-cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release
-```
-
-Finally we make the `run-tests` target which will build the tests for each module and
-run them:
-
-```
-make run-tests
+make run-unit-tests
 ```
 
 Each module's test can also be run individually:
 
 ```
-make run-brake-tests
-make run-can-gateway-tests
-make run-steering-tests
-make run-throttle-tests
+make run-kia-soul-brake-unit-tests
+make run-kia-soul-can-gateway-unit-tests
+make run-kia-soul-steering-unit-tests
+make run-kia-soul-throttle-unit-tests
+```
+
+Or run only the tests of a single platform:
+
+```
+make run-kia-soul-unit-tests
 ```
 
 If everything works correctly you should see something like this:
@@ -228,39 +227,35 @@ Feature: Receiving commands
       | 1024       | 4096      | 4096      |
 ```
 
-
-Property-Based Tests
-------------
+**Property-Based Tests**
 
 The throttle, steering, and brake modules, along with the PID controller library, also contain a series of
-property based tests.
-These tests use [QuickCheck for Rust](http://burntsushi.net/rustdoc/quickcheck/), so **Rust** and **Cargo** 
+property-based tests.
+
+These tests use [QuickCheck for Rust](http://burntsushi.net/rustdoc/quickcheck/), so **Rust** and **Cargo**
 need to be [installed](https://www.rust-lang.org/en-US/install.html) in order to run them locally.
 
 
-**Running the Tests**
-
-To run the tests, first navigate into the folder of the module to be tested.
-For example, to run the PID tests: 
+We can run all of the property-based tests available:
 
 ```
-cd platforms/common/libs/pid/tests/property
+make run-property-tests
 ```
 
-Cargo is then used to build the tests, including fetching any needed dependencies:
+Each module's test can also be run individually:
 
 ```
-cargo build
+make run-kia-soul-brake-property-tests
+make run-kia-soul-steering-property-tests
+make run-kia-soul-throttle-property-tests
+make run-pid-library-property-tests
 ```
 
-The property based tests are also run by Cargo:
+Or run only the tests of a single platform:
 
 ```
-cargo test -- --test-threads=1
+make run-kia-soul-property-tests
 ```
-
-*(note: If you are running the property-based tests on the firmware modules, the test-threads argument is required to
-prevent data corruption. If you are running the tests on the PID controller, it can be safely omitted.)*
 
 Once the tests have completed, the output should look similar to the following:
 
@@ -281,6 +276,14 @@ test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
+```
+
+**Run All Tests**
+
+Finally, you can run all available tests:
+
+```
+make run-all-tests
 ```
 
 
