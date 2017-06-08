@@ -79,6 +79,19 @@
 
 #define ACCELERATOR_OVERRIDE_THRESHOLD ( 750.0 )
 
+/*
+ * @brief Amount of time between accelerator position sensor checks.
+ *        [milliseconds]
+ *
+ */
+#define ACCELERATOR_POSITION_SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC ( 250 )
+
+/*
+ * @brief Number of consecutive faults that can occur when reading the
+ *        accelerator position sensor before control is disabled.
+ *
+ */
+#define ACCELERATOR_POSITION_SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 /*
  * @brief Alpha term for the exponential filter used to smooth the sensor input.
@@ -114,6 +127,9 @@ typedef struct
     bool operator_override; /* Flag indicating whether accelerator was manually
                                pressed by operator. */
 
+    bool invalid_sensor_value; /* Flag indicating the value read from the
+                                  accelerator position sensor is invalid. */
+
     uint16_t commanded_accelerator_position; /* Position of accelerator commanded
                                                 by the controller. */
 } kia_soul_throttle_control_state_s;
@@ -131,6 +147,20 @@ typedef struct
 //
 // ****************************************************************************
 void check_for_operator_override( void );
+
+
+// ****************************************************************************
+// Function:    check_for_sensor_problems
+//
+// Purpose:     Checks to see if the values read from the accelerator position
+//              sensor are valid.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void check_for_sensor_problems( void );
 
 
 // ****************************************************************************

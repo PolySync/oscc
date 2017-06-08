@@ -23,6 +23,7 @@ void init_globals( void )
     // update timestamps so we don't set timeout warnings on start up
     g_throttle_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     g_throttle_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
+    g_accelerator_position_sensor_last_check_timestamp = GET_TIMESTAMP_MS();
 }
 
 

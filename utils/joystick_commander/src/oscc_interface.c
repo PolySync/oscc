@@ -223,6 +223,31 @@ static void oscc_interface_check_for_obd_timeout(
     }
 }
 
+// **********************************************************
+// Function:    oscc_interface_check_for_invalid_sensor_value
+//
+// Purpose:     Checks report messages for invalid sensor value flag.
+//
+// Returns:     bool - invalid sensor value flag
+//
+// Parameters:  can_id - ID of CAN frame containing the report
+//              buffer - Buffer of CAN frame containing the report
+//
+// **********************************************************
+static void oscc_interface_check_for_invalid_sensor_value(
+    oscc_status_s * status,
+    long can_id,
+    unsigned char * buffer )
+{
+    if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
+    {
+        oscc_report_throttle_data_s* throttle_report_data =
+            ( oscc_report_throttle_data_s* )buffer;
+
+        status->invalid_sensor_value_throttle = (bool) throttle_report_data->fault_invalid_sensor_value;
+    }
+}
+
 // *****************************************************
 // public definitions
 // *****************************************************
@@ -568,6 +593,8 @@ int oscc_interface_update_status( oscc_status_s * status )
             oscc_interface_check_for_operator_override( status, can_id, buffer );
 
             oscc_interface_check_for_obd_timeout( status, can_id, buffer );
+
+            oscc_interface_check_for_invalid_sensor_value( status, can_id, buffer );
         }
         else if( ( can_status == canERR_NOMSG ) || ( can_status == canERR_TIMEOUT ) )
         {

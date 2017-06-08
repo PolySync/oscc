@@ -10,6 +10,7 @@
 #include "DAC_MCP49xx.h"
 #include "oscc_dac.h"
 #include "oscc_signal_smoothing.h"
+#include "oscc_time.h"
 
 #include "throttle_control.h"
 #include "globals.h"
@@ -43,6 +44,52 @@ void check_for_operator_override( void )
         else
         {
             g_throttle_control_state.operator_override = false;
+        }
+    }
+}
+
+
+void check_for_sensor_problems( void )
+{
+    if ( (g_throttle_control_state.enabled == true)
+        || (g_throttle_control_state.invalid_sensor_value == true) )
+    {
+        uint32_t current_time = GET_TIMESTAMP_MS();
+
+        bool timeout = is_timeout(
+            g_accelerator_position_sensor_last_check_timestamp,
+            current_time,
+            ACCELERATOR_POSITION_SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC );
+
+        static int fault_count = 0;
+
+        if( timeout == true )
+        {
+            g_accelerator_position_sensor_last_check_timestamp = current_time;
+
+            int sensor_high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
+            int sensor_low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+
+            // sensor pins tied to ground - a value of zero indicates disconnection
+            if( (sensor_high == 0)
+                || (sensor_low == 0) )
+            {
+                ++fault_count;
+
+                if( fault_count >= ACCELERATOR_POSITION_SENSOR_VALIDITY_CHECK_FAULT_COUNT )
+                {
+                    disable_control( );
+
+                    g_throttle_control_state.invalid_sensor_value = true;
+
+                    DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
+                }
+            }
+            else
+            {
+                g_throttle_control_state.invalid_sensor_value = false;
+                fault_count = 0;
+            }
         }
     }
 }
