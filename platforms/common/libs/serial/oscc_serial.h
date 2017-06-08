@@ -9,13 +9,6 @@
 #define _OSCC_SERIAL_H_
 
 
-/*
- * @brief Serial baudrate.
- *
- */
-#define SERIAL_BAUD (115200)
-
-
 // ****************************************************************************
 // Function:    init_serial
 //

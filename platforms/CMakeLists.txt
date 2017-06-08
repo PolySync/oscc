@@ -26,10 +26,21 @@ else()
 
     project(firmware)
 
-    set(ARDUINO_DEFAULT_PORT /dev/ttyACM0)
-
     option(DEBUG "Enable debug mode" OFF)
     option(BUILD_KIA_SOUL "Build firmware for Kia Soul" OFF)
+
+    set(ARDUINO_DEFAULT_PORT /dev/ttyACM0)
+    set(ARDUINO_DEFAULT_BAUDRATE 115200)
+
+    add_definitions(-DSERIAL_BAUD=${ARDUINO_DEFAULT_BAUDRATE})
+
+    add_custom_target(
+        monitor
+        COMMAND screen ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
+
+    add_custom_target(
+        monitor-log
+        COMMAND screen -L ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
 
     if(DEBUG)
         add_definitions(-DDEBUG)
