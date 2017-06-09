@@ -28,18 +28,18 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/mocks)
 
 add_executable(
-    kia-soul-brake-test
+    kia-soul-brake-unit-test
     features/step_definitions/test.cpp)
 
 target_link_libraries(
-    kia-soul-brake-test
+    kia-soul-brake-unit-test
     PRIVATE
     kia-soul-brake
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/lib/libcucumber-cpp.a
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/lib/libcgreen.so)
 
 target_include_directories(
-    kia-soul-brake-test
+    kia-soul-brake-unit-test
     PRIVATE
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
@@ -50,8 +50,14 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include)
 
 add_custom_target(
-    run-brake-tests
+    run-kia-soul-brake-unit-tests
     DEPENDS
-    kia-soul-brake-test
+    kia-soul-brake-unit-test
     COMMAND
-    kia-soul-brake-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+    kia-soul-brake-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+
+add_custom_target(
+    run-kia-soul-brake-property-tests
+    COMMAND
+    cargo test -- --test-threads=1
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/property)

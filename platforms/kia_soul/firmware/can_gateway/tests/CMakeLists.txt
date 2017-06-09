@@ -1,4 +1,4 @@
-project(kia-soul-can-gateway-tests)
+project(kia-soul-can-gateway-unit-tests)
 
 add_library(
     kia-soul-can-gateway
@@ -20,18 +20,18 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/mocks)
 
 add_executable(
-    kia-soul-can-gateway-test
+    kia-soul-can-gateway-unit-test
     features/step_definitions/test.cpp)
 
 target_link_libraries(
-    kia-soul-can-gateway-test
+    kia-soul-can-gateway-unit-test
     PRIVATE
     kia-soul-can-gateway
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/lib/libcucumber-cpp.a
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/lib/libcgreen.so)
 
 target_include_directories(
-    kia-soul-can-gateway-test
+    kia-soul-can-gateway-unit-test
     PRIVATE
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
@@ -41,8 +41,8 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include)
 
 add_custom_target(
-    run-can-gateway-tests
+    run-kia-soul-can-gateway-unit-tests
     DEPENDS
-    kia-soul-can-gateway-test
+    kia-soul-can-gateway-unit-test
     COMMAND
-    kia-soul-can-gateway-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+    kia-soul-can-gateway-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )

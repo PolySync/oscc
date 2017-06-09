@@ -21,13 +21,10 @@ node('arduino') {
     }
     stage('Test') {
       parallel 'unit tests': {
-        sh 'cd platforms && mkdir build_tests && cd build_tests && cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-tests'
+        sh 'cd platforms && mkdir build_unit_tests && cd build_unit_tests && cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-unit-tests'
         echo 'Unit Tests Complete!'
       }, 'property-based tests': {
-        sh 'cargo test --manifest-path platforms/kia_soul/firmware/steering/tests/property/Cargo.toml -- --test-threads=1'
-        sh 'cargo test --manifest-path platforms/kia_soul/firmware/brake/tests/property/Cargo.toml -- --test-threads=1'
-        sh 'cargo test --manifest-path platforms/kia_soul/firmware/throttle/tests/property/Cargo.toml -- --test-threads=1'
-        sh 'cargo test --manifest-path platforms/common/libs/pid/tests/property/Cargo.toml'
+        sh 'cd platforms && mkdir build_property_tests && cd build_property_tests && cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
         echo 'Property-Based Tests Complete!'
       }, 'acceptance tests': {
         echo 'Acceptance Tests Complete!'
