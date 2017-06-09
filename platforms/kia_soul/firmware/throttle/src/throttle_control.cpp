@@ -57,7 +57,7 @@ void check_for_sensor_faults( void )
         uint32_t current_time = GET_TIMESTAMP_MS();
 
         bool timeout = is_timeout(
-            g_accelerator_position_sensor_last_check_timestamp,
+            g_sensor_validity_last_check_timestamp,
             current_time,
             SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC );
 
@@ -65,7 +65,7 @@ void check_for_sensor_faults( void )
 
         if( timeout == true )
         {
-            g_accelerator_position_sensor_last_check_timestamp = current_time;
+            g_sensor_validity_last_check_timestamp = current_time;
 
             int sensor_high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
             int sensor_low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );

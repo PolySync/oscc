@@ -21,8 +21,8 @@ typedef struct
     bool obd_timeout_brake;
     bool obd_timeout_steering;
     bool invalid_sensor_value_brake;
-    bool invalid_sensor_value_throttle;
     bool invalid_sensor_value_steering;
+    bool invalid_sensor_value_throttle;
 } oscc_status_s;
 
 

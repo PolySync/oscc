@@ -126,8 +126,8 @@ typedef struct
     bool operator_override; /* Flag indicating whether accelerator was manually
                                pressed by operator. */
 
-    bool invalid_sensor_value; /* Flag indicating the value read from the
-                                  accelerator position sensor is invalid. */
+    bool invalid_sensor_value; /* Flag indicating a value read from one of the
+                                  sensors is invalid. */
 
     uint16_t commanded_accelerator_position; /* Position of accelerator commanded
                                                 by the controller. */

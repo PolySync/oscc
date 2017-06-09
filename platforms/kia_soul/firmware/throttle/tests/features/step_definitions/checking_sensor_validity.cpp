@@ -10,7 +10,7 @@ WHEN("^a sensor becomes temporarily disconnected$")
     g_mock_arduino_millis_return += SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC;
     check_for_sensor_faults();
 
-    // third check - valiud value - faults reset
+    // third check - valid value - faults reset
     g_mock_arduino_analog_read_return = 500;
     g_mock_arduino_millis_return += SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC;
     check_for_sensor_faults();
