@@ -773,5 +773,12 @@ int commander_high_frequency_update( )
 
     }
 
+    if ( status.invalid_sensor_value_steering == true )
+    {
+        printf( "Steering - Invalid Sensor Value Detected\n" );
+        return_code = oscc_interface_disable_steering( );
+
+    }
+
     return return_code;
 }

@@ -253,6 +253,13 @@ static void oscc_interface_check_for_invalid_sensor_value(
 
         status->invalid_sensor_value_throttle = (bool) throttle_report_data->fault_invalid_sensor_value;
     }
+    else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
+    {
+        oscc_report_steering_data_s* steering_report_data =
+            ( oscc_report_steering_data_s* )buffer;
+
+        status->invalid_sensor_value_steering = (bool) steering_report_data->fault_invalid_sensor_value;
+    }
 }
 
 // *****************************************************

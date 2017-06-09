@@ -37,6 +37,8 @@ int main( void )
 
         check_for_timeouts( );
 
+        check_for_sensor_faults( );
+
         uint32_t time_since_last_control_loop_in_msec = get_time_delta(
             g_last_control_loop_timestamp,
             GET_TIMESTAMP_MS());
