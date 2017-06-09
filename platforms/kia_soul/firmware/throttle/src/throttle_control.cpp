@@ -49,7 +49,7 @@ void check_for_operator_override( void )
 }
 
 
-void check_for_sensor_problems( void )
+void check_for_sensor_faults( void )
 {
     if ( (g_throttle_control_state.enabled == true)
         || (g_throttle_control_state.invalid_sensor_value == true) )
@@ -59,7 +59,7 @@ void check_for_sensor_problems( void )
         bool timeout = is_timeout(
             g_accelerator_position_sensor_last_check_timestamp,
             current_time,
-            ACCELERATOR_POSITION_SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC );
+            SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC );
 
         static int fault_count = 0;
 
@@ -76,7 +76,7 @@ void check_for_sensor_problems( void )
             {
                 ++fault_count;
 
-                if( fault_count >= ACCELERATOR_POSITION_SENSOR_VALIDITY_CHECK_FAULT_COUNT )
+                if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
                 {
                     disable_control( );
 

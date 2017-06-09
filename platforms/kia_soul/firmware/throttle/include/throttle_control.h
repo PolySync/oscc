@@ -80,18 +80,17 @@
 #define ACCELERATOR_OVERRIDE_THRESHOLD ( 750.0 )
 
 /*
- * @brief Amount of time between accelerator position sensor checks.
- *        [milliseconds]
+ * @brief Amount of time between sensor checks. [milliseconds]
  *
  */
-#define ACCELERATOR_POSITION_SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC ( 250 )
+#define SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC ( 250 )
 
 /*
  * @brief Number of consecutive faults that can occur when reading the
- *        accelerator position sensor before control is disabled.
+ *        sensors before control is disabled.
  *
  */
-#define ACCELERATOR_POSITION_SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
+#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 /*
  * @brief Alpha term for the exponential filter used to smooth the sensor input.
@@ -150,17 +149,16 @@ void check_for_operator_override( void );
 
 
 // ****************************************************************************
-// Function:    check_for_sensor_problems
+// Function:    check_for_sensor_faults
 //
-// Purpose:     Checks to see if the values read from the accelerator position
-//              sensor are valid.
+// Purpose:     Checks to see if valid values are being read from the sensors.
 //
 // Returns:     void
 //
 // Parameters:  void
 //
 // ****************************************************************************
-void check_for_sensor_problems( void );
+void check_for_sensor_faults( void );
 
 
 // ****************************************************************************

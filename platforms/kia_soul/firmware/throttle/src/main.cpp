@@ -35,7 +35,7 @@ int main( void )
 
         check_for_controller_command_timeout( );
 
-        check_for_sensor_problems( );
+        check_for_sensor_faults( );
 
         check_for_operator_override( );
 
