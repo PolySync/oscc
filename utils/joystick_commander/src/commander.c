@@ -759,6 +759,13 @@ int commander_high_frequency_update( )
         return_code = oscc_interface_disable_steering( );
     }
 
+    if ( status.invalid_sensor_value_brake == true )
+    {
+        printf( "Brake - Invalid Sensor Value Detected\n" );
+        return_code = oscc_interface_disable_steering( );
+
+    }
+
     if ( status.invalid_sensor_value_throttle == true )
     {
         printf( "Throttle - Invalid Sensor Value Detected\n" );

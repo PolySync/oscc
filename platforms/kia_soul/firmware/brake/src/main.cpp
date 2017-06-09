@@ -38,6 +38,8 @@ int main( void )
 
         check_for_timeouts( );
 
+        check_for_sensor_faults( );
+
         check_for_operator_override( );
 
         publish_reports( );

@@ -239,7 +239,14 @@ static void oscc_interface_check_for_invalid_sensor_value(
     long can_id,
     unsigned char * buffer )
 {
-    if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
+    if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
+    {
+        oscc_report_brake_data_s* brake_report_data =
+            ( oscc_report_brake_data_s* )buffer;
+
+        status->invalid_sensor_value_brake = (bool) brake_report_data->fault_invalid_sensor_value;
+    }
+    else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
     {
         oscc_report_throttle_data_s* throttle_report_data =
             ( oscc_report_throttle_data_s* )buffer;

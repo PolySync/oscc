@@ -17,8 +17,10 @@
 
 
 static void disable_brake_lights( void );
-
 static void enable_brake_lights( void );
+static bool check_master_cylinder_pressure_sensor_for_fault( void );
+static bool check_accumulator_pressure_sensor_for_fault( void );
+static bool check_wheel_pressure_sensor_for_fault( void );
 
 
 void set_accumulator_solenoid_duty_cycle( const uint16_t duty_cycle )
@@ -95,6 +97,67 @@ void check_for_operator_override( void )
         else
         {
             g_brake_control_state.operator_override = false;
+        }
+    }
+}
+
+
+void check_for_sensor_faults( void )
+{
+    if ( (g_brake_control_state.enabled == true)
+        || (g_brake_control_state.invalid_sensor_value == true) )
+    {
+        uint32_t current_time = GET_TIMESTAMP_MS();
+
+        bool timeout = is_timeout(
+            g_sensor_validity_last_check_timestamp,
+            current_time,
+            SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC );
+
+        if( timeout == true )
+        {
+            g_sensor_validity_last_check_timestamp = current_time;
+
+
+            bool master_cylinder_pressure_fault =
+                check_master_cylinder_pressure_sensor_for_fault( );
+
+            if( master_cylinder_pressure_fault == true )
+            {
+                DEBUG_PRINTLN( "Bad value read from master cylinder presure sensor" );
+            }
+
+
+            bool accumulator_pressure_fault =
+                check_accumulator_pressure_sensor_for_fault( );
+
+            if( accumulator_pressure_fault == true )
+            {
+                DEBUG_PRINTLN( "Bad value read from accumulator pressure sensor" );
+            }
+
+
+            bool wheel_pressure_fault =
+                check_wheel_pressure_sensor_for_fault( );
+
+            if( wheel_pressure_fault == true )
+            {
+                DEBUG_PRINTLN( "Bad value read from wheel pressure sensor" );
+            }
+
+
+            if( (master_cylinder_pressure_fault == true)
+                || (accumulator_pressure_fault == true)
+                || (wheel_pressure_fault == true) )
+            {
+                disable_control( );
+
+                g_brake_control_state.invalid_sensor_value = true;
+            }
+            else
+            {
+                g_brake_control_state.invalid_sensor_value = false;
+            }
         }
     }
 }
@@ -283,4 +346,89 @@ static void disable_brake_lights( void )
 static void enable_brake_lights( void )
 {
     digitalWrite( PIN_BRAKE_LIGHT, HIGH );
+}
+
+
+static bool check_master_cylinder_pressure_sensor_for_fault( void )
+{
+    bool fault_occurred = false;
+
+    static int fault_count = 0;
+
+    int master_cylinder_pressure_1 = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 );
+    int master_cylinder_pressure_2 = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 );
+
+    // sensor pins tied to ground - a value of zero indicates disconnection
+    if( (master_cylinder_pressure_1 == 0)
+        || (master_cylinder_pressure_2 == 0) )
+    {
+        ++fault_count;
+
+        if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
+        {
+            fault_occurred = true;
+        }
+    }
+    else
+    {
+        fault_count = 0;
+    }
+
+    return fault_occurred;
+}
+
+
+static bool check_accumulator_pressure_sensor_for_fault( void )
+{
+    bool fault_occurred = false;
+
+    static int fault_count = 0;
+
+    int accumulator_pressure = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
+
+    // sensor pins tied to ground - a value of zero indicates disconnection
+    if( accumulator_pressure == 0 )
+    {
+        ++fault_count;
+
+        if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
+        {
+            fault_occurred = true;
+        }
+    }
+    else
+    {
+        fault_count = 0;
+    }
+
+    return fault_occurred;
+}
+
+
+static bool check_wheel_pressure_sensor_for_fault( void )
+{
+    bool fault_occurred = false;
+
+    static int fault_count = 0;
+
+    int wheel_pressure_front_left =  analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
+    int wheel_pressure_front_right = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
+
+    // sensor pins tied to ground - a value of zero indicates disconnection
+    if( (wheel_pressure_front_left == 0)
+        || (wheel_pressure_front_right == 0) )
+    {
+        ++fault_count;
+
+        if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
+        {
+            fault_occurred = true;
+        }
+    }
+    else
+    {
+        fault_count = 0;
+    }
+
+    return fault_occurred;
 }

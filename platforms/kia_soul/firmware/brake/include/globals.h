@@ -128,6 +128,7 @@
 EXTERN uint32_t g_brake_command_last_rx_timestamp;
 EXTERN uint32_t g_brake_report_last_tx_timestamp;
 EXTERN uint32_t g_chassis_state_1_report_last_rx_timestamp;
+EXTERN uint32_t g_sensor_validity_last_check_timestamp;
 
 EXTERN kia_soul_brake_control_state_s g_brake_control_state;
 
