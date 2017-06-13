@@ -66,6 +66,19 @@
 #define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 3000 )
 
 /*
+ * @brief Amount of time between sensor checks. [milliseconds]
+ *
+ */
+#define SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC ( 250 )
+
+/*
+ * @brief Number of consecutive faults that can occur when reading the
+ *        torque sensor before control is disabled.
+ *
+ */
+#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
+
+/*
  * @brief Alpha term for the exponential filter used to smooth the sensor input.
  *
  */
@@ -135,6 +148,9 @@ typedef struct
     bool operator_override; /* Flag indicating whether steering wheel was
                                manually turned by operator. */
 
+    bool invalid_sensor_value; /* Flag indicating a value read from one of the
+                                  sensors is invalid. */
+
     bool obd_timeout; /* Flag indicating whether an OBD timeout has occurred. */
 
     float current_steering_wheel_angle; /* Current steering angle as reported
@@ -162,6 +178,19 @@ typedef struct
 //
 // ****************************************************************************
 void check_for_operator_override( void );
+
+
+// ****************************************************************************
+// Function:    check_for_sensor_faults
+//
+// Purpose:     Checks to see if valid values are being read from the sensors.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void check_for_sensor_faults( void );
 
 
 // ****************************************************************************

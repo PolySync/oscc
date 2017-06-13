@@ -119,6 +119,13 @@ typedef struct
                            * Value zero means controls are provided autonomously (no override).
                            * Value one means controls are provided by the driver. */
 
+    uint8_t fault_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
+                                             * Value zero means the values read
+                                             * from the sensors are valid.
+                                             *
+                                             * Value one means the values read
+                                             * from the sensors are invalid. */
+
     uint8_t reserved_2 : 1; /*!< Reserved. */
 
     uint8_t reserved_3 : 1; /*!< Reserved. */
@@ -128,8 +135,6 @@ typedef struct
     uint8_t reserved_5 : 1; /*!< Reserved. */
 
     uint8_t reserved_6 : 1; /*!< Reserved. */
-
-    uint8_t reserved_7 : 1; /*!< Reserved. */
 } oscc_report_throttle_data_s;
 
 
