@@ -313,6 +313,34 @@ make run-all-tests
 ```
 
 
+# Easier CMake Configuration
+
+If you have a lot of `-D` commands to pass to CMake (e.g., configuring the serial
+port and baud rates of all of the modules), you can instead configure with a GUI
+using `cmake-gui`:
+
+```
+sudo apt install cmake-gui
+```
+
+Then use `cmake-gui` where you would normally use `cmake`:
+
+```
+cd platforms
+mkdir build
+cd build
+cmake-gui ..
+```
+
+The GUI will open and you can change all of the options you would normally need
+to pass on the command line. First, press the `Configure` button and then press
+`Finish` on the dialog that opens. In the main window you'll see a list of
+options that you can change that would normally be configured on the command line
+with `-D` commands. When you're done, click `Configure` again and then click
+the `Generate` button. You can then close `cmake-gui` and run any `make` commands
+like you normally would.
+
+
 # Controlling Your Vehicle
 
 Now that all your Arduino modules are properly setup, it is time to start sending control commands.
