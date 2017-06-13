@@ -59,18 +59,17 @@ else()
     option(DEBUG "Enable debug mode" OFF)
     option(BUILD_KIA_SOUL "Build firmware for Kia Soul" OFF)
 
-    set(ARDUINO_DEFAULT_PORT /dev/ttyACM0)
-    set(ARDUINO_DEFAULT_BAUDRATE 115200)
+    set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
+    set(SERIAL_BAUD_BRAKE "115200" CACHE STRING "Serial baud rate of the brake module")
 
-    add_definitions(-DSERIAL_BAUD=${ARDUINO_DEFAULT_BAUDRATE})
+    set(SERIAL_PORT_CAN_GATEWAY "/dev/ttyACM0" CACHE STRING "Serial port of the CAN gateway module")
+    set(SERIAL_BAUD_CAN_GATEWAY "115200" CACHE STRING "Serial baud rate of the CAN gateway module")
 
-    add_custom_target(
-        monitor
-        COMMAND screen ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
+    set(SERIAL_PORT_STEERING "/dev/ttyACM0" CACHE STRING "Serial port of the steering module")
+    set(SERIAL_BAUD_STEERING "115200" CACHE STRING "Serial baud rate of the steering module")
 
-    add_custom_target(
-        monitor-log
-        COMMAND screen -L ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
+    set(SERIAL_PORT_THROTTLE "/dev/ttyACM0" CACHE STRING "Serial port of the throttle module")
+    set(SERIAL_BAUD_THROTTLE "115200" CACHE STRING "Serial baud rate of the throttle module")
 
     if(DEBUG)
         add_definitions(-DDEBUG)
