@@ -62,13 +62,13 @@ else()
     set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
     set(SERIAL_BAUD_BRAKE "115200" CACHE STRING "Serial baud rate of the brake module")
 
-    set(SERIAL_PORT_CAN_GATEWAY "/dev/ttyACM1" CACHE STRING "Serial port of the CAN gateway module")
+    set(SERIAL_PORT_CAN_GATEWAY "/dev/ttyACM0" CACHE STRING "Serial port of the CAN gateway module")
     set(SERIAL_BAUD_CAN_GATEWAY "115200" CACHE STRING "Serial baud rate of the CAN gateway module")
 
-    set(SERIAL_PORT_STEERING "/dev/ttyACM2" CACHE STRING "Serial port of the steering module")
+    set(SERIAL_PORT_STEERING "/dev/ttyACM0" CACHE STRING "Serial port of the steering module")
     set(SERIAL_BAUD_STEERING "115200" CACHE STRING "Serial baud rate of the steering module")
 
-    set(SERIAL_PORT_THROTTLE "/dev/ttyACM3" CACHE STRING "Serial port of the throttle module")
+    set(SERIAL_PORT_THROTTLE "/dev/ttyACM0" CACHE STRING "Serial port of the throttle module")
     set(SERIAL_BAUD_THROTTLE "115200" CACHE STRING "Serial baud rate of the throttle module")
 
     if(DEBUG)

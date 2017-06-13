@@ -103,28 +103,27 @@ path `/dev/ttyACM#` where `#` is a digit starting at 0 and increasing by one wit
 each additional Arduino connected.
 
 You can upload firmware to a single module or to all modules. By default, CMake
-expects the brake module to be `/dev/ttyACM0`, the CAN gateway module to be
-`/dev/ttyACM1`, the steering module to be `/dev/ttyACM2`, and the throttle
-module to be `/dev/ttyACM3`. If you connect each module to your machine in
-alphabetical order, they will be assigned appropriately. You can then flash
-all of the modules:
-
-```
-make kia-soul-all-upload
-```
-
-However, if you want to flash a single module, you need to change the port in
-CMake for that module because a single module will be assigned `/dev/ttyACM0` by
-your machine. You can change the ports during the `cmake ..` step:
-
-```
-cmake .. -DBUILD_KIA_SOUL=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0
-```
-
-Then you can flash the individual module:
+is configured to expect each module to be `/dev/ttyACM0`, so if you connect a
+single module to your machine, you can flash it without changing anything:
 
 ```
 make kia-soul-throttle-upload
+```
+
+However, if you want to flash all modules, you need to change the ports in
+CMake for each module to match what they are on your machine. The easiest way
+is to connect each module in alphabetical order (brake, CAN gateway, steering,
+throttle) so that they are assigned `/dev/ttyACM0` through `/dev/ttyACM3` in
+a known order. You can then change the ports during the `cmake ..` step:
+
+```
+cmake .. -DBUILD_KIA_SOUL=ON -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
+```
+
+Then you can flash all with one command:
+
+```
+make kia-soul-all-upload
 ```
 
 Sometimes it takes a little while for the Arduino to initialize once connected, so if there is an
