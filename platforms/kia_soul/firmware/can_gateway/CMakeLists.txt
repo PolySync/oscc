@@ -1,6 +1,18 @@
 project(kia-soul-can-gateway)
 
 set(ARDUINO_DEFAULT_BOARD uno)
+SET(ARDUINO_DEFAULT_PORT ${SERIAL_PORT_CAN_GATEWAY})
+set(ARDUINO_DEFAULT_BAUDRATE ${SERIAL_BAUD_CAN_GATEWAY})
+
+add_definitions(-DSERIAL_BAUD=${ARDUINO_DEFAULT_BAUDRATE})
+
+add_custom_target(
+    kia-soul-can-gateway-monitor
+    COMMAND screen ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
+
+add_custom_target(
+    kia-soul-can-gateway-monitor-log
+    COMMAND screen -L ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
 
 generate_arduino_firmware(
     kia-soul-can-gateway
