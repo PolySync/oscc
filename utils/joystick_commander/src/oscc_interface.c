@@ -153,112 +153,87 @@ static int oscc_init_can( int channel )
 }
 
 // *****************************************************
-// Function:    oscc_interface_check_for_operator_override
+// Function:    oscc_interface_check_brake_faults
 //
-// Purpose:     Checks report messages for override flag.
+// Purpose:     Checks brake report messages for fault flags
+//              and updates status appropriately
 //
-// Returns:     bool - override occurred flag
+// Returns:     void
 //
-// Parameters:  can_id - ID of CAN frame containing the report
+// Parameters:  status - struct containing OSCC status
 //              buffer - Buffer of CAN frame containing the report
 //
 // *****************************************************
-static bool oscc_interface_check_for_operator_override(
+static void oscc_interface_check_brake_faults(
     oscc_status_s * status,
-    long can_id,
     unsigned char * buffer )
 {
-    if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
+    if( (status != NULL)
+        && (buffer != NULL) )
     {
         oscc_report_brake_data_s* brake_report_data =
             ( oscc_report_brake_data_s* )buffer;
 
         status->operator_override = (bool) brake_report_data->override;
+        status->fault_brake_obd_timeout = (bool) brake_report_data->fault_obd_timeout;
+        status->fault_brake_invalid_sensor_value = (bool) brake_report_data->fault_invalid_sensor_value;
     }
-    else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
-    {
-        oscc_report_throttle_data_s* throttle_report_data =
-            ( oscc_report_throttle_data_s* )buffer;
+}
 
-        status->operator_override = (bool) throttle_report_data->override;
-    }
-    else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
+
+// *****************************************************
+// Function:    oscc_interface_check_steering_faults
+//
+// Purpose:     Checks steering report messages for fault
+//              flags and updates status appropriately
+//
+// Returns:     void
+//
+// Parameters:  status - struct containing OSCC status
+//              buffer - Buffer of CAN frame containing the report
+//
+// *****************************************************
+static bool oscc_interface_check_steering_faults(
+    oscc_status_s * status,
+    unsigned char * buffer )
+{
+    if( (status != NULL)
+        && (buffer != NULL) )
     {
         oscc_report_steering_data_s* steering_report_data =
             ( oscc_report_steering_data_s* )buffer;
 
         status->operator_override = (bool) steering_report_data->override;
+        status->fault_steering_obd_timeout = (bool) steering_report_data->fault_obd_timeout;
+        status->fault_steering_invalid_sensor_value = (bool) steering_report_data->fault_invalid_sensor_value;
     }
 }
 
+
 // *****************************************************
-// Function:    oscc_interface_check_for_obd_timeouts
+// Function:    oscc_interface_check_throttle_faults
 //
-// Purpose:     Checks report messages for OBD timeout flag.
+// Purpose:     Checks throttle report messages for fault
+//              flags and update status appropriately
 //
-// Returns:     bool - timeout occurred flag
+// Returns:     void
 //
-// Parameters:  can_id - ID of CAN frame containing the report
+// Parameters:  status - struct containing OSCC status
 //              buffer - Buffer of CAN frame containing the report
 //
 // *****************************************************
-static void oscc_interface_check_for_obd_timeout(
+static bool oscc_interface_check_throttle_faults(
     oscc_status_s * status,
-    long can_id,
     unsigned char * buffer )
 {
-    if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
-    {
-        oscc_report_brake_data_s* brake_report_data =
-            ( oscc_report_brake_data_s* )buffer;
-
-        status->obd_timeout_brake = (bool) brake_report_data->fault_obd_timeout;
-    }
-    else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
-    {
-        oscc_report_steering_data_s* steering_report_data =
-            ( oscc_report_steering_data_s* )buffer;
-
-        status->obd_timeout_steering = (bool) steering_report_data->fault_obd_timeout;
-    }
-}
-
-// **********************************************************
-// Function:    oscc_interface_check_for_invalid_sensor_value
-//
-// Purpose:     Checks report messages for invalid sensor value flag.
-//
-// Returns:     bool - invalid sensor value flag
-//
-// Parameters:  can_id - ID of CAN frame containing the report
-//              buffer - Buffer of CAN frame containing the report
-//
-// **********************************************************
-static void oscc_interface_check_for_invalid_sensor_value(
-    oscc_status_s * status,
-    long can_id,
-    unsigned char * buffer )
-{
-    if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
-    {
-        oscc_report_brake_data_s* brake_report_data =
-            ( oscc_report_brake_data_s* )buffer;
-
-        status->invalid_sensor_value_brake = (bool) brake_report_data->fault_invalid_sensor_value;
-    }
-    else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
-    {
-        oscc_report_steering_data_s* steering_report_data =
-            ( oscc_report_steering_data_s* )buffer;
-
-        status->invalid_sensor_value_steering = (bool) steering_report_data->fault_invalid_sensor_value;
-    }
-    else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
+    if( (status != NULL)
+        && (buffer != NULL) )
     {
         oscc_report_throttle_data_s* throttle_report_data =
             ( oscc_report_throttle_data_s* )buffer;
 
-        status->invalid_sensor_value_throttle = (bool) throttle_report_data->fault_invalid_sensor_value;
+        status->operator_override = (bool) throttle_report_data->override;
+        status->fault_throttle_invalid_sensor_value = (bool) throttle_report_data->fault_invalid_sensor_value;
     }
 }
 
@@ -604,11 +579,18 @@ int oscc_interface_update_status( oscc_status_s * status )
         {
             return_code = NOERR;
 
-            oscc_interface_check_for_operator_override( status, can_id, buffer );
-
-            oscc_interface_check_for_obd_timeout( status, can_id, buffer );
-
-            oscc_interface_check_for_invalid_sensor_value( status, can_id, buffer );
+            if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
+            {
+                oscc_interface_check_brake_faults( status, buffer );
+            }
+            else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
+            {
+                oscc_interface_check_steering_faults( status, buffer );
+            }
+            else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
+            {
+                oscc_interface_check_throttle_faults( status, buffer );
+            }
         }
         else if( ( can_status == canERR_NOMSG ) || ( can_status == canERR_TIMEOUT ) )
         {
