@@ -597,6 +597,20 @@ static bool check_for_brake_faults( oscc_status_s * status)
 
             fault_occurred = true;
         }
+
+        if ( status->fault_brake_actuator_error == true )
+        {
+            printf( "Brake - Actuator Error Detected\n" );
+
+            fault_occurred = true;
+        }
+
+        if ( status->fault_brake_pump_motor_error == true )
+        {
+            printf( "Brake - Accumulator Pump Error Detected\n" );
+
+            fault_occurred = true;
+        }
     }
 
     return fault_occurred;

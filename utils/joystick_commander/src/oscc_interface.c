@@ -177,6 +177,8 @@ static void oscc_interface_check_brake_faults(
         status->operator_override = (bool) brake_report_data->override;
         status->fault_brake_obd_timeout = (bool) brake_report_data->fault_obd_timeout;
         status->fault_brake_invalid_sensor_value = (bool) brake_report_data->fault_invalid_sensor_value;
+        status->fault_brake_actuator_error = (bool) brake_report_data->fault_startup_pressure_check_error;
+        status->fault_brake_pump_motor_error = (bool) brake_report_data->fault_startup_pump_motor_check_error;
     }
 }
 

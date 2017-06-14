@@ -20,6 +20,8 @@ typedef struct
     bool operator_override;
     bool fault_brake_obd_timeout;
     bool fault_brake_invalid_sensor_value;
+    bool fault_brake_actuator_error;
+    bool fault_brake_pump_motor_error;
     bool fault_steering_obd_timeout;
     bool fault_steering_invalid_sensor_value;
     bool fault_throttle_invalid_sensor_value;

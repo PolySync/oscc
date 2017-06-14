@@ -14,6 +14,7 @@
 #include "brake_control.h"
 #include "master_cylinder.h"
 #include "helper.h"
+#include "accumulator.h"
 
 
 static void disable_brake_lights( void );
@@ -21,6 +22,9 @@ static void enable_brake_lights( void );
 static bool check_master_cylinder_pressure_sensor_for_fault( void );
 static bool check_accumulator_pressure_sensor_for_fault( void );
 static bool check_wheel_pressure_sensor_for_fault( void );
+static void startup_check( void );
+static void pressure_startup_check( void );
+static void pump_startup_check( void );
 
 
 void set_accumulator_solenoid_duty_cycle( const uint16_t duty_cycle )
@@ -39,8 +43,10 @@ void set_release_solenoid_duty_cycle( const uint16_t duty_cycle )
 
 void enable_control( void )
 {
-    if ( g_brake_control_state.enabled == false
-         && g_brake_control_state.operator_override == false )
+    if ( (g_brake_control_state.enabled == false)
+         && (g_brake_control_state.operator_override == false)
+         && (g_brake_control_state.startup_pressure_check_error == false)
+         && (g_brake_control_state.startup_pump_motor_check_error== false) )
     {
         master_cylinder_close( );
 
@@ -197,17 +203,23 @@ void brake_init( void )
     digitalWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, LOW );
     digitalWrite( PIN_RELEASE_SOLENOID_FRONT_LEFT, LOW );
     digitalWrite( PIN_RELEASE_SOLENOID_FRONT_RIGHT, LOW );
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, LOW );
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, LOW );
 
     pinMode( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, OUTPUT );
     pinMode( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, OUTPUT );
     pinMode( PIN_RELEASE_SOLENOID_FRONT_LEFT, OUTPUT );
     pinMode( PIN_RELEASE_SOLENOID_FRONT_RIGHT, OUTPUT );
+    pinMode( PIN_WHEEL_PRESSURE_CHECK_1, OUTPUT );
+    pinMode( PIN_WHEEL_PRESSURE_CHECK_2, OUTPUT );
 
     set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
     set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
     disable_brake_lights( );
     pinMode( PIN_BRAKE_LIGHT, OUTPUT );
+
+    startup_check( );
 }
 
 
@@ -431,4 +443,64 @@ static bool check_wheel_pressure_sensor_for_fault( void )
     }
 
     return fault_occurred;
+}
+
+
+static void startup_check( void )
+{
+    pressure_startup_check( );
+    pump_startup_check( );
+}
+
+
+static void pressure_startup_check( void )
+{
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, HIGH );
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, HIGH );
+    delay(250);
+
+    int pressure_front_left = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
+    int pressure_front_right = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
+    int pressure_accumulator = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
+
+    if( (pressure_front_left < BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN)
+        || (pressure_front_left > BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX)
+        || (pressure_front_right < BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN)
+        || (pressure_front_right > BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX) )
+    {
+        g_brake_control_state.startup_pressure_check_error = true;
+
+        DEBUG_PRINTLN( "Startup pressure check error" );
+    }
+    else
+    {
+        g_brake_control_state.startup_pressure_check_error = false;
+    }
+
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, LOW );
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, LOW );
+    delay(250);
+}
+
+
+static void pump_startup_check( void )
+{
+    accumulator_turn_pump_on();
+    delay(250);
+
+    int motor_check = analogRead( PIN_ACCUMULATOR_PUMP_MOTOR_CHECK );
+
+    // should not be 0 if the pump is on
+    if( motor_check == 0 )
+    {
+        g_brake_control_state.startup_pump_motor_check_error = true;
+
+        DEBUG_PRINTLN( "Startup pump motor error" );
+    }
+    else
+    {
+        g_brake_control_state.startup_pump_motor_check_error = false;
+    }
+
+    accumulator_turn_pump_off();
 }
