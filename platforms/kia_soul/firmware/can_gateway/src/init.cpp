@@ -31,6 +31,11 @@ void init_globals( void )
         0,
         sizeof(g_tx_chassis_state_2) );
 
+    memset(
+        &g_display_state,
+        0,
+        sizeof(g_display_state) );
+
     // initialize timestamps so that we don't get timeouts on start
     g_obd_steering_wheel_angle_rx_timestamp = GET_TIMESTAMP_MS();
     g_obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS();
@@ -56,4 +61,7 @@ void init_communication_interfaces( void )
 
     DEBUG_PRINT( "init Control CAN - ");
     init_can( g_control_can );
+
+    DEBUG_PRINT( "init display");
+    g_display.begin();
 }

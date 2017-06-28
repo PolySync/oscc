@@ -12,6 +12,9 @@
 #include "mcp_can.h"
 #include "gateway_can_protocol.h"
 #include "chassis_state_can_protocol.h"
+#include "ssd1325.h"
+
+#include "display.h"
 
 
 /*
@@ -26,15 +29,59 @@
  */
 #define PIN_CONTROL_CAN_CHIP_SELECT ( 10 )
 
+/*
+ * @brief SPI SCLK pin to display.
+ *
+ */
+#define PIN_DISPLAY_SCLK ( 13 )
+
+/*
+ * @brief SPI MOSI pin to display.
+ *
+ */
+#define PIN_DISPLAY_MOSI ( 11 )
+
+/*
+ * @brief SPI CS pin to display.
+ *
+ */
+#define PIN_DISPLAY_CS ( 7 )
+
+/*
+ * @brief Reset pin to display.
+ *
+ */
+#define PIN_DISPLAY_RESET ( 6 )
+
+/*
+ * @brief DC pin to display.
+ *
+ */
+#define PIN_DISPLAY_DC ( 5 )
+
+/*
+ * @brief Pin of display status screen button.
+ *
+ */
+#define PIN_DISPLAY_BUTTON_STATUS ( 4 )
+
+/*
+ * @brief Pin of display error screen button.
+ *
+ */
+#define PIN_DISPLAY_BUTTON_ERROR ( 3 )
+
 
 #ifdef GLOBAL_DEFINED
     MCP_CAN g_obd_can( PIN_OBD_CAN_CHIP_SELECT );
     MCP_CAN g_control_can( PIN_CONTROL_CAN_CHIP_SELECT );
+    SSD1325 g_display( PIN_DISPLAY_MOSI, PIN_DISPLAY_SCLK, PIN_DISPLAY_DC, PIN_DISPLAY_RESET, PIN_DISPLAY_CS );
 
     #define EXTERN
 #else
     extern MCP_CAN g_obd_can;
     extern MCP_CAN g_control_can;
+    extern SSD1325 g_display;
 
     #define EXTERN extern
 #endif
@@ -43,6 +90,7 @@
 EXTERN oscc_report_heartbeat_s g_tx_heartbeat;
 EXTERN oscc_report_chassis_state_1_s g_tx_chassis_state_1;
 EXTERN oscc_report_chassis_state_2_s g_tx_chassis_state_2;
+EXTERN kia_soul_gateway_display_state_s g_display_state;
 
 EXTERN uint32_t g_obd_steering_wheel_angle_rx_timestamp;
 EXTERN uint32_t g_obd_wheel_speed_rx_timestamp;

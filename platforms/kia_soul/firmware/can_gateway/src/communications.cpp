@@ -6,6 +6,9 @@
 
 #include "gateway_can_protocol.h"
 #include "chassis_state_can_protocol.h"
+#include "brake_can_protocol.h"
+#include "steering_can_protocol.h"
+#include "throttle_can_protocol.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
 #include "oscc_time.h"
@@ -13,6 +16,7 @@
 #include "globals.h"
 #include "communications.h"
 #include "obd_can_protocol.h"
+#include "display.h"
 
 
 static void publish_heartbeat_report( void );
@@ -31,6 +35,15 @@ static void process_obd_brake_pressure(
     const uint8_t * const data );
 
 static void process_obd_turn_signal(
+    const uint8_t * const data );
+
+static void process_brake_report(
+    const uint8_t * const data );
+
+static void process_steering_report(
+    const uint8_t * const data );
+
+static void process_throttle_report(
     const uint8_t * const data );
 
 static void process_rx_frame(
@@ -259,6 +272,68 @@ static void process_obd_turn_signal(
 }
 
 
+static void process_brake_report(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        oscc_report_brake_data_s * brake_report_data =
+            (oscc_report_brake_data_s *) data;
+
+        if ( brake_report_data->enabled == true )
+        {
+            g_display_state.status_screen.brake_status = MODULE_STATUS_ENABLED;
+        }
+        else
+        {
+            g_display_state.status_screen.brake_status = MODULE_STATUS_DISABLED;
+        }
+    }
+}
+
+
+static void process_steering_report(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        oscc_report_steering_data_s * steering_report_data =
+            (oscc_report_steering_data_s *) data;
+
+        if ( steering_report_data->enabled == true )
+        {
+            g_display_state.status_screen.steering_status = MODULE_STATUS_ENABLED;
+        }
+        else
+        {
+            g_display_state.status_screen.steering_status = MODULE_STATUS_DISABLED;
+        }
+    }
+}
+
+
+
+static void process_throttle_report(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        oscc_report_throttle_data_s * throttle_report_data =
+            (oscc_report_throttle_data_s *) data;
+
+        if ( throttle_report_data->enabled == true )
+        {
+            g_display_state.status_screen.throttle_status = MODULE_STATUS_ENABLED;
+        }
+        else
+        {
+            g_display_state.status_screen.throttle_status = MODULE_STATUS_DISABLED;
+        }
+    }
+}
+
+
+
 static void process_rx_frame(
     const can_frame_s * const rx_frame )
 {
@@ -279,6 +354,18 @@ static void process_rx_frame(
         else if( rx_frame->id == KIA_SOUL_OBD_TURN_SIGNAL_CAN_ID )
         {
             process_obd_turn_signal( rx_frame->data );
+        }
+        else if( rx_frame->id == OSCC_REPORT_BRAKE_CAN_ID )
+        {
+            process_brake_report( rx_frame->data );
+        }
+        else if( rx_frame->id == OSCC_REPORT_STEERING_CAN_ID )
+        {
+            process_steering_report( rx_frame->data );
+        }
+        else if( rx_frame->id == OSCC_REPORT_THROTTLE_CAN_ID )
+        {
+            process_throttle_report( rx_frame->data );
         }
     }
 }
