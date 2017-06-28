@@ -28,6 +28,10 @@ typedef enum
 typedef enum
 {
     STATUS_PAGE_MAIN,
+    STATUS_PAGE_GATEWAY,
+    STATUS_PAGE_BRAKES,
+    STATUS_PAGE_STEERING,
+    STATUS_PAGE_THROTTLE,
     STATUS_PAGE_COUNT
 } status_page_t;
 
@@ -70,16 +74,63 @@ typedef enum
 
 
 /**
+ * @brief Gateway status page data.
+ *
+ */
+typedef struct
+{
+    gateway_status_t status;
+    unsigned long obd_steering_wheel_angle_msg_rcvd_count;
+    unsigned long obd_wheel_speed_msg_rcvd_count;
+    unsigned long obd_brake_pressure_msg_rcvd_count;
+    unsigned long obd_turn_signal_msg_rcvd_count;
+} status_page_gateway_s;
+
+
+/**
+ * @brief Brake status page data.
+ *
+ */
+typedef struct
+{
+    module_status_t status;
+    unsigned long msg_rcvd_count;
+} status_page_brake_s;
+
+
+/**
+ * @brief Steering status page data.
+ *
+ */
+typedef struct
+{
+    module_status_t status;
+    unsigned long msg_rcvd_count;
+} status_page_steering_s;
+
+
+/**
+ * @brief Throttle status page data.
+ *
+ */
+typedef struct
+{
+    module_status_t status;
+    unsigned long msg_rcvd_count;
+} status_page_throttle_s;
+
+
+/**
  * @brief Current status screen state.
  *
  */
 typedef struct
 {
     status_page_t current_page;
-    gateway_status_t gateway_status;
-    module_status_t brake_status;
-    module_status_t steering_status;
-    module_status_t throttle_status;
+    status_page_gateway_s gateway;
+    status_page_brake_s brakes;
+    status_page_steering_s steering;
+    status_page_throttle_s throttle;
 } status_screen_s;
 
 

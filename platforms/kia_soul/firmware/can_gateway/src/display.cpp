@@ -9,14 +9,16 @@
 #include "display.h"
 
 
-static const char * gateway_status_strings[] = {
+static const char * gateway_status_strings[] =
+{
     "UNKNOWN",
     "GOOD",
     "WARNING",
     "ERROR"
 };
 
-static const char * module_status_strings[] = {
+static const char * module_status_strings[] =
+{
     "UNKNOWN",
     "ENABLED",
     "DISABLED",
@@ -92,16 +94,49 @@ static void display_status_screen( void )
     if( g_display_state.status_screen.current_page == STATUS_PAGE_MAIN)
     {
         g_display.print( "Gateway:   " );
-        print_gateway_status( g_display_state.status_screen.gateway_status );
+        print_gateway_status( g_display_state.status_screen.gateway.status );
 
         g_display.print( "Brakes:    " );
-        print_module_status( g_display_state.status_screen.brake_status.status );
+        print_module_status( g_display_state.status_screen.brakes.status );
 
         g_display.print( "Steering:  " );
-        print_module_status( g_display_state.status_screen.steering_status );
+        print_module_status( g_display_state.status_screen.steering.status );
 
         g_display.print( "Throttle:  " );
-        print_module_status( g_display_state.status_screen.throttle_status );
+        print_module_status( g_display_state.status_screen.throttle.status );
+    }
+    else if( g_display_state.status_screen.current_page == STATUS_PAGE_GATEWAY )
+    {
+        g_display.print( "Gateway\n\n" );
+        g_display.print( "OBD1 Rcvd: " );
+        g_display.println( g_display_state.status_screen.gateway.obd_steering_wheel_angle_msg_rcvd_count );
+
+        g_display.print( "OBD2 Rcvd: " );
+        g_display.println( g_display_state.status_screen.gateway.obd_wheel_speed_msg_rcvd_count );
+
+        g_display.print( "OBD3 Rcvd: " );
+        g_display.println( g_display_state.status_screen.gateway.obd_brake_pressure_msg_rcvd_count );
+
+        g_display.print( "OBD4 Rcvd: " );
+        g_display.println( g_display_state.status_screen.gateway.obd_turn_signal_msg_rcvd_count );
+    }
+    else if( g_display_state.status_screen.current_page == STATUS_PAGE_BRAKES )
+    {
+        g_display.print( "Brakes\n\n" );
+        g_display.print( "Msgs Rcvd: " );
+        g_display.print( g_display_state.status_screen.brakes.msg_rcvd_count );
+    }
+    else if( g_display_state.status_screen.current_page == STATUS_PAGE_STEERING )
+    {
+        g_display.print( "Steering\n\n" );
+        g_display.print( "Msgs Rcvd: " );
+        g_display.print( g_display_state.status_screen.steering.msg_rcvd_count );
+    }
+    else if( g_display_state.status_screen.current_page == STATUS_PAGE_THROTTLE )
+    {
+        g_display.print( "Throttle\n\n" );
+        g_display.print( "Msgs Rcvd: " );
+        g_display.print( g_display_state.status_screen.throttle.msg_rcvd_count );
     }
 
     g_display.sendBuffer();
