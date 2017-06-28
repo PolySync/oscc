@@ -144,12 +144,13 @@ you can get it with the following command:
 sudo apt install screen
 ```
 
-You need to tell CMake what serial port the module you want to monitor is connected
-to (see [section on uploading](#uploading-the-firmware) for details on the default
+You need to enable debug mode with `-DDEBUG=ON` and tell CMake what serial port
+the module you want to monitor is connected to
+(see [section on uploading](#uploading-the-firmware) for details on the default
 ports for each module). The default baud rate is `115200` but you can change it:
 
 ```
-cmake .. -DBUILD_KIA_SOUL=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
+cmake .. -DBUILD_KIA_SOUL=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
 ```
 
 You can use a module's `monitor` target to automatically run `screen`, or a

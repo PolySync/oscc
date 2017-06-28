@@ -49,6 +49,20 @@
 #define BRAKE_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.05 )
 
 /*
+ * @brief Minimum possible value expected to be read from the brake pressure
+ * sensors when the pressure check pins (PCK1/PCK2) are asserted.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN ( 665 )
+
+/*
+ * @brief Maximum possible value expected to be read from the brake pressure
+ * sensors when the pressure check pins (PCK1/PCK2) are asserted.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX ( 680 )
+
+/*
  * @brief Amount of time between sensor checks. [milliseconds]
  *
  */
@@ -171,6 +185,10 @@ typedef struct
                                   sensors is invalid. */
 
     bool obd_timeout; /* Flag indicating whether an OBD timeout has occurred. */
+
+    bool startup_pressure_check_error; /* Flag indicating a problem with the actuator. */
+
+    bool startup_pump_motor_check_error; /* Flag indicating a problem with the pump motor. */
 
     float current_sensor_brake_pressure; /* Current brake pressure as read
                                                from the brake pressure sensor. */
