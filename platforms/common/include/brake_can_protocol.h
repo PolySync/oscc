@@ -36,6 +36,12 @@
  */
 #define OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC (50)
 
+/*
+ * @brief Number of brake module DTCs.
+ *
+ */
+#define OSCC_BRAKE_DTC_COUNT (4)
+
 
 /**
  * @brief Brake command message data.

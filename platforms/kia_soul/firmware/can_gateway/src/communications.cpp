@@ -78,6 +78,7 @@ void check_for_obd_timeout( void )
 {
     bool timeout = false;
 
+
     timeout = is_timeout(
             g_obd_steering_wheel_angle_rx_timestamp,
             GET_TIMESTAMP_MS(),
@@ -88,7 +89,10 @@ void check_for_obd_timeout( void )
         SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_HEARTBEAT_WARNING_BIT );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_VALID );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_RATE_VALID );
+
+        g_display_state.dtc_screen.gateway[0] = true;
     }
+
 
     timeout = is_timeout(
             g_obd_wheel_speed_rx_timestamp,
@@ -99,7 +103,10 @@ void check_for_obd_timeout( void )
     {
         SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_WHEEL_SPEED_HEARTBEAT_WARNING_BIT );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_WHEEL_SPEED_VALID );
+
+        g_display_state.dtc_screen.gateway[1] = true;
     }
+
 
     timeout = is_timeout(
             g_obd_brake_pressure_rx_timestamp,
@@ -110,7 +117,10 @@ void check_for_obd_timeout( void )
     {
         SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_BRAKE_PRESSURE_WARNING_BIT );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID );
+
+        g_display_state.dtc_screen.gateway[2] = true;
     }
+
 
     timeout = is_timeout(
             g_obd_turn_signal_rx_timestamp,
@@ -123,6 +133,17 @@ void check_for_obd_timeout( void )
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON );
+
+        g_display_state.dtc_screen.gateway[3] = true;
+    }
+
+
+    if( g_display_state.dtc_screen.gateway[0]
+        || g_display_state.dtc_screen.gateway[1]
+        || g_display_state.dtc_screen.gateway[2]
+        || g_display_state.dtc_screen.gateway[3] )
+    {
+        g_display_state.status_screen.gateway = GATEWAY_STATUS_WARNING;
     }
 }
 
@@ -201,6 +222,8 @@ static void process_obd_steering_wheel_angle(
         g_tx_chassis_state_1.data.steering_wheel_angle_rate = 0;
         g_tx_chassis_state_1.data.steering_wheel_angle = steering_wheel_angle_data->steering_angle;
 
+        g_display_state.dtc_screen.gateway[0] = false;
+
         g_obd_steering_wheel_angle_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
@@ -222,6 +245,8 @@ static void process_obd_wheel_speed(
         g_tx_chassis_state_2.data.wheel_speed_rear_left = wheel_speed_data->wheel_speed_rear_left;
         g_tx_chassis_state_2.data.wheel_speed_rear_right = wheel_speed_data->wheel_speed_rear_right;
 
+        g_display_state.dtc_screen.gateway[1] = false;
+
         g_obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
@@ -239,6 +264,8 @@ static void process_obd_brake_pressure(
         SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID );
 
         g_tx_chassis_state_1.data.brake_pressure = brake_pressure_data->master_cylinder_pressure;
+
+        g_display_state.dtc_screen.gateway[2] = false;
 
         g_obd_brake_pressure_rx_timestamp = GET_TIMESTAMP_MS( );
     }
@@ -267,6 +294,8 @@ static void process_obd_turn_signal(
             SET_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
         }
 
+        g_display_state.dtc_screen.gateway[3] = false;
+
         g_obd_turn_signal_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
@@ -288,6 +317,26 @@ static void process_brake_report(
         {
             g_display_state.status_screen.brakes = MODULE_STATUS_DISABLED;
         }
+
+        g_display_state.dtc_screen.brake[0] =
+            brake_report_data->dtc00_invalid_sensor_value;
+
+        g_display_state.dtc_screen.brake[1] =
+            brake_report_data->dtc01_obd_timeout;
+
+        g_display_state.dtc_screen.brake[2] =
+            brake_report_data->dtc02_startup_pressure_check_error;
+
+        g_display_state.dtc_screen.brake[3] =
+            brake_report_data->dtc03_startup_pump_motor_check_error;
+
+        if( g_display_state.dtc_screen.brake[0]
+            || g_display_state.dtc_screen.brake[1]
+            || g_display_state.dtc_screen.brake[2]
+            || g_display_state.dtc_screen.brake[3] )
+        {
+            g_display_state.status_screen.brakes = MODULE_STATUS_ERROR;
+        }
     }
 }
 
@@ -307,6 +356,18 @@ static void process_steering_report(
         else
         {
             g_display_state.status_screen.steering = MODULE_STATUS_DISABLED;
+        }
+
+        g_display_state.dtc_screen.steering[0] =
+            steering_report_data->dtc00_invalid_sensor_value;
+
+        g_display_state.dtc_screen.steering[1] =
+            steering_report_data->dtc01_obd_timeout;
+
+        if( g_display_state.dtc_screen.steering[0]
+            || g_display_state.dtc_screen.steering[1] )
+        {
+            g_display_state.status_screen.steering = MODULE_STATUS_ERROR;
         }
     }
 }
@@ -328,6 +389,14 @@ static void process_throttle_report(
         else
         {
             g_display_state.status_screen.throttle = MODULE_STATUS_DISABLED;
+        }
+
+        g_display_state.dtc_screen.throttle[0] =
+            throttle_report_data->dtc00_invalid_sensor_value;
+
+        if( g_display_state.dtc_screen.throttle[0] )
+        {
+            g_display_state.status_screen.throttle = MODULE_STATUS_ERROR;
         }
     }
 }

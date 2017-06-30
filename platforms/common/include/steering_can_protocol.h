@@ -36,6 +36,12 @@
  */
 #define OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC (20)
 
+/*
+ * @brief Number of steering module DTCs.
+ *
+ */
+#define OSCC_STEERING_DTC_COUNT (2)
+
 
 /**
  * @brief Steering command message data.

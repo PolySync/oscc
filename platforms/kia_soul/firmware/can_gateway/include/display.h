@@ -9,6 +9,11 @@
 #define _OSCC_KIA_SOUL_CAN_GATEWAY_DISPLAY_H_
 
 
+#include "brake_can_protocol.h"
+#include "steering_can_protocol.h"
+#include "throttle_can_protocol.h"
+
+
 /**
  * @brief Enumeration of possible screens.
  *
@@ -16,7 +21,7 @@
 typedef enum
 {
     STATUS_SCREEN,
-    ERROR_SCREEN,
+    DTC_SCREEN,
     SCREEN_COUNT
 } screen_t;
 
@@ -61,13 +66,16 @@ typedef struct
 
 
 /**
- * @brief Current error screen state.
+ * @brief Current DTC screen state.
  *
  */
 typedef struct
 {
-
-} error_screen_s;
+    bool gateway[OSCC_GATEWAY_DTC_COUNT];
+    bool brake[OSCC_BRAKE_DTC_COUNT];
+    bool steering[OSCC_STEERING_DTC_COUNT];
+    bool throttle[OSCC_THROTTLE_DTC_COUNT];
+} dtc_screen_s;
 
 
 /**
@@ -78,7 +86,7 @@ typedef struct
 {
     screen_t current_screen;
     status_screen_s status_screen;
-    error_screen_s error_screen;
+    dtc_screen_s dtc_screen;
 } kia_soul_gateway_display_state_s;
 
 

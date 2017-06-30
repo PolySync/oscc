@@ -66,6 +66,12 @@
  */
 #define OSCC_REPORT_HEARTBEAT_STATE_OK (0x02)
 
+/*
+ * @brief Number of gateway module DTCs.
+ *
+ */
+#define OSCC_GATEWAY_DTC_COUNT (4)
+
 
 /**
  * @brief Heartbeat report message data.

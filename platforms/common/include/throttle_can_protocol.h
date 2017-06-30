@@ -18,13 +18,11 @@
  */
 #define OSCC_COMMAND_THROTTLE_CAN_ID (0x62)
 
-
 /*
  * @brief Throttle report message (CAN frame) ID.
  *
  */
 #define OSCC_REPORT_THROTTLE_CAN_ID (0x63)
-
 
 /*
  * @brief Throttle report message (CAN frame) length.
@@ -32,12 +30,17 @@
  */
 #define OSCC_REPORT_THROTTLE_CAN_DLC (8)
 
-
 /*
  * @brief Throttle report message publishing interval. [milliseconds]
  *
  */
 #define OSCC_REPORT_THROTTLE_PUBLISH_INTERVAL_IN_MSEC (20)
+
+/*
+ * @brief Number of throttle module DTCs.
+ *
+ */
+#define OSCC_THROTTLE_DTC_COUNT (1)
 
 
 /**
