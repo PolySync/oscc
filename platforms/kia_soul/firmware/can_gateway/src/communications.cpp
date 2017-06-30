@@ -202,8 +202,6 @@ static void process_obd_steering_wheel_angle(
         g_tx_chassis_state_1.data.steering_wheel_angle = steering_wheel_angle_data->steering_angle;
 
         g_obd_steering_wheel_angle_rx_timestamp = GET_TIMESTAMP_MS( );
-
-        ++g_display_state.status_screen.gateway.obd_steering_wheel_angle_msg_rcvd_count;
     }
 }
 
@@ -225,8 +223,6 @@ static void process_obd_wheel_speed(
         g_tx_chassis_state_2.data.wheel_speed_rear_right = wheel_speed_data->wheel_speed_rear_right;
 
         g_obd_wheel_speed_rx_timestamp = GET_TIMESTAMP_MS( );
-
-        ++g_display_state.status_screen.gateway.obd_wheel_speed_msg_rcvd_count;
     }
 }
 
@@ -245,8 +241,6 @@ static void process_obd_brake_pressure(
         g_tx_chassis_state_1.data.brake_pressure = brake_pressure_data->master_cylinder_pressure;
 
         g_obd_brake_pressure_rx_timestamp = GET_TIMESTAMP_MS( );
-
-        ++g_display_state.status_screen.gateway.obd_brake_pressure_msg_rcvd_count;
     }
 }
 
@@ -274,8 +268,6 @@ static void process_obd_turn_signal(
         }
 
         g_obd_turn_signal_rx_timestamp = GET_TIMESTAMP_MS( );
-
-        ++g_display_state.status_screen.gateway.obd_turn_signal_msg_rcvd_count;
     }
 }
 
@@ -290,14 +282,12 @@ static void process_brake_report(
 
         if ( brake_report_data->enabled == true )
         {
-            g_display_state.status_screen.brakes.status = MODULE_STATUS_ENABLED;
+            g_display_state.status_screen.brakes = MODULE_STATUS_ENABLED;
         }
         else
         {
-            g_display_state.status_screen.brakes.status = MODULE_STATUS_DISABLED;
+            g_display_state.status_screen.brakes = MODULE_STATUS_DISABLED;
         }
-
-        ++g_display_state.status_screen.brakes.msg_rcvd_count;
     }
 }
 
@@ -312,14 +302,12 @@ static void process_steering_report(
 
         if ( steering_report_data->enabled == true )
         {
-            g_display_state.status_screen.steering.status = MODULE_STATUS_ENABLED;
+            g_display_state.status_screen.steering = MODULE_STATUS_ENABLED;
         }
         else
         {
-            g_display_state.status_screen.steering.status = MODULE_STATUS_DISABLED;
+            g_display_state.status_screen.steering = MODULE_STATUS_DISABLED;
         }
-
-        ++g_display_state.status_screen.steering.msg_rcvd_count;
     }
 }
 
@@ -335,14 +323,12 @@ static void process_throttle_report(
 
         if ( throttle_report_data->enabled == true )
         {
-            g_display_state.status_screen.throttle.status = MODULE_STATUS_ENABLED;
+            g_display_state.status_screen.throttle = MODULE_STATUS_ENABLED;
         }
         else
         {
-            g_display_state.status_screen.throttle.status = MODULE_STATUS_DISABLED;
+            g_display_state.status_screen.throttle = MODULE_STATUS_DISABLED;
         }
-
-        ++g_display_state.status_screen.throttle.msg_rcvd_count;
     }
 }
 
