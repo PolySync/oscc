@@ -121,24 +121,24 @@ typedef struct
                            * Value zero means controls are provided autonomously (no override).
                            * Value one means controls are provided by the driver. */
 
-    uint8_t fault_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
+    uint8_t dtc00_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
                                              * Value zero means the values read
                                              * from the sensors are valid.
                                              *
                                              * Value one means the values read
                                              * from the sensors are invalid. */
 
-    uint8_t fault_startup_pressure_check_error : 1; /*!< Actuator sensors report
+    uint8_t dtc01_obd_timeout : 1; /*!< OBD timeout indicator.
+                                   * Value zero means no timeout occurred.
+                                   * Value one means timeout occurred. */
+
+    uint8_t dtc02_startup_pressure_check_error : 1; /*!< Actuator sensors report
                                                      * values that do not match
                                                      * the static values
                                                      * expected with PCK1 and
                                                      * PCK2 asserted. */
 
-    uint8_t fault_obd_timeout : 1; /*!< OBD timeout indicator.
-                                   * Value zero means no timeout occurred.
-                                   * Value one means timeout occurred. */
-
-    uint8_t fault_startup_pump_motor_check_error : 1; /*!< Pump motor check signal
+    uint8_t dtc03_startup_pump_motor_check_error : 1; /*!< Pump motor check signal
                                                        * (MTT) is not asserted
                                                        * when pump is on. */
 

@@ -54,7 +54,7 @@ static int analyze_report_frame(
 
     state->override_triggered = steering_report->override;
 
-    if( steering_report->fault_obd_timeout == 1 )
+    if( steering_report->dtc01_obd_timeout == 1 )
     {
         module_state = STATE_FAULT;
     }

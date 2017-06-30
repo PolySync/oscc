@@ -124,18 +124,18 @@ typedef struct
                            * Value zero means controls are provided autonomously (no override).
                            * Value one means controls are provided by the driver. */
 
-    uint8_t fault_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
+    uint8_t dtc00_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
                                              * Value zero means the values read
                                              * from the sensors are valid.
                                              *
                                              * Value one means the values read
                                              * from the sensors are invalid. */
 
-    uint8_t reserved_1 : 1; /*!< Reserved. */
-
-    uint8_t fault_obd_timeout : 1; /*!< OBD timeout indicator.
+    uint8_t dtc01_obd_timeout : 1; /*!< OBD timeout indicator.
                                    * Value zero means no timeout occurred.
                                    * Value one means timeout occurred. */
+
+    uint8_t reserved_1 : 1; /*!< Reserved. */
 
     uint8_t reserved_2 : 1; /*!< Reserved */
 

@@ -119,7 +119,7 @@ typedef struct
                            * Value zero means controls are provided autonomously (no override).
                            * Value one means controls are provided by the driver. */
 
-    uint8_t fault_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
+    uint8_t dtc00_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
                                              * Value zero means the values read
                                              * from the sensors are valid.
                                              *

@@ -175,10 +175,10 @@ static void oscc_interface_check_brake_faults(
             ( oscc_report_brake_data_s* )buffer;
 
         status->operator_override = (bool) brake_report_data->override;
-        status->fault_brake_obd_timeout = (bool) brake_report_data->fault_obd_timeout;
-        status->fault_brake_invalid_sensor_value = (bool) brake_report_data->fault_invalid_sensor_value;
-        status->fault_brake_actuator_error = (bool) brake_report_data->fault_startup_pressure_check_error;
-        status->fault_brake_pump_motor_error = (bool) brake_report_data->fault_startup_pump_motor_check_error;
+        status->fault_brake_invalid_sensor_value = (bool) brake_report_data->dtc00_invalid_sensor_value;
+        status->fault_brake_obd_timeout = (bool) brake_report_data->dtc01_obd_timeout;
+        status->fault_brake_actuator_error = (bool) brake_report_data->dtc02_startup_pressure_check_error;
+        status->fault_brake_pump_motor_error = (bool) brake_report_data->dtc03_startup_pump_motor_check_error;
     }
 }
 
@@ -206,8 +206,8 @@ static bool oscc_interface_check_steering_faults(
             ( oscc_report_steering_data_s* )buffer;
 
         status->operator_override = (bool) steering_report_data->override;
-        status->fault_steering_obd_timeout = (bool) steering_report_data->fault_obd_timeout;
-        status->fault_steering_invalid_sensor_value = (bool) steering_report_data->fault_invalid_sensor_value;
+        status->fault_steering_invalid_sensor_value = (bool) steering_report_data->dtc00_invalid_sensor_value;
+        status->fault_steering_obd_timeout = (bool) steering_report_data->dtc01_obd_timeout;
     }
 }
 
@@ -235,7 +235,7 @@ static bool oscc_interface_check_throttle_faults(
             ( oscc_report_throttle_data_s* )buffer;
 
         status->operator_override = (bool) throttle_report_data->override;
-        status->fault_throttle_invalid_sensor_value = (bool) throttle_report_data->fault_invalid_sensor_value;
+        status->fault_throttle_invalid_sensor_value = (bool) throttle_report_data->dtc00_invalid_sensor_value;
     }
 }
 

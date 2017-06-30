@@ -73,9 +73,9 @@ static void publish_steering_report( void )
     steering_report.data.override = (uint8_t) g_steering_control_state.operator_override;
     steering_report.data.current_steering_wheel_angle = (int16_t) g_steering_control_state.current_steering_wheel_angle;
     steering_report.data.commanded_steering_wheel_angle = (int16_t) g_steering_control_state.commanded_steering_wheel_angle;
-    steering_report.data.fault_obd_timeout = (uint8_t) g_steering_control_state.obd_timeout;
     steering_report.data.spoofed_torque_output = (int8_t) g_spoofed_torque_output_sum;
-    steering_report.data.fault_invalid_sensor_value = (uint8_t) g_steering_control_state.invalid_sensor_value;
+    steering_report.data.dtc00_invalid_sensor_value = (uint8_t) g_steering_control_state.invalid_sensor_value;
+    steering_report.data.dtc01_obd_timeout = (uint8_t) g_steering_control_state.obd_timeout;
 
     g_control_can.sendMsgBuf(
         steering_report.id,
