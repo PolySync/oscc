@@ -72,7 +72,6 @@ static const char * module_status_strings[] =
 };
 
 
-static void read_button( void );
 static void display_status_screen( void );
 static void display_dtc_screen( void );
 static void print_gateway_status( gateway_status_t status );
@@ -83,6 +82,7 @@ static void print_steering_dtcs( void );
 static void print_throttle_dtcs( void );
 static void print_dtc( const char *type, int num );
 static void print_padded_number( const unsigned int number );
+static void read_button( void );
 
 
 void update_display( void )
@@ -99,18 +99,6 @@ void update_display( void )
     else if( g_display_state.current_screen == DTC_SCREEN )
     {
         display_dtc_screen( );
-    }
-}
-
-
-static void read_button( void )
-{
-    int button_val = digitalRead( PIN_DISPLAY_BUTTON_STATUS );
-
-    if( button_val == 1 )
-    {
-        g_display_state.current_screen =
-            (screen_t)((g_display_state.current_screen + 1) % SCREEN_COUNT);
     }
 }
 
@@ -163,6 +151,7 @@ static void display_dtc_screen( void )
     g_display.sendBuffer( );
 }
 
+
 static void print_gateway_status( gateway_status_t status )
 {
     const char * status_string = gateway_status_strings[status];
@@ -199,6 +188,7 @@ static void print_module_status( module_status_t status )
 
     g_display.print( "\n\n" );
 }
+
 
 static void print_gateway_dtcs( void )
 {
@@ -287,4 +277,16 @@ static void print_padded_number( const unsigned int number )
     }
 
     g_display.print( number );
+}
+
+
+static void read_button( void )
+{
+    int button_val = digitalRead( PIN_DISPLAY_BUTTON_STATUS );
+
+    if( button_val == 1 )
+    {
+        g_display_state.current_screen =
+            (screen_t)((g_display_state.current_screen + 1) % SCREEN_COUNT);
+    }
 }
