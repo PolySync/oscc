@@ -60,16 +60,10 @@
 #define PIN_DISPLAY_DC ( 5 )
 
 /*
- * @brief Pin of display status screen button.
+ * @brief Pin of display button.
  *
  */
-#define PIN_DISPLAY_BUTTON_STATUS ( 4 )
-
-/*
- * @brief Pin of display error screen button.
- *
- */
-#define PIN_DISPLAY_BUTTON_ERROR ( 3 )
+#define PIN_DISPLAY_BUTTON ( 4 )
 
 
 #ifdef GLOBAL_DEFINED

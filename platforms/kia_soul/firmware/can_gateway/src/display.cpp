@@ -282,7 +282,7 @@ static void print_padded_number( const unsigned int number )
 
 static void read_button( void )
 {
-    int button_val = digitalRead( PIN_DISPLAY_BUTTON_STATUS );
+    int button_val = digitalRead( PIN_DISPLAY_BUTTON );
 
     if( button_val == 1 )
     {
