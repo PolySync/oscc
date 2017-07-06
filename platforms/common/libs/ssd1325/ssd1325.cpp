@@ -94,138 +94,174 @@ static uint8_t buffer[SSD1325_LCDHEIGHT * SSD1325_LCDWIDTH / 8] = {
 };
 
 
-void SSD1325::begin(void) {
-  SPI.begin();
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setClockDivider(SPI_CLOCK_DIV2);
+void SSD1325::begin(void)
+{
+    SPI.begin();
+    SPI.setDataMode(SPI_MODE0);
+    SPI.setClockDivider(SPI_CLOCK_DIV2);
 
-  pinMode(dc, OUTPUT);
-  pinMode(rst, OUTPUT);
-  pinMode(cs, OUTPUT);
+    pinMode(dc, OUTPUT);
+    pinMode(rst, OUTPUT);
+    pinMode(cs, OUTPUT);
 
-  digitalWrite(rst, HIGH);
-  // VDD (3.3V) goes high at start, lets just chill for a ms
-  delay(1);
-  // bring reset low
-  digitalWrite(rst, LOW);
-  // wait 10ms
-  delay(10);
-  // bring out of reset
-  digitalWrite(rst, HIGH);
+    digitalWrite(rst, HIGH);
+    // VDD (3.3V) goes high at start, lets just chill for a ms
+    delay(1);
+    // bring reset low
+    digitalWrite(rst, LOW);
+    // wait 10ms
+    delay(10);
+    // bring out of reset
+    digitalWrite(rst, HIGH);
 
-  delay(500);
+    delay(500);
 
-  sendCommand(SSD1325_DISPLAYOFF); /* display off */
-  sendCommand(SSD1325_SETCLOCK); /* set osc division */
-  sendCommand(0xF1); /* 145 */
-  sendCommand(SSD1325_SETMULTIPLEX ); /* multiplex ratio */
-  sendCommand(0x3f); /* duty = 1/64 */
-  sendCommand( SSD1325_SETOFFSET); /* set display offset --- */
-  sendCommand(0x4C); /* 76 */
-  sendCommand(SSD1325_SETSTARTLINE); /*set start line */
-  sendCommand(0x00); /* ------ */
-  sendCommand(SSD1325_MASTERCONFIG); /*Set Master Config DC/DC Converter*/
-  sendCommand(0x02);
-  sendCommand(SSD1325_SETREMAP); /* set segment remap------ */
-  sendCommand(0x56);
-  sendCommand(SSD1325_SETCURRENT + 0x1); /* Set Current Range */
-  sendCommand(SSD1325_SETGRAYTABLE);
-  sendCommand(0x01);
-  sendCommand(0x11);
-  sendCommand(0x22);
-  sendCommand(0x32);
-  sendCommand(0x43);
-  sendCommand(0x54);
-  sendCommand(0x65);
-  sendCommand(0x76);
-  sendCommand(SSD1325_SETCONTRAST); /* set contrast current */
-  sendCommand(0x7F);  // max!
-  sendCommand(SSD1325_SETROWPERIOD);
-  sendCommand(0x51);
-  sendCommand(SSD1325_SETPHASELEN);
-  sendCommand(0x55);
-  sendCommand(SSD1325_SETPRECHARGECOMP);
-  sendCommand(0x02);
-  sendCommand(SSD1325_SETPRECHARGECOMPENABLE);
-  sendCommand(0x28);
-  sendCommand(SSD1325_SETVCOMLEVEL); // Set High Voltage Level of COM Pin
-  sendCommand(0x1C); //?
-  sendCommand(SSD1325_SETVSL); // set Low Voltage Level of SEG Pin
-  sendCommand(0x0D|0x02);
-
-  sendCommand(SSD1325_NORMALDISPLAY); /* set display mode */
-
-  sendCommand(SSD1325_DISPLAYON); /* display ON */
+    startSendCommand();
+    SPI.transfer(SSD1325_DISPLAYOFF); /* display off */
+    SPI.transfer(SSD1325_SETCLOCK); /* set osc division */
+    SPI.transfer(0xF1); /* 145 */
+    SPI.transfer(SSD1325_SETMULTIPLEX ); /* multiplex ratio */
+    SPI.transfer(0x3f); /* duty = 1/64 */
+    SPI.transfer( SSD1325_SETOFFSET); /* set display offset --- */
+    SPI.transfer(0x4C); /* 76 */
+    SPI.transfer(SSD1325_SETSTARTLINE); /*set start line */
+    SPI.transfer(0x00); /* ------ */
+    SPI.transfer(SSD1325_MASTERCONFIG); /*Set Master Config DC/DC Converter*/
+    SPI.transfer(0x02);
+    SPI.transfer(SSD1325_SETREMAP); /* set segment remap------ */
+    SPI.transfer(0x56);
+    SPI.transfer(SSD1325_SETCURRENT + 0x1); /* Set Current Range */
+    SPI.transfer(SSD1325_SETGRAYTABLE);
+    SPI.transfer(0x01);
+    SPI.transfer(0x11);
+    SPI.transfer(0x22);
+    SPI.transfer(0x32);
+    SPI.transfer(0x43);
+    SPI.transfer(0x54);
+    SPI.transfer(0x65);
+    SPI.transfer(0x76);
+    SPI.transfer(SSD1325_SETCONTRAST); /* set contrast current */
+    SPI.transfer(0x7F);  // max!
+    SPI.transfer(SSD1325_SETROWPERIOD);
+    SPI.transfer(0x51);
+    SPI.transfer(SSD1325_SETPHASELEN);
+    SPI.transfer(0x55);
+    SPI.transfer(SSD1325_SETPRECHARGECOMP);
+    SPI.transfer(0x02);
+    SPI.transfer(SSD1325_SETPRECHARGECOMPENABLE);
+    SPI.transfer(0x28);
+    SPI.transfer(SSD1325_SETVCOMLEVEL); // Set High Voltage Level of COM Pin
+    SPI.transfer(0x1C); //?
+    SPI.transfer(SSD1325_SETVSL); // set Low Voltage Level of SEG Pin
+    SPI.transfer(0x0D|0x02);
+    SPI.transfer(SSD1325_NORMALDISPLAY); /* set display mode */
+    SPI.transfer(0x15); /* set column address */
+    SPI.transfer(0x00); /* set column start address */
+    SPI.transfer(0x3f); /* set column end address */
+    SPI.transfer(0x75); /* set row address */
+    SPI.transfer(0x00); /* set row start address */
+    SPI.transfer(0x3f); /* set row end address */
+    SPI.transfer(SSD1325_DISPLAYON); /* display ON */
+    stopSendCommand();
 }
 
 
-void SSD1325::sendBuffer(void) {
-  sendCommand(0x15); /* set column address */
-  sendCommand(0x00); /* set column start address */
-  sendCommand(0x3f); /* set column end address */
-  sendCommand(0x75); /* set row address */
-  sendCommand(0x00); /* set row start address */
-  sendCommand(0x3f); /* set row end address */
-  delay(1);
+void SSD1325::sendBuffer(void)
+{
+    startSendData();
 
-  for (uint16_t x=0; x<128; x+=2) {
-    for (uint16_t y=0; y<64; y+=8) { // we write 8 pixels at once
-      uint8_t left8 = buffer[y*16+x];
-      uint8_t right8 = buffer[y*16+x+1];
-      for (uint8_t p=0; p<8; p++) {
-	uint8_t d = 0;
-	if (left8 & (1 << p)) d |= 0xF0;
-	if (right8 & (1 << p)) d |= 0x0F;
-	sendData(d);
-      }
+    for (uint16_t x=0; x<128; x+=2)
+    {
+        for (uint16_t y=0; y<64; y+=8)
+        { // we write 8 pixels at once
+            uint8_t left8 = buffer[y*16+x];
+            uint8_t right8 = buffer[y*16+x+1];
+
+            for (uint8_t p=0; p<8; p++)
+            {
+                uint8_t d = 0;
+
+                if (left8 & (1 << p))
+                {
+                    d |= 0xF0;
+                };
+
+                if (right8 & (1 << p))
+                {
+                    d |= 0x0F;
+                }
+
+                SPI.transfer(d);
+            }
+        }
     }
-  }
+
+    stopSendData();
 }
 
 
-void SSD1325::eraseBuffer(void) {
-  memset(buffer, 0, sizeof(buffer));
+void SSD1325::eraseBuffer(void)
+{
+    memset(buffer, 0, sizeof(buffer));
 }
 
 
-void SSD1325::sendCommand(uint8_t c) {
-  digitalWrite(dc, LOW);
-  digitalWrite(cs, LOW);
-  SPI.transfer(c);
-  digitalWrite(cs, HIGH);
+void SSD1325::startSendCommand(void)
+{
+    digitalWrite(dc, LOW);
+    digitalWrite(cs, LOW);
 }
 
-void SSD1325::sendData(uint8_t c) {
-  digitalWrite(dc, HIGH);
-  digitalWrite(cs, LOW);
-  SPI.transfer(c);
-  digitalWrite(cs, HIGH);
+void SSD1325::stopSendCommand(void)
+{
+    digitalWrite(cs, HIGH);
+    digitalWrite(dc, HIGH);
+}
+
+void SSD1325::startSendData(void)
+{
+    digitalWrite(dc, HIGH);
+    digitalWrite(cs, LOW);
+}
+
+void SSD1325::stopSendData(void)
+{
+    digitalWrite(cs, HIGH);
+    digitalWrite(dc, LOW);
 }
 
 
-void SSD1325::drawPixel(int16_t x, int16_t y, uint16_t color) {
-  if ((x >= width()) || (y >= height()) || (x < 0) || (y < 0))
-    return;
+void SSD1325::drawPixel(int16_t x, int16_t y, uint16_t color)
+{
+    if ((x >= width()) || (y >= height()) || (x < 0) || (y < 0))
+    {
+        return;
+    }
 
-  // check rotation, move pixel around if necessary
-  switch (getRotation()) {
-  case 1:
-    adagfx_swap(x, y);
-    x = WIDTH - x - 1;
-    break;
-  case 2:
-    x = WIDTH - x - 1;
-    y = HEIGHT - y - 1;
-    break;
-  case 3:
-    adagfx_swap(x, y);
-    y = HEIGHT - y - 1;
-    break;
-  }
+    // check rotation, move pixel around if necessary
+    switch (getRotation())
+    {
+        case 1:
+            adagfx_swap(x, y);
+            x = WIDTH - x - 1;
+            break;
+        case 2:
+            x = WIDTH - x - 1;
+            y = HEIGHT - y - 1;
+            break;
+        case 3:
+            adagfx_swap(x, y);
+            y = HEIGHT - y - 1;
+            break;
+    }
 
-  // x is which column
-  if (color == WHITE)
-    buffer[x+ (y/8)*SSD1325_LCDWIDTH] |= _BV((y%8));
-  else
-    buffer[x+ (y/8)*SSD1325_LCDWIDTH] &= ~_BV((y%8));
+    // x is which column
+    if (color == WHITE)
+    {
+        buffer[x+ (y/8)*SSD1325_LCDWIDTH] |= _BV((y%8));
+    }
+    else
+    {
+        buffer[x+ (y/8)*SSD1325_LCDWIDTH] &= ~_BV((y%8));
+    }
 }
