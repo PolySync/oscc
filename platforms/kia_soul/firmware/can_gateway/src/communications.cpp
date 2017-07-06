@@ -46,7 +46,10 @@ static void process_steering_report(
 static void process_throttle_report(
     const uint8_t * const data );
 
-static void process_rx_frame(
+static void process_obd_frame(
+    const can_frame_s * const rx_frame );
+
+static void process_control_frame(
     const can_frame_s * const rx_frame );
 
 
@@ -150,12 +153,18 @@ void check_for_obd_timeout( void )
 
 void check_for_incoming_message( void )
 {
-    can_frame_s rx_frame;
-    can_status_t ret = check_for_rx_frame( g_obd_can, &rx_frame );
-
-    if( ret == CAN_RX_FRAME_AVAILABLE )
+    can_frame_s obd_frame;
+    can_status_t obd_frame_availability = check_for_rx_frame( g_obd_can, &obd_frame );
+    if( obd_frame_availability == CAN_RX_FRAME_AVAILABLE )
     {
-        process_rx_frame( &rx_frame );
+        process_obd_frame( &obd_frame );
+    }
+
+    can_frame_s control_frame;
+    can_status_t control_frame_availability = check_for_rx_frame( g_control_can, &control_frame );
+    if( control_frame_availability == CAN_RX_FRAME_AVAILABLE )
+    {
+        process_control_frame( &control_frame );
     }
 }
 
@@ -402,8 +411,7 @@ static void process_throttle_report(
 }
 
 
-
-static void process_rx_frame(
+static void process_obd_frame(
     const can_frame_s * const rx_frame )
 {
     if ( rx_frame != NULL )
@@ -424,7 +432,16 @@ static void process_rx_frame(
         {
             process_obd_turn_signal( rx_frame->data );
         }
-        else if( rx_frame->id == OSCC_REPORT_BRAKE_CAN_ID )
+    }
+}
+
+
+static void process_control_frame(
+    const can_frame_s * const rx_frame )
+{
+    if ( rx_frame != NULL )
+    {
+        if( rx_frame->id == OSCC_REPORT_BRAKE_CAN_ID )
         {
             process_brake_report( rx_frame->data );
         }
