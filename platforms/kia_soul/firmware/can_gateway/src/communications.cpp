@@ -146,7 +146,11 @@ void check_for_obd_timeout( void )
         || g_display_state.dtc_screen.gateway[2]
         || g_display_state.dtc_screen.gateway[3] )
     {
-        g_display_state.status_screen.gateway = GATEWAY_STATUS_WARNING;
+        g_display_state.status_screen.gateway = GATEWAY_STATUS_ERROR;
+    }
+    else
+    {
+        g_display_state.status_screen.gateway = GATEWAY_STATUS_GOOD;
     }
 }
 

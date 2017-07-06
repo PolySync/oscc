@@ -81,6 +81,7 @@ static const char * module_status_strings[] =
 
 static void display_status_screen( void );
 static void display_dtc_screen( void );
+static void update_leds( );
 static void print_gateway_status( gateway_status_t status );
 static void print_module_status( module_status_t status );
 static void print_gateway_dtcs( void );
@@ -90,10 +91,30 @@ static void print_throttle_dtcs( void );
 static void print_dtc( const char *type, int num );
 static void print_padded_number( const unsigned int number );
 static void read_button( void );
+static void enable_good_led( void );
+static void enable_warning_led( void );
+static void enable_error_led( void );
+
+
+void init_display( void )
+{
+    digitalWrite(PIN_DISPLAY_LED_GOOD, LOW);
+    digitalWrite(PIN_DISPLAY_LED_WARNING, LOW);
+    digitalWrite(PIN_DISPLAY_LED_ERROR, LOW);
+
+    pinMode(PIN_DISPLAY_LED_GOOD, OUTPUT);
+    pinMode(PIN_DISPLAY_LED_WARNING, OUTPUT);
+    pinMode(PIN_DISPLAY_LED_ERROR, OUTPUT);
+
+    g_display.begin();
+}
 
 
 void update_display( void )
 {
+    update_leds( );
+
+
     static unsigned long last_update_time = 0;
 
     bool timeout = false;
@@ -121,6 +142,29 @@ void update_display( void )
         {
             display_dtc_screen( );
         }
+    }
+}
+
+
+static void update_leds( void )
+{
+    if( (g_display_state.status_screen.gateway == GATEWAY_STATUS_ERROR)
+        || (g_display_state.status_screen.brakes == MODULE_STATUS_ERROR)
+        || (g_display_state.status_screen.steering == MODULE_STATUS_ERROR)
+        || (g_display_state.status_screen.throttle == MODULE_STATUS_ERROR) )
+    {
+        enable_error_led( );
+    }
+    else if( (g_display_state.status_screen.gateway == GATEWAY_STATUS_WARNING)
+        || (g_display_state.status_screen.brakes == MODULE_STATUS_UNKNOWN)
+        || (g_display_state.status_screen.steering == MODULE_STATUS_UNKNOWN)
+        || (g_display_state.status_screen.throttle == MODULE_STATUS_UNKNOWN) )
+    {
+        enable_warning_led( );
+    }
+    else
+    {
+        enable_good_led( );
     }
 }
 
@@ -311,4 +355,28 @@ static void read_button( void )
         g_display_state.current_screen =
             (screen_t)((g_display_state.current_screen + 1) % SCREEN_COUNT);
     }
+}
+
+
+static void enable_good_led( void )
+{
+    digitalWrite(PIN_DISPLAY_LED_GOOD, HIGH);
+    digitalWrite(PIN_DISPLAY_LED_WARNING, LOW);
+    digitalWrite(PIN_DISPLAY_LED_ERROR, LOW);
+}
+
+
+static void enable_warning_led( void )
+{
+    digitalWrite(PIN_DISPLAY_LED_GOOD, LOW);
+    digitalWrite(PIN_DISPLAY_LED_WARNING, HIGH);
+    digitalWrite(PIN_DISPLAY_LED_ERROR, LOW);
+}
+
+
+static void enable_error_led( void )
+{
+    digitalWrite(PIN_DISPLAY_LED_GOOD, LOW);
+    digitalWrite(PIN_DISPLAY_LED_WARNING, LOW);
+    digitalWrite(PIN_DISPLAY_LED_ERROR, HIGH);
 }

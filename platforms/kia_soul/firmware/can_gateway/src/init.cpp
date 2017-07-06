@@ -12,6 +12,7 @@
 
 #include "globals.h"
 #include "init.h"
+#include "display.h"
 
 
 void init_globals( void )
@@ -62,6 +63,6 @@ void init_communication_interfaces( void )
     DEBUG_PRINT( "init Control CAN - ");
     init_can( g_control_can );
 
-    DEBUG_PRINT( "init display");
-    g_display.begin();
+    DEBUG_PRINTLN( "init display");
+    init_display( );
 }

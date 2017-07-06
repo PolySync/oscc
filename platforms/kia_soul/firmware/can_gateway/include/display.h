@@ -91,6 +91,19 @@ typedef struct
 
 
 // ****************************************************************************
+// Function:    init_display
+//
+// Purpose:     Initializes the display.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void init_display( void );
+
+
+// ****************************************************************************
 // Function:    update_display
 //
 // Purpose:     Updates the display with new information.
