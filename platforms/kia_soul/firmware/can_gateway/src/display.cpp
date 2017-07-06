@@ -8,6 +8,7 @@
 #include "brake_can_protocol.h"
 #include "steering_can_protocol.h"
 #include "throttle_can_protocol.h"
+#include "oscc_time.h"
 
 #include "display.h"
 
@@ -54,6 +55,12 @@
  */
 #define CHARACTER_HEIGHT ( 10 )
 
+/*
+ * @brief Amount of time between updates of display content. [milliseconds]
+ *
+ */
+#define DISPLAY_UPDATE_INTERVAL_IN_MS ( 250 )
+
 
 static const char * gateway_status_strings[] =
 {
@@ -87,18 +94,33 @@ static void read_button( void );
 
 void update_display( void )
 {
-    g_display.setCursor( ORIGIN_X_POS, ORIGIN_Y_POS );
-    g_display.setTextColor( WHITE, BLACK );
+    static unsigned long last_update_time = 0;
 
-    read_button( );
+    bool timeout = false;
+    unsigned long current_time = GET_TIMESTAMP_MS();
 
-    if( g_display_state.current_screen == STATUS_SCREEN )
+    timeout = is_timeout(
+            last_update_time,
+            current_time,
+            DISPLAY_UPDATE_INTERVAL_IN_MS );
+
+    if ( timeout == true )
     {
-        display_status_screen( );
-    }
-    else if( g_display_state.current_screen == DTC_SCREEN )
-    {
-        display_dtc_screen( );
+        last_update_time = current_time;
+
+        g_display.setCursor( ORIGIN_X_POS, ORIGIN_Y_POS );
+        g_display.setTextColor( WHITE, BLACK );
+
+        read_button( );
+
+        if( g_display_state.current_screen == STATUS_SCREEN )
+        {
+            display_status_screen( );
+        }
+        else if( g_display_state.current_screen == DTC_SCREEN )
+        {
+            display_dtc_screen( );
+        }
     }
 }
 
