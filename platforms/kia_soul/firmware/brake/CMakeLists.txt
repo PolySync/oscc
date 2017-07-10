@@ -44,6 +44,7 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/time
-    ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing)
+    ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
+    ${CMAKE_SOURCE_DIR}/kia_soul/firmware)
 
 add_subdirectory(utils)

@@ -13,7 +13,7 @@ WHEN("^an enable steering command is received$")
     g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_STEERING_CAN_ID;
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
 
-    check_for_incoming_message();
+    check_for_can_frame();
 }
 
 
@@ -27,7 +27,7 @@ WHEN("^a disable steering command is received$")
     g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_STEERING_CAN_ID;
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
 
-    check_for_incoming_message();
+    check_for_can_frame();
 }
 
 
@@ -56,7 +56,7 @@ WHEN("^the steering wheel angle command (.*) with angle rate (.*) is received$")
     g_pid.prev_input = mock_pid_prev_input;
     g_pid.int_error = mock_pid_int_error;
 
-    check_for_incoming_message();
+    check_for_can_frame();
 
     update_steering();
 }

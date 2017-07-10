@@ -88,7 +88,7 @@
 
 EXTERN uint32_t g_steering_command_last_rx_timestamp;
 EXTERN uint32_t g_steering_report_last_tx_timestamp;
-EXTERN uint32_t g_chassis_state_1_report_last_rx_timestamp;
+EXTERN uint32_t g_obd_steering_wheel_angle_last_rx_timestamp;
 EXTERN uint32_t g_sensor_validity_last_check_timestamp;
 EXTERN uint32_t g_last_control_loop_timestamp;
 

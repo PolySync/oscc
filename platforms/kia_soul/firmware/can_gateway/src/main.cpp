@@ -5,38 +5,27 @@
 
 
 #include <avr/wdt.h>
-
 #include "arduino_init.h"
 #include "debug.h"
-#include "gateway_can_protocol.h"
 
-#include "globals.h"
-#include "communications.h"
 #include "init.h"
+#include "communications.h"
 
 
 int main( void )
 {
     init_arduino( );
 
-    init_globals( );
-
     init_communication_interfaces( );
-
-    SET_HEARTBEAT_STATE( OSCC_REPORT_HEARTBEAT_STATE_OK );
 
     wdt_enable( WDTO_120MS );
 
-    DEBUG_PRINTLN( "initialization complete" );
+    DEBUG_PRINTLN( "init complete" );
 
     while( true )
     {
         wdt_reset();
 
-        check_for_incoming_message( );
-
-        check_for_obd_timeout( );
-
-        publish_reports( );
+        republish_obd_frames_to_control_can_bus( );
     }
 }

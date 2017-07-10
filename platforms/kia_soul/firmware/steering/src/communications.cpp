@@ -6,10 +6,10 @@
 
 #include "mcp_can.h"
 #include "oscc_can.h"
-#include "chassis_state_can_protocol.h"
 #include "steering_can_protocol.h"
 #include "oscc_time.h"
 #include "debug.h"
+#include "kia_soul.h"
 
 #include "globals.h"
 #include "communications.h"
@@ -21,7 +21,7 @@ static void publish_steering_report( void );
 static void process_steering_command(
     const uint8_t * const data );
 
-static void process_chassis_state_1_report(
+static void process_obd_steering_wheel_angle(
     const uint8_t * const data );
 
 static void process_rx_frame(
@@ -29,7 +29,7 @@ static void process_rx_frame(
 
 static void check_for_controller_command_timeout( void );
 
-static void check_for_chassis_state_1_report_timeout( void );
+static void check_for_obd_timeout( void );
 
 
 void publish_reports( void )
@@ -43,7 +43,7 @@ void publish_reports( void )
 }
 
 
-void check_for_incoming_message( void )
+void check_for_can_frame( void )
 {
     can_frame_s rx_frame;
     can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
@@ -59,7 +59,7 @@ void check_for_timeouts( void )
 {
     check_for_controller_command_timeout( );
 
-    check_for_chassis_state_1_report_timeout( );
+    check_for_obd_timeout( );
 }
 
 
@@ -119,24 +119,20 @@ static void process_steering_command(
 }
 
 
-static void process_chassis_state_1_report(
+static void process_obd_steering_wheel_angle(
     const uint8_t * const data )
 {
     if ( data != NULL )
     {
-        const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
-                (oscc_report_chassis_state_1_data_s *) data;
+        const kia_soul_obd_steering_wheel_angle_data_s * const steering_wheel_angle_data =
+                (kia_soul_obd_steering_wheel_angle_data_s *) data;
 
-        if( chassis_state_1_data->flags
-            & OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_STEER_WHEEL_ANGLE_VALID )
-        {
-            g_steering_control_state.current_steering_wheel_angle =
-                chassis_state_1_data->steering_wheel_angle
-                * RAW_ANGLE_SCALAR
-                * WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR;
+        g_steering_control_state.current_steering_wheel_angle =
+            steering_wheel_angle_data->steering_wheel_angle
+            * RAW_ANGLE_SCALAR
+            * WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR;
 
-            g_chassis_state_1_report_last_rx_timestamp = GET_TIMESTAMP_MS( );
-        }
+        g_obd_steering_wheel_angle_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
@@ -150,9 +146,9 @@ static void process_rx_frame(
         {
             process_steering_command( frame->data );
         }
-        else if ( frame->id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID )
+        else if ( frame->id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID )
         {
-            process_chassis_state_1_report( frame->data );
+            process_obd_steering_wheel_angle( frame->data );
         }
     }
 }
@@ -177,12 +173,12 @@ static void check_for_controller_command_timeout( void )
 }
 
 
-static void check_for_chassis_state_1_report_timeout( void )
+static void check_for_obd_timeout( void )
 {
     bool timeout = is_timeout(
-            g_chassis_state_1_report_last_rx_timestamp,
+            g_obd_steering_wheel_angle_last_rx_timestamp,
             GET_TIMESTAMP_MS( ),
-            CHASSIS_STATE_1_REPORT_TIMEOUT_IN_MSEC);
+            OBD_TIMEOUT_IN_MSEC );
 
     if( timeout == true )
     {
@@ -190,7 +186,7 @@ static void check_for_chassis_state_1_report_timeout( void )
 
         g_steering_control_state.obd_timeout = true;
 
-        DEBUG_PRINTLN( "Timeout - Chassis State 1 report" );
+        DEBUG_PRINTLN( "Timeout - OBD - steering wheel angle" );
     }
     else
     {

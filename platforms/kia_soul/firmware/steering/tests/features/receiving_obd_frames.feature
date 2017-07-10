@@ -1,12 +1,12 @@
 # language: en
 
-Feature: Receiving reports
+Feature: Receiving OBD frames
 
-  Chassis state reports should be received and parsed.
+  OBD frames should be received and parsed.
 
 
-  Scenario Outline: Chassis State 1 report sent from CAN gateway.
-    When a Chassis State 1 report is received with steering wheel angle <raw_angle>
+  Scenario Outline: Steering wheel angle OBD frame sent from CAN gateway.
+    When a steering wheel angle OBD frame is received with steering wheel angle <raw_angle>
 
     Then the control state's current_steering_wheel_angle field should be <scaled_angle>
 

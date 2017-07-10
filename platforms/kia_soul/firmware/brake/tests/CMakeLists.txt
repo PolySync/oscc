@@ -25,7 +25,8 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/time
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
-    ${CMAKE_SOURCE_DIR}/common/testing/mocks)
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks
+    ${CMAKE_SOURCE_DIR}/kia_soul/firmware)
 
 add_executable(
     kia-soul-brake-unit-test
@@ -47,7 +48,8 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/testing/mocks
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/include
-    ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include)
+    ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include
+    ${CMAKE_SOURCE_DIR}/kia_soul/firmware)
 
 add_custom_target(
     run-kia-soul-brake-unit-tests

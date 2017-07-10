@@ -5,11 +5,11 @@
 
 
 #include "mcp_can.h"
-#include "chassis_state_can_protocol.h"
 #include "brake_can_protocol.h"
 #include "oscc_can.h"
 #include "oscc_time.h"
 #include "debug.h"
+#include "kia_soul.h"
 
 #include "globals.h"
 #include "communications.h"
@@ -24,12 +24,12 @@ static void publish_brake_report( void );
 static void process_brake_command(
     const uint8_t * const data );
 
-static void process_chassis_state_1(
+static void process_obd_frame(
     const uint8_t * const data );
 
 static void check_for_controller_command_timeout( void );
 
-static void check_for_chassis_state_1_report_timeout( void );
+static void check_for_obd_timeout( void );
 
 
 void publish_reports( void )
@@ -43,7 +43,7 @@ void publish_reports( void )
 }
 
 
-void check_for_incoming_message( void )
+void check_for_can_frame( void )
 {
     can_frame_s rx_frame;
     can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
@@ -59,7 +59,7 @@ void check_for_timeouts( void )
 {
     check_for_controller_command_timeout( );
 
-    check_for_chassis_state_1_report_timeout( );
+    check_for_obd_timeout( );
 }
 
 
@@ -111,22 +111,18 @@ static void process_brake_command(
 }
 
 
-static void process_chassis_state_1(
+static void process_obd_brake_pressure(
     const uint8_t * const data )
 {
     if ( data != NULL )
     {
-        const oscc_report_chassis_state_1_data_s * const chassis_state_1_data =
-                (oscc_report_chassis_state_1_data_s *) data;
+        const kia_soul_obd_brake_pressure_data_s * const brake_pressure_data =
+                (kia_soul_obd_brake_pressure_data_s *) data;
 
-        if( chassis_state_1_data->flags
-            & OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_PRESSURE_VALID )
-        {
-            g_brake_control_state.current_vehicle_brake_pressure =
-                chassis_state_1_data->brake_pressure;
+        g_brake_control_state.current_vehicle_brake_pressure =
+            brake_pressure_data->master_cylinder_pressure;
 
-            g_chassis_state_1_report_last_rx_timestamp = GET_TIMESTAMP_MS( );
-        }
+        g_obd_brake_pressure_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }
 }
 
@@ -140,9 +136,9 @@ static void process_rx_frame(
         {
             process_brake_command( frame->data );
         }
-        else if ( frame->id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID )
+        else if ( frame->id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID )
         {
-            process_chassis_state_1( frame->data );
+            process_obd_brake_pressure( frame->data );
         }
     }
 }
@@ -167,12 +163,12 @@ static void check_for_controller_command_timeout( void )
 }
 
 
-static void check_for_chassis_state_1_report_timeout( void )
+static void check_for_obd_timeout( void )
 {
     bool timeout = is_timeout(
-            g_chassis_state_1_report_last_rx_timestamp,
+            g_obd_brake_pressure_last_rx_timestamp,
             GET_TIMESTAMP_MS( ),
-            CHASSIS_STATE_1_REPORT_TIMEOUT_IN_MSEC);
+            OBD_TIMEOUT_IN_MSEC);
 
     if( timeout == true )
     {
@@ -180,7 +176,7 @@ static void check_for_chassis_state_1_report_timeout( void )
 
         g_brake_control_state.obd_timeout = true;
 
-        DEBUG_PRINTLN( "Timeout - Chassis State 1 report" );
+        DEBUG_PRINTLN( "Timeout - OBD - brake pressure" );
     }
     else
     {

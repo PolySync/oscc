@@ -1,12 +1,12 @@
 # language: en
 
-Feature: Receiving reports
+Feature: Receiving OBD frames
 
-  Chassis state reports should be received and parsed.
+  OBD frames should be received and parsed.
 
 
-  Scenario Outline: Chassis State 1 report sent from CAN gateway.
-    When a Chassis State 1 report is received with brake pressure <pressure>
+  Scenario Outline: Brake pressure OBD frame sent from CAN gateway.
+    When a brake pressure OBD frame is received with brake pressure <pressure>
 
     Then the control state's current_vehicle_brake_pressure field should be <pressure>
 

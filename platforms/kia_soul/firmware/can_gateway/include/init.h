@@ -10,19 +10,6 @@
 
 
 // ****************************************************************************
-// Function:    init_globals
-//
-// Purpose:     Initialize values of global variables.
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// ****************************************************************************
-void init_globals( void );
-
-
-// ****************************************************************************
 // Function:    init_communication_interfaces
 //
 // Purpose:     Initialize the communication interfaces used by the module.

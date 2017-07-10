@@ -33,7 +33,7 @@ int main( void )
     {
         wdt_reset();
 
-        check_for_incoming_message( );
+        check_for_can_frame( );
 
         check_for_timeouts( );
 

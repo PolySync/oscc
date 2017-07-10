@@ -33,7 +33,7 @@ WHEN("^an enable brake command is received$")
     g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_BRAKE_CAN_ID;
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
 
-    check_for_incoming_message();
+    check_for_can_frame();
 }
 
 
@@ -47,7 +47,7 @@ WHEN("^a disable brake command is received$")
     g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_BRAKE_CAN_ID;
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
 
-    check_for_incoming_message();
+    check_for_can_frame();
 }
 
 
@@ -78,7 +78,7 @@ WHEN("^the brake pedal command (.*) is received$")
     // the analogWrite mocking stores them in their appropriate places
     g_mock_arduino_analog_write_count = mock_arduino_analog_write_count;
 
-    check_for_incoming_message();
+    check_for_can_frame();
 
     g_mock_arduino_micros_return += 20000;
 

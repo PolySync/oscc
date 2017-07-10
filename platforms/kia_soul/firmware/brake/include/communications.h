@@ -22,11 +22,11 @@
 
 
 /*
- * @brief Amount of time after a Chassis State 1 report that is considered a
+ * @brief Amount of time after an OBD frame is received that is considered a
  *        timeout. [milliseconds]
  *
  */
-#define CHASSIS_STATE_1_REPORT_TIMEOUT_IN_MSEC ( 500 )
+#define OBD_TIMEOUT_IN_MSEC ( 500 )
 
 
 // ****************************************************************************
@@ -56,7 +56,7 @@ void check_for_timeouts( void );
 
 
 // ****************************************************************************
-// Function:    check_for_incoming_message
+// Function:    check_for_can_frame
 //
 // Purpose:     Check CAN bus for incoming messages and process any present.
 //
@@ -65,7 +65,7 @@ void check_for_timeouts( void );
 // Parameters:  void
 //
 // ****************************************************************************
-void check_for_incoming_message( void );
+void check_for_can_frame( void );
 
 
 #endif /* _OSCC_KIA_SOUL_BRAKE_COMMUNICATIONS_H_ */

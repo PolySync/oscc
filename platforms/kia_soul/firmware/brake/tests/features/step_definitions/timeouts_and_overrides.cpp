@@ -9,12 +9,12 @@ WHEN("^the time since the last received controller command exceeds the timeout$"
 }
 
 
-WHEN("^the time since the last received Chassis State 1 report exceeds the timeout$")
+WHEN("^the time since the last received brake pressure OBD frame exceeds the timeout$")
 {
-    g_chassis_state_1_report_last_rx_timestamp = 0;
+    g_obd_brake_pressure_last_rx_timestamp = 0;
 
     g_mock_arduino_millis_return =
-        CHASSIS_STATE_1_REPORT_TIMEOUT_IN_MSEC;
+        OBD_TIMEOUT_IN_MSEC;
 
     check_for_timeouts();
 }
