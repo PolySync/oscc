@@ -19,30 +19,6 @@
 #define UINT16_MIN ( 0 )
 
 /*
- * @brief Value of brake pressure that indicates operator override. [decibars]
- *
- */
-#define DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ( 43.2 )
-
-/*
- * @brief Brake pressure threshold for when to enable the brake light.
- *
- */
-#define BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS (20.0)
-
-/*
- * @brief Minimum possible pressure of brake system. [decibars]
- *
- */
-#define BRAKE_PRESSURE_MIN_IN_DECIBARS ( 12.0 )
-
-/*
- * @brief Maximum possible pressure of brake system. [decibars]
- *
- */
-#define BRAKE_PRESSURE_MAX_IN_DECIBARS ( 878.3 )
-
-/*
  * @brief Amount of time between sensor checks. [milliseconds]
  *
  */
@@ -90,62 +66,6 @@
  *
  */
 #define PID_OUTPUT_MAX ( 10.0 )
-
-/*
- * @brief Minimum clamped PID value of the actuation solenoid.
- *
- */
-#define PID_ACCUMULATOR_SOLENOID_CLAMPED_MIN ( 10.0 )
-
-/*
- * @brief Maximum clamped PID value of the actuation solenoid.
- *
- */
-#define PID_ACCUMULATOR_SOLENOID_CLAMPED_MAX ( 110.0 )
-
-/*
- * @brief Minimum clamped PID value of the release solenoid.
- *
- */
-#define PID_RELEASE_SOLENOID_CLAMPED_MIN ( 0.0 )
-
-/*
- * @brief Maximum clamped PID value of the release solenoid.
- *
- */
-#define PID_RELEASE_SOLENOID_CLAMPED_MAX ( 60.0 )
-
-/*
- * @brief Minimum duty cycle that begins to actuate the actuation solenoid.
- *
- * 3.921 KHz PWM frequency
- *
- */
-#define ACCUMULATOR_SOLENOID_DUTY_CYCLE_MIN ( 80.0 )
-
-/*
- * @brief Maximum duty cycle where actuation solenoid has reached its stop.
- *
- * 3.921 KHz PWM frequency
- *
- */
-#define ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX ( 105.0 )
-
-/*
- * @brief Minimum duty cycle that begins to actuate the release solenoid.
- *
- * 3.921 KHz PWM frequency
- *
- */
-#define RELEASE_SOLENOID_DUTY_CYCLE_MIN ( 65.0 )
-
-/*
- * @brief Maximum duty cycle where release solenoid has reached its stop.
- *
- * 3.921 KHz PWM frequency
- *
- */
-#define RELEASE_SOLENOID_DUTY_CYCLE_MAX ( 100.0 )
 
 
 /**

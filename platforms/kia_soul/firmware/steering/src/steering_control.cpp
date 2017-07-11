@@ -11,6 +11,7 @@
 #include "oscc_pid.h"
 #include "oscc_dac.h"
 #include "oscc_time.h"
+#include "kia_soul.h"
 
 #include "globals.h"
 #include "communications.h"
@@ -215,12 +216,12 @@ static void calculate_torque_spoof(
     {
         spoof->low =
             STEPS_PER_VOLT
-            * ((SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALAR * torque_target)
-            + SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET);
+            * ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALAR * torque_target)
+            + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET);
 
         spoof->high =
             STEPS_PER_VOLT
-            * ((SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALAR * torque_target)
-            + SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET);
+            * ((TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALAR * torque_target)
+            + TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET);
     }
 }

@@ -9,19 +9,6 @@
 #define _OSCC_KIA_SOUL_BRAKE_ACCUMULATOR_H_
 
 
-/*
- * @brief Minimum accumulator presure. [decibars]
- *
- */
-#define ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS ( 777.6 )
-
-/*
- * @brief Maximum accumulator pressure. [decibars]
- *
- */
-#define ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS ( 878.0 )
-
-
 // ****************************************************************************
 // Function:    accumulator_init
 //

@@ -41,4 +41,5 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/time
-    ${CMAKE_SOURCE_DIR}/common/libs/dac)
+    ${CMAKE_SOURCE_DIR}/common/libs/dac
+    ${CMAKE_SOURCE_DIR}/kia_soul/firmware)

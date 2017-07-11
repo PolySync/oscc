@@ -8,6 +8,7 @@
 #include "debug.h"
 #include "oscc_time.h"
 #include "oscc_pid.h"
+#include "kia_soul.h"
 
 #include "globals.h"
 #include "brake_control.h"

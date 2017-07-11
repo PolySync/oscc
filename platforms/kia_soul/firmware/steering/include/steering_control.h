@@ -28,17 +28,6 @@
 *   gains, without expert knowledge.
 *******************************************************************************/
 
-/*
- * @brief Minimum steering angle rate. [Newton meters]
- *
- */
-#define TORQUE_MIN_IN_NEWTON_METERS ( -1500.0 )
-
-/*
- * @brief Maximum steering angle rate. [Newton meters]
- *
- */
-#define TORQUE_MAX_IN_NEWTON_METERS ( 1500.0 )
 
 /*
  * @brief Proportional gain of the PID controller.
@@ -59,13 +48,6 @@
 #define PID_DERIVATIVE_GAIN ( 0.03 )
 
 /*
- * @brief Value of the torque sensor that indicates operator override.
- *        [degrees/microsecond]
- *
- */
-#define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 3000 )
-
-/*
  * @brief Amount of time between sensor checks. [milliseconds]
  *
  */
@@ -83,36 +65,6 @@
  *
  */
 #define BIT_SHIFT_10BIT_TO_12BIT ( 2 )
-
-/*
- * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.
- *
- */
-#define STEPS_PER_VOLT ( 819.2 )
-
-/*
- * @brief Scalar value for the low spoof signal taken from a calibration curve.
- *
- */
-#define SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALAR ( 0.0008 )
-
-/*
- * @brief Offset value for the low spoof signal taken from a calibration curve.
- *
- */
-#define SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.26 )
-
-/*
- * @brief Scalar value for the high spoof signal taken from a calibration curve.
- *
- */
-#define SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALAR ( -0.0008 )
-
-/*
- * @brief Offset value for the high spoof signal taken from a calibration curve.
- *
- */
-#define SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
 
 
 /**

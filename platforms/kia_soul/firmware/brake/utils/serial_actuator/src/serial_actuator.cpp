@@ -124,10 +124,10 @@ static void print_pressure_info()
     DEBUG_PRINT( pressure_at_tires.pressure_right );
 
     DEBUG_PRINT( ",PMC1," );
-    DEBUG_PRINT( master_cylinder.pressure1 );
+    DEBUG_PRINT( master_cylinder.sensor_1_pressure );
 
     DEBUG_PRINT( ",PMC2," );
-    DEBUG_PRINTLN( master_cylinder.pressure2 );
+    DEBUG_PRINTLN( master_cylinder.sensor_2_pressure );
 }
 
 
@@ -253,7 +253,7 @@ int main( void )
     {
         check_for_can_frame( );
 
-        publish_reports( );
+        publish_brake_report( );
 
         process_serial( );
 

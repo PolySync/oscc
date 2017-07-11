@@ -10,6 +10,7 @@
 #include "DAC_MCP49xx.h"
 #include "oscc_dac.h"
 #include "oscc_time.h"
+#include "kia_soul.h"
 
 #include "communications.h"
 #include "throttle_control.h"
@@ -175,24 +176,24 @@ static void calculate_accelerator_spoof(
     {
         uint16_t spoof_low =
             STEPS_PER_VOLT
-            * ((SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * accelerator_target)
-            + SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET);
+            * ((THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * accelerator_target)
+            + THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET);
 
         uint16_t spoof_high =
             STEPS_PER_VOLT
-            * ((SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * accelerator_target)
-            + SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET);
+            * ((THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * accelerator_target)
+            + THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET);
 
         spoof->low =
             constrain(
                 spoof_low,
-                SPOOF_LOW_SIGNAL_RANGE_MIN,
-                SPOOF_LOW_SIGNAL_RANGE_MAX );
+                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
+                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
         spoof->high =
             constrain(
                 spoof_high,
-                SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                SPOOF_HIGH_SIGNAL_RANGE_MAX );
+                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
     }
 }

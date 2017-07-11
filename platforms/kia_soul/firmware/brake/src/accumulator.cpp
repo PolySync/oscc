@@ -5,6 +5,7 @@
 
 
 #include <Arduino.h>
+#include "kia_soul.h"
 
 #include "globals.h"
 #include "accumulator.h"
