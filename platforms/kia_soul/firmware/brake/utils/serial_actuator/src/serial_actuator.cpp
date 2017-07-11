@@ -1,7 +1,6 @@
 #include <SPI.h>
 #include "arduino_init.h"
 #include "mcp_can.h"
-#include "chassis_state_can_protocol.h"
 #include "brake_can_protocol.h"
 #include "oscc_pid.h"
 #include "oscc_serial.h"
@@ -252,7 +251,7 @@ int main( void )
 
     while( true )
     {
-        check_for_incoming_message( );
+        check_for_can_frame( );
 
         publish_reports( );
 

@@ -9,7 +9,6 @@
 #include "debug.h"
 #include "DAC_MCP49xx.h"
 #include "oscc_dac.h"
-#include "oscc_signal_smoothing.h"
 #include "oscc_time.h"
 
 #include "throttle_control.h"
@@ -158,27 +157,8 @@ void disable_control( void )
 void read_accelerator_position_sensor(
     accelerator_position_s * const value )
 {
-    accelerator_position_s unfiltered_position;
-
-    unfiltered_position.high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH ) << BIT_SHIFT_10BIT_TO_12BIT;
-    unfiltered_position.low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW ) << BIT_SHIFT_10BIT_TO_12BIT;
-
-    const float filter_alpha = ACCELERATOR_SENSOR_EXPONENTIAL_FILTER_ALPHA;
-    static float filtered_position_high = 0.0;
-    static float filtered_position_low = 0.0;
-
-    filtered_position_high = exponential_moving_average(
-        filter_alpha,
-        unfiltered_position.high,
-        filtered_position_high);
-
-    filtered_position_low = exponential_moving_average(
-        filter_alpha,
-        unfiltered_position.low,
-        filtered_position_low);
-
-    value->high = filtered_position_high;
-    value->low = filtered_position_low;
+    value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH ) << BIT_SHIFT_10BIT_TO_12BIT;
+    value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW ) << BIT_SHIFT_10BIT_TO_12BIT;
 }
 
 

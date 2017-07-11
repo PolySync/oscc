@@ -9,7 +9,6 @@ generate_arduino_firmware(
     ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing/oscc_signal_smoothing.cpp
     ../../src/globals.cpp
     ../../src/accumulator.cpp
     ../../src/helper.cpp
@@ -30,4 +29,4 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/time
-    ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing)
+    ${CMAKE_SOURCE_DIR}/kia_soul/firmware)

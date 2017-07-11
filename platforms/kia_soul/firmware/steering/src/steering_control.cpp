@@ -10,7 +10,6 @@
 #include "debug.h"
 #include "oscc_pid.h"
 #include "oscc_dac.h"
-#include "oscc_signal_smoothing.h"
 #include "oscc_time.h"
 
 #include "globals.h"
@@ -198,27 +197,8 @@ void disable_control( void )
 static void read_torque_sensor(
     steering_torque_s * value )
 {
-    steering_torque_s unfiltered_torque;
-
-    unfiltered_torque.high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << BIT_SHIFT_10BIT_TO_12BIT;
-    unfiltered_torque.low = analogRead( PIN_TORQUE_SENSOR_LOW ) << BIT_SHIFT_10BIT_TO_12BIT;
-
-    const float filter_alpha = TORQUE_SENSOR_EXPONENTIAL_FILTER_ALPHA;
-    static float filtered_torque_high = 0.0;
-    static float filtered_torque_low = 0.0;
-
-    filtered_torque_high = exponential_moving_average(
-        filter_alpha,
-        unfiltered_torque.high,
-        filtered_torque_high);
-
-    filtered_torque_low = exponential_moving_average(
-        filter_alpha,
-        unfiltered_torque.low,
-        filtered_torque_low);
-
-    value->high = filtered_torque_high;
-    value->low = filtered_torque_low;
+    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << BIT_SHIFT_10BIT_TO_12BIT;
+    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << BIT_SHIFT_10BIT_TO_12BIT;
 }
 
 

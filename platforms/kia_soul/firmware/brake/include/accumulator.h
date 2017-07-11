@@ -21,12 +21,6 @@
  */
 #define ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS ( 878.0 )
 
-/*
- * @brief Alpha term for the exponential filter used to smooth the sensor input.
- *
- */
-#define ACCUMULATOR_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.05 )
-
 
 // ****************************************************************************
 // Function:    accumulator_init

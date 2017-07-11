@@ -24,7 +24,6 @@ generate_arduino_firmware(
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing/oscc_signal_smoothing.cpp
     src/main.cpp
     src/globals.cpp
     src/init.cpp
@@ -42,5 +41,4 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/time
-    ${CMAKE_SOURCE_DIR}/common/libs/dac
-    ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing)
+    ${CMAKE_SOURCE_DIR}/common/libs/dac)

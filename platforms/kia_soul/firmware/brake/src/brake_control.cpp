@@ -8,7 +8,6 @@
 #include "debug.h"
 #include "oscc_time.h"
 #include "oscc_pid.h"
-#include "oscc_signal_smoothing.h"
 
 #include "globals.h"
 #include "brake_control.h"
@@ -168,24 +167,10 @@ void read_pressure_sensor( void )
     int raw_pressure_left = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
     int raw_pressure_right = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
 
-    float unfiltered_pressure_left = raw_adc_to_pressure( raw_pressure_left );
-    float unfiltered_pressure_right = raw_adc_to_pressure( raw_pressure_right );
+    float pressure_left = raw_adc_to_pressure( raw_pressure_left );
+    float pressure_right = raw_adc_to_pressure( raw_pressure_right );
 
-    const float filter_alpha = BRAKE_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA;
-    static float filtered_pressure_left = 0.0;
-    static float filtered_pressure_right = 0.0;
-
-    filtered_pressure_left = exponential_moving_average(
-        filter_alpha,
-        unfiltered_pressure_left,
-        filtered_pressure_left);
-
-    filtered_pressure_right = exponential_moving_average(
-        filter_alpha,
-        unfiltered_pressure_right,
-        filtered_pressure_right);
-
-    float pressure_average = ( filtered_pressure_left + filtered_pressure_right ) / 2.0;
+    float pressure_average = ( pressure_left + pressure_right ) / 2.0;
 
     g_brake_control_state.current_sensor_brake_pressure = pressure_average;
 }

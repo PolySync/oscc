@@ -16,13 +16,6 @@ typedef struct
 } master_cylinder_pressure_s;
 
 
-/*
- * @brief Alpha term for the exponential filter used to smooth the sensor input.
- *
- */
-#define MASTER_CYLINDER_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.1 )
-
-
 // ****************************************************************************
 // Function:    master_cylinder_open
 //
