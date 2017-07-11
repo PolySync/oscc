@@ -18,16 +18,29 @@
 
 
 // ****************************************************************************
-// Function:    publish_reports
+// Function:    publish_throttle_report
 //
-// Purpose:     Publish all valid reports to CAN bus.
+// Purpose:     Publish throttle report to CAN bus.
 //
 // Returns:     void
 //
 // Parameters:  void
 //
 // ****************************************************************************
-void publish_reports( void );
+void publish_throttle_report( void );
+
+
+// ****************************************************************************
+// Function:    publish_fault_report
+//
+// Purpose:     Publish a fault report message to the CAN bus.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void publish_fault_report( void );
 
 
 // ****************************************************************************

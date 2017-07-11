@@ -39,7 +39,7 @@ int main( void )
 
         check_for_operator_override( );
 
-        publish_reports( );
+        publish_throttle_report( );
 
         update_throttle( );
     }

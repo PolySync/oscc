@@ -52,6 +52,6 @@ int main( void )
             g_last_control_loop_timestamp = GET_TIMESTAMP_MS();
         }
 
-        publish_reports( );
+        publish_steering_report( );
     }
 }

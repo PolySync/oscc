@@ -6,6 +6,7 @@
 
 #include "mcp_can.h"
 #include "oscc_can.h"
+#include "fault_can_protocol.h"
 #include "steering_can_protocol.h"
 #include "oscc_time.h"
 #include "debug.h"
@@ -15,8 +16,6 @@
 #include "communications.h"
 #include "steering_control.h"
 
-
-static void publish_steering_report( void );
 
 static void process_steering_command(
     const uint8_t * const data );
@@ -32,14 +31,46 @@ static void check_for_controller_command_timeout( void );
 static void check_for_obd_timeout( void );
 
 
-void publish_reports( void )
+void publish_steering_report( void )
 {
     uint32_t delta = get_time_delta( g_steering_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
 
     if ( delta >= OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC )
     {
-        publish_steering_report( );
+        oscc_report_steering_s steering_report;
+
+        steering_report.id = OSCC_REPORT_STEERING_CAN_ID;
+        steering_report.dlc = OSCC_REPORT_STEERING_CAN_DLC;
+        steering_report.data.enabled = (uint8_t) g_steering_control_state.enabled;
+        steering_report.data.override = (uint8_t) g_steering_control_state.operator_override;
+        steering_report.data.current_steering_wheel_angle = (int16_t) g_steering_control_state.current_steering_wheel_angle;
+        steering_report.data.commanded_steering_wheel_angle = (int16_t) g_steering_control_state.commanded_steering_wheel_angle;
+        steering_report.data.fault_obd_timeout = (uint8_t) g_steering_control_state.obd_timeout;
+        steering_report.data.spoofed_torque_output = (int8_t) g_spoofed_torque_output_sum;
+        steering_report.data.fault_invalid_sensor_value = (uint8_t) g_steering_control_state.invalid_sensor_value;
+
+        g_control_can.sendMsgBuf(
+            steering_report.id,
+            CAN_STANDARD,
+            steering_report.dlc,
+            (uint8_t *) &steering_report.data );
+
+        g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
     }
+}
+
+
+void publish_fault_report( void )
+{
+    oscc_module_fault_report_s fault_report;
+
+    fault_report.fault_origin_id = FAULT_ORIGIN_STEERING;
+
+    g_control_can.sendMsgBuf(
+        OSCC_MODULE_FAULT_REPORT_CAN_ID,
+        CAN_STANDARD,
+        OSCC_MODULE_FAULT_REPORT_CAN_DLC,
+        (uint8_t *) &fault_report );
 }
 
 
@@ -60,30 +91,6 @@ void check_for_timeouts( void )
     check_for_controller_command_timeout( );
 
     check_for_obd_timeout( );
-}
-
-
-static void publish_steering_report( void )
-{
-    oscc_report_steering_s steering_report;
-
-    steering_report.id = OSCC_REPORT_STEERING_CAN_ID;
-    steering_report.dlc = OSCC_REPORT_STEERING_CAN_DLC;
-    steering_report.data.enabled = (uint8_t) g_steering_control_state.enabled;
-    steering_report.data.override = (uint8_t) g_steering_control_state.operator_override;
-    steering_report.data.current_steering_wheel_angle = (int16_t) g_steering_control_state.current_steering_wheel_angle;
-    steering_report.data.commanded_steering_wheel_angle = (int16_t) g_steering_control_state.commanded_steering_wheel_angle;
-    steering_report.data.fault_obd_timeout = (uint8_t) g_steering_control_state.obd_timeout;
-    steering_report.data.spoofed_torque_output = (int8_t) g_spoofed_torque_output_sum;
-    steering_report.data.fault_invalid_sensor_value = (uint8_t) g_steering_control_state.invalid_sensor_value;
-
-    g_control_can.sendMsgBuf(
-        steering_report.id,
-        CAN_STANDARD,
-        steering_report.dlc,
-        (uint8_t *) &steering_report.data );
-
-    g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 }
 
 
@@ -150,6 +157,12 @@ static void process_rx_frame(
         {
             process_obd_steering_wheel_angle( frame->data );
         }
+        else if ( frame->id == OSCC_MODULE_FAULT_REPORT_CAN_ID )
+        {
+            disable_control( );
+
+            DEBUG_PRINTLN( "Fault report received" );
+        }
     }
 }
 
@@ -167,6 +180,8 @@ static void check_for_controller_command_timeout( void )
         {
             disable_control( );
 
+            publish_fault_report( );
+
             DEBUG_PRINTLN( "Timeout - controller command" );
         }
     }
@@ -183,6 +198,8 @@ static void check_for_obd_timeout( void )
     if( timeout == true )
     {
         disable_control( );
+
+        publish_fault_report( );
 
         g_steering_control_state.obd_timeout = true;
 

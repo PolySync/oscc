@@ -6,6 +6,7 @@
 
 #include "mcp_can.h"
 #include "brake_can_protocol.h"
+#include "fault_can_protocol.h"
 #include "oscc_can.h"
 #include "oscc_time.h"
 #include "debug.h"
@@ -19,8 +20,6 @@
 static void process_rx_frame(
     const can_frame_s * const frame );
 
-static void publish_brake_report( void );
-
 static void process_brake_command(
     const uint8_t * const data );
 
@@ -32,14 +31,46 @@ static void check_for_controller_command_timeout( void );
 static void check_for_obd_timeout( void );
 
 
-void publish_reports( void )
+void publish_brake_report( void )
 {
     uint32_t delta = get_time_delta( g_brake_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
 
     if ( delta >= OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC )
     {
-        publish_brake_report( );
+        oscc_report_brake_s brake_report;
+
+        brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
+        brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
+        brake_report.data.enabled = (uint8_t) g_brake_control_state.enabled;
+        brake_report.data.override = (uint8_t) g_brake_control_state.operator_override;
+        brake_report.data.pedal_input = (int16_t) g_brake_control_state.current_vehicle_brake_pressure;
+        brake_report.data.pedal_command = (uint16_t) g_brake_control_state.commanded_pedal_position;
+        brake_report.data.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
+        brake_report.data.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
+        brake_report.data.fault_invalid_sensor_value = (uint8_t) g_brake_control_state.invalid_sensor_value;
+
+        g_control_can.sendMsgBuf(
+            brake_report.id,
+            CAN_STANDARD,
+            brake_report.dlc,
+            (uint8_t *) &brake_report.data );
+
+        g_brake_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
     }
+}
+
+
+void publish_fault_report( void )
+{
+    oscc_module_fault_report_s fault_report;
+
+    fault_report.fault_origin_id = FAULT_ORIGIN_BRAKE;
+
+    g_control_can.sendMsgBuf(
+        OSCC_MODULE_FAULT_REPORT_CAN_ID,
+        CAN_STANDARD,
+        OSCC_MODULE_FAULT_REPORT_CAN_DLC,
+        (uint8_t *) &fault_report );
 }
 
 
@@ -60,30 +91,6 @@ void check_for_timeouts( void )
     check_for_controller_command_timeout( );
 
     check_for_obd_timeout( );
-}
-
-
-static void publish_brake_report( void )
-{
-    oscc_report_brake_s brake_report;
-
-    brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
-    brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
-    brake_report.data.enabled = (uint8_t) g_brake_control_state.enabled;
-    brake_report.data.override = (uint8_t) g_brake_control_state.operator_override;
-    brake_report.data.pedal_input = (int16_t) g_brake_control_state.current_vehicle_brake_pressure;
-    brake_report.data.pedal_command = (uint16_t) g_brake_control_state.commanded_pedal_position;
-    brake_report.data.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
-    brake_report.data.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
-    brake_report.data.fault_invalid_sensor_value = (uint8_t) g_brake_control_state.invalid_sensor_value;
-
-    g_control_can.sendMsgBuf(
-        brake_report.id,
-        CAN_STANDARD,
-        brake_report.dlc,
-        (uint8_t *) &brake_report.data );
-
-    g_brake_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
 }
 
 
@@ -140,6 +147,12 @@ static void process_rx_frame(
         {
             process_obd_brake_pressure( frame->data );
         }
+        else if ( frame->id == OSCC_MODULE_FAULT_REPORT_CAN_ID )
+        {
+            disable_control( );
+
+            DEBUG_PRINTLN( "Fault report received" );
+        }
     }
 }
 
@@ -157,6 +170,8 @@ static void check_for_controller_command_timeout( void )
         {
             disable_control( );
 
+            publish_fault_report( );
+
             DEBUG_PRINTLN( "Timeout - controller command" );
         }
     }
@@ -173,6 +188,8 @@ static void check_for_obd_timeout( void )
     if( timeout == true )
     {
         disable_control( );
+
+        publish_fault_report( );
 
         g_brake_control_state.obd_timeout = true;
 

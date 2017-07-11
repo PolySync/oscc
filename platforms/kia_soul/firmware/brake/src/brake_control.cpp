@@ -11,6 +11,7 @@
 
 #include "globals.h"
 #include "brake_control.h"
+#include "communications.h"
 #include "master_cylinder.h"
 #include "helper.h"
 
@@ -89,6 +90,8 @@ void check_for_operator_override( void )
         {
             disable_control( );
 
+            publish_fault_report( );
+
             g_brake_control_state.operator_override = true;
 
             DEBUG_PRINTLN( "Operator override" );
@@ -150,6 +153,8 @@ void check_for_sensor_faults( void )
                 || (wheel_pressure_fault == true) )
             {
                 disable_control( );
+
+                publish_fault_report( );
 
                 g_brake_control_state.invalid_sensor_value = true;
             }

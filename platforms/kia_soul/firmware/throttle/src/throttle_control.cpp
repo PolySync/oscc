@@ -11,6 +11,7 @@
 #include "oscc_dac.h"
 #include "oscc_time.h"
 
+#include "communications.h"
 #include "throttle_control.h"
 #include "globals.h"
 
@@ -35,6 +36,8 @@ void check_for_operator_override( void )
         if ( accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD )
         {
             disable_control( );
+
+            publish_fault_report( );
 
             g_throttle_control_state.operator_override = true;
 
@@ -78,6 +81,8 @@ void check_for_sensor_faults( void )
                 if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
                 {
                     disable_control( );
+
+                    publish_fault_report( );
 
                     g_throttle_control_state.invalid_sensor_value = true;
 

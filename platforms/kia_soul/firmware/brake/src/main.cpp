@@ -42,7 +42,7 @@ int main( void )
 
         check_for_operator_override( );
 
-        publish_reports( );
+        publish_brake_report( );
 
         update_brake( );
     }

@@ -13,6 +13,7 @@
 #include "oscc_time.h"
 
 #include "globals.h"
+#include "communications.h"
 #include "steering_control.h"
 
 
@@ -40,6 +41,8 @@ void check_for_operator_override( void )
             || (abs(torque.low) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC) )
         {
             disable_control( );
+
+            publish_fault_report( );
 
             g_steering_control_state.operator_override = true;
 
@@ -83,6 +86,8 @@ void check_for_sensor_faults( void )
                 if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
                 {
                     disable_control( );
+
+                    publish_fault_report( );
 
                     g_steering_control_state.invalid_sensor_value = true;
 

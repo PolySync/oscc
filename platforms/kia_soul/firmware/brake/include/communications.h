@@ -30,16 +30,29 @@
 
 
 // ****************************************************************************
-// Function:    publish_reports
+// Function:    publish_brake_report
 //
-// Purpose:     Publish all valid reports to CAN bus.
+// Purpose:     Publish brake report to CAN bus.
 //
 // Returns:     void
 //
 // Parameters:  void
 //
 // ****************************************************************************
-void publish_reports( void );
+void publish_brake_report( void );
+
+
+// ****************************************************************************
+// Function:    publish_fault_report
+//
+// Purpose:     Publish a fault report message to the CAN bus.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void publish_fault_report( void );
 
 
 // ****************************************************************************

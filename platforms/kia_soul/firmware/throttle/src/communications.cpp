@@ -6,6 +6,7 @@
 
 #include "mcp_can.h"
 #include "oscc_can.h"
+#include "fault_can_protocol.h"
 #include "throttle_can_protocol.h"
 #include "oscc_time.h"
 #include "debug.h"
@@ -15,8 +16,6 @@
 #include "throttle_control.h"
 
 
-static void publish_throttle_report( void );
-
 static void process_throttle_command(
     const uint8_t * const data );
 
@@ -24,14 +23,51 @@ static void process_rx_frame(
     can_frame_s * const frame );
 
 
-void publish_reports( void )
+void publish_throttle_report( void )
 {
     uint32_t delta = get_time_delta( g_throttle_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
 
     if( delta >= OSCC_REPORT_THROTTLE_PUBLISH_INTERVAL_IN_MSEC )
     {
-        publish_throttle_report( );
+        oscc_report_throttle_s throttle_report;
+
+        accelerator_position_s current_accelerator_position;
+        read_accelerator_position_sensor( &current_accelerator_position );
+
+        throttle_report.id = OSCC_REPORT_THROTTLE_CAN_ID;
+        throttle_report.dlc = OSCC_REPORT_THROTTLE_CAN_DLC;
+        throttle_report.data.enabled = (uint8_t) g_throttle_control_state.enabled;
+        throttle_report.data.override = (uint8_t) g_throttle_control_state.operator_override;
+        throttle_report.data.current_accelerator_position =
+            current_accelerator_position.low + current_accelerator_position.high;
+        throttle_report.data.commanded_accelerator_position =
+            g_throttle_control_state.commanded_accelerator_position;
+        throttle_report.data.spoofed_accelerator_output = g_accelerator_spoof_output_sum;
+        throttle_report.data.fault_invalid_sensor_value =
+            g_throttle_control_state.invalid_sensor_value;
+
+        g_control_can.sendMsgBuf(
+                throttle_report.id,
+                CAN_STANDARD,
+                throttle_report.dlc,
+                (uint8_t*) &throttle_report.data );
+
+        g_throttle_report_last_tx_timestamp = GET_TIMESTAMP_MS();
     }
+}
+
+
+void publish_fault_report( void )
+{
+    oscc_module_fault_report_s fault_report;
+
+    fault_report.fault_origin_id = FAULT_ORIGIN_THROTTLE;
+
+    g_control_can.sendMsgBuf(
+        OSCC_MODULE_FAULT_REPORT_CAN_ID,
+        CAN_STANDARD,
+        OSCC_MODULE_FAULT_REPORT_CAN_DLC,
+        (uint8_t *) &fault_report );
 }
 
 
@@ -48,6 +84,8 @@ void check_for_controller_command_timeout( void )
         {
             disable_control( );
 
+            publish_fault_report( );
+
             DEBUG_PRINTLN( "Timeout waiting for controller command" );
         }
     }
@@ -63,35 +101,6 @@ void check_for_incoming_message( void )
     {
         process_rx_frame( &rx_frame );
     }
-}
-
-
-static void publish_throttle_report( void )
-{
-    oscc_report_throttle_s throttle_report;
-
-    accelerator_position_s current_accelerator_position;
-    read_accelerator_position_sensor( &current_accelerator_position );
-
-    throttle_report.id = OSCC_REPORT_THROTTLE_CAN_ID;
-    throttle_report.dlc = OSCC_REPORT_THROTTLE_CAN_DLC;
-    throttle_report.data.enabled = (uint8_t) g_throttle_control_state.enabled;
-    throttle_report.data.override = (uint8_t) g_throttle_control_state.operator_override;
-    throttle_report.data.current_accelerator_position =
-        current_accelerator_position.low + current_accelerator_position.high;
-    throttle_report.data.commanded_accelerator_position =
-        g_throttle_control_state.commanded_accelerator_position;
-    throttle_report.data.spoofed_accelerator_output = g_accelerator_spoof_output_sum;
-    throttle_report.data.fault_invalid_sensor_value =
-        g_throttle_control_state.invalid_sensor_value;
-
-    g_control_can.sendMsgBuf(
-            throttle_report.id,
-            CAN_STANDARD,
-            throttle_report.dlc,
-            (uint8_t*) &throttle_report.data );
-
-    g_throttle_report_last_tx_timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -132,6 +141,12 @@ static void process_rx_frame(
         if( frame->id == OSCC_COMMAND_THROTTLE_CAN_ID )
         {
             process_throttle_command( frame->data );
+        }
+        else if ( frame->id == OSCC_MODULE_FAULT_REPORT_CAN_ID )
+        {
+            disable_control( );
+
+            DEBUG_PRINTLN( "Fault report received" );
         }
     }
 }
