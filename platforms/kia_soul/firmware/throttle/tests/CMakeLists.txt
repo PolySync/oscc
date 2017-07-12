@@ -9,7 +9,6 @@ add_library(
     ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing/oscc_signal_smoothing.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/mcp_can_mock.cpp
