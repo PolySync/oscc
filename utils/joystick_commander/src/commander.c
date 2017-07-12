@@ -870,7 +870,7 @@ int commander_high_frequency_update( )
 
         if ( brake_fault_occurred == true )
         {
-            return_code = oscc_interface_disable_brakes( );
+            return_code = commander_disable_controls( );
         }
 
 
@@ -878,7 +878,7 @@ int commander_high_frequency_update( )
 
         if ( steering_fault_occurred == true )
         {
-            return_code = oscc_interface_disable_steering( );
+            return_code = commander_disable_controls( );
         }
 
 
@@ -886,7 +886,7 @@ int commander_high_frequency_update( )
 
         if ( throttle_fault_occurred == true )
         {
-            return_code = oscc_interface_disable_throttle( );
+            return_code = commander_disable_controls( );
         }
     }
 
