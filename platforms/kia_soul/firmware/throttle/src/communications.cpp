@@ -31,26 +31,15 @@ void publish_throttle_report( void )
     {
         oscc_report_throttle_s throttle_report;
 
-        accelerator_position_s current_accelerator_position;
-        read_accelerator_position_sensor( &current_accelerator_position );
-
-        throttle_report.id = OSCC_REPORT_THROTTLE_CAN_ID;
-        throttle_report.dlc = OSCC_REPORT_THROTTLE_CAN_DLC;
-        throttle_report.data.enabled = (uint8_t) g_throttle_control_state.enabled;
-        throttle_report.data.override = (uint8_t) g_throttle_control_state.operator_override;
-        throttle_report.data.current_accelerator_position =
-            current_accelerator_position.low + current_accelerator_position.high;
-        throttle_report.data.commanded_accelerator_position =
-            g_throttle_control_state.commanded_accelerator_position;
-        throttle_report.data.spoofed_accelerator_output = g_accelerator_spoof_output_sum;
-        throttle_report.data.fault_invalid_sensor_value =
-            g_throttle_control_state.invalid_sensor_value;
+        throttle_report.enabled = (uint8_t) g_throttle_control_state.enabled;
+        throttle_report.operator_override = (uint8_t) g_throttle_control_state.operator_override;
+        throttle_report.dtcs = g_throttle_control_state.dtcs;
 
         g_control_can.sendMsgBuf(
-                throttle_report.id,
-                CAN_STANDARD,
-                throttle_report.dlc,
-                (uint8_t*) &throttle_report.data );
+            OSCC_REPORT_THROTTLE_CAN_ID,
+            CAN_STANDARD,
+            OSCC_REPORT_THROTTLE_CAN_DLC,
+            (uint8_t*) &throttle_report );
 
         g_throttle_report_last_tx_timestamp = GET_TIMESTAMP_MS();
     }
@@ -109,24 +98,21 @@ static void process_throttle_command(
 {
     if ( data != NULL )
     {
-        const oscc_command_throttle_data_s * const throttle_command_data =
-                (oscc_command_throttle_data_s *) data;
+        const oscc_command_throttle_s * const throttle_command =
+                (oscc_command_throttle_s *) data;
 
-        if( throttle_command_data->enabled == true )
+        if( throttle_command->enable == true )
         {
             enable_control( );
+
+            update_throttle(
+                throttle_command->spoof_value_high,
+                throttle_command->spoof_value_low );
         }
         else
         {
             disable_control( );
         }
-
-        // divisor value found empirically to best match throttle output
-        g_throttle_control_state.commanded_accelerator_position =
-            throttle_command_data->commanded_accelerator_position / 24;
-
-        DEBUG_PRINT( "controller commanded accelerator position: " );
-        DEBUG_PRINTLN( g_throttle_control_state.commanded_accelerator_position );
 
         g_throttle_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     }

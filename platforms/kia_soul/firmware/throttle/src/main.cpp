@@ -25,7 +25,7 @@ int main( void )
 
     wdt_enable( WDTO_120MS );
 
-    DEBUG_PRINTLN( "initialization complete" );
+    DEBUG_PRINTLN( "init complete" );
 
     while( true )
     {
@@ -40,7 +40,5 @@ int main( void )
         check_for_operator_override( );
 
         publish_throttle_report( );
-
-        update_throttle( );
     }
 }

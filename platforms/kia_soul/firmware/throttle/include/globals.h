@@ -76,7 +76,6 @@ EXTERN uint32_t g_throttle_report_last_tx_timestamp;
 EXTERN uint32_t g_sensor_validity_last_check_timestamp;
 
 EXTERN kia_soul_throttle_control_state_s g_throttle_control_state;
-EXTERN uint16_t g_accelerator_spoof_output_sum;
 
 
 #endif /* _OSCC_KIA_SOUL_THROTTLE_GLOBALS_H_ */

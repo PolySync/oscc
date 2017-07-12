@@ -7,9 +7,10 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include "debug.h"
-#include "DAC_MCP49xx.h"
 #include "oscc_dac.h"
 #include "oscc_time.h"
+#include "throttle_can_protocol.h"
+#include "dtc.h"
 #include "kia_soul.h"
 
 #include "communications.h"
@@ -17,9 +18,8 @@
 #include "globals.h"
 
 
-static void calculate_accelerator_spoof(
-    const uint16_t accelerator_target,
-    accelerator_position_s * const spoof );
+static void read_accelerator_position_sensor(
+    accelerator_position_s * const value );
 
 
 void check_for_operator_override( void )
@@ -55,7 +55,7 @@ void check_for_operator_override( void )
 void check_for_sensor_faults( void )
 {
     if ( (g_throttle_control_state.enabled == true)
-        || (g_throttle_control_state.invalid_sensor_value == true) )
+        || DTC_CHECK(g_throttle_control_state.dtcs, OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL) )
     {
         uint32_t current_time = GET_TIMESTAMP_MS();
 
@@ -70,12 +70,13 @@ void check_for_sensor_faults( void )
         {
             g_sensor_validity_last_check_timestamp = current_time;
 
-            int sensor_high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
-            int sensor_low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+            accelerator_position_s accelerator_position;
+
+            read_accelerator_position_sensor( &accelerator_position );
 
             // sensor pins tied to ground - a value of zero indicates disconnection
-            if( (sensor_high == 0)
-                || (sensor_low == 0) )
+            if( (accelerator_position.high == 0)
+                || (accelerator_position.low == 0) )
             {
                 ++fault_count;
 
@@ -85,14 +86,19 @@ void check_for_sensor_faults( void )
 
                     publish_fault_report( );
 
-                    g_throttle_control_state.invalid_sensor_value = true;
+                    DTC_SET(
+                        g_throttle_control_state.dtcs,
+                        OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
 
                     DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
                 }
             }
             else
             {
-                g_throttle_control_state.invalid_sensor_value = false;
+                DTC_CLEAR(
+                        g_throttle_control_state.dtcs,
+                        OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
+
                 fault_count = 0;
             }
         }
@@ -100,21 +106,26 @@ void check_for_sensor_faults( void )
 }
 
 
-void update_throttle( void )
+void update_throttle(
+    uint16_t spoof_command_high,
+    uint16_t spoof_command_low )
 {
     if ( g_throttle_control_state.enabled == true )
     {
-        accelerator_position_s accelerator_spoof;
+        uint16_t spoof_high =
+            constrain(
+                spoof_command_high,
+                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
 
-        calculate_accelerator_spoof(
-                g_throttle_control_state.commanded_accelerator_position,
-                &accelerator_spoof );
+        uint16_t spoof_low =
+            constrain(
+                spoof_command_low,
+                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
+                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
-        g_accelerator_spoof_output_sum =
-            accelerator_spoof.high + accelerator_spoof.low;
-
-        g_dac.outputA( accelerator_spoof.high );
-        g_dac.outputB( accelerator_spoof.low );
+        g_dac.outputA( spoof_high );
+        g_dac.outputB( spoof_low );
     }
 }
 
@@ -160,40 +171,9 @@ void disable_control( void )
 }
 
 
-void read_accelerator_position_sensor(
+static void read_accelerator_position_sensor(
     accelerator_position_s * const value )
 {
-    value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH ) << BIT_SHIFT_10BIT_TO_12BIT;
-    value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW ) << BIT_SHIFT_10BIT_TO_12BIT;
-}
-
-
-static void calculate_accelerator_spoof(
-    const uint16_t accelerator_target,
-    accelerator_position_s * const spoof )
-{
-    if ( spoof != NULL )
-    {
-        uint16_t spoof_low =
-            STEPS_PER_VOLT
-            * ((THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * accelerator_target)
-            + THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET);
-
-        uint16_t spoof_high =
-            STEPS_PER_VOLT
-            * ((THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * accelerator_target)
-            + THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET);
-
-        spoof->low =
-            constrain(
-                spoof_low,
-                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
-                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
-
-        spoof->high =
-            constrain(
-                spoof_high,
-                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
-    }
+    value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
+    value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 }

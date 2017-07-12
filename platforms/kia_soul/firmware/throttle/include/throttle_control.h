@@ -13,12 +13,6 @@
 
 
 /*
- * @brief Number of bits to shift to go from a 10-bit value to a 12-bit value.
- *
- */
-#define BIT_SHIFT_10BIT_TO_12BIT (2)
-
-/*
  * @brief Amount of time between sensor checks. [milliseconds]
  *
  */
@@ -59,11 +53,7 @@ typedef struct
     bool operator_override; /* Flag indicating whether accelerator was manually
                                pressed by operator. */
 
-    bool invalid_sensor_value; /* Flag indicating a value read from one of the
-                                  sensors is invalid. */
-
-    uint16_t commanded_accelerator_position; /* Position of accelerator commanded
-                                                by the controller. */
+    uint8_t dtcs; /* Bitfield of faults present in the module. */
 } kia_soul_throttle_control_state_s;
 
 
@@ -95,31 +85,19 @@ void check_for_sensor_faults( void );
 
 
 // ****************************************************************************
-// Function:    read_accelerator_position_sensor
-//
-// Purpose:     Reads current value from the accelerator position sensor.
-//
-// Returns:     void
-//
-// Parameters:  [out] value - pointer to \ref accelerator_position_s that will receive
-//                            the sensor values.
-//
-// ****************************************************************************
-void read_accelerator_position_sensor(
-    accelerator_position_s * const value );
-
-
-// ****************************************************************************
 // Function:    update_throttle
 //
 // Purpose:     Writes throttle spoof values to DAC.
 //
 // Returns:     void
 //
-// Parameters:  void
+// Parameters:  spoof_command_high - high value of spoof command
+//              spoof_command_low - low value of spoof command
 //
 // ****************************************************************************
-void update_throttle( void );
+void update_throttle(
+    uint16_t spoof_command_high,
+    uint16_t spoof_command_low );
 
 
 // ****************************************************************************
