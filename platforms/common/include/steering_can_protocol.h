@@ -36,130 +36,53 @@
  */
 #define OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC (20)
 
+/*
+ * @brief Steering DTC bitfield position indicating an invalid sensor value.
+ *
+ */
+#define OSCC_STEERING_DTC_INVALID_SENSOR_VAL (0x0)
 
 /**
  * @brief Steering command message data.
  *
- * Message size (CAN frame DLC): 8 bytes
+ * CAN frame ID: \ref OSCC_COMMAN_STEERING_CAN_ID
  *
  */
 typedef struct
 {
-    int16_t commanded_steering_wheel_angle; /*!< Steering wheel angle command.
-                                             * Positive means to the
-                                             * left (counter clockwise).
-                                             * [0.1 degrees per bit] */
+    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
-    uint8_t commanded_steering_wheel_angle_rate; /*!< Steering wheel angle rate
-                                                  * command.
-                                                  * Value zero means no limit.
-                                                  * Value 0x01 means 2 degrees/second.
-                                                  * Value 0xFA means 500 degrees/second.
-                                                  * [2 degrees/second per bit] */
+    uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
 
-    uint8_t enabled : 1; /*!< Steering control command/request enabled.
-                          * Value zero means off/disabled.
-                          * Value one means on/enabled. */
+    uint8_t enabled;    /*!< Command to enable or disable steering control. 
+                         * Zero value means disable.
+                         * Non-zero value means enable. */
 
-    uint8_t reserved_0 : 1; /*!< Reserved. */
-
-    uint8_t reserved_1 : 1; /*!< Reserved. */
-
-    uint8_t reserved_2 : 5; /*!< Reserved. */
-
-    uint8_t reserved_3; /*!< Reserved. */
-
-    uint8_t reserved_4; /*!< Reserved. */
-
-    uint8_t reserved_5; /*!< Reserved. */
-
-    uint8_t reserved_6; /*!< Reserved. */
-} oscc_command_steering_data_s;
-
-
-/**
- * @brief Steering command message.
- *
- * CAN frame ID: \ref OSCC_COMMAND_STEERING_CAN_ID
- *
- */
-typedef struct
-{
-    uint32_t timestamp; /* Timestamp when command was received by the firmware. */
-
-    oscc_command_steering_data_s data; /* CAN frame data. */
+    uint8_t reserved[3]; /*!< Reserved. */
 } oscc_command_steering_s;
 
 
 /**
  * @brief Steering report message data.
  *
- * Message size (CAN frame DLC): \ref OSCC_REPORT_STEERING_CAN_DLC
- *
- */
-typedef struct
-{
-
-    int16_t current_steering_wheel_angle; /*!< Steering wheel angle reported by
-                                           * vehicle.
-                                           * Positive means to the left
-                                           * (counter clockwise).
-                                           * [0.1 degrees per bit] */
-
-    int16_t commanded_steering_wheel_angle; /*!< Steering wheel angle command.
-                                             * Positive means to the left
-                                             * (counter clockwise).
-                                             * [0.1 degrees per bit] */
-
-    uint16_t reserved_0; /*!< Reserved. */
-
-    int8_t spoofed_torque_output; /*!< Spoofed steering wheel torque output to the
-                                   * vehicle. [0.0625 Newton meters per bit] */
-
-    uint8_t enabled : 1; /*!< Steering controls enabled state.
-                          * Value zero means off/disabled (commands are ignored).
-                          * Value one means on/enabled (no timeouts or overrides have occured). */
-
-    uint8_t override : 1; /*!< Driver override state.
-                           * Value zero means controls are provided autonomously (no override).
-                           * Value one means controls are provided by the driver. */
-
-    uint8_t fault_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
-                                             * Value zero means the values read
-                                             * from the sensors are valid.
-                                             *
-                                             * Value one means the values read
-                                             * from the sensors are invalid. */
-
-    uint8_t reserved_1 : 1; /*!< Reserved. */
-
-    uint8_t fault_obd_timeout : 1; /*!< OBD timeout indicator.
-                                   * Value zero means no timeout occurred.
-                                   * Value one means timeout occurred. */
-
-    uint8_t reserved_2 : 1; /*!< Reserved */
-
-    uint8_t reserved_3 : 1; /*!< Reserved. */
-
-    uint8_t reserved_4 : 1; /*!< Reserved. */
-} oscc_report_steering_data_s;
-
-
-/**
- * @brief Steering report message.
- *
  * CAN frame ID: \ref OSCC_REPORT_STEERING_CAN_ID
  *
  */
 typedef struct
 {
-    uint32_t id; /* CAN frame ID. */
 
-    uint8_t dlc; /* CAN frame data length. */
+    uint8_t enabled; /*!< Steering controls enabled state.
+                      * Zero value means disabled (commands are ignored).
+                      * Non-zero value means enabled (no timeouts or overrides have occured). */
 
-    uint32_t timestamp; /* Timestamp when report was put on the bus. */
+    uint8_t operator_override; /*!< Driver override state.
+                                * Zero value means there has been no operator override.
+                                * Non-zero value means an operator has physically overridden
+                                * the system. */
 
-    oscc_report_steering_data_s data; /* CAN frame data. */
+    uint8_t dtcs; /* Bitfield of DTCs present in the module. */
+
+    uint8_t reserved[5]; /*!< Reserved. */
 } oscc_report_steering_s;
 
 

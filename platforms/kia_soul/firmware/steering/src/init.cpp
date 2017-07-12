@@ -7,12 +7,11 @@
 #include <Arduino.h>
 #include "oscc_serial.h"
 #include "oscc_can.h"
-#include "debug.h"
 #include "oscc_time.h"
-#include "oscc_pid.h"
+#include "debug.h"
 
-#include "init.h"
 #include "globals.h"
+#include "init.h"
 
 
 void init_globals( void )
@@ -24,13 +23,7 @@ void init_globals( void )
     // Initialize the timestamps to avoid timeout warnings on start up
     g_steering_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
     g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
-    g_obd_steering_wheel_angle_last_rx_timestamp = GET_TIMESTAMP_MS( );
-    g_last_control_loop_timestamp = 0;
-
-    pid_zeroize( &g_pid, PID_WINDUP_GUARD );
-    g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
-    g_pid.integral_gain = PID_INTEGRAL_GAIN;
-    g_pid.derivative_gain = PID_DERIVATIVE_GAIN;
+    g_sensor_validity_last_check_timestamp = GET_TIMESTAMP_MS( );
 }
 
 

@@ -123,90 +123,23 @@
 #define RELEASE_SOLENOID_DUTY_CYCLE_MAX ( 100.0 )
 
 /*
- * @brief Scalar value to convert angle reported by OBD to human-readable value.
+ * @brief Minimum allowable steering DAC output. [steps]
  *
  */
-#define RAW_ANGLE_SCALAR ( 0.0076294 )
+#define STEERING_SPOOF_SIGNAL_RANGE_MIN ( 850.0 )
 
 /*
- * @brief Scalar value to convert wheel angle (-40 to 40 degrees) to steering
- *        wheel angle (-470 to 470) degrees.
+ * @brief Maximum allowable steering DAC output. [steps]
  *
  */
-#define WHEEL_ANGLE_TO_STEERING_WHEEL_ANGLE_SCALAR ( 11.7 )
-
-/*
- * @brief Minimum steering angle rate. [Newton meters]
- *
- */
-#define TORQUE_MIN_IN_NEWTON_METERS ( -1500.0 )
-
-/*
- * @brief Maximum steering angle rate. [Newton meters]
- *
- */
-#define TORQUE_MAX_IN_NEWTON_METERS ( 1500.0 )
+#define STEERING_SPOOF_SIGNAL_RANGE_MAX ( 3000.0 )
 
 /*
  * @brief Value of the torque sensor that indicates operator override.
  *        [degrees/microsecond]
  *
  */
-#define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 3000 )
-
-/*
- * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.
- *
- */
-#define STEPS_PER_VOLT ( 819.2 )
-
-/*
- * @brief Scalar value for the low spoof signal taken from a calibration curve.
- *
- */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALAR ( 0.0008 )
-
-/*
- * @brief Offset value for the low spoof signal taken from a calibration curve.
- *
- */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.26 )
-
-/*
- * @brief Scalar value for the high spoof signal taken from a calibration curve.
- *
- */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALAR ( -0.0008 )
-
-/*
- * @brief Offset value for the high spoof signal taken from a calibration curve.
- *
- */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
-
-/*
- * @brief Scalar value for the low spoof signal taken from a calibration curve.
- *
- */
-#define THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE (0.0004)
-
-/*
- * @brief Offset value for the low spoof signal taken from a calibration curve.
- *
- */
-#define THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET (0.366)
-
-/*
- * @brief Scalar value for the high spoof signal taken from a calibration curve.
- *
- */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE (0.0008)
-
-/*
- * @brief Offset value for the high spoof signal taken from a calibration curve.
- *
- */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET (0.732)
+#define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 750 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value.
@@ -248,7 +181,7 @@
  */
 typedef struct
 {
-    int16_t steering_wheel_angle; /* 1/10th of a degree per bit. */
+    int16_t steering_wheel_angle; /* 1/10 degrees */
 
     uint8_t reserved[6]; /* Reserved. */
 } kia_soul_obd_steering_wheel_angle_data_s;
@@ -262,13 +195,13 @@ typedef struct
  */
 typedef struct
 {
-    int16_t wheel_speed_front_left; /* 1/128 mph per bit */
+    int16_t wheel_speed_front_left; /* 1/50 mph */
 
-    int16_t wheel_speed_front_right; /* 1/128 mph per bit */
+    int16_t wheel_speed_front_right; /* 1/50 mph */
 
-    int16_t wheel_speed_rear_left; /* 1/128 mph per bit */
+    int16_t wheel_speed_rear_left; /* 1/50 mph */
 
-    int16_t wheel_speed_rear_right; /* 1/128 mph per bit */
+    int16_t wheel_speed_rear_right; /* 1/50 mph */
 } kia_soul_obd_wheel_speed_data_s;
 
 

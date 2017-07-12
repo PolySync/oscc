@@ -6,24 +6,17 @@
 
 #include <Arduino.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include "debug.h"
-#include "oscc_pid.h"
 #include "oscc_dac.h"
 #include "oscc_time.h"
+#include "steering_can_protocol.h"
+#include "dtc.h"
 #include "kia_soul.h"
 
-#include "globals.h"
 #include "communications.h"
 #include "steering_control.h"
+#include "globals.h"
 
-
-#define MSEC_TO_SEC(msec) ( (msec) / 1000.0 )
-
-
-static void calculate_torque_spoof(
-    const int16_t torque_target,
-    steering_torque_s * const spoof );
 
 static void read_torque_sensor(
     steering_torque_s * value );
@@ -60,7 +53,7 @@ void check_for_operator_override( void )
 void check_for_sensor_faults( void )
 {
     if ( (g_steering_control_state.enabled == true)
-        || (g_steering_control_state.invalid_sensor_value == true) )
+        || DTC_CHECK(g_steering_control_state.dtcs, OSCC_STEERING_DTC_INVALID_SENSOR_VAL) )
     {
         uint32_t current_time = GET_TIMESTAMP_MS();
 
@@ -90,14 +83,19 @@ void check_for_sensor_faults( void )
 
                     publish_fault_report( );
 
-                    g_steering_control_state.invalid_sensor_value = true;
+                    DTC_SET(
+                        g_steering_control_state.dtcs,
+                        OSCC_STEERING_DTC_INVALID_SENSOR_VAL );
 
                     DEBUG_PRINTLN( "Bad value read from torque sensor" );
                 }
             }
             else
             {
-                g_steering_control_state.invalid_sensor_value = false;
+                DTC_CLEAR(
+                        g_steering_control_state.dtcs,
+                        OSCC_STEERING_DTC_INVALID_SENSOR_VAL );
+
                 fault_count = 0;
             }
         }
@@ -105,53 +103,26 @@ void check_for_sensor_faults( void )
 }
 
 
-void update_steering( void )
+void update_steering(
+    uint16_t spoof_command_high,
+    uint16_t spoof_command_low )
 {
-    if (g_steering_control_state.enabled == true )
+    if ( g_steering_control_state.enabled == true )
     {
-        float time_between_loops_in_sec =
-            MSEC_TO_SEC( CONTROL_LOOP_INTERVAL_IN_MSEC );
+        uint16_t spoof_high =
+            constrain(
+                spoof_command_high,
+                STEERING_SPOOF_SIGNAL_RANGE_MIN,
+                STEERING_SPOOF_SIGNAL_RANGE_MAX );
 
-        // Calculate steering angle rates (millidegrees/microsecond)
-        float steering_wheel_angle_rate =
-            ( g_steering_control_state.current_steering_wheel_angle
-            - g_steering_control_state.previous_steering_wheel_angle )
-            / time_between_loops_in_sec;
+        uint16_t spoof_low =
+            constrain(
+                spoof_command_high,
+                STEERING_SPOOF_SIGNAL_RANGE_MIN,
+                STEERING_SPOOF_SIGNAL_RANGE_MAX );
 
-        float steering_wheel_angle_rate_target =
-            ( g_steering_control_state.commanded_steering_wheel_angle
-            - g_steering_control_state.current_steering_wheel_angle )
-            / time_between_loops_in_sec;
-
-        // Save the angle for next iteration
-        g_steering_control_state.previous_steering_wheel_angle =
-            g_steering_control_state.current_steering_wheel_angle;
-
-        steering_wheel_angle_rate_target =
-            constrain( steering_wheel_angle_rate_target,
-                       -g_steering_control_state.commanded_steering_wheel_angle_rate,
-                       g_steering_control_state.commanded_steering_wheel_angle_rate );
-
-        pid_update(
-                &g_pid,
-                steering_wheel_angle_rate_target,
-                steering_wheel_angle_rate,
-                time_between_loops_in_sec );
-
-        float control = g_pid.control;
-
-        control = constrain( control,
-                             TORQUE_MIN_IN_NEWTON_METERS,
-                             TORQUE_MAX_IN_NEWTON_METERS );
-
-        steering_torque_s torque_spoof;
-
-        calculate_torque_spoof( control, &torque_spoof );
-
-        g_spoofed_torque_output_sum = torque_spoof.low + torque_spoof.high;
-
-        g_dac.outputA( torque_spoof.low );
-        g_dac.outputB( torque_spoof.high );
+        g_dac.outputA( spoof_high );
+        g_dac.outputB( spoof_low );
     }
 }
 
@@ -194,8 +165,6 @@ void disable_control( void )
 
         g_steering_control_state.enabled = false;
 
-        pid_zeroize( &g_pid, PID_WINDUP_GUARD );
-
         DEBUG_PRINTLN( "Control disabled" );
     }
 }
@@ -203,25 +172,7 @@ void disable_control( void )
 static void read_torque_sensor(
     steering_torque_s * value )
 {
-    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << BIT_SHIFT_10BIT_TO_12BIT;
-    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << BIT_SHIFT_10BIT_TO_12BIT;
+    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH );
+    value->low = analogRead( PIN_TORQUE_SENSOR_LOW );
 }
 
-
-static void calculate_torque_spoof(
-    const int16_t torque_target,
-    steering_torque_s * const spoof )
-{
-    if( spoof != NULL )
-    {
-        spoof->low =
-            STEPS_PER_VOLT
-            * ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALAR * torque_target)
-            + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET);
-
-        spoof->high =
-            STEPS_PER_VOLT
-            * ((TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALAR * torque_target)
-            + TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET);
-    }
-}

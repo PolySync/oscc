@@ -11,42 +11,6 @@
 
 #include <stdint.h>
 
-
-/*******************************************************************************
-*   WARNING
-*
-*   The ranges selected to do steering control are carefully tested to
-*   ensure that a torque is not requested that the vehicles steering motor
-*   cannot handle. By changing any of this code you risk attempting to actuate
-*   a torque outside of the vehicles valid range. Actuating a torque outside of
-*   the vehicles valid range will, at best, cause the vehicle to go into an
-*   unrecoverable fault state. Clearing this fault state requires one of Kia's
-*   native diagnostics tools, and someone who knows how to clear DTC codes with
-*   said tool.
-*
-*   It is NOT recommended to modify any of the existing control ranges, or
-*   gains, without expert knowledge.
-*******************************************************************************/
-
-
-/*
- * @brief Proportional gain of the PID controller.
- *
- */
-#define PID_PROPORTIONAL_GAIN ( 0.3 )
-
-/*
- * @brief Integral gain of the PID controller.
- *
- */
-#define PID_INTEGRAL_GAIN ( 1.3 )
-
-/*
- * @brief Derivative gain of the PID controller.
- *
- */
-#define PID_DERIVATIVE_GAIN ( 0.03 )
-
 /*
  * @brief Amount of time between sensor checks. [milliseconds]
  *
@@ -59,12 +23,6 @@
  *
  */
 #define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
-
-/*
- * @brief Number of bits to shift to go from a 10-bit value to a 12-bit value.
- *
- */
-#define BIT_SHIFT_10BIT_TO_12BIT ( 2 )
 
 
 /**
@@ -94,21 +52,7 @@ typedef struct
     bool operator_override; /* Flag indicating whether steering wheel was
                                manually turned by operator. */
 
-    bool invalid_sensor_value; /* Flag indicating a value read from one of the
-                                  sensors is invalid. */
-
-    bool obd_timeout; /* Flag indicating whether an OBD timeout has occurred. */
-
-    float current_steering_wheel_angle; /* Current steering angle as reported
-                                           by the vehicle. */
-
-    float previous_steering_wheel_angle; /* Last steering angle recorded. */
-
-    float commanded_steering_wheel_angle; /* Angle of steering wheel commanded
-                                             by controller. */
-
-    float commanded_steering_wheel_angle_rate; /* Rate of the steering wheel
-                                                  angle commanded by controller. */
+    uint8_t dtcs;
 } kia_soul_steering_control_state_s;
 
 
@@ -146,10 +90,13 @@ void check_for_sensor_faults( void );
 //
 // Returns:     void
 //
-// Parameters:  void
+// Parameters:  spoof_command_high - high value of spoof command
+//              spoof_command_low - low value of spoof command
 //
 // ****************************************************************************
-void update_steering( void );
+void update_steering(
+    uint16_t spoof_command_high,
+    uint16_t spoof_command_low );
 
 
 // *****************************************************
