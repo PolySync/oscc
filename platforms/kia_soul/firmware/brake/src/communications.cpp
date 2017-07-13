@@ -33,30 +33,23 @@ static void check_for_obd_timeout( void );
 
 void publish_brake_report( void )
 {
-    uint32_t delta = get_time_delta( g_brake_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
+    oscc_report_brake_s brake_report;
 
-    if ( delta >= OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC )
-    {
-        oscc_report_brake_s brake_report;
+    brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
+    brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
+    brake_report.data.enabled = (uint8_t) g_brake_control_state.enabled;
+    brake_report.data.override = (uint8_t) g_brake_control_state.operator_override;
+    brake_report.data.pedal_input = (int16_t) g_brake_control_state.current_vehicle_brake_pressure;
+    brake_report.data.pedal_command = (uint16_t) g_brake_control_state.commanded_pedal_position;
+    brake_report.data.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
+    brake_report.data.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
+    brake_report.data.fault_invalid_sensor_value = (uint8_t) g_brake_control_state.invalid_sensor_value;
 
-        brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
-        brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
-        brake_report.data.enabled = (uint8_t) g_brake_control_state.enabled;
-        brake_report.data.override = (uint8_t) g_brake_control_state.operator_override;
-        brake_report.data.pedal_input = (int16_t) g_brake_control_state.current_vehicle_brake_pressure;
-        brake_report.data.pedal_command = (uint16_t) g_brake_control_state.commanded_pedal_position;
-        brake_report.data.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
-        brake_report.data.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
-        brake_report.data.fault_invalid_sensor_value = (uint8_t) g_brake_control_state.invalid_sensor_value;
-
-        g_control_can.sendMsgBuf(
-            brake_report.id,
-            CAN_STANDARD,
-            brake_report.dlc,
-            (uint8_t *) &brake_report.data );
-
-        g_brake_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
-    }
+    g_control_can.sendMsgBuf(
+        brake_report.id,
+        CAN_STANDARD,
+        brake_report.dlc,
+        (uint8_t *) &brake_report.data );
 }
 
 

@@ -25,24 +25,17 @@ static void process_rx_frame(
 
 void publish_steering_report( void )
 {
-    uint32_t delta = get_time_delta( g_steering_report_last_tx_timestamp, GET_TIMESTAMP_MS() );
+    oscc_report_steering_s steering_report;
 
-    if ( delta >= OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC )
-    {
-        oscc_report_steering_s steering_report;
+    steering_report.enabled = (uint8_t) g_steering_control_state.enabled;
+    steering_report.operator_override = (uint8_t) g_steering_control_state.operator_override;
+    steering_report.dtcs = g_steering_control_state.dtcs;
 
-        steering_report.enabled = (uint8_t) g_steering_control_state.enabled;
-        steering_report.operator_override = (uint8_t) g_steering_control_state.operator_override;
-        steering_report.dtcs = g_steering_control_state.dtcs;
-
-        g_control_can.sendMsgBuf(
-            OSCC_REPORT_STEERING_CAN_ID,
-            CAN_STANDARD,
-            OSCC_REPORT_STEERING_CAN_DLC,
-            (uint8_t *) &steering_report );
-
-        g_steering_report_last_tx_timestamp = GET_TIMESTAMP_MS( );
-    }
+    g_control_can.sendMsgBuf(
+        OSCC_REPORT_STEERING_CAN_ID,
+        CAN_STANDARD,
+        OSCC_REPORT_STEERING_CAN_DLC,
+        (uint8_t *) &steering_report );
 }
 
 

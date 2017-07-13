@@ -31,10 +31,10 @@
 #define OSCC_REPORT_STEERING_CAN_DLC (8)
 
 /*
- * @brief Steering report message publishing interval. [milliseconds]
+ * @brief Steering report message publishing frequency. [Hz]
  *
  */
-#define OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC (20)
+#define OSCC_REPORT_STEERING_PUBLISH_FREQ_IN_HZ (50)
 
 /*
  * @brief Steering DTC bitfield position indicating an invalid sensor value.
@@ -54,7 +54,7 @@ typedef struct
 
     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
 
-    uint8_t enabled;    /*!< Command to enable or disable steering control. 
+    uint8_t enabled;    /*!< Command to enable or disable steering control.
                          * Zero value means disable.
                          * Non-zero value means enable. */
 

@@ -31,10 +31,10 @@
 #define OSCC_REPORT_BRAKE_CAN_DLC (8)
 
 /*
- * @brief Brake report message publishing interval. [milliseconds]
+ * @brief Brake report message publishing frequency. [Hz]
  *
  */
-#define OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC (50)
+#define OSCC_REPORT_BRAKE_PUBLISH_FREQ_IN_HZ (50)
 
 
 /**

@@ -4,7 +4,6 @@
  */
 
 
-#include <avr/wdt.h>
 #include "arduino_init.h"
 
 #include "debug.h"
@@ -24,14 +23,10 @@ int main( void )
 
     init_communication_interfaces( );
 
-    wdt_enable( WDTO_120MS );
-
     DEBUG_PRINTLN( "initialization complete" );
 
     while( true )
     {
-        wdt_reset();
-
         check_for_can_frame( );
 
         accumulator_maintain_pressure( );
@@ -41,8 +36,6 @@ int main( void )
         check_for_sensor_faults( );
 
         check_for_operator_override( );
-
-        publish_brake_report( );
 
         update_brake( );
     }

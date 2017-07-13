@@ -34,10 +34,10 @@
 
 
 /*
- * @brief Throttle report message publishing interval. [milliseconds]
+ * @brief Throttle report message publishing frequency. [Hz]
  *
  */
-#define OSCC_REPORT_THROTTLE_PUBLISH_INTERVAL_IN_MSEC (20)
+#define OSCC_REPORT_THROTTLE_PUBLISH_FREQ_IN_HZ (50)
 
 
 /*
