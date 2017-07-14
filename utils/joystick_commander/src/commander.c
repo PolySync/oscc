@@ -16,7 +16,7 @@
 
 #include "macros.h"
 #include "joystick.h"
-#include "oscc_interface.h"
+#include "oscc.h"
 
 
 // *****************************************************
@@ -292,7 +292,7 @@ static int commander_set_safe( )
 
     if ( commander_enabled == COMMANDER_ENABLED )
     {
-        return_code = oscc_interface_set_defaults();
+        return_code = oscc_set_defaults();
     }
     return ( return_code );
 }
@@ -344,7 +344,7 @@ static int commander_disable_controls( )
 
         if ( return_code == NOERR )
         {
-            return_code = oscc_interface_disable();
+            return_code = oscc_disable();
         }
     }
     return return_code;
@@ -374,7 +374,7 @@ static int commander_enable_controls( )
 
         if ( return_code == NOERR )
         {
-            return_code = oscc_interface_enable();
+            return_code = oscc_enable();
         }
     }
     return ( return_code );
@@ -458,7 +458,7 @@ static int command_brakes( )
 
         printf( "brake: %d\n", constrained_value );
 
-        return_code = oscc_interface_command_brakes( constrained_value );
+        return_code = oscc_command_brakes( constrained_value );
     }
     return ( return_code );
 }
@@ -507,7 +507,7 @@ static int command_throttle( )
 
         printf( "throttle: %d\n", constrained_value );
 
-        return_code = oscc_interface_command_throttle( constrained_value );
+        return_code = oscc_command_throttle( constrained_value );
     }
     return ( return_code );
 }
@@ -559,7 +559,7 @@ static int command_steering( )
 
         printf( "steering: %d\t%d\n", constrained_angle, constrained_rate );
 
-        return_code = oscc_interface_command_steering( constrained_angle,
+        return_code = oscc_command_steering( constrained_angle,
                                                        constrained_rate );
     }
     return ( return_code );
@@ -590,7 +590,7 @@ int commander_init( int channel )
     {
         commander_enabled = COMMANDER_ENABLED;
 
-        return_code = oscc_interface_init( channel );
+        return_code = oscc_init( channel );
 
         if ( return_code != ERROR )
         {
@@ -637,9 +637,9 @@ void commander_close( )
     {
         commander_disable_controls( );
 
-        oscc_interface_disable( );
+        oscc_disable( );
 
-        oscc_interface_close( );
+        oscc_close( );
 
         joystick_close( );
 
@@ -737,7 +737,7 @@ int commander_high_frequency_update( )
             0,
             sizeof(status) );
 
-    return_code = oscc_interface_update_status( &status );
+    return_code = oscc_update_status( &status );
 
     if ( status.operator_override == true )
     {
@@ -748,7 +748,7 @@ int commander_high_frequency_update( )
     if ( status.obd_timeout_brake == true )
     {
         printf( "Brake - OBD Timeout Detected\n" );
-        return_code = oscc_interface_disable_brakes( );
+        return_code = oscc_disable_brakes( );
 
     }
 
@@ -756,25 +756,25 @@ int commander_high_frequency_update( )
     {
         printf( "Steering - OBD Timeout Detected\n" );
 
-        return_code = oscc_interface_disable_steering( );
+        return_code = oscc_disable_steering( );
     }
 
     if ( status.invalid_sensor_value_brake == true )
     {
         printf( "Brake - Invalid Sensor Value Detected\n" );
-        return_code = oscc_interface_disable_steering( );
+        return_code = oscc_disable_steering( );
     }
 
     if ( status.invalid_sensor_value_steering == true )
     {
         printf( "Steering - Invalid Sensor Value Detected\n" );
-        return_code = oscc_interface_disable_steering( );
+        return_code = oscc_disable_steering( );
     }
 
     if ( status.invalid_sensor_value_throttle == true )
     {
         printf( "Throttle - Invalid Sensor Value Detected\n" );
-        return_code = oscc_interface_disable_throttle( );
+        return_code = oscc_disable_throttle( );
 
     }
 

@@ -1,5 +1,5 @@
 /**
- * @file oscc_interface.c
+ * @file oscc.c
  * @brief OSCC interface source- The main command* functions and
  *        the update function should be called on at least a
  *        50ms period.  The expectation is that if there is not
@@ -14,10 +14,12 @@
 #include <canlib.h>
 
 #include "macros.h"
+#include "dtc.h"
+// #include "debug.h"
 #include "brake_can_protocol.h"
 #include "throttle_can_protocol.h"
 #include "steering_can_protocol.h"
-#include "oscc_interface.h"
+#include "oscc.h"
 
 
 // *****************************************************
@@ -42,12 +44,12 @@
 typedef struct
 {
     oscc_command_brake_data_s brake_cmd;
-    oscc_command_throttle_data_s throttle_cmd;
-    oscc_command_steering_data_s steering_cmd;
+    oscc_command_throttle_s throttle_cmd;
+    oscc_command_steering_s steering_cmd;
 
     canHandle can_handle;
     int can_channel;
-} oscc_interface_data_s;
+} oscc_data_s;
 
 // restore alignment
 #pragma pack(pop)
@@ -57,8 +59,8 @@ typedef struct
 // static global data
 // *****************************************************
 
-static oscc_interface_data_s oscc_interface_data;
-static oscc_interface_data_s* oscc = NULL;
+static oscc_data_s oscc_data;
+static oscc_data_s* oscc = NULL;
 
 
 // *****************************************************
@@ -94,7 +96,7 @@ static int oscc_can_write( long id, void* msg, unsigned int dlc )
 }
 
 // *****************************************************
-// Function:    oscc_interface_init_can
+// Function:    oscc_init_can
 //
 // Purpose:     Initialize the OSCC communication layer with known values
 //
@@ -126,8 +128,8 @@ static int oscc_init_can( int channel )
 
                 if ( status == canOK )
                 {
-                    oscc_interface_data.can_handle = handle;
-                    oscc_interface_data.can_channel = channel;
+                    oscc_data.can_handle = handle;
+                    oscc_data.can_channel = channel;
                     return_code = NOERR;
                 }
                 else
@@ -153,7 +155,7 @@ static int oscc_init_can( int channel )
 }
 
 // *****************************************************
-// Function:    oscc_interface_check_for_operator_override
+// Function:    oscc_check_for_operator_override
 //
 // Purpose:     Checks report messages for override flag.
 //
@@ -163,36 +165,36 @@ static int oscc_init_can( int channel )
 //              buffer - Buffer of CAN frame containing the report
 //
 // *****************************************************
-static bool oscc_interface_check_for_operator_override(
+static bool oscc_check_for_operator_override(
     oscc_status_s * status,
     long can_id,
     unsigned char * buffer )
 {
     if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
     {
-        oscc_report_brake_data_s* brake_report_data =
+        oscc_report_brake_data_s* brake_report =
             ( oscc_report_brake_data_s* )buffer;
 
-        status->operator_override = (bool) brake_report_data->override;
+        status->operator_override = (bool) brake_report->override;
     }
     else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
     {
-        oscc_report_throttle_data_s* throttle_report_data =
-            ( oscc_report_throttle_data_s* )buffer;
+        oscc_report_throttle_s* throttle_report =
+            ( oscc_report_throttle_s* )buffer;
 
-        status->operator_override = (bool) throttle_report_data->override;
+        status->operator_override = (bool) throttle_report->operator_override;
     }
     else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
     {
-        oscc_report_steering_data_s* steering_report_data =
-            ( oscc_report_steering_data_s* )buffer;
+        oscc_report_steering_s* steering_report =
+            ( oscc_report_steering_s* )buffer;
 
-        status->operator_override = (bool) steering_report_data->override;
+        status->operator_override = (bool) steering_report->operator_override;
     }
 }
 
 // *****************************************************
-// Function:    oscc_interface_check_for_obd_timeouts
+// Function:    oscc_check_for_obd_timeouts
 //
 // Purpose:     Checks report messages for OBD timeout flag.
 //
@@ -202,29 +204,31 @@ static bool oscc_interface_check_for_operator_override(
 //              buffer - Buffer of CAN frame containing the report
 //
 // *****************************************************
-static void oscc_interface_check_for_obd_timeout(
+static void oscc_check_for_obd_timeout(
     oscc_status_s * status,
     long can_id,
     unsigned char * buffer )
 {
-    if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
-    {
-        oscc_report_brake_data_s* brake_report_data =
-            ( oscc_report_brake_data_s* )buffer;
+    // no longer detecting these at the module level
 
-        status->obd_timeout_brake = (bool) brake_report_data->fault_obd_timeout;
-    }
-    else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
-    {
-        oscc_report_steering_data_s* steering_report_data =
-            ( oscc_report_steering_data_s* )buffer;
+    // if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
+    // {
+    //     oscc_report_brake_data_s* brake_report =
+    //         ( oscc_report_brake_data_s* )buffer;
 
-        status->obd_timeout_steering = (bool) steering_report_data->fault_obd_timeout;
-    }
+    //     status->obd_timeout_brake = (bool) brake_report->fault_obd_timeout;
+    // }
+    // else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
+    // {
+    //     oscc_report_steering_s* steering_report =
+    //         ( oscc_report_steering_s* )buffer;
+
+    //     status->obd_timeout_steering = (bool) steering_report->fault_obd_timeout;
+    // }
 }
 
 // **********************************************************
-// Function:    oscc_interface_check_for_invalid_sensor_value
+// Function:    oscc_check_for_invalid_sensor_value
 //
 // Purpose:     Checks report messages for invalid sensor value flag.
 //
@@ -234,31 +238,31 @@ static void oscc_interface_check_for_obd_timeout(
 //              buffer - Buffer of CAN frame containing the report
 //
 // **********************************************************
-static void oscc_interface_check_for_invalid_sensor_value(
+static void oscc_check_for_invalid_sensor_value(
     oscc_status_s * status,
     long can_id,
     unsigned char * buffer )
 {
     if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
     {
-        oscc_report_brake_data_s* brake_report_data =
+        oscc_report_brake_data_s* brake_report =
             ( oscc_report_brake_data_s* )buffer;
 
-        status->invalid_sensor_value_brake = (bool) brake_report_data->fault_invalid_sensor_value;
+        status->invalid_sensor_value_brake = brake_report->fault_invalid_sensor_value;
     }
     else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
     {
-        oscc_report_steering_data_s* steering_report_data =
-            ( oscc_report_steering_data_s* )buffer;
+        oscc_report_steering_s* steering_report =
+            ( oscc_report_steering_s* )buffer;
 
-        status->invalid_sensor_value_steering = (bool) steering_report_data->fault_invalid_sensor_value;
+        status->invalid_sensor_value_steering = DTC_CHECK(steering_report->dtcs, OSCC_STEERING_DTC_INVALID_SENSOR_VAL);
     }
     else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
     {
-        oscc_report_throttle_data_s* throttle_report_data =
-            ( oscc_report_throttle_data_s* )buffer;
+        oscc_report_throttle_s* throttle_report =
+            ( oscc_report_throttle_s* )buffer;
 
-        status->invalid_sensor_value_throttle = (bool) throttle_report_data->fault_invalid_sensor_value;
+        status->invalid_sensor_value_throttle = DTC_CHECK(throttle_report->dtcs, OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL);
     }
 }
 
@@ -267,7 +271,7 @@ static void oscc_interface_check_for_invalid_sensor_value(
 // *****************************************************
 
 // *****************************************************
-// Function:    oscc_interface_set_defaults
+// Function:    oscc_set_defaults
 //
 // Purpose:     Initialize the OSCC communication layer with known values
 //
@@ -276,26 +280,28 @@ static void oscc_interface_check_for_invalid_sensor_value(
 // Parameters:  void
 //
 // *****************************************************
-int oscc_interface_set_defaults( )
+int oscc_set_defaults( )
 {
     int return_code = NOERR;
+    // maybe need to revisit these...
 
-    oscc_interface_data.brake_cmd.enabled = 0;
-    oscc_interface_data.brake_cmd.pedal_command = 0;
+    oscc_data.brake_cmd.enabled = 0;
+    oscc_data.brake_cmd.pedal_command = 0;
 
-    oscc_interface_data.throttle_cmd.enabled = 0;
-    oscc_interface_data.throttle_cmd.commanded_accelerator_position = 0;
+    oscc_data.throttle_cmd.enable = 0;
+    oscc_data.throttle_cmd.spoof_value_low = 0;
+    oscc_data.throttle_cmd.spoof_value_high = 0;
 
-    oscc_interface_data.steering_cmd.enabled = 0;
-    oscc_interface_data.steering_cmd.commanded_steering_wheel_angle = 0;
-    oscc_interface_data.steering_cmd.commanded_steering_wheel_angle_rate = 0;
+    oscc_data.steering_cmd.enable = 0;
+    oscc_data.steering_cmd.spoof_value_low = 0;
+    oscc_data.steering_cmd.spoof_value_high = 0;
 
     return ( return_code );
 }
 
 
 // *****************************************************
-// Function:    oscc_interface_init
+// Function:    oscc_init
 //
 // Purpose:     Initialize the OSCC interface - CAN communication
 //
@@ -304,23 +310,23 @@ int oscc_interface_set_defaults( )
 // Parameters:  channel - integer value containing the CAN channel to openk
 //
 // *****************************************************
-int oscc_interface_init( int channel )
+int oscc_init( int channel )
 {
     int return_code = ERROR;
 
-    oscc_interface_set_defaults();
+    oscc_set_defaults();
 
     return_code = oscc_init_can( channel );
 
     if ( return_code == NOERR )
     {
-        oscc = &oscc_interface_data;
+        oscc = &oscc_data;
     }
     return ( return_code );
 }
 
 // *****************************************************
-// Function:    oscc_interface_close
+// Function:    oscc_close
 //
 // Purpose:     Release resources and close the interface
 //
@@ -329,7 +335,7 @@ int oscc_interface_init( int channel )
 // Parameters:  void
 //
 // *****************************************************
-void oscc_interface_close( )
+void oscc_close( )
 {
     if ( oscc != NULL )
     {
@@ -341,7 +347,7 @@ void oscc_interface_close( )
 }
 
 // *****************************************************
-// Function:    oscc_interface_enable
+// Function:    oscc_enable
 //
 // Purpose:     Cause the initialized interface to enable control of the
 //              vehicle using the OSCC modules
@@ -351,7 +357,7 @@ void oscc_interface_close( )
 // Parameters:  void
 //
 // *****************************************************
-int oscc_interface_enable( )
+int oscc_enable( )
 {
     int return_code = ERROR;
 
@@ -360,8 +366,8 @@ int oscc_interface_enable( )
         return_code = NOERR;
 
         oscc->brake_cmd.enabled = 1;
-        oscc->throttle_cmd.enabled = 1;
-        oscc->steering_cmd.enabled = 1;
+        oscc->throttle_cmd.enable = 1;
+        oscc->steering_cmd.enable = 1;
     }
 
     return ( return_code );
@@ -369,7 +375,7 @@ int oscc_interface_enable( )
 
 
 // *****************************************************
-// Function:    oscc_interface_command_brakes
+// Function:    oscc_command_brakes
 //
 // Purpose:     Send a CAN message to set the brakes to a commanded value
 //
@@ -379,7 +385,7 @@ int oscc_interface_enable( )
 //              The value is range limited between 0 and 52428
 //
 // *****************************************************
-int oscc_interface_command_brakes( unsigned int brake_setpoint )
+int oscc_command_brakes( unsigned int brake_setpoint )
 {
     int return_code = ERROR;
 
@@ -396,7 +402,7 @@ int oscc_interface_command_brakes( unsigned int brake_setpoint )
 
 
 // *****************************************************
-// Function:    oscc_interface_command_throttle
+// Function:    oscc_command_throttle
 //
 // Purpose:     Send a CAN message to set the throttle to a commanded value
 //
@@ -406,13 +412,18 @@ int oscc_interface_command_brakes( unsigned int brake_setpoint )
 //              The value is range limited between 0 and 19660
 //
 // *****************************************************
-int oscc_interface_command_throttle( unsigned int throttle_setpoint )
+int oscc_command_throttle( unsigned int throttle_setpoint )
 {
     int return_code = ERROR;
 
     if ( oscc != NULL )
     {
-        oscc->throttle_cmd.commanded_accelerator_position = ( uint16_t )throttle_setpoint;
+        // oscc->throttle_cmd.commanded_accelerator_position = ( uint16_t )throttle_setpoint;
+
+        // MATHHHHHHHHHHH
+
+        oscc->throttle_cmd.spoof_value_low = 666;
+        oscc->throttle_cmd.spoof_value_high = 187;
 
         return_code = oscc_can_write( OSCC_COMMAND_THROTTLE_CAN_ID,
                                       (void *) &oscc->throttle_cmd,
@@ -424,7 +435,7 @@ int oscc_interface_command_throttle( unsigned int throttle_setpoint )
 
 
 // *****************************************************
-// Function:    oscc_interface_command_steering
+// Function:    oscc_command_steering
 //
 // Purpose:     Send a CAN message to set the steering to a commanded value
 //
@@ -437,14 +448,19 @@ int oscc_interface_command_throttle( unsigned int throttle_setpoint )
 //              rate is range limited between 20 to 254
 //
 // *****************************************************
-int oscc_interface_command_steering( int angle, unsigned int rate )
+int oscc_command_steering( int angle, unsigned int rate )
 {
     int return_code = ERROR;
 
     if ( oscc != NULL )
     {
-        oscc->steering_cmd.commanded_steering_wheel_angle = ( int16_t )angle;
-        oscc->steering_cmd.commanded_steering_wheel_angle_rate = ( uint16_t )rate;
+        // oscc->steering_cmd.commanded_steering_wheel_angle = ( int16_t )angle;
+        // oscc->steering_cmd.commanded_steering_wheel_angle_rate = ( uint16_t )rate;
+
+        // MATHHHHHHHHSSSSSSS
+
+        oscc->steering_cmd.spoof_value_low = 565;
+        oscc->steering_cmd.spoof_value_high = 7367;
 
         return_code = oscc_can_write( OSCC_COMMAND_STEERING_CAN_ID,
                                       (void *) &oscc->steering_cmd,
@@ -455,7 +471,7 @@ int oscc_interface_command_steering( int angle, unsigned int rate )
 
 
 // *****************************************************
-// Function:    oscc_interface_disable_brakes
+// Function:    oscc_disable_brakes
 //
 // Purpose:     Send a specific CAN message to set the brake enable value
 //              to 0.  Included with this is a safe brake setting
@@ -465,7 +481,7 @@ int oscc_interface_command_steering( int angle, unsigned int rate )
 // Parameters:  void
 //
 // *****************************************************
-int oscc_interface_disable_brakes( )
+int oscc_disable_brakes( )
 {
     int return_code = ERROR;
 
@@ -476,14 +492,14 @@ int oscc_interface_disable_brakes( )
         printf( "brake: %d %d\n", oscc->brake_cmd.enabled,
                 oscc->brake_cmd.pedal_command );
 
-        return_code = oscc_interface_command_brakes( 0 );
+        return_code = oscc_command_brakes( 0 );
     }
     return ( return_code );
 }
 
 
 // *****************************************************
-// Function:    oscc_interface_disable_throttle
+// Function:    oscc_disable_throttle
 //
 // Purpose:     Send a specific CAN message to set the throttle enable value
 //              to 0.  Included with this is a safe throttle setting
@@ -493,25 +509,25 @@ int oscc_interface_disable_brakes( )
 // Parameters:  void
 //
 // *****************************************************
-int oscc_interface_disable_throttle( )
+int oscc_disable_throttle( )
 {
     int return_code = ERROR;
 
     if ( oscc != NULL )
     {
-        oscc->throttle_cmd.enabled = 0;
+        oscc->throttle_cmd.enable = 0;
 
-        printf( "throttle: %d %d\n", oscc->throttle_cmd.enabled,
-                oscc->throttle_cmd.commanded_accelerator_position );
+        printf( "throttle: %d %d\n", oscc->throttle_cmd.enable,
+                oscc->throttle_cmd.spoof_value_low );
 
-        return_code = oscc_interface_command_throttle( 0 );
+        return_code = oscc_command_throttle( 0 );
     }
     return ( return_code );
 }
 
 
 // *****************************************************
-// Function:    oscc_interface_disable_steering
+// Function:    oscc_disable_steering
 //
 // Purpose:     Send a specific CAN message to set the steering enable value
 //              to 0.  Included with this is a safe steering angle and rate
@@ -521,27 +537,27 @@ int oscc_interface_disable_throttle( )
 // Parameters:  void
 //
 // *****************************************************
-int oscc_interface_disable_steering( )
+int oscc_disable_steering( )
 {
     int return_code = ERROR;
 
     if ( oscc != NULL )
     {
-        oscc->steering_cmd.enabled = 0;
+        oscc->steering_cmd.enable = 0;
 
         printf( "steering: %d %d %d\n",
-                oscc->steering_cmd.enabled,
-                oscc->steering_cmd.commanded_steering_wheel_angle,
-                oscc->steering_cmd.commanded_steering_wheel_angle_rate );
+                oscc->steering_cmd.enable,
+                oscc->steering_cmd.spoof_value_low,
+                oscc->steering_cmd.spoof_value_high );
 
-        return_code = oscc_interface_command_steering( 0, 0 );
+        return_code = oscc_command_steering( 0, 0 );
     }
     return ( return_code );
 }
 
 
 // *****************************************************
-// Function:    oscc_interface_disable
+// Function:    oscc_disable
 //
 // Purpose:     Send a series of CAN messages to disable all of the OSCC
 //              modules.  Mostly a wrapper around the existing specific
@@ -552,17 +568,17 @@ int oscc_interface_disable_steering( )
 // Parameters:  void
 //
 // *****************************************************
-int oscc_interface_disable( )
+int oscc_disable( )
 {
-    int return_code = oscc_interface_disable_brakes( );
+    int return_code = oscc_disable_brakes( );
 
     if ( return_code == NOERR )
     {
-        return_code = oscc_interface_disable_throttle( );
+        return_code = oscc_disable_throttle( );
 
         if ( return_code == NOERR )
         {
-            return_code = oscc_interface_disable_steering( );
+            return_code = oscc_disable_steering( );
         }
     }
     return ( return_code );
@@ -570,7 +586,7 @@ int oscc_interface_disable( )
 
 
 // *****************************************************
-// Function:    oscc_interface_update_status
+// Function:    oscc_update_status
 //
 // Purpose:     Read CAN messages from the OSCC modules and check for  status
 //              changes.
@@ -581,7 +597,7 @@ int oscc_interface_disable( )
 //              the OSCC modules indicate any override status
 //
 // *****************************************************
-int oscc_interface_update_status( oscc_status_s * status )
+int oscc_update_status( oscc_status_s * status )
 {
     int return_code = ERROR;
 
@@ -604,11 +620,11 @@ int oscc_interface_update_status( oscc_status_s * status )
         {
             return_code = NOERR;
 
-            oscc_interface_check_for_operator_override( status, can_id, buffer );
+            oscc_check_for_operator_override( status, can_id, buffer );
 
-            oscc_interface_check_for_obd_timeout( status, can_id, buffer );
+            oscc_check_for_obd_timeout( status, can_id, buffer );
 
-            oscc_interface_check_for_invalid_sensor_value( status, can_id, buffer );
+            oscc_check_for_invalid_sensor_value( status, can_id, buffer );
         }
         else if( ( can_status == canERR_NOMSG ) || ( can_status == canERR_TIMEOUT ) )
         {

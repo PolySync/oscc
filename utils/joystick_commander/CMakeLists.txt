@@ -10,7 +10,7 @@ add_executable(
     src/commander.c
     src/joystick.c
     src/main.c
-    src/oscc_interface.c)
+    ../../platforms/common/src/oscc.c)
 
 target_include_directories(
     joystick-commander
