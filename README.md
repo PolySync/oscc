@@ -19,11 +19,11 @@ Consult the following table for version compatibility.
 
 | Actuator Board | Firmware  |
 | -------------- | --------  |
-| >= v1.1.0      | >= v1.1.0 |
+| >= v1.1.0      | >= v0.6   |
 
 | Sensor Interface Board | Firmware  |
 | ---------------------- | --------- |
-| >= v1.1.0              | >= v1.1.0 |
+| >= v1.1.0              | >= v0.6   |
 
 
 # Repository Contents
