@@ -126,13 +126,13 @@
  * @brief Minimum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_SIGNAL_RANGE_MIN ( 850.0 )
+#define STEERING_SPOOF_SIGNAL_RANGE_MIN ( 868.0 )
 
 /*
  * @brief Maximum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_SIGNAL_RANGE_MAX ( 3000.0 )
+#define STEERING_SPOOF_SIGNAL_RANGE_MAX ( 3031.0 )
 
 /*
  * @brief Value of the torque sensor that indicates operator override.
