@@ -8,6 +8,24 @@ See the [Wiki](https://github.com/PolySync/OSCC/wiki) for full documentation, de
 information.
 
 
+# Versions
+
+It's important that the correct version of the firmware is used with the
+correct versions of the module boards. As the boards are updated with additional
+pins and other features, the firmware is modified accordingly to use them.
+Mismatched versions will cause problems.
+
+Consult the following table for version compatibility.
+
+| Actuator Board | Firmware  |
+| -------------- | --------  |
+| >= v1.1.0      | >= v1.1.0 |
+
+| Sensor Interface Board | Firmware  |
+| ---------------------- | --------- |
+| >= v1.1.0              | >= v1.1.0 |
+
+
 # Repository Contents
 
 * **3d_models** - Technical drawings and 3D files for board enclosures and other useful parts
