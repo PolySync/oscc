@@ -128,17 +128,23 @@ typedef struct
                                              * Value one means the values read
                                              * from the sensors are invalid. */
 
-    uint8_t reserved_5 : 1; /*!< Reserved. */
+    uint8_t fault_startup_pressure_check_error : 1; /*!< Actuator sensors report
+                                                     * values that do not match
+                                                     * the static values
+                                                     * expected with PCK1 and
+                                                     * PCK2 asserted. */
 
     uint8_t fault_obd_timeout : 1; /*!< OBD timeout indicator.
                                    * Value zero means no timeout occurred.
                                    * Value one means timeout occurred. */
 
-    uint8_t reserved_6 : 1; /*!< Reserved */
+    uint8_t fault_startup_pump_motor_check_error : 1; /*!< Pump motor check signal
+                                                       * (MTT) is not asserted
+                                                       * when pump is on. */
 
-    uint8_t reserved_7 : 1; /*!< Reserved. */
+    uint8_t reserved_5 : 1; /*!< Reserved. */
 
-    uint8_t reserved_8 : 1; /*!< Reserved. */
+    uint8_t reserved_6 : 1; /*!< Reserved. */
 } oscc_report_brake_data_s;
 
 

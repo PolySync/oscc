@@ -3,6 +3,7 @@ project(kia-soul-brake-tests)
 add_library(
     kia-soul-brake
     SHARED
+    ../src/accumulator.cpp
     ../src/communications.cpp
     ../src/globals.cpp
     ../src/brake_control.cpp

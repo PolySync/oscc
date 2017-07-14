@@ -18,11 +18,11 @@ int main( void )
 {
     init_arduino( );
 
+    init_communication_interfaces( );
+
     init_globals( );
 
     init_devices( );
-
-    init_communication_interfaces( );
 
     wdt_enable( WDTO_120MS );
 

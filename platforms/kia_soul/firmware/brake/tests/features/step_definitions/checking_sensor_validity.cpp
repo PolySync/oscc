@@ -32,6 +32,7 @@ WHEN("^a sensor becomes permanently disconnected$")
     }
 }
 
+
 THEN("^control should remain enabled")
 {
     assert_that(

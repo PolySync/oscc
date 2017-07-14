@@ -80,25 +80,6 @@ struct brake_data_s brakes =
     0                           // pedal_command
 };
 
-
-// *****************************************************
-// Function:    raw_adc_to_voltage
-//
-// Purpose:     Convert the raw ADC reading (0 - 1023)
-//              to a pressure (0 - 5V)
-//
-// Returns:     float - pressure
-//
-// Parameters:  input - raw ADC reading
-//
-// *****************************************************
-static float raw_adc_to_voltage( int16_t input )
-{
-    float voltage = ( ( float )input * ( 5.0 / 1023.0 ) );
-    return voltage;
-}
-
-
 // *****************************************************
 // Function:    print_pressure_info
 //
@@ -125,10 +106,10 @@ static void print_pressure_info()
     DEBUG_PRINT( pressure_at_tires.pressure_right );
 
     DEBUG_PRINT( ",PMC1," );
-    DEBUG_PRINT( master_cylinder.pressure1 );
+    DEBUG_PRINT( master_cylinder.sensor_1_pressure );
 
     DEBUG_PRINT( ",PMC2," );
-    DEBUG_PRINTLN( master_cylinder.pressure2 );
+    DEBUG_PRINTLN( master_cylinder.sensor_2_pressure );
 }
 
 
@@ -248,6 +229,11 @@ int main( void )
 
     init_communication_interfaces( );
 
+    digitalWrite(PIN_WHEEL_PRESSURE_CHECK_1, LOW);
+    digitalWrite(PIN_WHEEL_PRESSURE_CHECK_1, LOW);
+    pinMode(PIN_WHEEL_PRESSURE_CHECK_1, OUTPUT);
+    pinMode(PIN_WHEEL_PRESSURE_CHECK_1, OUTPUT);
+
     DEBUG_PRINTLN( "initialization complete" );
 
     while( true )
@@ -258,11 +244,18 @@ int main( void )
 
         process_serial( );
 
-        read_pressure_sensor( );
+        int pressure_at_tires_pressure_left_raw = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
+        int pressure_at_tires_pressure_right_raw = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
+        pressure_at_tires.pressure_left = raw_adc_to_pressure(pressure_at_tires_pressure_left_raw);
+        pressure_at_tires.pressure_right = raw_adc_to_pressure(pressure_at_tires_pressure_right_raw);
 
-        accumulator.pressure = accumulator_read_pressure( );
+        int accumulator_pressure_raw = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
+        accumulator.pressure = raw_adc_to_pressure(accumulator_pressure_raw);
 
-        master_cylinder_read_pressure( &master_cylinder );
+        int master_cylinder_sensor_1_pressure_raw = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 );
+        int master_cylinder_sensor_2_pressure_raw = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 );
+        master_cylinder.sensor_1_pressure = raw_adc_to_pressure(master_cylinder_sensor_1_pressure_raw);
+        master_cylinder.sensor_2_pressure = raw_adc_to_pressure(master_cylinder_sensor_2_pressure_raw);
 
         print_pressure_info( );
     }

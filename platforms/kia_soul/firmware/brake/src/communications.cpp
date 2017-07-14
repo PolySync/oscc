@@ -76,6 +76,8 @@ static void publish_brake_report( void )
     brake_report.data.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
     brake_report.data.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
     brake_report.data.fault_invalid_sensor_value = (uint8_t) g_brake_control_state.invalid_sensor_value;
+    brake_report.data.fault_startup_pressure_check_error = (uint8_t) g_brake_control_state.startup_pressure_check_error;
+    brake_report.data.fault_startup_pump_motor_check_error = (uint8_t) g_brake_control_state.startup_pump_motor_check_error;
 
     g_control_can.sendMsgBuf(
         brake_report.id,
