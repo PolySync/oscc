@@ -1,6 +1,18 @@
 project(kia-soul-brake)
 
 set(ARDUINO_DEFAULT_BOARD mega2560)
+SET(ARDUINO_DEFAULT_PORT ${SERIAL_PORT_BRAKE})
+set(ARDUINO_DEFAULT_BAUDRATE ${SERIAL_BAUD_BRAKE})
+
+add_definitions(-DSERIAL_BAUD=${ARDUINO_DEFAULT_BAUDRATE})
+
+add_custom_target(
+    kia-soul-brake-monitor
+    COMMAND screen ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
+
+add_custom_target(
+    kia-soul-brake-monitor-log
+    COMMAND screen -L ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
 
 generate_arduino_firmware(
     kia-soul-brake

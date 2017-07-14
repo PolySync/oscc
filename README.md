@@ -8,8 +8,8 @@ See the [Wiki](https://github.com/PolySync/OSCC/wiki) for full documentation, de
 information.
 
 
-Repository Contents
--------------------
+# Repository Contents
+
 * **3d_models** - Technical drawings and 3D files for board enclosures and other useful parts
 * **boards** - PCB schematics and board designs for control modules
 * **platforms** - Arduino code and relevant files for the specific platforms
@@ -20,8 +20,8 @@ Within a specific platform (e.g., `kia_soul`), there are:
 * **firmware** - Arduino code for the control modules
 
 
-Boards
------
+# Boards
+
 The sensor interface and actuator control board schematics and design files are located in the
 `boards` directory. If you don't have the time or fabrication resources, the boards can be
 purchased as a kit from the [OSCC website](http://oscc.io).
@@ -30,8 +30,7 @@ Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://
 help designing the boards and getting the boards made.
 
 
-Building and Installing Arduino Firmware
-------------
+# Building and Uploading Arduino Firmware
 
 The OSCC Project is built around a number of individual modules that interoperate to create a fully
 controllable vehicle. These modules are built from Arduinos and Arduino shields designed specifically
@@ -39,7 +38,9 @@ for interfacing with various vehicle components. Once these modules have been pr
 accompanying firmware and installed into the vehicle, the vehicle is ready to receive control commands
 sent over a CAN bus from a computer running a control program.
 
-**Pre-requisites:** You must have Arduino Core and CMake (version 2.8 or greater) pre-installed on
+## Pre-requisites
+
+You must have Arduino Core and CMake (version 2.8 or greater) installed on
 your machine.
 
 ```
@@ -51,7 +52,7 @@ and upload the firmware from the command-line.
 
 Check out [Arduino CMake](https://github.com/queezythegreat/arduino-cmake) for more information.
 
-**Building the Firmware**
+## Building the Firmware
 
 Navigate to the `platforms` directory and create a build directory inside of it:
 
@@ -65,7 +66,7 @@ To generate Makefiles, tell CMake which platform to build firmware for. If you w
 the firmware for the Kia Soul:
 
 ```
-cmake -DBUILD_KIA_SOUL=ON ..
+cmake .. -DBUILD_KIA_SOUL=ON
 ```
 
 By default, your firmware will have debug symbols which is good for debugging but increases
@@ -73,19 +74,19 @@ the size of the firmware significantly. To compile without debug symbols and opt
 enabled, use the following instead:
 
 ```
-cmake -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release ..
+cmake .. -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release
 ```
 
 This will generate the necessary files for building.
 
-Now you can build with `make`:
+Now you can build all of the firmware with `make`:
 
 ```
 make
 ```
 
-With a single `make` command, all of the firmware modules will be built. If you'd like to build only
-a specific module, you can provide a target name to `make` for whichever module you'd like to build:
+If you'd like to build only a specific module, you can provide a target name to
+`make` for whichever module you'd like to build:
 
 ```
 make kia-soul-brake
@@ -94,21 +95,41 @@ make kia-soul-steering
 make kia-soul-throttle
 ```
 
-Once the firmware is successfully built, you can upload it to the corresponding Arduino module.
-Connect to the Arduino with a USB cable and then run the following command for whichever firmware
-you'd like to upload:
+## Uploading the Firmware
+
+Once the firmware is successfully built, you can upload it. When you connect to
+an Arduino with a USB cable, your machine assigns a serial device to it with the
+path `/dev/ttyACM#` where `#` is a digit starting at 0 and increasing by one with
+each additional Arduino connected.
+
+You can upload firmware to a single module or to all modules. By default, CMake
+is configured to expect each module to be `/dev/ttyACM0`, so if you connect a
+single module to your machine, you can flash it without changing anything:
 
 ```
-make kia-soul-brake-upload
-make kia-soul-can-gateway-upload
-make kia-soul-steering-upload
 make kia-soul-throttle-upload
+```
+
+However, if you want to flash all modules, you need to change the ports in
+CMake for each module to match what they are on your machine. The easiest way
+is to connect each module in alphabetical order (brake, CAN gateway, steering,
+throttle) so that they are assigned `/dev/ttyACM0` through `/dev/ttyACM3` in
+a known order. You can then change the ports during the `cmake ..` step:
+
+```
+cmake .. -DBUILD_KIA_SOUL=ON -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
+```
+
+Then you can flash all with one command:
+
+```
+make kia-soul-all-upload
 ```
 
 Sometimes it takes a little while for the Arduino to initialize once connected, so if there is an
 error thrown initially, wait a little bit and then retry the command.
 
-**Monitoring Arduino modules**
+## Monitoring Arduino Modules
 
 It is sometimes useful to monitor individual Arduino modules to check for proper operation and to
 debug. If the modules have been built with the flag `-DCMAKE_BUILD_TYPE=Debug`, their debug
@@ -116,23 +137,30 @@ printing functionality will be enabled and they will print status information to
 
 The GNU utility `screen` is one option to communicate with the Arduino via serial over USB. It can
 be used to both receive the output of any `Serial.print` statements in your Arduino code, and to
-push commands over serial to the Arduino. If you don't already have it installed, you can get it
-with the following command:
+push commands over serial to the Arduino. If you don't already have it installed,
+you can get it with the following command:
 
 ```
 sudo apt install screen
 ```
 
-You can use `make monitor` to automatically run `screen`, or `make monitor-log`
-to run `screen` and output to a file called `screenlog.0` in your current directory:
+You need to enable debug mode with `-DDEBUG=ON` and tell CMake what serial port
+the module you want to monitor is connected to
+(see [section on uploading](#uploading-the-firmware) for details on the default
+ports for each module). The default baud rate is `115200` but you can change it:
 
 ```
-make monitor
-make monitor-log
+cmake .. -DBUILD_KIA_SOUL=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
 ```
 
-The serial port and baudrate to use can be configured in `platforms/CMakeLists.txt`
-by modifying `ARDUINO_DEFAULT_PORT` and `ARDUINO_DEFAULT_BAUDRATE`.
+You can use a module's `monitor` target to automatically run `screen`, or a
+module's `monitor-log` target to run `screen` and output to a file called
+`screenlog.0` in your current directory:
+
+```
+make kia-soul-brake-monitor
+make kia-soul-brake-monitor-log
+```
 
 You can exit `screen` with `C-a \`.
 
@@ -144,8 +172,7 @@ Be aware that using serial printing can affect the timing of the firmware. You m
 strange behavior while printing that does not occur otherwise.
 
 
-Tests
-------------
+# Tests
 
 There are two types of tests available: unit and property-based.
 
@@ -162,7 +189,7 @@ cd build
 cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release
 ```
 
-**Unit Tests**
+## Unit Tests
 
 Each module has a suite of unit tests that use **Cucumber** with **Cgreen**. There are prebuilt
 64-bit Linux versions in `platforms/common/testing/framework`. Boost is required for Cucumber-CPP
@@ -227,7 +254,7 @@ Feature: Receiving commands
       | 1024       | 4096      | 4096      |
 ```
 
-**Property-Based Tests**
+## Property-Based Tests
 
 The throttle, steering, and brake modules, along with the PID controller library, also contain a series of
 property-based tests.
@@ -278,7 +305,7 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-**Run All Tests**
+## Run All Tests
 
 Finally, you can run all available tests:
 
@@ -287,8 +314,35 @@ make run-all-tests
 ```
 
 
-Controlling Your Vehicle
-------------
+# Easier CMake Configuration
+
+If you have a lot of `-D` commands to pass to CMake (e.g., configuring the serial
+port and baud rates of all of the modules), you can instead configure with a GUI
+using `cmake-gui`:
+
+```
+sudo apt install cmake-gui
+```
+
+Then use `cmake-gui` where you would normally use `cmake`:
+
+```
+cd platforms
+mkdir build
+cd build
+cmake-gui ..
+```
+
+The GUI will open and you can change all of the options you would normally need
+to pass on the command line. First, press the `Configure` button and then press
+`Finish` on the dialog that opens. In the main window you'll see a list of
+options that you can change that would normally be configured on the command line
+with `-D` commands. When you're done, click `Configure` again and then click
+the `Generate` button. You can then close `cmake-gui` and run any `make` commands
+like you normally would.
+
+
+# Controlling Your Vehicle
 
 Now that all your Arduino modules are properly setup, it is time to start sending control commands.
 There is an example application to do this that uses the Logitech F310 Gamepad. The example interfaces
@@ -296,7 +350,9 @@ to the joystick gamepad via the SDL2 joystick library and sends CAN commands ove
 via the Kvaser CANlib SDK. These CAN control commands are interpreted by the respective Arduino
 modules and used to actuate the vehicle.
 
-**Pre-requisites:** A Logitech F310 gamepad is required, and the SDL2 library and CANlib SDK need to
+## Pre-requisites:
+
+A Logitech F310 gamepad is required, and the SDL2 library and CANlib SDK need to
 be pre-installed. A CAN interface adapter, such as the [Kvaser Leaf Light](https://www.kvaser.com),
 is also required.
 
@@ -312,7 +368,7 @@ Install the CANlib SDK via the following procedure.
 
 [CANlib-SDK](https://www.kvaser.com/linux-drivers-and-sdk/)
 
-**Building Joystick Commander Code**
+## Building Joystick Commander
 
 Navigate to the directory for the joystick commander code.
 
@@ -360,7 +416,7 @@ Once you know the correct channel number, you can run the joystick example with 
 ./joystick-commander <channel-number>
 ```
 
-**Controlling the Vehicle with the Joystick Gamepad**
+## Controlling the Vehicle with the Joystick Gamepad
 
 Once the joystick commander is up and running you can use it to send commands to the Arduino modules.
 The controls are listed when the programs start up. Be sure the switch on the back of the controller
@@ -368,8 +424,7 @@ is switched to the 'X' position, not 'D'. The vehicle will only respond to comma
 enabled with the start button. The back button disables control.
 
 
-Additional Vehicles & Contributing
-------------
+# Additional Vehicles & Contributing
 
 OSCC currently has information regarding the Kia Soul PS (2014-2016), but we want to grow! The
 repository is structured to facilitate including more vehicles as more is learned about them.
@@ -377,8 +432,7 @@ repository is structured to facilitate including more vehicles as more is learne
 Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 
-License Information
--------------------
+# License Information
 
 Hardware source materials (e.g. schematics, board layouts, wiring diagrams, data sheets, physical
 installation documentation, 3D models, etc.) for the OSCC (Open Source Car Control) Project are
@@ -390,8 +444,7 @@ MIT License (MIT) unless otherwise noted (e.g. 3rd party dependencies, etc.).
 Please see [LICENSE.md](LICENSE.md) for more details.
 
 
-Contact Information
--------------------
+# Contact Information
 
 Please direct questions regarding OSCC and/or licensing to help@polysync.io.
 

@@ -18,11 +18,11 @@ int main( void )
 {
     init_arduino( );
 
+    init_communication_interfaces( );
+
     init_globals( );
 
     init_devices( );
-
-    init_communication_interfaces( );
 
     wdt_enable( WDTO_120MS );
 
@@ -37,6 +37,8 @@ int main( void )
         accumulator_maintain_pressure( );
 
         check_for_timeouts( );
+
+        check_for_sensor_faults( );
 
         check_for_operator_override( );
 

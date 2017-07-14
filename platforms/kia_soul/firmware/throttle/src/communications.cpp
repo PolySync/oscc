@@ -82,6 +82,8 @@ static void publish_throttle_report( void )
     throttle_report.data.commanded_accelerator_position =
         g_throttle_control_state.commanded_accelerator_position;
     throttle_report.data.spoofed_accelerator_output = g_accelerator_spoof_output_sum;
+    throttle_report.data.fault_invalid_sensor_value =
+        g_throttle_control_state.invalid_sensor_value;
 
     g_control_can.sendMsgBuf(
             throttle_report.id,

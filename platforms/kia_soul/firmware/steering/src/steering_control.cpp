@@ -11,6 +11,7 @@
 #include "oscc_pid.h"
 #include "oscc_dac.h"
 #include "oscc_signal_smoothing.h"
+#include "oscc_time.h"
 
 #include "globals.h"
 #include "steering_control.h"
@@ -48,6 +49,52 @@ void check_for_operator_override( void )
         else
         {
             g_steering_control_state.operator_override = false;
+        }
+    }
+}
+
+
+void check_for_sensor_faults( void )
+{
+    if ( (g_steering_control_state.enabled == true)
+        || (g_steering_control_state.invalid_sensor_value == true) )
+    {
+        uint32_t current_time = GET_TIMESTAMP_MS();
+
+        bool timeout = is_timeout(
+            g_sensor_validity_last_check_timestamp,
+            current_time,
+            SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC );
+
+        static int fault_count = 0;
+
+        if( timeout == true )
+        {
+            g_sensor_validity_last_check_timestamp = current_time;
+
+            int sensor_high = analogRead( PIN_TORQUE_SENSOR_HIGH );
+            int sensor_low = analogRead( PIN_TORQUE_SENSOR_LOW );
+
+            // sensor pins tied to ground - a value of zero indicates disconnection
+            if( (sensor_high == 0)
+                || (sensor_low == 0) )
+            {
+                ++fault_count;
+
+                if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
+                {
+                    disable_control( );
+
+                    g_steering_control_state.invalid_sensor_value = true;
+
+                    DEBUG_PRINTLN( "Bad value read from torque sensor" );
+                }
+            }
+            else
+            {
+                g_steering_control_state.invalid_sensor_value = false;
+                fault_count = 0;
+            }
         }
     }
 }

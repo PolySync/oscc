@@ -49,6 +49,33 @@
 #define BRAKE_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.05 )
 
 /*
+ * @brief Minimum possible value expected to be read from the brake pressure
+ * sensors when the pressure check pins (PCK1/PCK2) are asserted.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN ( 665 )
+
+/*
+ * @brief Maximum possible value expected to be read from the brake pressure
+ * sensors when the pressure check pins (PCK1/PCK2) are asserted.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX ( 680 )
+
+/*
+ * @brief Amount of time between sensor checks. [milliseconds]
+ *
+ */
+#define SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC ( 250 )
+
+/*
+ * @brief Number of consecutive faults that can occur when reading the
+ *        sensors before control is disabled.
+ *
+ */
+#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
+
+/*
  * @brief Proportional gain of the PID controller.
  *
  */
@@ -154,7 +181,14 @@ typedef struct
     bool operator_override; /* Flag indicating whether brake pedal was
                                manually pressed by operator. */
 
+    bool invalid_sensor_value; /* Flag indicating a value read from one of the
+                                  sensors is invalid. */
+
     bool obd_timeout; /* Flag indicating whether an OBD timeout has occurred. */
+
+    bool startup_pressure_check_error; /* Flag indicating a problem with the actuator. */
+
+    bool startup_pump_motor_check_error; /* Flag indicating a problem with the pump motor. */
 
     float current_sensor_brake_pressure; /* Current brake pressure as read
                                                from the brake pressure sensor. */
@@ -235,6 +269,20 @@ void disable_control( void );
 //
 // ****************************************************************************
 void check_for_operator_override( void );
+
+
+// ****************************************************************************
+// Function:    check_for_sensor_faults
+//
+// Purpose:     Checks to see if valid values are being read from the sensors.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void check_for_sensor_faults( void );
+
 
 
 // ****************************************************************************
