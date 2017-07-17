@@ -10,20 +10,16 @@ information.
 
 # Repository Contents
 
-* **3d_models** - Technical drawings and 3D files for board enclosures and other useful parts
-* **boards** - PCB schematics and board designs for control modules
-* **platforms** - Arduino code and relevant files for the specific platforms
-* **utils** - Utilities for controlling and interfacing with a platform
-
-Within a specific platform (e.g., `kia_soul`), there are:
-* **3d_models** - Technical drawings and 3D files related to that platform
-* **firmware** - Arduino code for the control modules
+* **api** - API used by applications to interface with the modules
+* **applications** - Applications to control and interface with the modules
+* **firmware** - Arduino code for each of the modules
+* **hardware** - Technical drawings, 3D files, and PCB schematics and board designs
 
 
 # Boards
 
 The sensor interface and actuator control board schematics and design files are located in the
-`boards` directory. If you don't have the time or fabrication resources, the boards can be
+`hardware/boards` directory. If you don't have the time or fabrication resources, the boards can be
 purchased as a kit from the [OSCC website](http://oscc.io).
 
 Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://macrofab.com/) for
@@ -54,10 +50,10 @@ Check out [Arduino CMake](https://github.com/queezythegreat/arduino-cmake) for m
 
 ## Building the Firmware
 
-Navigate to the `platforms` directory and create a build directory inside of it:
+Navigate to the `firmware` directory and create a build directory inside of it:
 
 ```
-cd platforms
+cd firmware
 mkdir build
 cd build
 ```
@@ -70,7 +66,7 @@ cmake .. -DBUILD_KIA_SOUL=ON
 ```
 
 By default, your firmware will have debug symbols which is good for debugging but increases
-the size of the firmware significantly. To compile without debug symbols and optimizatons
+the size of the firmware significantly. To compile without debug symbols and optimizations
 enabled, use the following instead:
 
 ```
@@ -182,7 +178,7 @@ optimizations, good things to do when running tests to ensure nothing breaks wit
 optimizations.
 
 ```
-cd platforms
+cd firmware
 mkdir build
 cd build
 cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release
@@ -191,14 +187,14 @@ cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release
 ## Unit Tests
 
 Each module has a suite of unit tests that use **Cucumber** with **Cgreen**. There are prebuilt
-64-bit Linux versions in `platforms/common/testing/framework`. Boost is required for Cucumber-CPP
+64-bit Linux versions in `firmware/common/testing/framework`. Boost is required for Cucumber-CPP
 and has been statically linked into `libcucumber-cpp.a`. If you need to build your own versions
 you can use the provided script `build_test_framework.sh` which will install the Boost dependencies
 (needed for building), clone the needed repositories with specific hashes, build the Cgreen and
 Cucumber-CPP libraries, and place static Boost in the Cucumber-CPP library. The built will be placed
 in an `oscc_test_framework` directory in the directory that you ran the script from. You can then copy
 `oscc_test_framework/cucumber-cpp` and `oscc_test_framework/cgreen` to
-`platforms/common/testing/framework`.
+`firmware/common/testing/framework`.
 
 You must have **Cucumber** installed to run the tests:
 
@@ -236,14 +232,14 @@ Feature: Receiving commands
 
   Commands received from a controller should be processed and acted upon.
 
-  Scenario Outline: Enable throttle command sent from controller        # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:8
-    Given throttle control is disabled                                  # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:9
-    And the accelerator position sensors have a reading of <sensor_val> # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:10
-    When an enable throttle command is received                         # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:12
-    Then control should be enabled                                      # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:14
-    And the last command timestamp should be set                        # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:15
-    And <dac_a_val> should be written to DAC A                          # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:16
-    And <dac_b_val> should be written to DAC B                          # platforms/kia_soul/firmware/throttle/tests/features/receiving_commands.feature:17
+  Scenario Outline: Enable throttle command sent from controller        # firmware/kia_soul/throttle/tests/features/receiving_commands.feature:8
+    Given throttle control is disabled                                  # firmware/kia_soul/throttle/tests/features/receiving_commands.feature:9
+    And the accelerator position sensors have a reading of <sensor_val> # firmware/kia_soul/throttle/tests/features/receiving_commands.feature:10
+    When an enable throttle command is received                         # firmware/kia_soul/throttle/tests/features/receiving_commands.feature:12
+    Then control should be enabled                                      # firmware/kia_soul/throttle/tests/features/receiving_commands.feature:14
+    And the last command timestamp should be set                        # firmware/kia_soul/throttle/tests/features/receiving_commands.feature:15
+    And <dac_a_val> should be written to DAC A                          # firmware/kia_soul/throttle/tests/features/receiving_commands.feature:16
+    And <dac_b_val> should be written to DAC B                          # firmware/kia_soul/throttle/tests/features/receiving_commands.feature:17
 
     Examples:
       | sensor_val | dac_a_val | dac_b_val |
