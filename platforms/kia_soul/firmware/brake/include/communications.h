@@ -9,26 +9,6 @@
 #define _OSCC_KIA_SOUL_BRAKE_COMMUNICATIONS_H_
 
 
-#include <stdint.h>
-#include "oscc_can.h"
-
-
-/*
- * @brief Amount of time after controller command that is considered a
- *        timeout. [milliseconds]
- *
- */
-#define COMMAND_TIMEOUT_IN_MSEC ( 650 )
-
-
-/*
- * @brief Amount of time after an OBD frame is received that is considered a
- *        timeout. [milliseconds]
- *
- */
-#define OBD_TIMEOUT_IN_MSEC ( 500 )
-
-
 // ****************************************************************************
 // Function:    publish_brake_report
 //
@@ -56,20 +36,20 @@ void publish_fault_report( void );
 
 
 // ****************************************************************************
-// Function:    check_for_timeouts
+// Function:    check_for_controller_command_timeout
 //
-// Purpose:     Check for command and report timeouts.
+// Purpose:     Check if the last command received from the controller exceeds
+//              the timeout and disable control if it does.
 //
 // Returns:     void
 //
 // Parameters:  void
 //
 // ****************************************************************************
-void check_for_timeouts( void );
-
+void check_for_controller_command_timeout( void );
 
 // ****************************************************************************
-// Function:    check_for_can_frame
+// Function:    check_for_incoming_message
 //
 // Purpose:     Check CAN bus for incoming messages and process any present.
 //
@@ -78,7 +58,7 @@ void check_for_timeouts( void );
 // Parameters:  void
 //
 // ****************************************************************************
-void check_for_can_frame( void );
+void check_for_incoming_message( void );
 
 
 #endif /* _OSCC_KIA_SOUL_BRAKE_COMMUNICATIONS_H_ */

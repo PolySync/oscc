@@ -6,7 +6,6 @@
 
 #include <Arduino.h>
 #include "debug.h"
-#include "oscc_time.h"
 #include "oscc_pid.h"
 #include "kia_soul.h"
 
@@ -15,6 +14,14 @@
 #include "communications.h"
 #include "master_cylinder.h"
 #include "helper.h"
+
+
+/*
+ * @brief Number of consecutive faults that can occur when reading the
+ *        sensors before control is disabled.
+ *
+ */
+#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 
 static void disable_brake_lights( void );
@@ -110,59 +117,46 @@ void check_for_sensor_faults( void )
     if ( (g_brake_control_state.enabled == true)
         || (g_brake_control_state.invalid_sensor_value == true) )
     {
-        uint32_t current_time = GET_TIMESTAMP_MS();
+        bool master_cylinder_pressure_fault =
+            check_master_cylinder_pressure_sensor_for_fault( );
 
-        bool timeout = is_timeout(
-            g_sensor_validity_last_check_timestamp,
-            current_time,
-            SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC );
-
-        if( timeout == true )
+        if( master_cylinder_pressure_fault == true )
         {
-            g_sensor_validity_last_check_timestamp = current_time;
+            DEBUG_PRINTLN( "Bad value read from master cylinder presure sensor" );
+        }
 
 
-            bool master_cylinder_pressure_fault =
-                check_master_cylinder_pressure_sensor_for_fault( );
+        bool accumulator_pressure_fault =
+            check_accumulator_pressure_sensor_for_fault( );
 
-            if( master_cylinder_pressure_fault == true )
-            {
-                DEBUG_PRINTLN( "Bad value read from master cylinder presure sensor" );
-            }
-
-
-            bool accumulator_pressure_fault =
-                check_accumulator_pressure_sensor_for_fault( );
-
-            if( accumulator_pressure_fault == true )
-            {
-                DEBUG_PRINTLN( "Bad value read from accumulator pressure sensor" );
-            }
+        if( accumulator_pressure_fault == true )
+        {
+            DEBUG_PRINTLN( "Bad value read from accumulator pressure sensor" );
+        }
 
 
-            bool wheel_pressure_fault =
-                check_wheel_pressure_sensor_for_fault( );
+        bool wheel_pressure_fault =
+            check_wheel_pressure_sensor_for_fault( );
 
-            if( wheel_pressure_fault == true )
-            {
-                DEBUG_PRINTLN( "Bad value read from wheel pressure sensor" );
-            }
+        if( wheel_pressure_fault == true )
+        {
+            DEBUG_PRINTLN( "Bad value read from wheel pressure sensor" );
+        }
 
 
-            if( (master_cylinder_pressure_fault == true)
-                || (accumulator_pressure_fault == true)
-                || (wheel_pressure_fault == true) )
-            {
-                disable_control( );
+        if( (master_cylinder_pressure_fault == true)
+            || (accumulator_pressure_fault == true)
+            || (wheel_pressure_fault == true) )
+        {
+            disable_control( );
 
-                publish_fault_report( );
+            publish_fault_report( );
 
-                g_brake_control_state.invalid_sensor_value = true;
-            }
-            else
-            {
-                g_brake_control_state.invalid_sensor_value = false;
-            }
+            g_brake_control_state.invalid_sensor_value = true;
+        }
+        else
+        {
+            g_brake_control_state.invalid_sensor_value = false;
         }
     }
 }

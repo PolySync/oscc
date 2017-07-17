@@ -8,7 +8,6 @@
 #include "oscc_serial.h"
 #include "oscc_can.h"
 #include "debug.h"
-#include "oscc_time.h"
 #include "oscc_timer.h"
 #include "brake_can_protocol.h"
 
@@ -26,9 +25,7 @@ void init_globals( void )
             0,
             sizeof(g_brake_control_state) );
 
-    // Initialize the timestamps to avoid timeout warnings on start up
-    g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
-    g_obd_brake_pressure_last_rx_timestamp = GET_TIMESTAMP_MS( );
+    g_brake_command_timeout = false;
 
     pid_zeroize( &g_pid, PID_WINDUP_GUARD );
 
@@ -53,8 +50,6 @@ void init_devices( void )
 
     set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
     set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
-
-    timer1_init( OSCC_REPORT_BRAKE_PUBLISH_FREQ_IN_HZ, publish_brake_report );
 }
 
 

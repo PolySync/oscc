@@ -125,9 +125,7 @@
 #endif
 
 
-EXTERN uint32_t g_brake_command_last_rx_timestamp;
-EXTERN uint32_t g_obd_brake_pressure_last_rx_timestamp;
-EXTERN uint32_t g_sensor_validity_last_check_timestamp;
+EXTERN bool g_brake_command_timeout;
 
 EXTERN kia_soul_brake_control_state_s g_brake_control_state;
 

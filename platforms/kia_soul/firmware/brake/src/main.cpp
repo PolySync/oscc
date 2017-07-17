@@ -10,6 +10,7 @@
 #include "accumulator.h"
 #include "brake_control.h"
 #include "communications.h"
+#include "timers.h"
 #include "init.h"
 
 
@@ -23,17 +24,15 @@ int main( void )
 
     init_communication_interfaces( );
 
+    start_timers( );
+
     DEBUG_PRINTLN( "initialization complete" );
 
     while( true )
     {
-        check_for_can_frame( );
+        check_for_incoming_message( );
 
         accumulator_maintain_pressure( );
-
-        check_for_timeouts( );
-
-        check_for_sensor_faults( );
 
         check_for_operator_override( );
 

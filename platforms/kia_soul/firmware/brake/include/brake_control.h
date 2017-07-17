@@ -19,19 +19,6 @@
 #define UINT16_MIN ( 0 )
 
 /*
- * @brief Amount of time between sensor checks. [milliseconds]
- *
- */
-#define SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC ( 250 )
-
-/*
- * @brief Number of consecutive faults that can occur when reading the
- *        sensors before control is disabled.
- *
- */
-#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
-
-/*
  * @brief Proportional gain of the PID controller.
  *
  */

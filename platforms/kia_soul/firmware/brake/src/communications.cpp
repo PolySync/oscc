@@ -8,7 +8,6 @@
 #include "brake_can_protocol.h"
 #include "fault_can_protocol.h"
 #include "oscc_can.h"
-#include "oscc_time.h"
 #include "debug.h"
 #include "kia_soul.h"
 
@@ -22,13 +21,6 @@ static void process_rx_frame(
 
 static void process_brake_command(
     const uint8_t * const data );
-
-static void process_obd_frame(
-    const uint8_t * const data );
-
-static void check_for_controller_command_timeout( void );
-
-static void check_for_obd_timeout( void );
 
 
 void publish_brake_report( void )
@@ -67,7 +59,23 @@ void publish_fault_report( void )
 }
 
 
-void check_for_can_frame( void )
+void check_for_controller_command_timeout( void )
+{
+    if( g_brake_control_state.enabled == true )
+    {
+        if ( g_brake_command_timeout == true )
+        {
+            disable_control( );
+
+            publish_fault_report( );
+
+            DEBUG_PRINTLN( "Timeout - controller command" );
+        }
+    }
+}
+
+
+void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;
     can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
@@ -79,15 +87,7 @@ void check_for_can_frame( void )
 }
 
 
-void check_for_timeouts( void )
-{
-    check_for_controller_command_timeout( );
-
-    check_for_obd_timeout( );
-}
-
-
-static void process_brake_command(
+void process_brake_command(
     const uint8_t * const data )
 {
     if (data != NULL )
@@ -106,23 +106,7 @@ static void process_brake_command(
 
         g_brake_control_state.commanded_pedal_position = brake_command_data->pedal_command;
 
-        g_brake_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
-    }
-}
-
-
-static void process_obd_brake_pressure(
-    const uint8_t * const data )
-{
-    if ( data != NULL )
-    {
-        const kia_soul_obd_brake_pressure_data_s * const brake_pressure_data =
-                (kia_soul_obd_brake_pressure_data_s *) data;
-
-        g_brake_control_state.current_vehicle_brake_pressure =
-            brake_pressure_data->master_cylinder_pressure;
-
-        g_obd_brake_pressure_last_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_brake_command_timeout = false;
     }
 }
 
@@ -136,60 +120,11 @@ static void process_rx_frame(
         {
             process_brake_command( frame->data );
         }
-        else if ( frame->id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID )
-        {
-            process_obd_brake_pressure( frame->data );
-        }
         else if ( frame->id == OSCC_MODULE_FAULT_REPORT_CAN_ID )
         {
             disable_control( );
 
             DEBUG_PRINTLN( "Fault report received" );
         }
-    }
-}
-
-
-static void check_for_controller_command_timeout( void )
-{
-    if( g_brake_control_state.enabled == true )
-    {
-        bool timeout = is_timeout(
-            g_brake_command_last_rx_timestamp,
-            GET_TIMESTAMP_MS( ),
-            COMMAND_TIMEOUT_IN_MSEC );
-
-        if ( timeout == true )
-        {
-            disable_control( );
-
-            publish_fault_report( );
-
-            DEBUG_PRINTLN( "Timeout - controller command" );
-        }
-    }
-}
-
-
-static void check_for_obd_timeout( void )
-{
-    bool timeout = is_timeout(
-            g_obd_brake_pressure_last_rx_timestamp,
-            GET_TIMESTAMP_MS( ),
-            OBD_TIMEOUT_IN_MSEC);
-
-    if( timeout == true )
-    {
-        disable_control( );
-
-        publish_fault_report( );
-
-        g_brake_control_state.obd_timeout = true;
-
-        DEBUG_PRINTLN( "Timeout - OBD - brake pressure" );
-    }
-    else
-    {
-        g_brake_control_state.obd_timeout = false;
     }
 }
