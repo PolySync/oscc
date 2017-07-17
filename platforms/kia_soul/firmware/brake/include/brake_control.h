@@ -63,24 +63,16 @@
  */
 typedef struct
 {
-    bool enabled; /* Flag indicating control is currently enabled */
+    bool enabled; /* Flag indicating control is currently enabled. */
 
-    bool operator_override; /* Flag indicating whether brake pedal was
-                               manually pressed by operator. */
+    bool operator_override; /* Flag indicating whether steering wheel was
+                               manually turned by operator. */
 
-    bool invalid_sensor_value; /* Flag indicating a value read from one of the
-                                  sensors is invalid. */
+    uint8_t dtcs; /* Bitfield of faults present in the module. */
 
-    bool obd_timeout; /* Flag indicating whether an OBD timeout has occurred. */
+    int16_t brake_pressure_front_left; /* Brake pressure at front left wheel. */
 
-    float current_sensor_brake_pressure; /* Current brake pressure as read
-                                               from the brake pressure sensor. */
-
-    float current_vehicle_brake_pressure; /* Current brake pressure as reported
-                                               by the vehicle. */
-
-    float commanded_pedal_position; /* Brake pedal position commanded by
-                                          controller. */
+    int16_t brake_pressure_front_right; /* Brake pressure at front right wheel. */
 } kia_soul_brake_control_state_s;
 
 

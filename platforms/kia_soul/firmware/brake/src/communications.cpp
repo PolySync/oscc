@@ -28,12 +28,10 @@ void publish_brake_report( void )
     oscc_brake_report_s brake_report;
 
     brake_report.enabled = (uint8_t) g_brake_control_state.enabled;
-    brake_report.override = (uint8_t) g_brake_control_state.operator_override;
-    brake_report.pedal_input = (int16_t) g_brake_control_state.current_vehicle_brake_pressure;
-    brake_report.pedal_command = (uint16_t) g_brake_control_state.commanded_pedal_position;
-    brake_report.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
-    brake_report.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
-    brake_report.fault_invalid_sensor_value = (uint8_t) g_brake_control_state.invalid_sensor_value;
+    brake_report.operator_override = (uint8_t) g_brake_control_state.operator_override;
+    brake_report.dtcs = g_brake_control_state.dtcs;
+    brake_report.brake_pressure_front_left = g_brake_control_state.brake_pressure_front_left;
+    brake_report.brake_pressure_front_right = g_brake_control_state.brake_pressure_front_right;
 
     g_control_can.sendMsgBuf(
         OSCC_BRAKE_REPORT_CAN_ID,
@@ -50,9 +48,9 @@ void publish_fault_report( void )
     fault_report.fault_origin_id = FAULT_ORIGIN_BRAKE;
 
     g_control_can.sendMsgBuf(
-        OSCC_MODULE_FAULT_REPORT_CAN_ID,
+        OSCC_FAULT_REPORT_CAN_ID,
         CAN_STANDARD,
-        OSCC_MODULE_FAULT_REPORT_CAN_DLC,
+        OSCC_FAULT_REPORT_CAN_DLC,
         (uint8_t *) &fault_report );
 }
 
@@ -93,7 +91,7 @@ static void process_brake_command(
         const oscc_brake_command_s * const brake_command =
                 (oscc_brake_command_s *) data;
 
-        if( brake_command->enabled == true )
+        if( brake_command->enable == true )
         {
             enable_control( );
         }
@@ -102,7 +100,7 @@ static void process_brake_command(
             disable_control( );
         }
 
-        g_brake_control_state.commanded_pedal_position = brake_command->pedal_command;
+        update_brake();
 
         g_brake_command_timeout = false;
     }

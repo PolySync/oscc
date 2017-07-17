@@ -5,7 +5,6 @@
 #include "oscc_pid.h"
 #include "oscc_serial.h"
 #include "oscc_can.h"
-#include "oscc_time.h"
 #include "debug.h"
 
 #include "globals.h"
@@ -251,7 +250,7 @@ int main( void )
 
     while( true )
     {
-        check_for_can_frame( );
+        check_for_incoming_message( );
 
         publish_brake_report( );
 

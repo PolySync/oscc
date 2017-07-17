@@ -34,97 +34,57 @@
  * @brief Brake report message publishing frequency. [Hz]
  *
  */
-#define OSCC_REPORT_BRAKE_PUBLISH_FREQ_IN_HZ (50)
+#define OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ (50)
+
+/*
+ * @brief Brake DTC bitfield position indicating an invalid sensor value.
+ *
+ */
+#define OSCC_BRAKE_DTC_INVALID_SENSOR_VAL (0x0)
 
 
 /**
  * @brief Brake command message data.
  *
- * Message size (CAN frame DLC): 8 bytes
+ * CAN frame ID: \ref OSCC_BRAKE_COMMAND_CAN_ID
  *
  */
 typedef struct
 {
+    uint8_t enable; /*!< Command to enable or disable steering control.
+                     * Zero value means disable.
+                     * Non-zero value means enable. */
+
     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
-    uint8_t reserved_0 : 1; /*!< Reserved. */
-
-    uint8_t reserved_1 : 7; /*!< Reserved. */
-
-    uint8_t enabled : 1; /*!< This brake control command/request enabled.
-                          * Value zero means off/disabled.
-                          * Value one means on/enabled. */
-
-    uint8_t reserved_2 : 1; /*!< Reserved. */
-
-    uint8_t reserved_3 : 1; /*!< Reserved. */
-
-    uint8_t reserved_4 : 5; /*!< Reserved. */
-
-    uint8_t reserved_5; /*!< Reserved. */
-
-    uint8_t reserved_6; /*!< Reserved. */
-
-    uint8_t reserved_7; /*!< Reserved. */
-
-    uint8_t reserved_8; /*!< Reserved. */
+    uint8_t reserved[5]; /*!< Reserved. */
 } oscc_brake_command_s;
 
 
 /**
  * @brief Brake report message data.
  *
- * Message size (CAN frame DLC): \ref OSCC_BRAKE_REPORT_CAN_DLC
+ * CAN frame ID: \ref OSCC_BRAKE_REPORT_CAN_ID
  *
  */
 typedef struct
 {
-    int16_t pedal_input; /*!< Pedal input value from
-                           * the physical pedal. [65535 == 100%] */
+    uint8_t enabled; /*!< Braking controls enabled state.
+                      * Zero value means disabled (commands are ignored).
+                      * Non-zero value means enabled (no timeouts or overrides have occured). */
 
-    uint16_t pedal_command; /*!< Pedal command value from
-                             * the command message. [65535 == 100%] */
+    uint8_t operator_override; /*!< Driver override state.
+                                * Zero value means there has been no operator override.
+                                * Non-zero value means an operator has physically overridden
+                                * the system. */
 
-    uint16_t pedal_output; /*!< Pedal output value.
-                            * Set to the maximum of
-                            * pedal_input and pedal command. [65535 == 100%] */
+    uint8_t dtcs; /* Bitfield of DTCs present in the module. */
 
-    uint8_t reserved_0 : 1; /*!< Reserved. */
+    int16_t brake_pressure_front_left; /* Brake pressure at front left wheel. */
 
-    uint8_t reserved_1 : 1; /*!< Reserved. */
+    int16_t brake_pressure_front_right; /* Brake pressure at front right wheel. */
 
-    uint8_t reserved_2 : 1; /*!< Reserved. */
-
-    uint8_t reserved_3 : 1; /*!< Reserved. */
-
-    uint8_t reserved_4 : 4; /*!< Reserved. */
-
-    uint8_t enabled : 1; /*!< Brake controls enabled state.
-                          * Value zero means off/disabled (commands are ignored).
-                          * Value one means on/enabled (no timeouts or overrides have occured). */
-
-    uint8_t override : 1; /*!< Driver override state.
-                           * Value zero means controls are provided autonomously (no override).
-                           * Value one means controls are provided by the driver. */
-
-    uint8_t fault_invalid_sensor_value : 1; /*!< Invalid sensor value indicator.
-                                             * Value zero means the values read
-                                             * from the sensors are valid.
-                                             *
-                                             * Value one means the values read
-                                             * from the sensors are invalid. */
-
-    uint8_t reserved_5 : 1; /*!< Reserved. */
-
-    uint8_t fault_obd_timeout : 1; /*!< OBD timeout indicator.
-                                   * Value zero means no timeout occurred.
-                                   * Value one means timeout occurred. */
-
-    uint8_t reserved_6 : 1; /*!< Reserved */
-
-    uint8_t reserved_7 : 1; /*!< Reserved. */
-
-    uint8_t reserved_8 : 1; /*!< Reserved. */
+    uint8_t reserved; /*!< Reserved. */
 } oscc_brake_report_s;
 
 
