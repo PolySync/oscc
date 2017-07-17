@@ -29,7 +29,7 @@ void publish_steering_report( void )
 
     if ( delta >= OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC )
     {
-        oscc_report_steering_s steering_report;
+        oscc_steering_report_s steering_report;
 
         steering_report.enabled = (uint8_t) g_steering_control_state.enabled;
         steering_report.operator_override = (uint8_t) g_steering_control_state.operator_override;
@@ -98,8 +98,8 @@ static void process_steering_command(
 {
     if ( data != NULL )
     {
-        const oscc_command_steering_s * const steering_command =
-                (oscc_command_steering_s *) data;
+        const oscc_steering_command_s * const steering_command =
+                (oscc_steering_command_s *) data;
 
         if ( steering_command->enable == true )
         {

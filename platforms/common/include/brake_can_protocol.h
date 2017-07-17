@@ -16,25 +16,25 @@
  * @brief Brake command message (CAN frame) ID.
  *
  */
-#define OSCC_COMMAND_BRAKE_CAN_ID (0x060)
+#define OSCC_BRAKE_COMMAND_CAN_ID (0x060)
 
 /*
  * @brief Brake report message (CAN frame) ID.
  *
  */
-#define OSCC_REPORT_BRAKE_CAN_ID (0x061)
+#define OSCC_BRAKE_REPORT_CAN_ID (0x061)
 
 /*
  * @brief Brake report message (CAN frame) length.
  *
  */
-#define OSCC_REPORT_BRAKE_CAN_DLC (8)
+#define OSCC_BRAKE_REPORT_CAN_DLC (8)
 
 /*
  * @brief Brake report message publishing interval. [milliseconds]
  *
  */
-#define OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC (50)
+#define OSCC_BRAKE_REPORT_PUBLISH_INTERVAL_IN_MSEC (50)
 
 
 /**
@@ -68,27 +68,13 @@ typedef struct
     uint8_t reserved_7; /*!< Reserved. */
 
     uint8_t reserved_8; /*!< Reserved. */
-} oscc_command_brake_data_s;
-
-
-/**
- * @brief Brake command message.
- *
- * CAN frame ID: \ref OSCC_COMMAND_BRAKE_CAN_ID
- *
- */
-typedef struct
-{
-    uint32_t timestamp; /* Timestamp when command was received by the firmware. */
-
-    oscc_command_brake_data_s data; /* CAN frame data. */
-} oscc_command_brake_s;
+} oscc_brake_command_s;
 
 
 /**
  * @brief Brake report message data.
  *
- * Message size (CAN frame DLC): \ref OSCC_REPORT_BRAKE_CAN_DLC
+ * Message size (CAN frame DLC): \ref OSCC_BRAKE_REPORT_CAN_DLC
  *
  */
 typedef struct
@@ -139,25 +125,7 @@ typedef struct
     uint8_t reserved_7 : 1; /*!< Reserved. */
 
     uint8_t reserved_8 : 1; /*!< Reserved. */
-} oscc_report_brake_data_s;
-
-
-/**
- * @brief Brake report message.
- *
- * CAN frame ID: \ref OSCC_REPORT_BRAKE_CAN_ID
- *
- */
-typedef struct
-{
-    uint32_t id; /* CAN frame ID. */
-
-    uint8_t dlc; /* CAN frame data length. */
-
-    uint32_t timestamp; /* Timestamp when report was put on the bus. */
-
-    oscc_report_brake_data_s data; /* CAN frame data. */
-} oscc_report_brake_s;
+} oscc_brake_report_s;
 
 
 #endif /* _OSCC_BRAKE_CAN_PROTOCOL_H_ */

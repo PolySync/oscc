@@ -59,7 +59,7 @@ typedef struct
                          * Non-zero value means enable. */
 
     uint8_t reserved[3]; /*!< Reserved. */
-} oscc_command_steering_s;
+} oscc_steering_command_s;
 
 
 /**
@@ -83,7 +83,7 @@ typedef struct
     uint8_t dtcs; /* Bitfield of DTCs present in the module. */
 
     uint8_t reserved[5]; /*!< Reserved. */
-} oscc_report_steering_s;
+} oscc_steering_report_s;
 
 
 #endif /* _OSCC_STEERING_CAN_PROTOCOL_H_ */
