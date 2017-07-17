@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include "debug.h"
 #include "oscc_dac.h"
-#include "oscc_time.h"
 #include "throttle_can_protocol.h"
 #include "dtc.h"
 #include "kia_soul.h"
@@ -16,6 +15,14 @@
 #include "communications.h"
 #include "throttle_control.h"
 #include "globals.h"
+
+
+/*
+ * @brief Number of consecutive faults that can occur when reading the
+ *        sensors before control is disabled.
+ *
+ */
+#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 
 static void read_accelerator_position_sensor(
@@ -57,50 +64,38 @@ void check_for_sensor_faults( void )
     if ( (g_throttle_control_state.enabled == true)
         || DTC_CHECK(g_throttle_control_state.dtcs, OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL) )
     {
-        uint32_t current_time = GET_TIMESTAMP_MS();
-
-        bool timeout = is_timeout(
-            g_sensor_validity_last_check_timestamp,
-            current_time,
-            SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC );
-
         static int fault_count = 0;
 
-        if( timeout == true )
+        accelerator_position_s accelerator_position;
+
+        read_accelerator_position_sensor( &accelerator_position );
+
+        // sensor pins tied to ground - a value of zero indicates disconnection
+        if( (accelerator_position.high == 0)
+            || (accelerator_position.low == 0) )
         {
-            g_sensor_validity_last_check_timestamp = current_time;
+            ++fault_count;
 
-            accelerator_position_s accelerator_position;
-
-            read_accelerator_position_sensor( &accelerator_position );
-
-            // sensor pins tied to ground - a value of zero indicates disconnection
-            if( (accelerator_position.high == 0)
-                || (accelerator_position.low == 0) )
+            if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
             {
-                ++fault_count;
+                disable_control( );
 
-                if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
-                {
-                    disable_control( );
+                publish_fault_report( );
 
-                    publish_fault_report( );
+                DTC_SET(
+                    g_throttle_control_state.dtcs,
+                    OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
 
-                    DTC_SET(
-                        g_throttle_control_state.dtcs,
-                        OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
-
-                    DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
-                }
+                DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
             }
-            else
-            {
-                DTC_CLEAR(
-                        g_throttle_control_state.dtcs,
-                        OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
+        }
+        else
+        {
+            DTC_CLEAR(
+                    g_throttle_control_state.dtcs,
+                    OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
 
-                fault_count = 0;
-            }
+            fault_count = 0;
         }
     }
 }

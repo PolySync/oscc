@@ -2,7 +2,6 @@
 
 #include "mcp_can.h"
 #include "debug.h"
-#include "oscc_time.h"
 
 #include "oscc_can.h"
 
@@ -29,7 +28,7 @@ can_status_t check_for_rx_frame( MCP_CAN &can, can_frame_s * const frame )
         {
             memset( frame, 0, sizeof(*frame) );
 
-            frame->timestamp = GET_TIMESTAMP_MS( );
+            frame->timestamp = millis( );
 
             can.readMsgBufID(
                     ( INT32U* ) &frame->id,

@@ -8,7 +8,6 @@
 #include "oscc_can.h"
 #include "fault_can_protocol.h"
 #include "throttle_can_protocol.h"
-#include "oscc_time.h"
 #include "debug.h"
 
 #include "globals.h"
@@ -57,12 +56,7 @@ void check_for_controller_command_timeout( void )
 {
     if( g_throttle_control_state.enabled == true )
     {
-        bool timeout = is_timeout(
-                g_throttle_command_last_rx_timestamp,
-                GET_TIMESTAMP_MS( ),
-                COMMAND_TIMEOUT_IN_MSEC );
-
-        if( timeout == true )
+        if( g_throttle_command_timeout == true )
         {
             disable_control( );
 
@@ -112,7 +106,7 @@ static void process_throttle_command(
             disable_control( );
         }
 
-        g_throttle_command_last_rx_timestamp = GET_TIMESTAMP_MS( );
+        g_throttle_command_timeout = false;
     }
 }
 

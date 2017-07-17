@@ -9,14 +9,6 @@
 #define _OSCC_KIA_SOUL_THROTTLE_COMMUNICATIONS_H_
 
 
-/*
- * @brief Amount of time after controller command that is considered a
- *        timeout. [milliseconds]
- *
- */
-#define COMMAND_TIMEOUT_IN_MSEC ( 250 )
-
-
 // ****************************************************************************
 // Function:    publish_throttle_report
 //
