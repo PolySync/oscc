@@ -39,7 +39,7 @@ typedef struct
     bool operator_override; /* Flag indicating whether steering wheel was
                                manually turned by operator. */
 
-    uint8_t dtcs;
+    uint8_t dtcs; /* Bitfield of faults present in the module. */
 } kia_soul_steering_control_state_s;
 
 

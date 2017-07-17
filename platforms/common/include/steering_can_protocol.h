@@ -45,7 +45,7 @@
 /**
  * @brief Steering command message data.
  *
- * CAN frame ID: \ref OSCC_COMMAN_STEERING_CAN_ID
+ * CAN frame ID: \ref OSCC_STEERING_COMMAND_CAN_ID
  *
  */
 typedef struct
@@ -54,7 +54,7 @@ typedef struct
 
     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
 
-    uint8_t enable;    /*!< Command to enable or disable steering control. 
+    uint8_t enable;    /*!< Command to enable or disable steering control.
                          * Zero value means disable.
                          * Non-zero value means enable. */
 
