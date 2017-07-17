@@ -71,8 +71,7 @@
 #endif
 
 
-EXTERN uint32_t g_steering_command_last_rx_timestamp;
-EXTERN uint32_t g_sensor_validity_last_check_timestamp;
+EXTERN bool g_steering_command_timeout;
 
 EXTERN kia_soul_steering_control_state_s g_steering_control_state;
 

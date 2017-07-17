@@ -11,19 +11,6 @@
 
 #include <stdint.h>
 
-/*
- * @brief Amount of time between sensor checks. [milliseconds]
- *
- */
-#define SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC ( 250 )
-
-/*
- * @brief Number of consecutive faults that can occur when reading the
- *        torque sensor before control is disabled.
- *
- */
-#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
-
 
 /**
  * @brief Torque values.
