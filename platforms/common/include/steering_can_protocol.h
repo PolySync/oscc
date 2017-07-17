@@ -16,25 +16,25 @@
  * @brief Steering command message (CAN frame) ID.
  *
  */
-#define OSCC_COMMAND_STEERING_CAN_ID (0x64)
+#define OSCC_STEERING_COMMAND_CAN_ID (0x64)
 
 /*
  * @brief Steering report message (CAN frame) ID.
  *
  */
-#define OSCC_REPORT_STEERING_CAN_ID (0x65)
+#define OSCC_STEERING_REPORT_CAN_ID (0x65)
 
 /*
  * @brief Steering report message (CAN frame) length.
  *
  */
-#define OSCC_REPORT_STEERING_CAN_DLC (8)
+#define OSCC_STEERING_REPORT_CAN_DLC (8)
 
 /*
  * @brief Steering report message publishing interval. [milliseconds]
  *
  */
-#define OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC (20)
+#define OSCC_STEERING_REPORT_PUBLISH_INTERVAL_IN_MSEC (20)
 
 /*
  * @brief Steering DTC bitfield position indicating an invalid sensor value.
@@ -65,7 +65,7 @@ typedef struct
 /**
  * @brief Steering report message data.
  *
- * CAN frame ID: \ref OSCC_REPORT_STEERING_CAN_ID
+ * CAN frame ID: \ref OSCC_STEERING_REPORT_CAN_ID
  *
  */
 typedef struct

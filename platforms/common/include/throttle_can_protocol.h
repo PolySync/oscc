@@ -16,28 +16,28 @@
  * @brief Throttle command message (CAN frame) ID.
  *
  */
-#define OSCC_COMMAND_THROTTLE_CAN_ID (0x62)
+#define OSCC_THROTTLE_COMMAND_CAN_ID (0x62)
 
 
 /*
  * @brief Throttle report message (CAN frame) ID.
  *
  */
-#define OSCC_REPORT_THROTTLE_CAN_ID (0x63)
+#define OSCC_THROTTLE_REPORT_CAN_ID (0x63)
 
 
 /*
  * @brief Throttle report message (CAN frame) length.
  *
  */
-#define OSCC_REPORT_THROTTLE_CAN_DLC (8)
+#define OSCC_THROTTLE_REPORT_CAN_DLC (8)
 
 
 /*
  * @brief Throttle report message publishing interval. [milliseconds]
  *
  */
-#define OSCC_REPORT_THROTTLE_PUBLISH_INTERVAL_IN_MSEC (20)
+#define OSCC_THROTTLE_REPORT_PUBLISH_INTERVAL_IN_MSEC (20)
 
 
 /*
@@ -50,7 +50,7 @@
 /**
  * @brief Throttle command message.
  *
- * CAN frame ID: \ref OSCC_COMMAND_THROTTLE_CAN_ID
+ * CAN frame ID: \ref OSCC_THROTTLE_COMMAND_CAN_ID
  *
  */
 typedef struct
@@ -70,7 +70,7 @@ typedef struct
 /**
  * @brief Throttle report message.
  *
- * CAN frame ID: \ref OSCC_REPORT_THROTTLE_CAN_ID
+ * CAN frame ID: \ref OSCC_THROTTLE_REPORT_CAN_ID
  *
  */
 typedef struct
