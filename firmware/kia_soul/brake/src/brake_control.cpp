@@ -8,8 +8,8 @@
 #include "debug.h"
 #include "oscc_pid.h"
 #include "dtc.h"
-#include "brake_can_protocol.h"
-#include "kia_soul.h"
+#include "can_protocols/brake_can_protocol.h"
+#include "vehicles/kia_soul.h"
 
 #include "globals.h"
 #include "brake_control.h"

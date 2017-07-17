@@ -1,4 +1,4 @@
-#include "kia_soul.h"
+#include "vehicles/kia_soul.h"
 
 
 WHEN("^a (.*) OBD CAN frame is received on the OBD CAN bus$")

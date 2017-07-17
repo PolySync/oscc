@@ -43,4 +43,4 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/dac
     ${CMAKE_SOURCE_DIR}/common/libs/timer
-    ${CMAKE_SOURCE_DIR}/kia_soul)
+    ${CMAKE_SOURCE_DIR}/../api/include)

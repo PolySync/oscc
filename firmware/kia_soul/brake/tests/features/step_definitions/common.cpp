@@ -9,9 +9,9 @@
 #include "oscc_can.h"
 #include "mcp_can.h"
 #include "brake_control.h"
-#include "brake_can_protocol.h"
+#include "can_protocols/brake_can_protocol.h"
 #include "globals.h"
-#include "kia_soul.h"
+#include "vehicles/kia_soul.h"
 
 using namespace cgreen;
 

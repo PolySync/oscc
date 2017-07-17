@@ -9,7 +9,7 @@
 #include "oscc_can.h"
 #include "mcp_can.h"
 #include "throttle_control.h"
-#include "throttle_can_protocol.h"
+#include "can_protocols/throttle_can_protocol.h"
 #include "globals.h"
 
 using namespace cgreen;

@@ -9,9 +9,9 @@
 #include "oscc_can.h"
 #include "mcp_can.h"
 #include "steering_control.h"
-#include "steering_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
 #include "globals.h"
-#include "kia_soul.h"
+#include "vehicles/kia_soul.h"
 
 using namespace cgreen;
 

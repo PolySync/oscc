@@ -7,7 +7,7 @@
 #include <Arduino.h>
 #include "oscc_serial.h"
 #include "oscc_can.h"
-#include "throttle_can_protocol.h"
+#include "can_protocols/throttle_can_protocol.h"
 #include "debug.h"
 
 #include "globals.h"

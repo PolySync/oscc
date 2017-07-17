@@ -4,7 +4,7 @@
  */
 
 
-#include "steering_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
 #include "oscc_timer.h"
 
 #include "timers.h"

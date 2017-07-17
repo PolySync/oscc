@@ -4,7 +4,7 @@
  */
 
 
-#include "brake_can_protocol.h"
+#include "can_protocols/brake_can_protocol.h"
 #include "oscc_timer.h"
 
 #include "timers.h"

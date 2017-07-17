@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include "arduino_init.h"
 #include "mcp_can.h"
-#include "brake_can_protocol.h"
+#include "can_protocols/brake_can_protocol.h"
 #include "oscc_pid.h"
 #include "oscc_serial.h"
 #include "oscc_can.h"

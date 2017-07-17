@@ -1,7 +1,7 @@
 /**
  * @file oscc.h
  * @brief OSCC interface - Register callbacks for retrieving module and vehicle reports,
- *        and send requested targets to the modules. 
+ *        and send requested targets to the modules.
  */
 
 
@@ -9,9 +9,9 @@
 #define OSCC_H
 
 #include <stdbool.h>
-#include "brake_can_protocol.h"
-#include "throttle_can_protocol.h"
-#include "steering_can_protocol.h"
+#include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/throttle_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
 
 typedef struct
 {
@@ -28,7 +28,7 @@ typedef struct
 {
     float current_steering_wheel_angle;
     float current_vehicle_brake_pressure;
-    oscc_wheel_speed_s current_vehicle_wheel_speeds; 
+    oscc_wheel_speed_s current_vehicle_wheel_speeds;
 } oscc_obd_message_s;
 
 typedef struct
@@ -45,7 +45,7 @@ typedef struct
 
 
 /**
- * @brief Use provided CAN channel to open communications 
+ * @brief Use provided CAN channel to open communications
  *        to CAN bus connected to the OSCC modules.
  *
  * @param [in] channel - CAN channel connected to OSCC modules.
@@ -104,7 +104,7 @@ int oscc_publish_brake_position( unsigned int brake_position );
 
 
 /**
- * @brief Publish message with requested brake pressure to 
+ * @brief Publish message with requested brake pressure to
  *        brake module.
  *
  * @param [in] pressure - Requested brake pressure.

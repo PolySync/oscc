@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include "debug.h"
 #include "oscc_dac.h"
-#include "steering_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
 #include "dtc.h"
-#include "kia_soul.h"
+#include "vehicles/kia_soul.h"
 
 #include "communications.h"
 #include "steering_control.h"

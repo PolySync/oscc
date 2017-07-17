@@ -9,7 +9,7 @@
 #include "oscc_can.h"
 #include "debug.h"
 #include "oscc_timer.h"
-#include "brake_can_protocol.h"
+#include "can_protocols/brake_can_protocol.h"
 
 #include "globals.h"
 #include "init.h"

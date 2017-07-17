@@ -15,9 +15,9 @@
 
 #include "macros.h"
 #include "dtc.h"
-#include "brake_can_protocol.h"
-#include "throttle_can_protocol.h"
-#include "steering_can_protocol.h"
+#include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/throttle_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
 #include "oscc.h"
 
 
@@ -651,7 +651,7 @@ int oscc_publish_steering_torque( double torque )
 // *****************************************************
 // Function:    oscc_subscribe_to_brake_reports
 //
-// Purpose:     Register callback function to be called when brake reports are 
+// Purpose:     Register callback function to be called when brake reports are
 //              recieved from brake module.
 //
 // Returns:     int - ERROR or NOERR
@@ -674,7 +674,7 @@ int oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_report_s *rep
 // *****************************************************
 // Function:    oscc_subscribe_to_brake_reports
 //
-// Purpose:     Register callback function to be called when brake reports are 
+// Purpose:     Register callback function to be called when brake reports are
 //              recieved from brake module.
 //
 // Returns:     int - ERROR or NOERR
@@ -697,7 +697,7 @@ int oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttle_report_
 // *****************************************************
 // Function:    oscc_subscribe_to_brake_reports
 //
-// Purpose:     Register callback function to be called when brake reports are 
+// Purpose:     Register callback function to be called when brake reports are
 //              recieved from brake module.
 //
 // Returns:     int - ERROR or NOERR
@@ -720,7 +720,7 @@ int oscc_subscribe_to_steering_reports( void( *callback )( oscc_steering_report_
 // *****************************************************
 // Function:    oscc_subscribe_to_brake_reports
 //
-// Purpose:     Register callback function to be called when brake reports are 
+// Purpose:     Register callback function to be called when brake reports are
 //              recieved from brake module.
 //
 // Returns:     int - ERROR or NOERR

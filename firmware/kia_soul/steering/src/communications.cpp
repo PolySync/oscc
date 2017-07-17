@@ -6,8 +6,8 @@
 
 #include "mcp_can.h"
 #include "oscc_can.h"
-#include "fault_can_protocol.h"
-#include "steering_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
 #include "debug.h"
 
 #include "globals.h"

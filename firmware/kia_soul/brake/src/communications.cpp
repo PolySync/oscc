@@ -5,11 +5,11 @@
 
 
 #include "mcp_can.h"
-#include "brake_can_protocol.h"
-#include "fault_can_protocol.h"
+#include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "oscc_can.h"
 #include "debug.h"
-#include "kia_soul.h"
+#include "vehicles/kia_soul.h"
 
 #include "globals.h"
 #include "communications.h"
