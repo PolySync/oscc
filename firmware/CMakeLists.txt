@@ -7,10 +7,10 @@ if(TESTS)
         add_definitions(-DDEBUG)
     endif()
 
-    add_subdirectory(kia_soul/firmware/brake/tests)
-    add_subdirectory(kia_soul/firmware/can_gateway/tests)
-    add_subdirectory(kia_soul/firmware/steering/tests)
-    add_subdirectory(kia_soul/firmware/throttle/tests)
+    add_subdirectory(kia_soul/brake/tests)
+    add_subdirectory(kia_soul/can_gateway/tests)
+    add_subdirectory(kia_soul/steering/tests)
+    add_subdirectory(kia_soul/throttle/tests)
     add_subdirectory(common/libs/pid/tests)
 
     add_custom_target(
@@ -76,7 +76,7 @@ else()
     endif()
 
     if(BUILD_KIA_SOUL)
-        add_subdirectory(kia_soul/firmware)
+        add_subdirectory(kia_soul)
     else()
         message(WARNING "No platform selected - no firmware will be built")
     endif()
