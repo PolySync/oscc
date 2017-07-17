@@ -94,9 +94,14 @@ static void process_steering_command(
         const oscc_command_steering_s * const steering_command =
                 (oscc_command_steering_s *) data;
 
-        if ( steering_command->enabled == true )
+        if ( steering_command->enable == true )
         {
             enable_control( );
+
+            DEBUG_PRINT("commanded spoof low: ");
+            DEBUG_PRINT(steering_command->spoof_value_low);
+            DEBUG_PRINT(" high: ");
+            DEBUG_PRINTLN(steering_command->spoof_value_high);
 
             update_steering(
                 steering_command->spoof_value_high,

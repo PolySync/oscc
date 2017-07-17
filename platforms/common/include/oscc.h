@@ -1,5 +1,5 @@
 /**
- * @file oscc_interface.h
+ * @file oscc.h
  * @brief OSCC interface - The main command* functions and the
  *        update function should be called on at least a 50ms
  *        period.  The expectation is that if there is not some
@@ -9,8 +9,8 @@
  */
 
 
-#ifndef OSCC_INTERFACE_H
-#define OSCC_INTERFACE_H
+#ifndef OSCC_H
+#define OSCC_H
 
 #include <stdbool.h>
 
@@ -38,7 +38,7 @@ typedef struct
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_init( int channel );
+int oscc_init( int channel );
 
 
 /**
@@ -49,7 +49,7 @@ int oscc_interface_init( int channel );
  * @return ERROR or NOERR
  *
  */
-void oscc_interface_close( );
+void oscc_close( );
 
 
 /**
@@ -63,7 +63,7 @@ void oscc_interface_close( );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_enable( );
+int oscc_enable( );
 
 
 /**
@@ -75,7 +75,7 @@ int oscc_interface_enable( );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_disable( );
+int oscc_disable( );
 
 
 /**
@@ -88,7 +88,7 @@ int oscc_interface_disable( );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_set_defaults( );
+int oscc_set_defaults( );
 
 
 /**
@@ -99,7 +99,7 @@ int oscc_interface_set_defaults( );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_disable_brakes( );
+int oscc_disable_brakes( );
 
 
 /**
@@ -110,7 +110,7 @@ int oscc_interface_disable_brakes( );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_disable_throttle( );
+int oscc_disable_throttle( );
 
 
 /**
@@ -121,7 +121,7 @@ int oscc_interface_disable_throttle( );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_disable_steering( );
+int oscc_disable_steering( );
 
 
 /**
@@ -135,7 +135,7 @@ int oscc_interface_disable_steering( );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_command_brakes( unsigned int brake_setpoint );
+int oscc_command_brakes( unsigned int brake_setpoint );
 
 
 /**
@@ -149,7 +149,7 @@ int oscc_interface_command_brakes( unsigned int brake_setpoint );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_command_throttle( unsigned int throttle_setpoint );
+int oscc_command_throttle( unsigned int throttle_setpoint );
 
 
 /**
@@ -169,7 +169,7 @@ int oscc_interface_command_throttle( unsigned int throttle_setpoint );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_command_steering( int angle, unsigned int rate );
+int oscc_command_steering( int angle, unsigned int rate );
 
 /**
  * @brief OSCC status message - the primary status from the
@@ -189,7 +189,7 @@ int oscc_interface_command_steering( int angle, unsigned int rate );
  * @return ERROR or NOERR
  *
  */
-int oscc_interface_update_status( oscc_status_s * status );
+int oscc_update_status( oscc_status_s * status );
 
-#endif /* OSCC_INTERFACE_H */
+#endif /* OSCC_H */
 

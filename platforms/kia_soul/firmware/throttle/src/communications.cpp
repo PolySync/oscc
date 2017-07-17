@@ -98,6 +98,11 @@ static void process_throttle_command(
         {
             enable_control( );
 
+            DEBUG_PRINT("commanded spoof low: ");
+            DEBUG_PRINT(throttle_command->spoof_value_low);
+            DEBUG_PRINT(" high: ");
+            DEBUG_PRINTLN(throttle_command->spoof_value_high);
+
             update_throttle(
                 throttle_command->spoof_value_high,
                 throttle_command->spoof_value_low );
