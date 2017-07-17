@@ -16,21 +16,21 @@
  * @brief Throttle command message (CAN frame) ID.
  *
  */
-#define OSCC_COMMAND_THROTTLE_CAN_ID (0x62)
+#define OSCC_THROTTLE_COMMAND_CAN_ID (0x62)
 
 
 /*
  * @brief Throttle report message (CAN frame) ID.
  *
  */
-#define OSCC_REPORT_THROTTLE_CAN_ID (0x63)
+#define OSCC_THROTTLE_REPORT_CAN_ID (0x63)
 
 
 /*
  * @brief Throttle report message (CAN frame) length.
  *
  */
-#define OSCC_REPORT_THROTTLE_CAN_DLC (8)
+#define OSCC_THROTTLE_REPORT_CAN_DLC (8)
 
 
 /*
@@ -50,7 +50,7 @@
 /**
  * @brief Throttle command message.
  *
- * CAN frame ID: \ref OSCC_COMMAND_THROTTLE_CAN_ID
+ * CAN frame ID: \ref OSCC_THROTTLE_COMMAND_CAN_ID
  *
  */
 typedef struct
@@ -64,13 +64,13 @@ typedef struct
                      * Non-zero value means enable. */
 
     uint8_t reserved[3]; /*!< Reserved. */
-} oscc_command_throttle_s;
+} oscc_throttle_command_s;
 
 
 /**
  * @brief Throttle report message.
  *
- * CAN frame ID: \ref OSCC_REPORT_THROTTLE_CAN_ID
+ * CAN frame ID: \ref OSCC_THROTTLE_REPORT_CAN_ID
  *
  */
 typedef struct
@@ -87,7 +87,7 @@ typedef struct
     uint8_t dtcs; /* Bitfield of DTCs present in the module. */
 
     uint8_t reserved[5]; /*!< Reserved. */
-} oscc_report_throttle_s;
+} oscc_throttle_report_s;
 
 
 #endif /* _OSCC_THROTTLE_CAN_PROTOCOL_H_ */

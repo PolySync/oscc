@@ -24,16 +24,16 @@ static void process_rx_frame(
 
 void publish_throttle_report( void )
 {
-    oscc_report_throttle_s throttle_report;
+    oscc_throttle_report_s throttle_report;
 
     throttle_report.enabled = (uint8_t) g_throttle_control_state.enabled;
     throttle_report.operator_override = (uint8_t) g_throttle_control_state.operator_override;
     throttle_report.dtcs = g_throttle_control_state.dtcs;
 
     g_control_can.sendMsgBuf(
-        OSCC_REPORT_THROTTLE_CAN_ID,
+        OSCC_THROTTLE_REPORT_CAN_ID,
         CAN_STANDARD,
-        OSCC_REPORT_THROTTLE_CAN_DLC,
+        OSCC_THROTTLE_REPORT_CAN_DLC,
         (uint8_t*) &throttle_report );
 }
 
@@ -85,8 +85,8 @@ static void process_throttle_command(
 {
     if ( data != NULL )
     {
-        const oscc_command_throttle_s * const throttle_command =
-                (oscc_command_throttle_s *) data;
+        const oscc_throttle_command_s * const throttle_command =
+                (oscc_throttle_command_s *) data;
 
         if( throttle_command->enable == true )
         {

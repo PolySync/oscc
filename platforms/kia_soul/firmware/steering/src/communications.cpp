@@ -24,16 +24,16 @@ static void process_rx_frame(
 
 void publish_steering_report( void )
 {
-    oscc_report_steering_s steering_report;
+    oscc_steering_report_s steering_report;
 
     steering_report.enabled = (uint8_t) g_steering_control_state.enabled;
     steering_report.operator_override = (uint8_t) g_steering_control_state.operator_override;
     steering_report.dtcs = g_steering_control_state.dtcs;
 
     g_control_can.sendMsgBuf(
-        OSCC_REPORT_STEERING_CAN_ID,
+        OSCC_STEERING_REPORT_CAN_ID,
         CAN_STANDARD,
-        OSCC_REPORT_STEERING_CAN_DLC,
+        OSCC_STEERING_REPORT_CAN_DLC,
         (uint8_t *) &steering_report );
 }
 
@@ -85,8 +85,8 @@ static void process_steering_command(
 {
     if ( data != NULL )
     {
-        const oscc_command_steering_s * const steering_command =
-                (oscc_command_steering_s *) data;
+        const oscc_steering_command_s * const steering_command =
+                (oscc_steering_command_s *) data;
 
         if ( steering_command->enable == true )
         {

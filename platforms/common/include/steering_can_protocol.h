@@ -16,19 +16,19 @@
  * @brief Steering command message (CAN frame) ID.
  *
  */
-#define OSCC_COMMAND_STEERING_CAN_ID (0x64)
+#define OSCC_STEERING_COMMAND_CAN_ID (0x64)
 
 /*
  * @brief Steering report message (CAN frame) ID.
  *
  */
-#define OSCC_REPORT_STEERING_CAN_ID (0x65)
+#define OSCC_STEERING_REPORT_CAN_ID (0x65)
 
 /*
  * @brief Steering report message (CAN frame) length.
  *
  */
-#define OSCC_REPORT_STEERING_CAN_DLC (8)
+#define OSCC_STEERING_REPORT_CAN_DLC (8)
 
 /*
  * @brief Steering report message publishing frequency. [Hz]
@@ -59,13 +59,13 @@ typedef struct
                          * Non-zero value means enable. */
 
     uint8_t reserved[3]; /*!< Reserved. */
-} oscc_command_steering_s;
+} oscc_steering_command_s;
 
 
 /**
  * @brief Steering report message data.
  *
- * CAN frame ID: \ref OSCC_REPORT_STEERING_CAN_ID
+ * CAN frame ID: \ref OSCC_STEERING_REPORT_CAN_ID
  *
  */
 typedef struct
@@ -83,7 +83,7 @@ typedef struct
     uint8_t dtcs; /* Bitfield of DTCs present in the module. */
 
     uint8_t reserved[5]; /*!< Reserved. */
-} oscc_report_steering_s;
+} oscc_steering_report_s;
 
 
 #endif /* _OSCC_STEERING_CAN_PROTOCOL_H_ */

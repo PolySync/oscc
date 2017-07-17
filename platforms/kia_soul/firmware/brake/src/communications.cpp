@@ -25,23 +25,21 @@ static void process_brake_command(
 
 void publish_brake_report( void )
 {
-    oscc_report_brake_s brake_report;
+    oscc_brake_report_s brake_report;
 
-    brake_report.id = OSCC_REPORT_BRAKE_CAN_ID;
-    brake_report.dlc = OSCC_REPORT_BRAKE_CAN_DLC;
-    brake_report.data.enabled = (uint8_t) g_brake_control_state.enabled;
-    brake_report.data.override = (uint8_t) g_brake_control_state.operator_override;
-    brake_report.data.pedal_input = (int16_t) g_brake_control_state.current_vehicle_brake_pressure;
-    brake_report.data.pedal_command = (uint16_t) g_brake_control_state.commanded_pedal_position;
-    brake_report.data.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
-    brake_report.data.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
-    brake_report.data.fault_invalid_sensor_value = (uint8_t) g_brake_control_state.invalid_sensor_value;
+    brake_report.enabled = (uint8_t) g_brake_control_state.enabled;
+    brake_report.override = (uint8_t) g_brake_control_state.operator_override;
+    brake_report.pedal_input = (int16_t) g_brake_control_state.current_vehicle_brake_pressure;
+    brake_report.pedal_command = (uint16_t) g_brake_control_state.commanded_pedal_position;
+    brake_report.pedal_output = (uint16_t) g_brake_control_state.current_sensor_brake_pressure;
+    brake_report.fault_obd_timeout = (uint8_t) g_brake_control_state.obd_timeout;
+    brake_report.fault_invalid_sensor_value = (uint8_t) g_brake_control_state.invalid_sensor_value;
 
     g_control_can.sendMsgBuf(
-        brake_report.id,
+        OSCC_BRAKE_REPORT_CAN_ID,
         CAN_STANDARD,
-        brake_report.dlc,
-        (uint8_t *) &brake_report.data );
+        OSCC_BRAKE_REPORT_CAN_DLC,
+        (uint8_t *) &brake_report );
 }
 
 
@@ -87,15 +85,15 @@ void check_for_incoming_message( void )
 }
 
 
-void process_brake_command(
+static void process_brake_command(
     const uint8_t * const data )
 {
     if (data != NULL )
     {
-        const oscc_command_brake_data_s * const brake_command_data =
-                (oscc_command_brake_data_s *) data;
+        const oscc_brake_command_s * const brake_command =
+                (oscc_brake_command_s *) data;
 
-        if( brake_command_data->enabled == true )
+        if( brake_command->enabled == true )
         {
             enable_control( );
         }
@@ -104,7 +102,7 @@ void process_brake_command(
             disable_control( );
         }
 
-        g_brake_control_state.commanded_pedal_position = brake_command_data->pedal_command;
+        g_brake_control_state.commanded_pedal_position = brake_command->pedal_command;
 
         g_brake_command_timeout = false;
     }
@@ -116,7 +114,7 @@ static void process_rx_frame(
 {
     if ( frame != NULL )
     {
-        if ( frame->id == OSCC_COMMAND_BRAKE_CAN_ID )
+        if ( frame->id == OSCC_BRAKE_COMMAND_CAN_ID )
         {
             process_brake_command( frame->data );
         }
