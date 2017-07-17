@@ -118,7 +118,7 @@ static void process_rx_frame(
         {
             process_brake_command( frame->data );
         }
-        else if ( frame->id == OSCC_MODULE_FAULT_REPORT_CAN_ID )
+        else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
         {
             disable_control( );
 

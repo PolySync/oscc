@@ -16,13 +16,13 @@
  * @brief Fault report message (CAN frame) ID.
  *
  */
-#define OSCC_MODULE_FAULT_REPORT_CAN_ID (0x99)
+#define OSCC_FAULT_REPORT_CAN_ID (0x99)
 
 /*
  * @brief Fault report message (CAN frame) length.
  *
  */
-#define OSCC_MODULE_FAULT_REPORT_CAN_DLC (8)
+#define OSCC_FAULT_REPORT_CAN_DLC (8)
 
 
 typedef enum

@@ -45,9 +45,9 @@ void publish_fault_report( void )
     fault_report.fault_origin_id = FAULT_ORIGIN_THROTTLE;
 
     g_control_can.sendMsgBuf(
-        OSCC_MODULE_FAULT_REPORT_CAN_ID,
+        OSCC_FAULT_REPORT_CAN_ID,
         CAN_STANDARD,
-        OSCC_MODULE_FAULT_REPORT_CAN_DLC,
+        OSCC_FAULT_REPORT_CAN_DLC,
         (uint8_t *) &fault_report );
 }
 
@@ -116,11 +116,11 @@ static void process_rx_frame(
 {
     if ( frame != NULL )
     {
-        if( frame->id == OSCC_COMMAND_THROTTLE_CAN_ID )
+        if( frame->id == OSCC_THROTTLE_COMMAND_CAN_ID )
         {
             process_throttle_command( frame->data );
         }
-        else if ( frame->id == OSCC_MODULE_FAULT_REPORT_CAN_ID )
+        else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
         {
             disable_control( );
 
