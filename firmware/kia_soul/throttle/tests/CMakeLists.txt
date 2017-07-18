@@ -6,7 +6,6 @@ add_library(
     ../src/communications.cpp
     ../src/globals.cpp
     ../src/throttle_control.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/
@@ -20,10 +19,10 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
-    ${CMAKE_SOURCE_DIR}/common/libs/time
     ${CMAKE_SOURCE_DIR}/common/libs/dac
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
-    ${CMAKE_SOURCE_DIR}/common/testing/mocks)
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks
+    ${CMAKE_SOURCE_DIR}/../api/include)
 
 add_executable(
     kia-soul-throttle-unit-test
@@ -44,7 +43,8 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/testing/mocks
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/include
-    ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include)
+    ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include
+    ${CMAKE_SOURCE_DIR}/../api/include)
 
 add_custom_target(
     run-kia-soul-throttle-unit-tests

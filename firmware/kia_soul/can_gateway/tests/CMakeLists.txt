@@ -5,7 +5,6 @@ add_library(
     SHARED
     ../src/communications.cpp
     ../src/globals.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/mcp_can_mock.cpp)
@@ -16,7 +15,6 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
-    ${CMAKE_SOURCE_DIR}/common/libs/time
     ${CMAKE_SOURCE_DIR}/common/testing/mocks
     ${CMAKE_SOURCE_DIR}/kia_soul/firmware)
 

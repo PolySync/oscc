@@ -36,7 +36,7 @@ typedef enum
 /**
  * @brief Fault report message data.
  *
- * Message size (CAN frame DLC): \ref OSCC_MODULE_FAULT_REPORT_CAN_DLC
+ * Message size (CAN frame DLC): \ref OSCC_FAULT_REPORT_CAN_DLC
  *
  */
 typedef struct
@@ -44,7 +44,7 @@ typedef struct
     uint32_t fault_origin_id; /* ID of the module that is sending out the fault. */
 
     uint8_t reserved[4]; /* Reserved */
-} oscc_module_fault_report_s;
+} oscc_fault_report_s;
 
 
 #endif /* _OSCC_FAULT_CAN_PROTOCOL_H_ */

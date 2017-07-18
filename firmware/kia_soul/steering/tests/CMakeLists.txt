@@ -6,7 +6,6 @@ add_library(
     ../src/communications.cpp
     ../src/globals.cpp
     ../src/steering_control.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
@@ -21,7 +20,6 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
-    ${CMAKE_SOURCE_DIR}/common/libs/time
     ${CMAKE_SOURCE_DIR}/common/libs/dac
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing

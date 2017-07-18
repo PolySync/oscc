@@ -8,7 +8,6 @@ add_library(
     ../src/brake_control.cpp
     ../src/master_cylinder.cpp
     ../src/helper.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/time/oscc_time.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
@@ -21,7 +20,6 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
-    ${CMAKE_SOURCE_DIR}/common/libs/time
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
     ${CMAKE_SOURCE_DIR}/common/testing/mocks

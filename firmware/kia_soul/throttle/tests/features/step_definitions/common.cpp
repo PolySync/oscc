@@ -9,13 +9,13 @@
 #include "oscc_can.h"
 #include "mcp_can.h"
 #include "throttle_control.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "globals.h"
 
 using namespace cgreen;
 
 
-extern unsigned long g_mock_arduino_millis_return;
 extern uint8_t g_mock_arduino_digital_write_pin;
 extern uint8_t g_mock_arduino_digital_write_val;
 extern int g_mock_arduino_analog_read_return;
@@ -40,8 +40,7 @@ extern kia_soul_throttle_control_state_s g_throttle_control_state;
 BEFORE()
 {
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
-    g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_THROTTLE_CAN_ID;
-    g_mock_arduino_millis_return = 555;
+    g_mock_mcp_can_read_msg_buf_id = OSCC_THROTTLE_COMMAND_CAN_ID;
 
     memset(&g_mock_mcp_can_read_msg_buf_buf, 0, sizeof(g_mock_mcp_can_read_msg_buf_buf));
     memset(&g_throttle_control_state, 0, sizeof(g_throttle_control_state));
@@ -71,14 +70,6 @@ GIVEN("^the accelerator position sensors have a reading of (.*)$")
     REGEX_PARAM(int, sensor_val);
 
     g_mock_arduino_analog_read_return = sensor_val;
-}
-
-
-GIVEN("^the previous accelerator position command was (.*)$")
-{
-    REGEX_PARAM(int, commanded_accelerator_position);
-
-    g_throttle_control_state.commanded_accelerator_position = commanded_accelerator_position;
 }
 
 
@@ -125,7 +116,7 @@ THEN("^control should be disabled$")
 }
 
 
-THEN("^(.*) should be written to DAC A$")
+THEN("^(.*) should be sent to DAC A$")
 {
     REGEX_PARAM(int, dac_output_a);
 
@@ -135,7 +126,7 @@ THEN("^(.*) should be written to DAC A$")
 }
 
 
-THEN("^(.*) should be written to DAC B$")
+THEN("^(.*) should be sent to DAC B$")
 {
     REGEX_PARAM(int, dac_output_b);
 
