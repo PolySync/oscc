@@ -21,16 +21,6 @@ typedef struct
     float wheel_speed_rear_right;
 } oscc_wheel_speed_s;
 
-
-// NEED TO REVISIT THIS POSSIBLY -- How do we want to pass these messages?
-
-typedef struct
-{
-    float current_steering_wheel_angle;
-    float current_vehicle_brake_pressure;
-    oscc_wheel_speed_s current_vehicle_wheel_speeds;
-} oscc_obd_message_s;
-
 typedef struct
 {
     bool operator_override;
@@ -201,7 +191,7 @@ int oscc_subscribe_to_steering_reports( void( *callback )( oscc_steering_report_
  * @return ERROR or NOERR
  *
  */
-int oscc_subscribe_to_obd_messages( void( *callback )( oscc_obd_message_s *message ) );
+int oscc_subscribe_to_obd_messages( void( *callback )( long id, unsigned char * data ) );
 
 
 #endif /* OSCC_H */
