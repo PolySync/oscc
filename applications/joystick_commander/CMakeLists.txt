@@ -10,13 +10,14 @@ add_executable(
     src/commander.c
     src/joystick.c
     src/main.c
-    ../../platforms/common/src/oscc.c)
+    ../../api/src/oscc.c)
 
 target_include_directories(
     joystick-commander
     PRIVATE
     include
-    ../../platforms/common/include
+    ../../api/include
+    ../../firmware/common/include
     ${SDL2_INCLUDE_DIRS})
 
 target_link_libraries(

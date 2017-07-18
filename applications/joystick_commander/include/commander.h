@@ -12,7 +12,7 @@
 /**
  * @brief Initialize the commander for use
  *
- * @param [in] channel to use (preferred to deprecate)
+ * @param [in] channel to use to communicate with OSCC modules
  *
  * @return ERROR code:
  * \li \ref NOERR (1) if success.
@@ -25,12 +25,12 @@ int commander_init( int channel );
  * @brief Close the commander.  Releases and closes all modules
  *        under the commander also.
  *
- * @param [void]
+ * @param [in] channel used to communicate with OSCC modules
  *
  * @return void
  *
  */
-void commander_close( );
+void commander_close( int channel );
 
 /**
  * @brief Commander low-frequency update.  Checks the status of the
