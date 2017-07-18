@@ -16,13 +16,13 @@
  * @brief Brake command message (CAN frame) ID.
  *
  */
-#define OSCC_BRAKE_COMMAND_CAN_ID (0x060)
+#define OSCC_BRAKE_COMMAND_CAN_ID (0x60)
 
 /*
  * @brief Brake report message (CAN frame) ID.
  *
  */
-#define OSCC_BRAKE_REPORT_CAN_ID (0x061)
+#define OSCC_BRAKE_REPORT_CAN_ID (0x61)
 
 /*
  * @brief Brake report message (CAN frame) length.
@@ -51,11 +51,11 @@
  */
 typedef struct
 {
+    uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
+
     uint8_t enable; /*!< Command to enable or disable steering control.
                      * Zero value means disable.
                      * Non-zero value means enable. */
-
-    uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
     uint8_t reserved[5]; /*!< Reserved. */
 } oscc_brake_command_s;
