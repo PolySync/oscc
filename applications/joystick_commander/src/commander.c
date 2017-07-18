@@ -276,27 +276,6 @@ static int is_joystick_safe( )
     return return_code;
 }
 
-// *****************************************************
-// Function:    commander_set_safe
-//
-// Purpose:     Put the OSCC module in a safe position
-//
-// Returns:     int - ERROR or NOERR
-//
-// Parameters:  void
-//
-// *****************************************************
-static int commander_set_safe( )
-{
-    int return_code = ERROR;
-
-    if ( commander_enabled == COMMANDER_ENABLED )
-    {
-        return_code = oscc_set_defaults();
-    }
-    return ( return_code );
-}
-
 
 // *****************************************************
 // Function:    calc_exponential_average
@@ -340,12 +319,7 @@ static int commander_disable_controls( )
 
     if ( commander_enabled == COMMANDER_ENABLED )
     {
-        return_code = commander_set_safe( );
-
-        if ( return_code == NOERR )
-        {
-            return_code = oscc_disable();
-        }
+        return_code = oscc_disable();
     }
     return return_code;
 }
@@ -370,12 +344,7 @@ static int commander_enable_controls( )
 
     if ( commander_enabled == COMMANDER_ENABLED )
     {
-        return_code = commander_set_safe( );
-
-        if ( return_code == NOERR )
-        {
-            return_code = oscc_enable();
-        }
+        return_code = oscc_enable();
     }
     return ( return_code );
 }
@@ -458,7 +427,7 @@ static int command_brakes( )
 
         printf( "brake: %d\n", constrained_value );
 
-        return_code = oscc_command_brakes( constrained_value );
+        return_code = oscc_publish_brake_position( constrained_value );
     }
     return ( return_code );
 }
@@ -507,7 +476,7 @@ static int command_throttle( )
 
         printf( "throttle: %d\n", constrained_value );
 
-        return_code = oscc_command_throttle( constrained_value );
+        return_code = oscc_publish_throttle_position( constrained_value );
     }
     return ( return_code );
 }
@@ -559,12 +528,23 @@ static int command_steering( )
 
         printf( "steering: %d\t%d\n", constrained_angle, constrained_rate );
 
-        return_code = oscc_command_steering( constrained_angle,
-                                                       constrained_rate );
+        return_code = oscc_publish_steering_angle( constrained_angle );
     }
     return ( return_code );
 }
 
+void throttle_callback(oscc_throttle_report_s *report){
+    printf("throttle report recieved.\n");
+}
+
+void steering_callback(oscc_steering_report_s *report){
+    // printf("steering report recieved.\n");
+}
+
+void obd_callback(long id, unsigned char * data){
+    printf("id: ? %ld\n", id);
+    // printf("enabled? %d\n", report->enabled);
+}
 
 
 // *****************************************************
@@ -590,10 +570,14 @@ int commander_init( int channel )
     {
         commander_enabled = COMMANDER_ENABLED;
 
-        return_code = oscc_init( channel );
+        return_code = oscc_open( channel );
 
         if ( return_code != ERROR )
         {
+            oscc_subscribe_to_obd_messages(obd_callback);
+            oscc_subscribe_to_steering_reports(steering_callback);
+            oscc_subscribe_to_throttle_reports(throttle_callback);
+
             return_code = joystick_init( );
 
             printf( "waiting for joystick controls to zero\n" );
@@ -628,10 +612,11 @@ int commander_init( int channel )
 //
 // Returns:     int - ERROR or NOERR
 //
-// Parameters:  void
+// Parameters:  channel - the CAN channel used to communicate with OSCC
+//              modules
 //
 // *****************************************************
-void commander_close( )
+void commander_close( int channel )
 {
     if ( commander_enabled == COMMANDER_ENABLED )
     {
@@ -639,7 +624,7 @@ void commander_close( )
 
         oscc_disable( );
 
-        oscc_close( );
+        oscc_close( channel );
 
         joystick_close( );
 
@@ -684,7 +669,6 @@ int commander_low_frequency_update( )
                 button_pressed = 0;
                 return_code = get_button( JOYSTICK_BUTTON_ENABLE_CONTROLS,
                                           &button_pressed );
-
                 if ( return_code == NOERR )
                 {
                     if ( button_pressed != 0 )
@@ -727,7 +711,7 @@ int commander_low_frequency_update( )
 // *****************************************************
 int commander_high_frequency_update( )
 {
-    int return_code = ERROR;
+    int return_code = NOERR;
 
     int oscc_override = 0;
 
@@ -737,46 +721,44 @@ int commander_high_frequency_update( )
             0,
             sizeof(status) );
 
-    return_code = oscc_update_status( &status );
+    // if ( status.operator_override == true )
+    // {
+    //     printf( "Driver Override Detected\n" );
+    //     return_code = commander_disable_controls( );
+    // }
 
-    if ( status.operator_override == true )
-    {
-        printf( "Driver Override Detected\n" );
-        return_code = commander_disable_controls( );
-    }
+    // if ( status.obd_timeout_brake == true )
+    // {
+    //     printf( "Brake - OBD Timeout Detected\n" );
+    //     return_code = oscc_disable_brakes( );
 
-    if ( status.obd_timeout_brake == true )
-    {
-        printf( "Brake - OBD Timeout Detected\n" );
-        return_code = oscc_disable_brakes( );
+    // }
 
-    }
+    // if ( status.obd_timeout_brake == true )
+    // {
+    //     printf( "Steering - OBD Timeout Detected\n" );
 
-    if ( status.obd_timeout_brake == true )
-    {
-        printf( "Steering - OBD Timeout Detected\n" );
+    //     return_code = oscc_disable_steering( );
+    // }
 
-        return_code = oscc_disable_steering( );
-    }
+    // if ( status.invalid_sensor_value_brake == true )
+    // {
+    //     printf( "Brake - Invalid Sensor Value Detected\n" );
+    //     return_code = oscc_disable_steering( );
+    // }
 
-    if ( status.invalid_sensor_value_brake == true )
-    {
-        printf( "Brake - Invalid Sensor Value Detected\n" );
-        return_code = oscc_disable_steering( );
-    }
+    // if ( status.invalid_sensor_value_steering == true )
+    // {
+    //     printf( "Steering - Invalid Sensor Value Detected\n" );
+    //     return_code = oscc_disable_steering( );
+    // }
 
-    if ( status.invalid_sensor_value_steering == true )
-    {
-        printf( "Steering - Invalid Sensor Value Detected\n" );
-        return_code = oscc_disable_steering( );
-    }
+    // if ( status.invalid_sensor_value_throttle == true )
+    // {
+    //     printf( "Throttle - Invalid Sensor Value Detected\n" );
+    //     return_code = oscc_disable_throttle( );
 
-    if ( status.invalid_sensor_value_throttle == true )
-    {
-        printf( "Throttle - Invalid Sensor Value Detected\n" );
-        return_code = oscc_disable_throttle( );
-
-    }
+    // }
 
     return return_code;
 }

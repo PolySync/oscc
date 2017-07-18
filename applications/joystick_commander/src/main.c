@@ -31,6 +31,7 @@
 
 #include "macros.h"
 #include "commander.h"
+#include "can_protocols/steering_can_protocol.h"
 
 
 
@@ -182,13 +183,15 @@ int main( int argc, char **argv )
     {
         while ( return_code == NOERR && error_thrown == NOERR )
         {
-            return_code = commander_high_frequency_update( );
+            // checks for overrides
+            // return_code = commander_high_frequency_update( );
 
             elapsed_time = get_elapsed_time( update_timestamp );
 
             if ( elapsed_time > COMMANDER_UPDATE_INTERVAL )
             {
                 update_timestamp = get_timestamp();
+                // uses buttons
                 return_code = commander_low_frequency_update( );
             }
 
@@ -196,7 +199,7 @@ int main( int argc, char **argv )
             // to commander_high_frequency_update
             (void) usleep( SLEEP_TICK_INTERVAL );
         }
-        commander_close( );
+        commander_close( channel );
     }
 
     return 0;
