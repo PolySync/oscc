@@ -2,24 +2,20 @@
 
 Feature: Sending reports
 
-  Steering reports should be published to the control CAN bus after an interval.
+  Steering reports should be published to the control CAN bus.
 
 
-  Scenario Outline: Steering report published after an interval
-    Given the torque sensors have a reading of <sensor_val>
-    And the previous steering wheel angle command was <command>
-    And the current steering wheel angle is <angle>
-    And the spoofed torque output was <torque>
+  Scenario: Steering report published
+    When a steering report is published
 
-    When the time since the last report publishing exceeds the interval
+    Then a steering report should be put on the control CAN bus
+    And the steering report's enabled field should be set
+    And the steering report's override field should be set
+    And the steering report's DTCs field should be set
 
-    Then a steering report should be published to the control CAN bus
-    And the report's command field should be set to <command>
-    And the report's steering wheel angle field should be set to <angle>
-    And the report's torque output field should be set to <torque>
 
-    Examples:
-      | command | sensor_val | angle  | torque |
-      |  0      |  0         |  -2925 |  32    |
-      |  50     |  256       |  45    |  64    |
-      |  100    |  512       |  731   |  127   |
+  Scenario: Fault report published
+    When a fault report is published
+
+    Then a fault report should be put on the control CAN bus
+    And the fault report's origin ID field should be set

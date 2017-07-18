@@ -9,14 +9,13 @@
 #include "oscc_can.h"
 #include "mcp_can.h"
 #include "steering_control.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "globals.h"
-#include "vehicles/kia_soul.h"
 
 using namespace cgreen;
 
 
-extern unsigned long g_mock_arduino_millis_return;
 extern uint8_t g_mock_arduino_digital_write_pin;
 extern uint8_t g_mock_arduino_digital_write_val;
 extern int g_mock_arduino_analog_read_return;
@@ -40,21 +39,11 @@ extern kia_soul_steering_control_state_s g_steering_control_state;
 // return to known state before every scenario
 BEFORE()
 {
-    g_mock_mcp_can_check_receive_return = -1;
-    g_mock_mcp_can_read_msg_buf_id = 0;
-    g_mock_arduino_millis_return = 555;
+    g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
+    g_mock_mcp_can_read_msg_buf_id = OSCC_STEERING_COMMAND_CAN_ID;
 
-    memset(
-        &g_mock_mcp_can_read_msg_buf_buf,
-        0,
-        sizeof(g_mock_mcp_can_read_msg_buf_buf));
-
-    // Do not clear previous_steering_wheel_angle because it is needed for
-    // scenario about receiving a command
-    g_steering_control_state.enabled = 0;
-    g_steering_control_state.operator_override = 0;
-    g_steering_control_state.current_steering_wheel_angle = 0;
-    g_steering_control_state.commanded_steering_wheel_angle = 0;
+    memset(&g_mock_mcp_can_read_msg_buf_buf, 0, sizeof(g_mock_mcp_can_read_msg_buf_buf));
+    memset(&g_steering_control_state, 0, sizeof(g_steering_control_state));
 
     g_mock_arduino_digital_write_pin = UINT8_MAX;
     g_mock_arduino_digital_write_val = UINT8_MAX;
@@ -84,11 +73,13 @@ GIVEN("^the torque sensors have a reading of (.*)$")
 }
 
 
-GIVEN("^the previous steering wheel angle command was (.*)$")
+GIVEN("^the operator has applied (.*) to the steering wheel$")
 {
-    REGEX_PARAM(int, command);
+    REGEX_PARAM(int, steering_sensor_val);
 
-    g_steering_control_state.commanded_steering_wheel_angle = command;
+    g_mock_arduino_analog_read_return = steering_sensor_val;
+
+    check_for_operator_override();
 }
 
 
@@ -124,7 +115,7 @@ THEN("^control should be disabled$")
 }
 
 
-THEN("^(.*) should be written to DAC A$")
+THEN("^(.*) should be sent to DAC A$")
 {
     REGEX_PARAM(int, dac_output_a);
 
@@ -134,7 +125,7 @@ THEN("^(.*) should be written to DAC A$")
 }
 
 
-THEN("^(.*) should be written to DAC B$")
+THEN("^(.*) should be sent to DAC B$")
 {
     REGEX_PARAM(int, dac_output_b);
 

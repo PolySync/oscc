@@ -1,98 +1,74 @@
-GIVEN("^the current steering wheel angle is (.*)$")
+WHEN("^a steering report is published$")
 {
-    REGEX_PARAM(int, angle);
+    g_steering_control_state.enabled = true;
+    g_steering_control_state.operator_override = true;
+    g_steering_control_state.dtcs = 0x55;
 
-    g_steering_control_state.current_steering_wheel_angle = angle;
+    publish_steering_report();
 }
 
 
-GIVEN("^the spoofed torque output was (.*)$")
+WHEN("^a fault report is published$")
 {
-    REGEX_PARAM(int, torque);
-
-    g_spoofed_torque_output_sum = torque;
+    publish_fault_report();
 }
 
 
-WHEN("^the time since the last report publishing exceeds (.*)$")
+THEN("^a steering report should be put on the control CAN bus$")
 {
-    REGEX_PARAM(std::string, interval);
-
-    g_steering_report_last_tx_timestamp = 0;
-
-    g_mock_arduino_millis_return =
-        OSCC_REPORT_STEERING_PUBLISH_INTERVAL_IN_MSEC;
-
-    publish_reports();
+    assert_that(g_mock_mcp_can_send_msg_buf_id, is_equal_to(OSCC_STEERING_REPORT_CAN_ID));
+    assert_that(g_mock_mcp_can_send_msg_buf_ext, is_equal_to(CAN_STANDARD));
+    assert_that(g_mock_mcp_can_send_msg_buf_len, is_equal_to(OSCC_STEERING_REPORT_CAN_DLC));
 }
 
 
-THEN("^a steering report should be published to the control CAN bus$")
+THEN("^a fault report should be put on the control CAN bus$")
 {
-    assert_that(
-        g_mock_mcp_can_send_msg_buf_id,
-        is_equal_to(OSCC_REPORT_STEERING_CAN_ID));
+    assert_that(g_mock_mcp_can_send_msg_buf_id, is_equal_to(OSCC_FAULT_REPORT_CAN_ID));
+    assert_that(g_mock_mcp_can_send_msg_buf_ext, is_equal_to(CAN_STANDARD));
+    assert_that(g_mock_mcp_can_send_msg_buf_len, is_equal_to(OSCC_FAULT_REPORT_CAN_DLC));
+}
+
+
+THEN("^the steering report's enabled field should be set$")
+{
+    oscc_steering_report_s * steering_report =
+        (oscc_steering_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        g_mock_mcp_can_send_msg_buf_ext,
-        is_equal_to(CAN_STANDARD));
-
-    assert_that(
-        g_mock_mcp_can_send_msg_buf_len,
-        is_equal_to(OSCC_REPORT_STEERING_CAN_DLC));
-
-
-    oscc_report_steering_data_s * steering_report_data =
-        (oscc_report_steering_data_s *) g_mock_mcp_can_send_msg_buf_buf;
-
-    assert_that(
-        steering_report_data->enabled,
+        steering_report->enabled,
         is_equal_to(g_steering_control_state.enabled));
+}
+
+
+THEN("^the steering report's override field should be set$")
+{
+    oscc_steering_report_s * steering_report =
+        (oscc_steering_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        steering_report_data->override,
+        steering_report->operator_override,
         is_equal_to(g_steering_control_state.operator_override));
-
-    assert_that(
-        g_steering_report_last_tx_timestamp,
-        is_equal_to(g_mock_arduino_millis_return));
 }
 
 
-THEN("^the report's command field should be set to (.*)$")
+THEN("^the steering report's DTCs field should be set$")
 {
-    REGEX_PARAM(int, command);
-
-    oscc_report_steering_data_s * steering_report_data =
-        (oscc_report_steering_data_s *) g_mock_mcp_can_send_msg_buf_buf;
+    oscc_steering_report_s * steering_report =
+        (oscc_steering_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        steering_report_data->commanded_steering_wheel_angle,
-        is_equal_to(command));
+        steering_report->dtcs,
+        is_equal_to(g_steering_control_state.dtcs));
 }
 
 
-THEN("^the report's steering wheel angle field should be set to (.*)$")
+THEN("^the fault report's origin ID field should be set$")
 {
-    REGEX_PARAM(int, scaled_angle);
-
-    oscc_report_steering_data_s * steering_report_data =
-        (oscc_report_steering_data_s *) g_mock_mcp_can_send_msg_buf_buf;
+    oscc_fault_report_s * fault_report =
+        (oscc_fault_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        steering_report_data->current_steering_wheel_angle,
-        is_equal_to(scaled_angle));
-}
-
-
-THEN("^the report's torque output field should be set to (.*)$")
-{
-    REGEX_PARAM(int, torque);
-
-    oscc_report_steering_data_s * steering_report_data =
-        (oscc_report_steering_data_s *) g_mock_mcp_can_send_msg_buf_buf;
-
-    assert_that(
-        steering_report_data->spoofed_torque_output,
-        is_equal_to(torque));
+        fault_report->fault_origin_id,
+        is_equal_to(FAULT_ORIGIN_STEERING));
 }

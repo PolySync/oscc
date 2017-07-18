@@ -15,21 +15,12 @@ Feature: Timeouts and overrides
     Then control should be disabled
 
 
-  Scenario: OBD timeout
-    Given steering control is enabled
-
-    When the time since the last received steering wheel angle OBD frame exceeds the timeout
-
-    Then control should be disabled
-
-
   Scenario Outline: Operator override
     Given steering control is enabled
 
     When the operator applies <sensor_val> to the steering wheel
 
     Then control should be disabled
-    And override flag should be set
 
     Examples:
       | sensor_val |

@@ -5,6 +5,7 @@
 
 
 #include <Arduino.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include "debug.h"
 #include "oscc_dac.h"
@@ -112,7 +113,7 @@ void update_steering(
 
         uint16_t spoof_low =
             constrain(
-                spoof_command_high,
+                spoof_command_low,
                 STEERING_SPOOF_SIGNAL_RANGE_MIN,
                 STEERING_SPOOF_SIGNAL_RANGE_MAX );
 
