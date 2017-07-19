@@ -1,11 +1,11 @@
 CAN BUS Shield
 ---------------------------------------------------------
-[![CAN BUS Shield](http://www.seeedstudio.com/depot/images/1130300211.jpg)](http://www.seeedstudio.com/depot/CANBUS-Shield-p-2256.html?cPath=19_88)
+[![CAN BUS Shield](https://github.com/SeeedDocument/CAN_BUS_Shield/blob/master/image/Can_bus_shield_all.jpg?raw=true)](http://www.seeedstudio.com/depot/CANBUS-Shield-p-2256.html?cPath=19_88)
 
 
 
 <br>
-CAN-BUS is a common industrial bus because of its long travel distance, medium communication speed and high reliability. It is commonly found on modern machine tools and as an automotive diagnostic bus. This CAN-BUS Shield adopts MCP2515 CAN Bus controller with SPI interface and MCP2551 CAN transceiver to give your Arduino/Seeeduino CAN-BUS capibility. With an OBD-II converter cable added on and the OBD-II library imported, you are ready to build an onboard diagnostic device or data logger.
+CAN-BUS is a common industrial bus because of its long travel distance, medium communication speed and high reliability. It is commonly found on modern machine tools and as an automotive diagnostic bus. This CAN-BUS Shield adopts MCP2515 CAN Bus controller with SPI interface and MCP2551 CAN transceiver to give your Arduino/Seeeduino CAN-BUS capability. With an OBD-II converter cable added on and the OBD-II library imported, you are ready to build an onboard diagnostic device or data logger.
 
 - Implements CAN V2.0B at up to 1 Mb/s
 - SPI Interface up to 10 MHz
@@ -17,7 +17,21 @@ CAN-BUS is a common industrial bus because of its long travel distance, medium c
 
 
 <br>
+# Installation:
+
+	git clone https://github.com/Seeed-Studio/CAN_BUS_Shield.git
+
+or download the zip.
+
+<br>
 # Usage:
+
+
+
+Simply copy the CAN_BUS_Shield folder to your Arduino library collection.  For example,
+arduino-1.6.12/libraries.  Next time you run the Arduino IDE, you'll have a new option
+in Sketch -> Include Library -> CAN_BUS_Shield.  Review the included examples in 
+CAN_BUS_Shield/examples.
 
 
 
@@ -25,24 +39,26 @@ CAN-BUS is a common industrial bus because of its long travel distance, medium c
 
 This function is used to initialize the baudrate of the CAN Bus system.
 
-The available baudrates are listed as follws:
+The available baudrates are listed as follows:
 
 	#define CAN_5KBPS    1
 	#define CAN_10KBPS   2
 	#define CAN_20KBPS   3
-	#define CAN_31K25BPS 4
-	#define CAN_33KBPS   5
-	#define CAN_40KBPS   6
-	#define CAN_50KBPS   7
-	#define CAN_80KBPS   8
-	#define CAN_83K3BPS  9
-	#define CAN_95KBPS   10
-	#define CAN_100KBPS  11
-	#define CAN_125KBPS  12
-	#define CAN_200KBPS  13
-	#define CAN_250KBPS  14
-	#define CAN_500KBPS  15
-	#define CAN_1000KBPS 16
+	#define CAN_25KBPS   4 
+	#define CAN_31K25BPS 5
+	#define CAN_33KBPS   6
+	#define CAN_40KBPS   7
+	#define CAN_50KBPS   8
+	#define CAN_80KBPS   9
+	#define CAN_83K3BPS  10
+	#define CAN_95KBPS   11
+	#define CAN_100KBPS  12
+	#define CAN_125KBPS  13
+	#define CAN_200KBPS  14
+	#define CAN_250KBPS  15
+	#define CAN_500KBPS  16
+	#define CAN_666kbps  17
+	#define CAN_1000KBPS 18
 
 
 <br>
@@ -77,7 +93,7 @@ The function will return 1 if a frame arrives, and 0 if nothing arrives.
 <br>
 ## 4. Get CAN ID
 
-When some data arrive, you can use the following function to get the CAN ID of the "send" node. 
+When some data arrives, you can use the following function to get the CAN ID of the "send" node.
 
     INT32U MCP_CAN::getCanId(void);
 
@@ -86,7 +102,7 @@ When some data arrive, you can use the following function to get the CAN ID of t
 <br>
 ## 5. Send Data
 
-    CAN.sendMsgBuf(INT8U id, INT8U ext, INT8U len, data_buf);
+    CAN.sendMsgBuf(INT32U id, INT8U ext, INT8U len, INT8U *buf);
 
 This is a function to send data onto the bus. In which:
 
@@ -96,7 +112,7 @@ This is a function to send data onto the bus. In which:
 
 **len** represents the length of this frame.
 
-**data_buf** is the content of this message.
+**buf** is the content of this message.
 
 For example, In the 'send' example, we have:
 
@@ -113,9 +129,9 @@ CAN.sendMsgBuf(0x00, 0, 8, stmp); //send out the message 'stmp' to the bus and t
 
 The following function is used to receive data on the 'receive' node:
 
-    CAN.readMsgBuf(unsigned char len, unsigned char buf);
+    CAN.readMsgBuf(INT8U *len, INT8U *buf);
 
-In conditions that masks and filters have been set. This function can only get frames that meet the requirements of masks and filters.
+Under the condition that masks and filters have been set, this function will only get frames that meet the requirements of those masks and filters.
 
 **len** represents the data length.
 

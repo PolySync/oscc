@@ -2,29 +2,54 @@
   mcp_can.cpp
   2012 Copyright (c) Seeed Technology Inc.  All right reserved.
 
-  Author:Loovee
-  Contributor: Cory J. Fowler
+  Author:Loovee (loovee@seeed.cc)
   2014-1-16
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
 
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+  Contributor:
 
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-
-  1301  USA
+  Cory J. Fowler
+  Latonita
+  Woodward1
+  Mehtajaghvi
+  BykeBlast
+  TheRo0T
+  Tsipizic
+  ralfEdmund
+  Nathancheek
+  BlueAndi
+  Adlerweb
+  Btetz
+  Hurvajs
+  xboxpro1
+
+  The MIT License (MIT)
+
+  Copyright (c) 2013 Seeed Technology Inc.
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
 */
-#include <SPI.h>
 #include "mcp_can.h"
 
-#define spi_readwrite SPI.transfer
-#define spi_read() spi_readwrite(0x00)
+#define spi_readwrite   SPI.transfer
+#define spi_read()      spi_readwrite(0x00)
+#define SPI_BEGIN()     SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0))
+#define SPI_END()       SPI.endTransaction()
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_reset
@@ -32,9 +57,15 @@
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_reset(void)
 {
+#ifdef SPI_HAS_TRANSACTION
+    SPI_BEGIN();
+#endif
     MCP2515_SELECT();
     spi_readwrite(MCP_RESET);
     MCP2515_UNSELECT();
+#ifdef SPI_HAS_TRANSACTION
+    SPI_END();
+#endif
     delay(10);
 }
 
@@ -42,15 +73,21 @@ void MCP_CAN::mcp2515_reset(void)
 ** Function name:           mcp2515_readRegister
 ** Descriptions:            read register
 *********************************************************************************************************/
-INT8U MCP_CAN::mcp2515_readRegister(const INT8U address)                                                                     
+byte MCP_CAN::mcp2515_readRegister(const byte address)
 {
-    INT8U ret;
+    byte ret;
 
+#ifdef SPI_HAS_TRANSACTION
+    SPI_BEGIN();
+#endif
     MCP2515_SELECT();
     spi_readwrite(MCP_READ);
     spi_readwrite(address);
     ret = spi_read();
     MCP2515_UNSELECT();
+#ifdef SPI_HAS_TRANSACTION
+    SPI_END();
+#endif
 
     return ret;
 }
@@ -59,110 +96,140 @@ INT8U MCP_CAN::mcp2515_readRegister(const INT8U address)
 ** Function name:           mcp2515_readRegisterS
 ** Descriptions:            read registerS
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_readRegisterS(const INT8U address, INT8U values[], const INT8U n)
+void MCP_CAN::mcp2515_readRegisterS(const byte address, byte values[], const byte n)
 {
-	INT8U i;
-	MCP2515_SELECT();
-	spi_readwrite(MCP_READ);
-	spi_readwrite(address);
-	// mcp2515 has auto-increment of address-pointer
-	for (i=0; i<n && i<CAN_MAX_CHAR_IN_MESSAGE; i++) {
-		values[i] = spi_read();
-	}
-	MCP2515_UNSELECT();
+    byte i;
+#ifdef SPI_HAS_TRANSACTION
+    SPI_BEGIN();
+#endif
+    MCP2515_SELECT();
+    spi_readwrite(MCP_READ);
+    spi_readwrite(address);
+    // mcp2515 has auto-increment of address-pointer
+    for(i=0; i<n && i<CAN_MAX_CHAR_IN_MESSAGE; i++)
+    {
+        values[i] = spi_read();
+    }
+    MCP2515_UNSELECT();
+#ifdef SPI_HAS_TRANSACTION
+    SPI_END();
+#endif
 }
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_setRegister
 ** Descriptions:            set register
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_setRegister(const INT8U address, const INT8U value)
+void MCP_CAN::mcp2515_setRegister(const byte address, const byte value)
 {
+#ifdef SPI_HAS_TRANSACTION
+    SPI_BEGIN();
+#endif
     MCP2515_SELECT();
     spi_readwrite(MCP_WRITE);
     spi_readwrite(address);
     spi_readwrite(value);
     MCP2515_UNSELECT();
+#ifdef SPI_HAS_TRANSACTION
+    SPI_END();
+#endif
 }
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_setRegisterS
 ** Descriptions:            set registerS
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_setRegisterS(const INT8U address, const INT8U values[], const INT8U n)
+void MCP_CAN::mcp2515_setRegisterS(const byte address, const byte values[], const byte n)
 {
-    INT8U i;
+    byte i;
+#ifdef SPI_HAS_TRANSACTION
+    SPI_BEGIN();
+#endif
     MCP2515_SELECT();
     spi_readwrite(MCP_WRITE);
     spi_readwrite(address);
-       
-    for (i=0; i<n; i++) 
+
+    for(i=0; i<n; i++)
     {
         spi_readwrite(values[i]);
     }
     MCP2515_UNSELECT();
+#ifdef SPI_HAS_TRANSACTION
+    SPI_END();
+#endif
 }
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_modifyRegister
 ** Descriptions:            set bit of one register
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_modifyRegister(const INT8U address, const INT8U mask, const INT8U data)
+void MCP_CAN::mcp2515_modifyRegister(const byte address, const byte mask, const byte data)
 {
+#ifdef SPI_HAS_TRANSACTION
+    SPI_BEGIN();
+#endif
     MCP2515_SELECT();
     spi_readwrite(MCP_BITMOD);
     spi_readwrite(address);
     spi_readwrite(mask);
     spi_readwrite(data);
     MCP2515_UNSELECT();
+#ifdef SPI_HAS_TRANSACTION
+    SPI_END();
+#endif
 }
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_readStatus
 ** Descriptions:            read mcp2515's Status
 *********************************************************************************************************/
-INT8U MCP_CAN::mcp2515_readStatus(void)                             
+byte MCP_CAN::mcp2515_readStatus(void)
 {
-	INT8U i;
-	MCP2515_SELECT();
-	spi_readwrite(MCP_READ_STATUS);
-	i = spi_read();
-	MCP2515_UNSELECT();
-	
-	return i;
+    byte i;
+#ifdef SPI_HAS_TRANSACTION
+    SPI_BEGIN();
+#endif
+    MCP2515_SELECT();
+    spi_readwrite(MCP_READ_STATUS);
+    i = spi_read();
+    MCP2515_UNSELECT();
+#ifdef SPI_HAS_TRANSACTION
+    SPI_END();
+#endif
+
+    return i;
 }
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_setCANCTRL_Mode
 ** Descriptions:            set control mode
 *********************************************************************************************************/
-INT8U MCP_CAN::mcp2515_setCANCTRL_Mode(const INT8U newmode)
+byte MCP_CAN::mcp2515_setCANCTRL_Mode(const byte newmode)
 {
-    INT8U i;
+    byte i;
 
     mcp2515_modifyRegister(MCP_CANCTRL, MODE_MASK, newmode);
 
     i = mcp2515_readRegister(MCP_CANCTRL);
     i &= MODE_MASK;
 
-    if ( i == newmode ) 
+    if(i == newmode)
     {
         return MCP2515_OK;
     }
 
     return MCP2515_FAIL;
-
 }
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_configRate
 ** Descriptions:            set boadrate
 *********************************************************************************************************/
-INT8U MCP_CAN::mcp2515_configRate(const INT8U canSpeed)            
+byte MCP_CAN::mcp2515_configRate(const byte canSpeed)
 {
-    INT8U set, cfg1, cfg2, cfg3;
+    byte set, cfg1, cfg2, cfg3;
     set = 1;
-    switch (canSpeed) 
+    switch (canSpeed)
     {
         case (CAN_5KBPS):
         cfg1 = MCP_16MHz_5kBPS_CFG1;
@@ -181,7 +248,13 @@ INT8U MCP_CAN::mcp2515_configRate(const INT8U canSpeed)
         cfg2 = MCP_16MHz_20kBPS_CFG2;
         cfg3 = MCP_16MHz_20kBPS_CFG3;
         break;
-        
+
+        case (CAN_25KBPS):
+        cfg1 = MCP_16MHz_25kBPS_CFG1;
+        cfg2 = MCP_16MHz_25kBPS_CFG2;
+        cfg3 = MCP_16MHz_25kBPS_CFG3;
+        break;
+
         case (CAN_31K25BPS):
         cfg1 = MCP_16MHz_31k25BPS_CFG1;
         cfg2 = MCP_16MHz_31k25BPS_CFG2;
@@ -216,7 +289,7 @@ INT8U MCP_CAN::mcp2515_configRate(const INT8U canSpeed)
         cfg1 = MCP_16MHz_83k3BPS_CFG1;
         cfg2 = MCP_16MHz_83k3BPS_CFG2;
         cfg3 = MCP_16MHz_83k3BPS_CFG3;
-        break;  
+        break;
 
         case (CAN_95KBPS):
         cfg1 = MCP_16MHz_95kBPS_CFG1;
@@ -224,7 +297,7 @@ INT8U MCP_CAN::mcp2515_configRate(const INT8U canSpeed)
         cfg3 = MCP_16MHz_95kBPS_CFG3;
         break;
 
-        case (CAN_100KBPS):                                             /* 100KBPS                  */
+        case (CAN_100KBPS):
         cfg1 = MCP_16MHz_100kBPS_CFG1;
         cfg2 = MCP_16MHz_100kBPS_CFG2;
         cfg3 = MCP_16MHz_100kBPS_CFG3;
@@ -253,19 +326,25 @@ INT8U MCP_CAN::mcp2515_configRate(const INT8U canSpeed)
         cfg2 = MCP_16MHz_500kBPS_CFG2;
         cfg3 = MCP_16MHz_500kBPS_CFG3;
         break;
-        
+
+        case (CAN_666KBPS):
+        cfg1 = MCP_16MHz_666kBPS_CFG1;
+        cfg2 = MCP_16MHz_666kBPS_CFG2;
+        cfg3 = MCP_16MHz_666kBPS_CFG3;
+        break;
+
         case (CAN_1000KBPS):
         cfg1 = MCP_16MHz_1000kBPS_CFG1;
         cfg2 = MCP_16MHz_1000kBPS_CFG2;
         cfg3 = MCP_16MHz_1000kBPS_CFG3;
-        break;  
+        break;
 
         default:
         set = 0;
         break;
     }
 
-    if (set) {
+    if(set) {
         mcp2515_setRegister(MCP_CNF1, cfg1);
         mcp2515_setRegister(MCP_CNF2, cfg2);
         mcp2515_setRegister(MCP_CNF3, cfg3);
@@ -282,31 +361,13 @@ INT8U MCP_CAN::mcp2515_configRate(const INT8U canSpeed)
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_initCANBuffers(void)
 {
-    INT8U i, a1, a2, a3;
-    
-    INT8U std = 0;               
-    INT8U ext = 1;
-    INT32U ulMask = 0x00, ulFilt = 0x00;
+    byte i, a1, a2, a3;
 
-
-    //mcp2515_write_id(MCP_RXM0SIDH, ext, ulMask);			/*Set both masks to 0           */
-    //mcp2515_write_id(MCP_RXM1SIDH, ext, ulMask);			/*Mask register ignores ext bit */
-    
-                                                            /* Set all filters to 0         */
-    //mcp2515_write_id(MCP_RXF0SIDH, ext, ulFilt);			/* RXB0: extended               */
-    //mcp2515_write_id(MCP_RXF1SIDH, std, ulFilt);			/* RXB1: standard               */
-    //mcp2515_write_id(MCP_RXF2SIDH, ext, ulFilt);			/* RXB2: extended               */
-    //mcp2515_write_id(MCP_RXF3SIDH, std, ulFilt);			/* RXB3: standard               */
-    //mcp2515_write_id(MCP_RXF4SIDH, ext, ulFilt);
-    //mcp2515_write_id(MCP_RXF5SIDH, std, ulFilt);
-
-                                                                        /* Clear, deactivate the three  */
-                                                                        /* transmit buffers             */
-                                                                        /* TXBnCTRL -> TXBnD7           */
     a1 = MCP_TXB0CTRL;
     a2 = MCP_TXB1CTRL;
     a3 = MCP_TXB2CTRL;
-    for (i = 0; i < 14; i++) {                                          /* in-buffer loop               */
+    for(i = 0; i < 14; i++)                         // in-buffer loop
+    {
         mcp2515_setRegister(a1, 0);
         mcp2515_setRegister(a2, 0);
         mcp2515_setRegister(a3, 0);
@@ -322,91 +383,85 @@ void MCP_CAN::mcp2515_initCANBuffers(void)
 ** Function name:           mcp2515_init
 ** Descriptions:            init the device
 *********************************************************************************************************/
-INT8U MCP_CAN::mcp2515_init(const INT8U canSpeed)                       /* mcp2515init                  */
+byte MCP_CAN::mcp2515_init(const byte canSpeed)
 {
 
-  INT8U res;
+    byte res;
 
     mcp2515_reset();
 
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if(res > 0)
     {
-#if DEBUG_MODE
-      Serial.print("Enter setting mode fall\r\n"); 
+#if DEBUG_EN
+        Serial.print("Enter setting mode fall\r\n");
 #else
-      delay(10);
+        delay(10);
 #endif
-      return res;
+        return res;
     }
-#if DEBUG_MODE
+#if DEBUG_EN
     Serial.print("Enter setting mode success \r\n");
 #else
     delay(10);
 #endif
 
-                                                                        /* set boadrate                 */
+    // set boadrate
     if(mcp2515_configRate(canSpeed))
     {
-#if DEBUG_MODE
-      Serial.print("set rate fall!!\r\n");
+#if DEBUG_EN
+        Serial.print("set rate fall!!\r\n");
 #else
-      delay(10);
+        delay(10);
 #endif
-      return res;
+        return res;
     }
-#if DEBUG_MODE
+#if DEBUG_EN
     Serial.print("set rate success!!\r\n");
 #else
     delay(10);
 #endif
 
-    if ( res == MCP2515_OK ) {
+    if(res == MCP2515_OK) {
 
-                                                                        /* init canbuffers              */
+        // init canbuffers
         mcp2515_initCANBuffers();
 
-                                                                        /* interrupt mode               */
+        // interrupt mode
         mcp2515_setRegister(MCP_CANINTE, MCP_RX0IF | MCP_RX1IF);
 
 #if (DEBUG_RXANY==1)
-                                                                        /* enable both receive-buffers  */
-                                                                        /* to receive any message       */
-                                                                        /* and enable rollover          */
+        // enable both receive-buffers to receive any message and enable rollover
         mcp2515_modifyRegister(MCP_RXB0CTRL,
         MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK,
         MCP_RXB_RX_ANY | MCP_RXB_BUKT_MASK);
         mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK,
         MCP_RXB_RX_ANY);
 #else
-                                                                        /* enable both receive-buffers  */
-                                                                        /* to receive messages          */
-                                                                        /* with std. and ext. identifie */
-                                                                        /* rs                           */
-                                                                        /* and enable rollover          */
+        // enable both receive-buffers to receive messages with std. and ext. identifiers and enable rollover
         mcp2515_modifyRegister(MCP_RXB0CTRL,
         MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK,
-        MCP_RXB_RX_STDEXT | MCP_RXB_BUKT_MASK );
+        MCP_RXB_RX_STDEXT | MCP_RXB_BUKT_MASK);
         mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK,
         MCP_RXB_RX_STDEXT);
 #endif
-                                                                        /* enter normal mode            */
-        res = mcp2515_setCANCTRL_Mode(MODE_NORMAL);                                                                
+        // enter normal mode
+        res = mcp2515_setCANCTRL_Mode(MODE_NORMAL);
         if(res)
         {
-#if DEBUG_MODE        
-          Serial.print("Enter Normal Mode Fall!!\r\n");
+#if DEBUG_EN
+            Serial.print("Enter Normal Mode Fall!!\r\n");
 #else
             delay(10);
-#endif           
-          return res;
+#endif
+            return res;
         }
 
 
-#if DEBUG_MODE
-          Serial.print("Enter Normal Mode Success!!\r\n");
+#if DEBUG_EN
+        Serial.print("Enter Normal Mode Success!!\r\n");
 #else
-            delay(10);
+        delay(10);
 #endif
 
     }
@@ -418,51 +473,51 @@ INT8U MCP_CAN::mcp2515_init(const INT8U canSpeed)                       /* mcp25
 ** Function name:           mcp2515_write_id
 ** Descriptions:            write can id
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_write_id( const INT8U mcp_addr, const INT8U ext, const INT32U id )
+void MCP_CAN::mcp2515_write_id(const byte mcp_addr, const byte ext, const unsigned long id)
 {
     uint16_t canid;
-    INT8U tbufdata[4];
+    byte tbufdata[4];
 
     canid = (uint16_t)(id & 0x0FFFF);
 
-    if ( ext == 1) 
+    if(ext == 1)
     {
-        tbufdata[MCP_EID0] = (INT8U) (canid & 0xFF);
-        tbufdata[MCP_EID8] = (INT8U) (canid >> 8);
+        tbufdata[MCP_EID0] = (byte) (canid & 0xFF);
+        tbufdata[MCP_EID8] = (byte) (canid >> 8);
         canid = (uint16_t)(id >> 16);
-        tbufdata[MCP_SIDL] = (INT8U) (canid & 0x03);
-        tbufdata[MCP_SIDL] += (INT8U) ((canid & 0x1C) << 3);
+        tbufdata[MCP_SIDL] = (byte) (canid & 0x03);
+        tbufdata[MCP_SIDL] += (byte) ((canid & 0x1C) << 3);
         tbufdata[MCP_SIDL] |= MCP_TXB_EXIDE_M;
-        tbufdata[MCP_SIDH] = (INT8U) (canid >> 5 );
+        tbufdata[MCP_SIDH] = (byte) (canid >> 5);
     }
-    else 
+    else
     {
-        tbufdata[MCP_SIDH] = (INT8U) (canid >> 3 );
-        tbufdata[MCP_SIDL] = (INT8U) ((canid & 0x07 ) << 5);
+        tbufdata[MCP_SIDH] = (byte) (canid >> 3);
+        tbufdata[MCP_SIDL] = (byte) ((canid & 0x07) << 5);
         tbufdata[MCP_EID0] = 0;
         tbufdata[MCP_EID8] = 0;
     }
-    mcp2515_setRegisterS( mcp_addr, tbufdata, 4 );
+    mcp2515_setRegisterS(mcp_addr, tbufdata, 4);
 }
 
 /*********************************************************************************************************
 ** Function name:           mcp2515_read_id
 ** Descriptions:            read can id
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_read_id( const INT8U mcp_addr, INT8U* ext, INT32U* id )
+void MCP_CAN::mcp2515_read_id(const byte mcp_addr, byte* ext, unsigned long* id)
 {
-    INT8U tbufdata[4];
+    byte tbufdata[4];
 
-    *ext = 0;
-    *id = 0;
+    *ext    = 0;
+    *id     = 0;
 
-    mcp2515_readRegisterS( mcp_addr, tbufdata, 4 );
+    mcp2515_readRegisterS(mcp_addr, tbufdata, 4);
 
     *id = (tbufdata[MCP_SIDH]<<3) + (tbufdata[MCP_SIDL]>>5);
 
-    if ( (tbufdata[MCP_SIDL] & MCP_TXB_EXIDE_M) ==  MCP_TXB_EXIDE_M ) 
+    if((tbufdata[MCP_SIDL] & MCP_TXB_EXIDE_M) ==  MCP_TXB_EXIDE_M)
     {
-                                                                        /* extended id                  */
+        // extended id
         *id = (*id<<2) + (tbufdata[MCP_SIDL] & 0x03);
         *id = (*id<<8) + tbufdata[MCP_EID8];
         *id = (*id<<8) + tbufdata[MCP_EID0];
@@ -474,17 +529,19 @@ void MCP_CAN::mcp2515_read_id( const INT8U mcp_addr, INT8U* ext, INT32U* id )
 ** Function name:           mcp2515_write_canMsg
 ** Descriptions:            write msg
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_write_canMsg( const INT8U buffer_sidh_addr)
+void MCP_CAN::mcp2515_write_canMsg(const byte buffer_sidh_addr, int rtrBit)
 {
-    INT8U mcp_addr;
+    byte mcp_addr;
     mcp_addr = buffer_sidh_addr;
-    mcp2515_setRegisterS(mcp_addr+5, m_nDta, m_nDlc );                  /* write data bytes             */
-    if ( m_nRtr == 1)                                                   /* if RTR set bit in byte       */
+    mcp2515_setRegisterS(mcp_addr+5, dta, dta_len);                  // write data bytes
+    // Serial.print("RTR: ");
+    // Serial.println(rtrBit);
+    if(rtrBit == 1)                                                   // if RTR set bit in byte
     {
-        m_nDlc |= MCP_RTR_MASK;  
+        dta_len |= MCP_RTR_MASK;
     }
-    mcp2515_setRegister((mcp_addr+4), m_nDlc );                        /* write the RTR and DLC        */
-    mcp2515_write_id(mcp_addr, m_nExtFlg, m_nID );                     /* write CAN id                 */
+    mcp2515_setRegister((mcp_addr+4), dta_len);                        // write the RTR and DLC
+    mcp2515_write_id(mcp_addr, ext_flg, can_id);                     // write CAN id
 
 }
 
@@ -492,57 +549,50 @@ void MCP_CAN::mcp2515_write_canMsg( const INT8U buffer_sidh_addr)
 ** Function name:           mcp2515_read_canMsg
 ** Descriptions:            read message
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_read_canMsg( const INT8U buffer_sidh_addr)        /* read can msg                 */
+void MCP_CAN::mcp2515_read_canMsg(const byte buffer_sidh_addr)        // read can msg
 {
-    INT8U mcp_addr, ctrl;
+    byte mcp_addr, ctrl;
 
     mcp_addr = buffer_sidh_addr;
+    mcp2515_read_id(mcp_addr, &ext_flg,&can_id);
+    ctrl = mcp2515_readRegister(mcp_addr-1);
+    dta_len = mcp2515_readRegister(mcp_addr+4);
 
-    mcp2515_read_id( mcp_addr, &m_nExtFlg,&m_nID );
+    rtr = (ctrl & 0x08) ? 1 : 0;
 
-    ctrl = mcp2515_readRegister( mcp_addr-1 );
-    m_nDlc = mcp2515_readRegister( mcp_addr+4 );
-
-    if ((ctrl & 0x08)) {
-        m_nRtr = 1;
-    }
-    else {
-        m_nRtr = 0;
-    }
-
-    m_nDlc &= MCP_DLC_MASK;
-    mcp2515_readRegisterS( mcp_addr+5, &(m_nDta[0]), m_nDlc );
+    dta_len &= MCP_DLC_MASK;
+    mcp2515_readRegisterS(mcp_addr+5, &(dta[0]), dta_len);
 }
 
 /*********************************************************************************************************
-** Function name:           sendMsg
-** Descriptions:            send message
+** Function name:           mcp2515_start_transmit
+** Descriptions:            start transmit
 *********************************************************************************************************/
-void MCP_CAN::mcp2515_start_transmit(const INT8U mcp_addr)              /* start transmit               */
+void MCP_CAN::mcp2515_start_transmit(const byte mcp_addr)              // start transmit
 {
-    mcp2515_modifyRegister( mcp_addr-1 , MCP_TXB_TXREQ_M, MCP_TXB_TXREQ_M );
+    mcp2515_modifyRegister(mcp_addr-1 , MCP_TXB_TXREQ_M, MCP_TXB_TXREQ_M);
 }
 
 /*********************************************************************************************************
-** Function name:           sendMsg
-** Descriptions:            send message
+** Function name:           mcp2515_getNextFreeTXBuf
+** Descriptions:            get Next free txbuf
 *********************************************************************************************************/
-INT8U MCP_CAN::mcp2515_getNextFreeTXBuf(INT8U *txbuf_n)                 /* get Next free txbuf          */
+byte MCP_CAN::mcp2515_getNextFreeTXBuf(byte *txbuf_n)                 // get Next free txbuf
 {
-    INT8U res, i, ctrlval;
-    INT8U ctrlregs[MCP_N_TXBUFFERS] = { MCP_TXB0CTRL, MCP_TXB1CTRL, MCP_TXB2CTRL };
+    byte res, i, ctrlval;
+    byte ctrlregs[MCP_N_TXBUFFERS] = { MCP_TXB0CTRL, MCP_TXB1CTRL, MCP_TXB2CTRL };
 
     res = MCP_ALLTXBUSY;
     *txbuf_n = 0x00;
 
-                                                                        /* check all 3 TX-Buffers       */
-    for (i=0; i<MCP_N_TXBUFFERS; i++) {
-        ctrlval = mcp2515_readRegister( ctrlregs[i] );
-        if ( (ctrlval & MCP_TXB_TXREQ_M) == 0 ) {
-            *txbuf_n = ctrlregs[i]+1;                                   /* return SIDH-address of Buffe */
-                                                                        /* r                            */
+    // check all 3 TX-Buffers
+    for(i=0; i<MCP_N_TXBUFFERS; i++)
+    {
+        ctrlval = mcp2515_readRegister(ctrlregs[i]);
+        if((ctrlval & MCP_TXB_TXREQ_M) == 0) {
+            *txbuf_n = ctrlregs[i]+1;                                   // return SIDH-address of Buffer
             res = MCP2515_OK;
-            return res;                                                 /* ! function exit              */
+            return res;                                                 // ! function exit
         }
     }
     return res;
@@ -552,50 +602,47 @@ INT8U MCP_CAN::mcp2515_getNextFreeTXBuf(INT8U *txbuf_n)                 /* get N
 ** Function name:           set CS
 ** Descriptions:            init CS pin and set UNSELECTED
 *********************************************************************************************************/
-MCP_CAN::MCP_CAN(INT8U _CS)
+MCP_CAN::MCP_CAN(byte _CS)
 {
     SPICS = _CS;
-    pinMode(SPICS, OUTPUT);
-    MCP2515_UNSELECT();
 }
 
 /*********************************************************************************************************
 ** Function name:           init
 ** Descriptions:            init can and set speed
 *********************************************************************************************************/
-INT8U MCP_CAN::begin(INT8U speedset)
+byte MCP_CAN::begin(byte speedset)
 {
-    INT8U res;
-
+    pinMode(SPICS, OUTPUT);
+    MCP2515_UNSELECT();
     SPI.begin();
-    res = mcp2515_init(speedset);
-    if (res == MCP2515_OK) return CAN_OK;
-    else return CAN_FAILINIT;
+    byte res = mcp2515_init(speedset);
+    return ((res == MCP2515_OK) ? CAN_OK : CAN_FAILINIT);
 }
 
 /*********************************************************************************************************
 ** Function name:           init_Mask
 ** Descriptions:            init canid Masks
 *********************************************************************************************************/
-INT8U MCP_CAN::init_Mask(INT8U num, INT8U ext, INT32U ulData)
+byte MCP_CAN::init_Mask(byte num, byte ext, unsigned long ulData)
 {
-    INT8U res = MCP2515_OK;
-#if DEBUG_MODE
+    byte res = MCP2515_OK;
+#if DEBUG_EN
     Serial.print("Begin to set Mask!!\r\n");
 #else
     delay(10);
 #endif
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if(res > 0){
-#if DEBUG_MODE
-    Serial.print("Enter setting mode fall\r\n"); 
+#if DEBUG_EN
+        Serial.print("Enter setting mode fall\r\n");
 #else
-    delay(10);
+        delay(10);
 #endif
-    return res;
+        return res;
     }
-    
-    if (num == 0){
+
+    if(num == 0){
         mcp2515_write_id(MCP_RXM0SIDH, ext, ulData);
 
     }
@@ -603,17 +650,17 @@ INT8U MCP_CAN::init_Mask(INT8U num, INT8U ext, INT32U ulData)
         mcp2515_write_id(MCP_RXM1SIDH, ext, ulData);
     }
     else res =  MCP2515_FAIL;
-    
+
     res = mcp2515_setCANCTRL_Mode(MODE_NORMAL);
     if(res > 0){
-#if DEBUG_MODE
-    Serial.print("Enter normal mode fall\r\n"); 
+#if DEBUG_EN
+        Serial.print("Enter normal mode fall\r\n");
 #else
-    delay(10);
+        delay(10);
 #endif
-    return res;
-  }
-#if DEBUG_MODE
+        return res;
+    }
+#if DEBUG_EN
     Serial.print("set Mask success!!\r\n");
 #else
     delay(10);
@@ -625,10 +672,10 @@ INT8U MCP_CAN::init_Mask(INT8U num, INT8U ext, INT32U ulData)
 ** Function name:           init_Filt
 ** Descriptions:            init canid filters
 *********************************************************************************************************/
-INT8U MCP_CAN::init_Filt(INT8U num, INT8U ext, INT32U ulData)
+byte MCP_CAN::init_Filt(byte num, byte ext, unsigned long ulData)
 {
-    INT8U res = MCP2515_OK;
-#if DEBUG_MODE
+    byte res = MCP2515_OK;
+#if DEBUG_EN
     Serial.print("Begin to set Filter!!\r\n");
 #else
     delay(10);
@@ -636,15 +683,15 @@ INT8U MCP_CAN::init_Filt(INT8U num, INT8U ext, INT32U ulData)
     res = mcp2515_setCANCTRL_Mode(MODE_CONFIG);
     if(res > 0)
     {
-#if DEBUG_MODE
-      Serial.print("Enter setting mode fall\r\n"); 
+#if DEBUG_EN
+        Serial.print("Enter setting mode fall\r\n");
 #else
-      delay(10);
+        delay(10);
 #endif
-      return res;
+        return res;
     }
-    
-    switch( num )
+
+    switch(num)
     {
         case 0:
         mcp2515_write_id(MCP_RXF0SIDH, ext, ulData);
@@ -673,23 +720,23 @@ INT8U MCP_CAN::init_Filt(INT8U num, INT8U ext, INT32U ulData)
         default:
         res = MCP2515_FAIL;
     }
-    
+
     res = mcp2515_setCANCTRL_Mode(MODE_NORMAL);
     if(res > 0)
     {
-#if DEBUG_MODE
-      Serial.print("Enter normal mode fall\r\nSet filter fail!!\r\n"); 
+#if DEBUG_EN
+        Serial.print("Enter normal mode fall\r\nSet filter fail!!\r\n");
 #else
-      delay(10);
+        delay(10);
 #endif
-      return res;
+        return res;
     }
-#if DEBUG_MODE
+#if DEBUG_EN
     Serial.print("set Filter success!!\r\n");
 #else
     delay(10);
 #endif
-    
+
     return res;
 }
 
@@ -697,16 +744,15 @@ INT8U MCP_CAN::init_Filt(INT8U num, INT8U ext, INT32U ulData)
 ** Function name:           setMsg
 ** Descriptions:            set can message, such as dlc, id, dta[] and so on
 *********************************************************************************************************/
-INT8U MCP_CAN::setMsg(INT32U id, INT8U ext, INT8U len, INT8U rtr, INT8U *pData)
+byte MCP_CAN::setMsg(unsigned long id, byte ext, byte len, byte rtr, byte *pData)
 {
-    int i = 0;
-    m_nExtFlg = ext;
-    m_nID     = id;
-    m_nDlc    = len;
-    m_nRtr    = rtr;
-    for(i = 0; i<MAX_CHAR_IN_MESSAGE; i++)
+    ext_flg     = ext;
+    can_id      = id;
+    dta_len     = min(len, MAX_CHAR_IN_MESSAGE);
+    rtr         = rtr;
+    for(int i = 0; i<dta_len; i++)
     {
-        m_nDta[i] = *(pData+i);
+        dta[i] = *(pData+i);
     }
     return MCP2515_OK;
 }
@@ -716,32 +762,27 @@ INT8U MCP_CAN::setMsg(INT32U id, INT8U ext, INT8U len, INT8U rtr, INT8U *pData)
 ** Function name:           setMsg
 ** Descriptions:            set can message, such as dlc, id, dta[] and so on
 *********************************************************************************************************/
-INT8U MCP_CAN::setMsg(INT32U id, INT8U ext, INT8U len, INT8U *pData)
+byte MCP_CAN::setMsg(unsigned long id, byte ext, byte len, byte *pData)
 {
-    int i = 0;
-    m_nExtFlg = ext;
-    m_nID     = id;
-    m_nDlc    = len;
-    for(i = 0; i<MAX_CHAR_IN_MESSAGE; i++)
-    {
-        m_nDta[i] = *(pData+i);
-    }
-    return MCP2515_OK;
+    return setMsg(id, ext, len, 0, pData);
 }
 
 /*********************************************************************************************************
 ** Function name:           clearMsg
 ** Descriptions:            set all message to zero
 *********************************************************************************************************/
-INT8U MCP_CAN::clearMsg()
+byte MCP_CAN::clearMsg()
 {
-    m_nID       = 0;
-    m_nDlc      = 0;
-    m_nExtFlg   = 0;
-    m_nRtr      = 0;
-    m_nfilhit   = 0;
-    for(int i = 0; i<m_nDlc; i++ )
-      m_nDta[i] = 0x00;
+    can_id      = 0;
+    dta_len     = 0;
+    ext_flg     = 0;
+    rtr         = 0;
+    filhit      = 0;
+
+    for(int i = 0; i<dta_len; i++)
+    {
+        dta[i] = 0x00;
+    }
 
     return MCP2515_OK;
 }
@@ -750,30 +791,32 @@ INT8U MCP_CAN::clearMsg()
 ** Function name:           sendMsg
 ** Descriptions:            send message
 *********************************************************************************************************/
-INT8U MCP_CAN::sendMsg()
+byte MCP_CAN::sendMsg(int rtrBit)
 {
-    INT8U res, res1, txbuf_n;
+    byte res, res1, txbuf_n;
     uint16_t uiTimeOut = 0;
 
     do {
-        res = mcp2515_getNextFreeTXBuf(&txbuf_n);                       /* info = addr.                 */
+        res = mcp2515_getNextFreeTXBuf(&txbuf_n);                       // info = addr.
         uiTimeOut++;
     } while (res == MCP_ALLTXBUSY && (uiTimeOut < TIMEOUTVALUE));
 
-    if(uiTimeOut == TIMEOUTVALUE) 
-    {   
-        return CAN_GETTXBFTIMEOUT;                                      /* get tx buff time out         */
-    }
-    uiTimeOut = 0;
-    mcp2515_write_canMsg( txbuf_n);
-    mcp2515_start_transmit( txbuf_n );
-    do
+    if(uiTimeOut == TIMEOUTVALUE)
     {
-        uiTimeOut++;        
-        res1= mcp2515_readRegister(txbuf_n-1 /* the ctrl reg is located at txbuf_n-1 */);  /* read send buff ctrl reg 	*/
-        res1 = res1 & 0x08;                               		
-    }while(res1 && (uiTimeOut < TIMEOUTVALUE));   
-    if(uiTimeOut == TIMEOUTVALUE)                                       /* send msg timeout             */	
+        return CAN_GETTXBFTIMEOUT;                                      // get tx buff time out
+    }
+
+    uiTimeOut = 0;
+    mcp2515_write_canMsg(txbuf_n, rtrBit);
+    mcp2515_start_transmit(txbuf_n);
+
+    do {
+        uiTimeOut++;
+        res1= mcp2515_readRegister(txbuf_n-1 /* the ctrl reg is located at txbuf_n-1 */);  // read send buff ctrl reg
+        res1 = res1 & 0x08;
+    }while(res1 && (uiTimeOut < TIMEOUTVALUE));
+
+    if(uiTimeOut == TIMEOUTVALUE)                                       // send msg timeout
     {
         return CAN_SENDMSGTIMEOUT;
     }
@@ -785,20 +828,22 @@ INT8U MCP_CAN::sendMsg()
 ** Function name:           sendMsgBuf
 ** Descriptions:            send buf
 *********************************************************************************************************/
-INT8U MCP_CAN::sendMsgBuf(INT32U id, INT8U ext, INT8U rtr, INT8U len, INT8U *buf)
+byte MCP_CAN::sendMsgBuf(unsigned long id, byte ext, byte rtr, byte len, byte *buf)
 {
     setMsg(id, ext, len, rtr, buf);
-    return sendMsg();
+    // Serial.print("RTR00: ");
+    // Serial.println(rtr, HEX);
+    return sendMsg(rtr);
 }
 
 /*********************************************************************************************************
 ** Function name:           sendMsgBuf
 ** Descriptions:            send buf
 *********************************************************************************************************/
-INT8U MCP_CAN::sendMsgBuf(INT32U id, INT8U ext, INT8U len, INT8U *buf)
+byte MCP_CAN::sendMsgBuf(unsigned long id, byte ext, byte len, byte *buf)
 {
     setMsg(id, ext, len, buf);
-    return sendMsg();
+    return sendMsg(0);
 }
 
 
@@ -806,25 +851,25 @@ INT8U MCP_CAN::sendMsgBuf(INT32U id, INT8U ext, INT8U len, INT8U *buf)
 ** Function name:           readMsg
 ** Descriptions:            read message
 *********************************************************************************************************/
-INT8U MCP_CAN::readMsg()
+byte MCP_CAN::readMsg()
 {
-    INT8U stat, res;
+    byte stat, res;
 
     stat = mcp2515_readStatus();
 
-    if ( stat & MCP_STAT_RX0IF )                                        /* Msg in Buffer 0              */
+    if(stat & MCP_STAT_RX0IF)                                        // Msg in Buffer 0
     {
-        mcp2515_read_canMsg( MCP_RXBUF_0);
+        mcp2515_read_canMsg(MCP_RXBUF_0);
         mcp2515_modifyRegister(MCP_CANINTF, MCP_RX0IF, 0);
         res = CAN_OK;
     }
-    else if ( stat & MCP_STAT_RX1IF )                                   /* Msg in Buffer 1              */
+    else if(stat & MCP_STAT_RX1IF)                                   // Msg in Buffer 1
     {
-        mcp2515_read_canMsg( MCP_RXBUF_1);
+        mcp2515_read_canMsg(MCP_RXBUF_1);
         mcp2515_modifyRegister(MCP_CANINTF, MCP_RX1IF, 0);
         res = CAN_OK;
     }
-    else 
+    else
     {
         res = CAN_NOMSG;
     }
@@ -835,19 +880,20 @@ INT8U MCP_CAN::readMsg()
 ** Function name:           readMsgBuf
 ** Descriptions:            read message buf
 *********************************************************************************************************/
-INT8U MCP_CAN::readMsgBuf(INT8U *len, INT8U buf[])
+byte MCP_CAN::readMsgBuf(byte *len, byte buf[])
 {
-    INT8U  rc;
-    
+    byte  rc;
+
     rc = readMsg();
-    
-    if (rc == CAN_OK) {
-       *len = m_nDlc;
-       for(int i = 0; i<m_nDlc; i++) {
-         buf[i] = m_nDta[i];
-       } 
+
+    if(rc == CAN_OK) {
+        *len = dta_len;
+        for(int i = 0; i<dta_len; i++)
+        {
+            buf[i] = dta[i];
+        }
     } else {
-       	 *len = 0;
+        *len = 0;
     }
     return rc;
 }
@@ -856,19 +902,20 @@ INT8U MCP_CAN::readMsgBuf(INT8U *len, INT8U buf[])
 ** Function name:           readMsgBufID
 ** Descriptions:            read message buf and can bus source ID
 *********************************************************************************************************/
-INT8U MCP_CAN::readMsgBufID(INT32U *ID, INT8U *len, INT8U buf[])
+byte MCP_CAN::readMsgBufID(unsigned long *ID, byte *len, byte buf[])
 {
-    INT8U rc;
+    byte rc;
     rc = readMsg();
 
-    if (rc == CAN_OK) {
-       *len = m_nDlc;
-       *ID  = m_nID;
-       for(int i = 0; i<m_nDlc && i < MAX_CHAR_IN_MESSAGE; i++) {
-          buf[i] = m_nDta[i];
-       }
+    if(rc == CAN_OK) {
+        *len = dta_len;
+        *ID  = can_id;
+        for(int i = 0; i<dta_len && i < MAX_CHAR_IN_MESSAGE; i++)
+        {
+            buf[i] = dta[i];
+        }
     } else {
-       *len = 0;
+        *len = 0;
     }
     return rc;
 }
@@ -877,64 +924,49 @@ INT8U MCP_CAN::readMsgBufID(INT32U *ID, INT8U *len, INT8U buf[])
 ** Function name:           checkReceive
 ** Descriptions:            check if got something
 *********************************************************************************************************/
-INT8U MCP_CAN::checkReceive(void)
+byte MCP_CAN::checkReceive(void)
 {
-    INT8U res;
-    res = mcp2515_readStatus();                                         /* RXnIF in Bit 1 and 0         */
-    if ( res & MCP_STAT_RXIF_MASK ) 
-    {
-        return CAN_MSGAVAIL;
-    }
-    else 
-    {
-        return CAN_NOMSG;
-    }
+    byte res;
+    res = mcp2515_readStatus();                                         // RXnIF in Bit 1 and 0
+    return ((res & MCP_STAT_RXIF_MASK)?CAN_MSGAVAIL:CAN_NOMSG);
 }
 
 /*********************************************************************************************************
 ** Function name:           checkError
 ** Descriptions:            if something error
 *********************************************************************************************************/
-INT8U MCP_CAN::checkError(void)
+byte MCP_CAN::checkError(void)
 {
-    INT8U eflg = mcp2515_readRegister(MCP_EFLG);
-
-    if ( eflg & MCP_EFLG_ERRORMASK ) 
-    {
-        return CAN_CTRLERROR;
-    }
-    else 
-    {
-        return CAN_OK;
-    }
+    byte eflg = mcp2515_readRegister(MCP_EFLG);
+    return ((eflg & MCP_EFLG_ERRORMASK) ? CAN_CTRLERROR : CAN_OK);
 }
 
 /*********************************************************************************************************
 ** Function name:           getCanId
-** Descriptions:            when receive something ,u can get the can id!!
+** Descriptions:            when receive something you can get the can id!!
 *********************************************************************************************************/
-INT32U MCP_CAN::getCanId(void)
+unsigned long MCP_CAN::getCanId(void)
 {
-    return m_nID;
-} 
+    return can_id;
+}
 
 /*********************************************************************************************************
 ** Function name:           isRemoteRequest
-** Descriptions:            when receive something ,u can check if it was a request
+** Descriptions:            when receive something you can check if it was a request
 *********************************************************************************************************/
-INT8U MCP_CAN::isRemoteRequest(void)
+byte MCP_CAN::isRemoteRequest(void)
 {
-    return m_nRtr;
-} 
+    return rtr;
+}
 
 /*********************************************************************************************************
 ** Function name:           isExtendedFrame
 ** Descriptions:            did we just receive standard 11bit frame or extended 29bit? 0 = std, 1 = ext
 *********************************************************************************************************/
-INT8U MCP_CAN::isExtendedFrame(void)
+byte MCP_CAN::isExtendedFrame(void)
 {
-    return m_nExtFlg;
-} 
+    return ext_flg;
+}
 
 /*********************************************************************************************************
   END FILE
