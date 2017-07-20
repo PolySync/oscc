@@ -29,7 +29,7 @@
 #include <signal.h>
 #include <time.h>
 
-#include "macros.h"
+#include "oscc.h"
 #include "commander.h"
 #include "can_protocols/steering_can_protocol.h"
 
@@ -73,7 +73,7 @@
  * @brief Error thrown from SIGINT
  *
  */
-static int error_thrown = NOERR;
+static int error_thrown = OSCC_OK;
 
 
 // *****************************************************
@@ -149,7 +149,7 @@ void signal_handler( int signal_number )
 {
     if ( signal_number == SIGINT )
     {
-        error_thrown = ERROR;
+        error_thrown = OSCC_ERROR;
     }
 }
 
@@ -161,7 +161,7 @@ void signal_handler( int signal_number )
 
 int main( int argc, char **argv )
 {
-    int return_code = NOERR;
+    oscc_error_t ret = OSCC_OK;
     unsigned long long update_timestamp = get_timestamp();
     unsigned long long elapsed_time = 0;
 
@@ -177,14 +177,14 @@ int main( int argc, char **argv )
 
     signal( SIGINT, signal_handler );
 
-    return_code = commander_init( channel );
+    ret = commander_init( channel );
 
-    if ( return_code == NOERR )
+    if ( ret == OSCC_OK )
     {
-        while ( return_code == NOERR && error_thrown == NOERR )
+        while ( ret == OSCC_OK && error_thrown == OSCC_OK )
         {
             // checks for overrides
-            // return_code = commander_high_frequency_update( );
+            // ret = commander_high_frequency_update( );
 
             elapsed_time = get_elapsed_time( update_timestamp );
 
@@ -192,7 +192,7 @@ int main( int argc, char **argv )
             {
                 update_timestamp = get_timestamp();
                 // uses buttons
-                return_code = commander_low_frequency_update( );
+                ret = commander_low_frequency_update( );
             }
 
             // Delay 1 ms to avoid loading the CPU and to time calls

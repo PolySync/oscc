@@ -14,9 +14,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "macros.h"
 #include "joystick.h"
 #include "oscc.h"
+
+
+/**
+ * @brief Math macro: constrain(amount, low, high).
+ *
+ */
+#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 
 // *****************************************************
@@ -198,7 +204,7 @@ static struct commander_setpoint_s steering_setpoint =
 //              selected and normalize that value along the scale that is
 //              provided
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  setpoint - the setpoint structure containing the range limits
 //                         the joystick axis, and the storage location for the
@@ -207,7 +213,7 @@ static struct commander_setpoint_s steering_setpoint =
 // *****************************************************
 static int get_setpoint( struct commander_setpoint_s* setpoint )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
 
     if ( setpoint != NULL )
     {
@@ -215,7 +221,7 @@ static int get_setpoint( struct commander_setpoint_s* setpoint )
 
         return_code = joystick_get_axis( setpoint->axis, &axis_position );
 
-        if ( return_code == NOERR )
+        if ( return_code == OSCC_OK )
         {
             if ( setpoint->axis == JOYSTICK_AXIS_STEER )
             {
@@ -244,31 +250,31 @@ static int get_setpoint( struct commander_setpoint_s* setpoint )
 // Purpose:     Examine the positions of the brake and throttle to determine
 //              if they are in a safe position to enable control
 //
-// Returns:     int - ERROR, NOERR or UNAVAILABLE
+// Returns:     int - OSCC_ERROR, OSCC_OK or OSCC_WARNING
 //
 // Parameters:  void
 //
 // *****************************************************
 static int is_joystick_safe( )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
 
     return_code = joystick_update( );
 
-    if ( return_code == NOERR )
+    if ( return_code == OSCC_OK )
     {
         return_code = get_setpoint( &brake_setpoint );
 
-        if ( return_code == NOERR )
+        if ( return_code == OSCC_OK )
         {
             return_code = get_setpoint( &throttle_setpoint );
 
-            if ( return_code == NOERR )
+            if ( return_code == OSCC_OK )
             {
                 if ( ( throttle_setpoint.setpoint > 0.0 ) ||
                      ( brake_setpoint.setpoint > 0.0 ) )
                 {
-                    return_code = UNAVAILABLE;
+                    return_code = OSCC_WARNING;
                 }
             }
         }
@@ -306,14 +312,14 @@ static double calc_exponential_average( double average,
 // Purpose:     Helper function to put the system in a safe state before
 //              disabling the OSCC module vehicle controls
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  void
 //
 // *****************************************************
 static int commander_disable_controls( )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
 
     printf( "Disable controls\n" );
 
@@ -331,14 +337,14 @@ static int commander_disable_controls( )
 // Purpose:     Helper function to put the system in a safe state before
 //              enabling the OSCC module vehicle controls
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  void
 //
 // *****************************************************
 static int commander_enable_controls( )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
 
     printf( "Enable controls\n" );
 
@@ -356,7 +362,7 @@ static int commander_enable_controls( )
 // Purpose:     Wrapper function to get the status of a given button on the
 //              joystick
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  button - which button on the joystick to check
 //              state - pointer to an unsigned int to store the state of the
@@ -365,7 +371,7 @@ static int commander_enable_controls( )
 // *****************************************************
 static int get_button( unsigned long button, unsigned int* const state )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
 
     if ( state != NULL )
     {
@@ -373,7 +379,7 @@ static int get_button( unsigned long button, unsigned int* const state )
 
         return_code = joystick_get_button( button, &button_state );
 
-        if ( ( return_code == NOERR ) &&
+        if ( ( return_code == OSCC_OK ) &&
              ( button_state == JOYSTICK_BUTTON_STATE_PRESSED ) )
         {
             ( *state ) = 1;
@@ -393,14 +399,14 @@ static int get_button( unsigned long button, unsigned int* const state )
 // Purpose:     Determine the setpoint being commanded by the joystick and
 //              send that value to the OSCC Module
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  void
 //
 // *****************************************************
 static int command_brakes( )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
     unsigned int constrained_value = 0;
     static double brake_average = 0.0;
 
@@ -408,7 +414,7 @@ static int command_brakes( )
     {
         return_code = get_setpoint( &brake_setpoint );
 
-        if ( return_code == NOERR )
+        if ( return_code == OSCC_OK )
         {
             brake_average = calc_exponential_average( brake_average,
                                                       brake_setpoint.setpoint,
@@ -439,21 +445,21 @@ static int command_brakes( )
 // Purpose:     Determine the setpoint being commanded by the joystick and
 //              send that value to the OSCC Module
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  void
 //
 // *****************************************************
 static int command_throttle( )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
 
     if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = get_setpoint( &throttle_setpoint );
 
         // don't allow throttle if brakes are applied
-        if ( return_code == NOERR )
+        if ( return_code == OSCC_OK )
         {
             return_code = get_setpoint( &brake_setpoint );
 
@@ -488,14 +494,14 @@ static int command_throttle( )
 // Purpose:     Determine the setpoint being commanded by the joystick and
 //              send that value to the OSCC Module
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  void
 //
 // *****************************************************
 static int command_steering( )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
     static double steering_average = 0.0;
     static double last_steering_rate = 0.0;
 
@@ -556,7 +562,7 @@ void obd_callback(long id, unsigned char * data){
 //
 // Purpose:     Externally visible function to initialize the commander object
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  channel - for now, the CAN channel to use when interacting
 //              with the OSCC modules
@@ -564,7 +570,7 @@ void obd_callback(long id, unsigned char * data){
 // *****************************************************
 int commander_init( int channel )
 {
-    int return_code = ERROR;
+    int return_code = OSCC_ERROR;
 
     if ( commander_enabled == COMMANDER_DISABLED )
     {
@@ -572,7 +578,7 @@ int commander_init( int channel )
 
         return_code = oscc_open( channel );
 
-        if ( return_code != ERROR )
+        if ( return_code != OSCC_ERROR )
         {
             oscc_subscribe_to_obd_messages(obd_callback);
             oscc_subscribe_to_steering_reports(steering_callback);
@@ -582,15 +588,15 @@ int commander_init( int channel )
 
             printf( "waiting for joystick controls to zero\n" );
 
-            while ( return_code != ERROR )
+            while ( return_code != OSCC_ERROR )
             {
                 return_code = is_joystick_safe( );
 
-                if ( return_code == UNAVAILABLE )
+                if ( return_code == OSCC_WARNING )
                 {
                     (void) usleep( JOYSTICK_DELAY_INTERVAL );
                 }
-                else if ( return_code == ERROR )
+                else if ( return_code == OSCC_ERROR )
                 {
                     printf( "Failed to wait for joystick to zero the control values\n" );
                 }
@@ -610,7 +616,7 @@ int commander_init( int channel )
 // Purpose:     Shuts down all of the other modules that the commander uses
 //              and closes the commander object
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  channel - the CAN channel used to communicate with OSCC
 //              modules
@@ -641,7 +647,7 @@ void commander_close( int channel )
 //              converts the joystick input into values that reflect what the
 //              vehicle should do and sends them to the OSCC interface
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  void
 //
@@ -652,12 +658,12 @@ int commander_low_frequency_update( )
 
     int return_code = joystick_update( );
 
-    if ( return_code == NOERR )
+    if ( return_code == OSCC_OK )
     {
         return_code = get_button( JOYSTICK_BUTTON_DISABLE_CONTROLS,
                                   &button_pressed );
 
-        if ( return_code == NOERR )
+        if ( return_code == OSCC_OK )
         {
             if ( button_pressed != 0 )
             {
@@ -669,7 +675,7 @@ int commander_low_frequency_update( )
                 button_pressed = 0;
                 return_code = get_button( JOYSTICK_BUTTON_ENABLE_CONTROLS,
                                           &button_pressed );
-                if ( return_code == NOERR )
+                if ( return_code == OSCC_OK )
                 {
                     if ( button_pressed != 0 )
                     {
@@ -679,12 +685,12 @@ int commander_low_frequency_update( )
                     {
                         return_code = command_brakes( );
 
-                        if ( return_code == NOERR )
+                        if ( return_code == OSCC_OK )
                         {
                             return_code = command_throttle( );
                         }
 
-                        if ( return_code == NOERR )
+                        if ( return_code == OSCC_OK )
                         {
                             return_code = command_steering( );
                         }
@@ -704,22 +710,22 @@ int commander_low_frequency_update( )
 //              Run the high-frequency commander tasks
 //              Checks the vehicle for override information
 //
-// Returns:     int - ERROR or NOERR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  void
 //
 // *****************************************************
 int commander_high_frequency_update( )
 {
-    int return_code = NOERR;
+    int return_code = OSCC_OK;
 
     int oscc_override = 0;
 
-    oscc_status_s status;
+    // oscc_status_s status;
 
-    memset( &status,
-            0,
-            sizeof(status) );
+    // memset( &status,
+    //         0,
+    //         sizeof(status) );
 
     // if ( status.operator_override == true )
     // {

@@ -15,7 +15,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_joystick.h>
 
-#include "macros.h"
+#include "oscc.h"
 #include "joystick.h"
 
 
@@ -103,28 +103,28 @@ static joystick_device_data_s* joystick = NULL;
 //
 // Purpose:     Initialize the joystick subsystem
 //
-// Returns:     int - ERROR or NOERROR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  None
 //
 // *****************************************************
 static int joystick_init_subsystem( )
 {
-    int return_code = ERROR;
+    oscc_error_t ret = OSCC_ERROR;
 
     if ( joystick == NULL )
     {
         int init_result = SDL_Init( SDL_INIT_JOYSTICK );
 
-        return_code = NOERR;
+        ret = OSCC_OK;
 
         if ( init_result < 0 )
         {
-            printf( "ERROR: SDL_Init - %s\n", SDL_GetError() );
-            return_code = ERROR;
+            printf( "OSCC_ERROR: SDL_Init - %s\n", SDL_GetError() );
+            ret = OSCC_ERROR;
         }
     }
-    return ( return_code );
+    return ret;
 }
 
 
@@ -133,7 +133,7 @@ static int joystick_init_subsystem( )
 //
 // Purpose:     Return the Globally Unique ID (GUID) for the requested joystick
 //
-// Returns:     int - ERROR or NOERROR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  device_index - index to the requested device
 //              guid - pointer to the guid to fill out
@@ -141,11 +141,11 @@ static int joystick_init_subsystem( )
 // *****************************************************
 static int joystick_get_guid_at_index( unsigned long device_index )
 {
-    int return_code = ERROR;
+    oscc_error_t ret = OSCC_ERROR;
 
     if ( joystick != NULL )
     {
-        return_code = NOERR;
+        ret = OSCC_OK;
 
         const SDL_JoystickGUID m_guid =
             SDL_JoystickGetDeviceGUID( (int) device_index );
@@ -159,7 +159,7 @@ static int joystick_get_guid_at_index( unsigned long device_index )
                                    joystick_guid.ascii_string,
                                    sizeof( joystick_guid.ascii_string ) );
     }
-    return ( return_code );
+    return ret;
 }
 
 
@@ -168,14 +168,14 @@ static int joystick_get_guid_at_index( unsigned long device_index )
 //
 // Purpose:     Return the number of joystick devices resident on the system
 //
-// Returns:     int - the number of devices or ERROR
+// Returns:     int - the number of devices or OSCC_ERROR
 //
 // Parameters:  None
 //
 // *****************************************************
 static int joystick_get_num_devices( )
 {
-    int num_joysticks = ERROR;
+    int num_joysticks = OSCC_ERROR;
 
     if ( joystick != NULL )
     {
@@ -183,8 +183,8 @@ static int joystick_get_num_devices( )
 
         if ( num_joysticks < 0 )
         {
-            printf( "ERROR: SDL_NumJoysticks - %s\n", SDL_GetError() );
-            num_joysticks = ERROR;
+            printf( "OSCC_ERROR: SDL_NumJoysticks - %s\n", SDL_GetError() );
+            num_joysticks = OSCC_ERROR;
         }
     }
     return ( num_joysticks );
@@ -247,18 +247,18 @@ static double joystick_curve_fit( double input_min,
 //
 // Purpose:     Initialize the joystick subsystem
 //
-// Returns:     int - ERROR or NOERROR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  None
 //
 // *****************************************************
 int joystick_init( )
 {
-    int return_code = NOERR;
+    oscc_error_t ret = OSCC_OK;
 
-    return_code = joystick_init_subsystem();
+    ret = joystick_init_subsystem();
 
-    if ( return_code == ERROR )
+    if ( ret == OSCC_ERROR )
     {
         printf("init subsystem error\n");
     }
@@ -273,16 +273,16 @@ int joystick_init( )
         {
             unsigned long device_index = 0;
 
-            return_code = joystick_get_guid_at_index( device_index );
+            ret = joystick_get_guid_at_index( device_index );
 
-            if ( return_code == NOERR )
+            if ( ret == OSCC_OK )
             {
                 printf( "Found %d devices -- connecting to device at system index %lu - GUID: %s\n",
                         num_joysticks,
                         device_index,
                         joystick_guid.ascii_string );
 
-                return_code = joystick_open( device_index );
+                ret = joystick_open( device_index );
             }
         }
         else
@@ -299,14 +299,14 @@ int joystick_init( )
 //
 // Purpose:     Open the requested joystick for use
 //
-// Returns:     int - ERROR or NOERROR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  device_index - index to the requested device
 //
 // *****************************************************
 int joystick_open( unsigned long device_index )
 {
-    int return_code = ERROR;
+    oscc_error_t ret = OSCC_ERROR;
 
     if ( joystick != NULL )
     {
@@ -314,11 +314,11 @@ int joystick_open( unsigned long device_index )
 
         if ( joystick->handle == JOYSTICK_DEVICE_HANDLE_INVALID )
         {
-            printf( "ERROR: SDL_JoystickOpen - %s\n", SDL_GetError() );
+            printf( "OSCC_ERROR: SDL_JoystickOpen - %s\n", SDL_GetError() );
         }
         else
         {
-            return_code = NOERR;
+            ret = OSCC_OK;
 
             const SDL_JoystickGUID m_guid =
                 SDL_JoystickGetGUID( joystick->handle );
@@ -334,7 +334,7 @@ int joystick_open( unsigned long device_index )
                                        sizeof( joystick_guid.ascii_string ) );
         }
     }
-    return ( return_code );
+    return ret;
 }
 
 
@@ -373,14 +373,14 @@ void joystick_close( )
 //
 // Purpose:     Update the requested joystick for use
 //
-// Returns:     int - ERROR or NOERROR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  device_index - index to the requested device
 //
 // *****************************************************
 int joystick_update( )
 {
-    int return_code = ERROR;
+    oscc_error_t ret = OSCC_ERROR;
 
     if ( joystick != NULL )
     {
@@ -394,11 +394,11 @@ int joystick_update( )
             }
             else
             {
-                return_code = NOERR;
+                ret = OSCC_OK;
             }
         }
     }
-    return ( return_code );
+    return ret;
 }
 
 
@@ -407,7 +407,7 @@ int joystick_update( )
 //
 // Purpose:     Get the axis index
 //
-// Returns:     int - ERROR or NOERROR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  axis_index - index to the axis to use
 //              position - pointer to the position to update
@@ -415,18 +415,18 @@ int joystick_update( )
 // *****************************************************
 int joystick_get_axis( unsigned long axis_index, int * const position )
 {
-    int return_code = ERROR;
+    oscc_error_t ret = OSCC_ERROR;
 
     if ( ( joystick  != NULL ) && ( position != NULL ) )
     {
-        return_code = NOERR;
+        ret = OSCC_OK;
 
         const Sint16 pos = SDL_JoystickGetAxis( joystick->handle,
                                                 (int) axis_index );
         ( *position ) = (int) pos;
     }
 
-    return return_code;
+    return ret;
 }
 
 
@@ -435,7 +435,7 @@ int joystick_get_axis( unsigned long axis_index, int * const position )
 //
 // Purpose:     Get which button was pressed for the requested joystick
 //
-// Returns:     int - ERROR or NOERROR
+// Returns:     int - OSCC_ERROR or OSCC_OK
 //
 // Parameters:  button_index - index to the button to use
 //              button_state - pointer to the button state to update
@@ -444,11 +444,11 @@ int joystick_get_axis( unsigned long axis_index, int * const position )
 int joystick_get_button( unsigned long button_index,
                          unsigned int * const button_state )
 {
-    int return_code = ERROR;
+    oscc_error_t ret = OSCC_ERROR;
 
     if ( ( joystick  != NULL ) && ( button_state != NULL ) )
     {
-        return_code = NOERR;
+        ret = OSCC_OK;
 
         const Uint8 m_state = SDL_JoystickGetButton( joystick->handle,
                                                      (int) button_index );
@@ -464,7 +464,7 @@ int joystick_get_button( unsigned long button_index,
         }
     }
 
-    return return_code;
+    return ret;
 }
 
 

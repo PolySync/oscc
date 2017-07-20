@@ -5,33 +5,22 @@
  */
 
 
-#ifndef OSCC_H
-#define OSCC_H
+#ifndef _OSCC_H
+#define _OSCC_H
 
 #include <stdbool.h>
 #include "can_protocols/brake_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 
-typedef struct
-{
-    float wheel_speed_front_left;
-    float wheel_speed_front_right;
-    float wheel_speed_rear_left;
-    float wheel_speed_rear_right;
-} oscc_wheel_speed_s;
 
-typedef struct
+typedef enum
 {
-    bool operator_override;
-    bool fault_brake_obd_timeout;
-    bool fault_brake_invalid_sensor_value;
-    bool fault_brake_actuator_error;
-    bool fault_brake_pump_motor_error;
-    bool fault_steering_obd_timeout;
-    bool fault_steering_invalid_sensor_value;
-    bool fault_throttle_invalid_sensor_value;
-} oscc_status_s;
+    OSCC_OK,
+    OSCC_ERROR,
+    OSCC_WARNING
+} oscc_error_t;
+
 
 
 /**
@@ -43,7 +32,7 @@ typedef struct
  * @return ERROR or NOERR
  *
  */
-int oscc_open( unsigned int channel );
+oscc_error_t oscc_open( unsigned int channel );
 
 
 /**
@@ -55,7 +44,7 @@ int oscc_open( unsigned int channel );
  * @return ERROR or NOERR
  *
  */
-void oscc_close( unsigned int channel );
+oscc_error_t oscc_close( unsigned int channel );
 
 
 /**
@@ -66,7 +55,7 @@ void oscc_close( unsigned int channel );
  * @return ERROR or NOERR
  *
  */
-int oscc_enable( );
+oscc_error_t oscc_enable( );
 
 
 /**
@@ -77,7 +66,7 @@ int oscc_enable( );
  * @return ERROR or NOERR
  *
  */
-int oscc_disable( );
+oscc_error_t oscc_disable( );
 
 
 /**
@@ -90,7 +79,7 @@ int oscc_disable( );
  * @return ERROR or NOERR
  *
  */
-int oscc_publish_brake_position( unsigned int brake_position );
+oscc_error_t oscc_publish_brake_position( unsigned int brake_position );
 
 
 /**
@@ -103,7 +92,7 @@ int oscc_publish_brake_position( unsigned int brake_position );
  * @return ERROR or NOERR
  *
  */
-int oscc_publish_brake_pressure( double brake_pressure );
+oscc_error_t oscc_publish_brake_pressure( double brake_pressure );
 
 
 /**
@@ -115,7 +104,7 @@ int oscc_publish_brake_pressure( double brake_pressure );
  * @return ERROR or NOERR
  *
  */
-int oscc_publish_throttle_position( unsigned int throttle_position );
+oscc_error_t oscc_publish_throttle_position( unsigned int throttle_position );
 
 
 /**
@@ -127,7 +116,7 @@ int oscc_publish_throttle_position( unsigned int throttle_position );
  * @return ERROR or NOERR
  *
  */
-int oscc_publish_steering_angle( double angle );
+oscc_error_t oscc_publish_steering_angle( double angle );
 
 
 /**
@@ -139,7 +128,7 @@ int oscc_publish_steering_angle( double angle );
  * @return ERROR or NOERR
  *
  */
-int oscc_publish_steering_torque( double torque );
+oscc_error_t oscc_publish_steering_torque( double torque );
 
 
 /**
@@ -147,12 +136,12 @@ int oscc_publish_steering_torque( double torque );
  *        recieved from brake module.
  *
  * @param [in] callback - Pointer to callback function to be called when
- *      .                 brake report recieved from brake module.
+ *                        brake report recieved from brake module.
  *
  * @return ERROR or NOERR
  *
  */
-int oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_report_s *report ) );
+oscc_error_t oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_report_s *report ) );
 
 
 /**
@@ -160,12 +149,12 @@ int oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_report_s *rep
  *        recieved from throttle module.
  *
  * @param [in] callback - Pointer to callback function to be called when
- *      .                 throttle report recieved from throttle module.
+ *                        throttle report recieved from throttle module.
  *
  * @return ERROR or NOERR
  *
  */
-int oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttle_report_s *report ) );
+oscc_error_t oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttle_report_s *report ) );
 
 
 /**
@@ -173,12 +162,12 @@ int oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttle_report_
  *        recieved from steering module.
  *
  * @param [in] callback - Pointer to callback function to be called when
- *      .                 steering report recieved from steering module.
+ *                        steering report recieved from steering module.
  *
  * @return ERROR or NOERR
  *
  */
-int oscc_subscribe_to_steering_reports( void( *callback )( oscc_steering_report_s *report ) );
+oscc_error_t oscc_subscribe_to_steering_reports( void( *callback )( oscc_steering_report_s *report ) );
 
 
 /**
@@ -186,13 +175,13 @@ int oscc_subscribe_to_steering_reports( void( *callback )( oscc_steering_report_
  *        from veihcle.
  *
  * @param [in] callback - Pointer to callback function to be called when
- *      .                 OBD message recieved.
+ *                        OBD message recieved.
  *
  * @return ERROR or NOERR
  *
  */
-int oscc_subscribe_to_obd_messages( void( *callback )( long id, unsigned char * data ) );
+oscc_error_t oscc_subscribe_to_obd_messages( void( *callback )( long id, unsigned char * data ) );
 
 
-#endif /* OSCC_H */
+#endif /* _OSCC_H */
 
