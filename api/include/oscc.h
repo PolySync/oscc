@@ -73,21 +73,21 @@ oscc_error_t oscc_disable( );
  * @brief Publish message with requested brake pedal position to
  *        brake module.
  *
- * @param [in] position - Requested brake pedal position.
- *              @toDO - decide on units/range (mm?)
+ * @param [in] position - Normalized requested brake pedal
+ *        position in the range [0, 1].
  *
  * @return ERROR or NOERR
  *
  */
-oscc_error_t oscc_publish_brake_position( unsigned int brake_position );
+oscc_error_t oscc_publish_brake_position( double brake_position );
 
 
 /**
  * @brief Publish message with requested brake pressure to
  *        brake module.
  *
- * @param [in] pressure - Requested brake pressure.
- *              @toDo - decide on units / range
+ * @param [in] pressure - Normalized requested brake pressure
+ *        in the range [0, 1].
  *
  * @return ERROR or NOERR
  *
@@ -99,19 +99,21 @@ oscc_error_t oscc_publish_brake_pressure( double brake_pressure );
  * @brief Publish message with requested throttle pedal position to
  *        throttle module.
  *
- * @param [in] position - Requested throttle pedal position.
+ * @param [in] position - Normalized requested throttle pedal 
+ *        position in the range [0, 1].
  *
  * @return ERROR or NOERR
  *
  */
-oscc_error_t oscc_publish_throttle_position( unsigned int throttle_position );
+oscc_error_t oscc_publish_throttle_position( double throttle_position );
 
 
 /**
  * @brief Publish message with requested steering angle to
  *        steering module.
  *
- * @param [in] angle - Requested steering angle (degrees).
+ * @param [in] angle - Normalized requested steering wheel
+ *        angle in the range [-1, 1].
  *
  * @return ERROR or NOERR
  *
@@ -123,7 +125,8 @@ oscc_error_t oscc_publish_steering_angle( double angle );
  * @brief Publish message with requested steering torque to
  *        steering module.
  *
- * @param [in] angle - Requested steering torque (Newton-meters).
+ * @param [in] angle - Normalized requested steering wheel
+ *        torque in the range [-1, 1].
  *
  * @return ERROR or NOERR
  *

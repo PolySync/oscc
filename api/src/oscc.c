@@ -129,7 +129,8 @@ oscc_error_t oscc_publish_brake_position( unsigned int brake_position )
     {
         oscc->brake_cmd.pedal_command = ( uint16_t )brake_position;
 
-        // MATHHHHHHHHHHH
+        // use normalized position to scale between known limits
+        // use that to calculate spoof values
 
         ret = oscc_can_write( OSCC_BRAKE_COMMAND_CAN_ID,
                                       (void *) &oscc->brake_cmd,
@@ -147,7 +148,8 @@ oscc_error_t oscc_publish_brake_pressure( double brake_pressure )
     {
         oscc->brake_cmd.pedal_command = ( uint16_t )brake_pressure;
 
-        // MATHHHHHHHHHHH
+        // use normalized pressure to scale between known limits
+        // use that to calculate spoof value
 
         ret = oscc_can_write( OSCC_BRAKE_COMMAND_CAN_ID,
                                       (void *) &oscc->brake_cmd,
@@ -163,7 +165,8 @@ oscc_error_t oscc_publish_throttle_position( unsigned int throttle_position )
 
     if ( oscc != NULL )
     {
-        // MATHHHHHHHHHHH
+        // use normalized throttle position to scale between known limits
+        // use that to calculate spoof values
 
         oscc->throttle_cmd.spoof_value_low = ( uint16_t )throttle_position;
         oscc->throttle_cmd.spoof_value_high = ( uint16_t )throttle_position;
@@ -182,7 +185,8 @@ oscc_error_t oscc_publish_steering_angle( double angle )
 
     if ( oscc != NULL )
     {
-        // MATHHHHHHHHHHH
+        // use normalized steering angle to scale between known limits
+        // use that to calculate spoof value
 
         oscc->steering_cmd.spoof_value_low = ( int16_t )angle;
         oscc->steering_cmd.spoof_value_high = ( int16_t )angle;
@@ -201,7 +205,8 @@ oscc_error_t oscc_publish_steering_torque( double torque )
 
     if ( oscc != NULL )
     {
-        // MATHHHHHHHHHHH
+        // use normalized steering torque to scale between known limits
+        // use that to calculate spoof value
 
         oscc->steering_cmd.spoof_value_low = ( int16_t )torque;
         oscc->steering_cmd.spoof_value_high = ( int16_t )torque;
