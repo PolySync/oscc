@@ -336,55 +336,84 @@ static oscc_error_t oscc_can_write( long id, void* msg, unsigned int dlc )
 
 static oscc_error_t oscc_init_can( int channel )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    int ret = OSCC_OK;
 
     can_handle = canOpenChannel( channel, canOPEN_EXCLUSIVE );
 
-    if ( can_handle >= 0 )
-    {
-        canBusOff( can_handle );
-
-        canStatus status = canSetBusParams( can_handle, BAUD_500K,
-                                            0, 0, 0, 0, 0 );
-        if ( status == canOK )
-        {
-            status = canSetBusOutputControl( can_handle, canDRIVER_NORMAL );
-
-            if ( status == canOK )
-            {
-                status = canBusOn( can_handle );
-
-                if ( status == canOK )
-                {
-                    status = canSetNotify(can_handle, oscc_update_status, canNOTIFY_RX, (char*)0);
-
-                    if( status == canOK )
-                    {
-                        ret = OSCC_OK;
-                    }
-                    else
-                    {
-                        printf( "canSetNotify failed\n" );
-                    }
-                }
-                else
-                {
-                    printf( "canBusOn failed\n" );
-                }
-            }
-            else
-            {
-                printf( "canSetBusOutputControl failed\n" );
-            }
-        }
-        else
-        {
-            printf( "canSetBusParams failed\n" );
-        }
-    }
-    else
+    if ( can_handle < 0 )
     {
         printf( "canOpenChannel %d failed\n", channel );
+
+        ret = OSCC_ERROR;
+    }
+
+    canStatus status;
+
+    if ( ret != OSCC_ERROR )
+    {
+        status = canBusOff( can_handle );
+
+        if ( status != canOK )
+        {
+            printf( "canBusOff failed\n" );
+
+            ret = OSCC_ERROR;
+        }
+    }
+
+    if ( ret != OSCC_ERROR )
+    {
+        status = canSetBusParams( can_handle, BAUD_500K,
+                                  0, 0, 0, 0, 0 );
+
+        if ( status != canOK )
+        {
+            printf( "canSetBusParams failed\n" );
+
+            ret = OSCC_ERROR;
+        }
+    }
+
+    if ( ret != OSCC_ERROR )
+    {
+        status = canSetBusOutputControl( can_handle, canDRIVER_NORMAL );
+
+        if ( status != canOK )
+        {
+            printf( "canSetBusOutputControl failed\n" );
+
+            ret = OSCC_ERROR;
+        }
+    }
+
+    if( ret != OSCC_ERROR )
+    {
+        status = canBusOn( can_handle );
+
+        if ( status != canOK )
+        {
+            printf( "canBusOn failed\n" );
+
+            ret = OSCC_ERROR;
+        }
+    }
+
+    if( ret != OSCC_ERROR )
+    {
+        // register callback handler
+        status = canSetNotify(
+
+            can_handle,
+            oscc_update_status,
+            canNOTIFY_RX,
+            (char*)0 );
+
+        if ( status != canOK )
+        {
+            printf( "canSetNotify failed\n" );
+
+            ret = OSCC_ERROR;
+        }
     }
 
     return ret;
