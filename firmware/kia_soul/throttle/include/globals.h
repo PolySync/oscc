@@ -71,9 +71,9 @@
 #endif
 
 
-EXTERN bool g_throttle_command_timeout;
+EXTERN volatile bool g_throttle_command_timeout;
 
-EXTERN kia_soul_throttle_control_state_s g_throttle_control_state;
+EXTERN volatile kia_soul_throttle_control_state_s g_throttle_control_state;
 
 
 #endif /* _OSCC_KIA_SOUL_THROTTLE_GLOBALS_H_ */

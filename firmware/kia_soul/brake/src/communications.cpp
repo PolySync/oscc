@@ -25,6 +25,8 @@ static void process_brake_command(
 
 void publish_brake_report( void )
 {
+    cli();
+
     oscc_brake_report_s brake_report;
 
     brake_report.enabled = (uint8_t) g_brake_control_state.enabled;
@@ -38,11 +40,15 @@ void publish_brake_report( void )
         CAN_STANDARD,
         OSCC_BRAKE_REPORT_CAN_DLC,
         (uint8_t *) &brake_report );
+
+    sei();
 }
 
 
 void publish_fault_report( void )
 {
+    cli();
+
     oscc_module_fault_report_s fault_report;
 
     fault_report.fault_origin_id = FAULT_ORIGIN_BRAKE;
@@ -52,6 +58,8 @@ void publish_fault_report( void )
         CAN_STANDARD,
         OSCC_FAULT_REPORT_CAN_DLC,
         (uint8_t *) &fault_report );
+
+    sei();
 }
 
 
@@ -73,6 +81,8 @@ void check_for_controller_command_timeout( void )
 
 void check_for_incoming_message( void )
 {
+    cli();
+
     can_frame_s rx_frame;
     can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
 
@@ -80,6 +90,8 @@ void check_for_incoming_message( void )
     {
         process_rx_frame( &rx_frame );
     }
+
+    sei();
 }
 
 

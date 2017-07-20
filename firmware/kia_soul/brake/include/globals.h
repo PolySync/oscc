@@ -125,9 +125,9 @@
 #endif
 
 
-EXTERN bool g_brake_command_timeout;
+EXTERN volatile bool g_brake_command_timeout;
 
-EXTERN kia_soul_brake_control_state_s g_brake_control_state;
+EXTERN volatile kia_soul_brake_control_state_s g_brake_control_state;
 
 EXTERN pid_s g_pid;
 

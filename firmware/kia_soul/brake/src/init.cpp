@@ -21,9 +21,11 @@
 
 void init_globals( void )
 {
-    memset( &g_brake_control_state,
-            0,
-            sizeof(g_brake_control_state) );
+    f_brake_control_state.enabled = false;
+    g_brake_control_state.operator_override = false;
+    g_brake_control_state.dtcs = 0;
+    g_brake_control_state.brake_pressure_front_left = 0;
+    g_brake_control_state.brake_pressure_front_right = 0;
 
     g_brake_command_timeout = false;
 

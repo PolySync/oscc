@@ -17,9 +17,9 @@
 
 void init_globals( void )
 {
-    memset( &g_steering_control_state,
-            0,
-            sizeof(g_steering_control_state) );
+    g_steering_control_state.enabled = false;
+    g_steering_control_state.operator_override = false;
+    g_steering_control_state.dtcs = 0;
 
     g_steering_command_timeout = false;
 }

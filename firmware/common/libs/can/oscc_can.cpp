@@ -31,9 +31,9 @@ can_status_t check_for_rx_frame( MCP_CAN &can, can_frame_s * const frame )
             frame->timestamp = millis( );
 
             can.readMsgBufID(
-                    ( INT32U* ) &frame->id,
-                    ( INT8U* ) &frame->dlc,
-                    ( INT8U* ) frame->data );
+                    ( uint32_t* ) &frame->id,
+                    ( uint8_t* ) &frame->dlc,
+                    ( uint8_t* ) frame->data );
 
             ret = CAN_RX_FRAME_AVAILABLE;
         }

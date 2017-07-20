@@ -5,6 +5,7 @@
 #include "macros.h"
 #include "dtc.h"
 #include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "oscc.h"
@@ -303,7 +304,7 @@ static void oscc_update_status( canNotifyData *data )
                 oscc_steering_report_s* steering_report =
                     ( oscc_steering_report_s* )buffer;
 
-                if (steering_report_callback != NULL) 
+                if (steering_report_callback != NULL)
                 {
                     steering_report_callback(steering_report);
                 }
@@ -312,7 +313,7 @@ static void oscc_update_status( canNotifyData *data )
                 oscc_throttle_report_s* throttle_report =
                     ( oscc_throttle_report_s* )buffer;
 
-                if (throttle_report_callback != NULL) 
+                if (throttle_report_callback != NULL)
                 {
                     throttle_report_callback(throttle_report);
                 }
@@ -321,7 +322,7 @@ static void oscc_update_status( canNotifyData *data )
                 oscc_brake_report_s* brake_report =
                     ( oscc_brake_report_s* )buffer;
 
-                if (brake_report_callback != NULL) 
+                if (brake_report_callback != NULL)
                 {
                     brake_report_callback(brake_report);
                 }
@@ -350,7 +351,7 @@ static int oscc_can_write( long id, void* msg, unsigned int dlc )
     int return_code = ERROR;
 
     if ( oscc != NULL )
-    {        
+    {
         canStatus status = canWrite( oscc->can_handle, id, msg, dlc, 0 );
 
         if ( status == canOK )
@@ -386,7 +387,7 @@ static int oscc_init_can( int channel )
                     oscc_data.can_handle = handle;
                     oscc_data.can_channel = channel;
 
-                    status = canSetNotify(oscc_data.can_handle, oscc_update_status, canNOTIFY_RX | canNOTIFY_TX | canNOTIFY_ERROR, (char*)0);
+                    status = canSetNotify(oscc_data.can_handle, oscc_update_status, canNOTIFY_RX, (char*)0);
 
                     if( status == canOK )
                     {
