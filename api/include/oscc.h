@@ -10,6 +10,7 @@
 
 #include <stdbool.h>
 #include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 
@@ -22,14 +23,13 @@ typedef enum
 } oscc_error_t;
 
 
-
 /**
  * @brief Use provided CAN channel to open communications
  *        to CAN bus connected to the OSCC modules.
  *
  * @param [in] channel - CAN channel connected to OSCC modules.
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_open( unsigned int channel );
@@ -41,7 +41,7 @@ oscc_error_t oscc_open( unsigned int channel );
  *
  * @param [in] channel - CAN channel connected to OSCC modules.
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_close( unsigned int channel );
@@ -52,7 +52,7 @@ oscc_error_t oscc_close( unsigned int channel );
  *
  * @param [void]
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_enable( );
@@ -63,7 +63,7 @@ oscc_error_t oscc_enable( );
  *
  * @param [void]
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_disable( );
@@ -76,7 +76,7 @@ oscc_error_t oscc_disable( );
  * @param [in] position - Requested brake pedal position.
  *              @toDO - decide on units/range (mm?)
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_publish_brake_position( unsigned int brake_position );
@@ -89,7 +89,7 @@ oscc_error_t oscc_publish_brake_position( unsigned int brake_position );
  * @param [in] pressure - Requested brake pressure.
  *              @toDo - decide on units / range
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_publish_brake_pressure( double brake_pressure );
@@ -101,7 +101,7 @@ oscc_error_t oscc_publish_brake_pressure( double brake_pressure );
  *
  * @param [in] position - Requested throttle pedal position.
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_publish_throttle_position( unsigned int throttle_position );
@@ -113,7 +113,7 @@ oscc_error_t oscc_publish_throttle_position( unsigned int throttle_position );
  *
  * @param [in] angle - Requested steering angle (degrees).
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_publish_steering_angle( double angle );
@@ -125,7 +125,7 @@ oscc_error_t oscc_publish_steering_angle( double angle );
  *
  * @param [in] angle - Requested steering torque (Newton-meters).
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_publish_steering_torque( double torque );
@@ -133,12 +133,12 @@ oscc_error_t oscc_publish_steering_torque( double torque );
 
 /**
  * @brief Register callback function to be called when brake report
- *        recieved from brake module.
+ *        received from brake module.
  *
  * @param [in] callback - Pointer to callback function to be called when
- *                        brake report recieved from brake module.
+ *                        brake report received from brake module.
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_report_s *report ) );
@@ -146,12 +146,12 @@ oscc_error_t oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_repo
 
 /**
  * @brief Register callback function to be called when throttle report
- *        recieved from throttle module.
+ *        received from throttle module.
  *
  * @param [in] callback - Pointer to callback function to be called when
- *                        throttle report recieved from throttle module.
+ *                        throttle report received from throttle module.
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttle_report_s *report ) );
@@ -159,25 +159,38 @@ oscc_error_t oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttl
 
 /**
  * @brief Register callback function to be called when steering report
- *        recieved from steering module.
+ *        received from steering module.
  *
  * @param [in] callback - Pointer to callback function to be called when
- *                        steering report recieved from steering module.
+ *                        steering report received from steering module.
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_subscribe_to_steering_reports( void( *callback )( oscc_steering_report_s *report ) );
 
 
 /**
- * @brief Register callback function to be called when OBD message recieved
- *        from veihcle.
+ * @brief Register callback function to be called when fault report
+ *        received from any module.
  *
  * @param [in] callback - Pointer to callback function to be called when
- *                        OBD message recieved.
+ *                        fault report received from any module.
  *
- * @return ERROR or NOERR
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_error_t oscc_subscribe_to_fault_reports( void( *callback )( oscc_fault_report_s *report ) );
+
+
+/**
+ * @brief Register callback function to be called when OBD message received
+ *        from vehicle.
+ *
+ * @param [in] callback - Pointer to callback function to be called when
+ *                        OBD message received.
+ *
+ * @return OSCC_ERROR or OSCC_OK
  *
  */
 oscc_error_t oscc_subscribe_to_obd_messages( void( *callback )( long id, unsigned char * data ) );

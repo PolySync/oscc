@@ -9,8 +9,8 @@
 #include "dtc.h"
 #include "oscc.h"
 
-static CanHandle can_handle;
 
+static CanHandle can_handle;
 static oscc_brake_command_s brake_cmd;
 static oscc_throttle_command_s throttle_cmd;
 static oscc_steering_command_s steering_cmd;
@@ -18,18 +18,11 @@ static oscc_steering_command_s steering_cmd;
 static void( *steering_report_callback )( oscc_steering_report_s *report );
 static void( *brake_report_callback )( oscc_brake_report_s *report );
 static void( *throttle_report_callback )( oscc_throttle_report_s *report );
+static void( *fault_report_callback )( oscc_fault_report_s *report );
 static void( *obd_frame_callback )( long id, unsigned char * data );
 
-static bool oscc_check_for_operator_override(
-    long can_id,
-    unsigned char * buffer );
-static void oscc_check_for_obd_timeout(
-    long can_id,
-    unsigned char * buffer );
-static void oscc_check_for_invalid_sensor_value(
-    long can_id,
-    unsigned char * buffer );
-
+static oscc_error_t oscc_init_can( int channel );
+static oscc_error_t oscc_can_write( long id, void* msg, unsigned int dlc );
 static oscc_error_t oscc_enable_brakes( );
 static oscc_error_t oscc_enable_throttle( );
 static oscc_error_t oscc_enable_steering( );
@@ -37,8 +30,6 @@ static oscc_error_t oscc_disable_brakes( );
 static oscc_error_t oscc_disable_throttle( );
 static oscc_error_t oscc_disable_steering( );
 static void oscc_update_status( canNotifyData *data );
-static oscc_error_t oscc_can_write( long id, void* msg, unsigned int dlc );
-static oscc_error_t oscc_init_can( int channel );
 
 
 oscc_error_t oscc_open( unsigned int channel )
@@ -232,6 +223,20 @@ oscc_error_t oscc_subscribe_to_steering_reports( void( *callback )( oscc_steerin
 }
 
 
+oscc_error_t oscc_subscribe_to_fault_reports( void( *callback )( oscc_fault_report_s *report ) )
+{
+    oscc_error_t ret = OSCC_ERROR;
+
+    if ( callback != NULL )
+    {
+        fault_report_callback = callback;
+        ret = OSCC_OK;
+    }
+
+    return ret;
+}
+
+
 oscc_error_t oscc_subscribe_to_obd_messages( void( *callback )( long id, unsigned char * data ) )
 {
     oscc_error_t ret = OSCC_ERROR;
@@ -326,12 +331,13 @@ static void oscc_update_status( canNotifyData *data )
     unsigned long tstamp;
     unsigned char buffer[ 8 ];
 
-    canStatus can_status = canRead( can_handle,
-                                    &can_id,
-                                    buffer,
-                                    &msg_dlc,
-                                    &msg_flag,
-                                    &tstamp );
+    canStatus can_status = canRead(
+        can_handle,
+        &can_id,
+        buffer,
+        &msg_dlc,
+        &msg_flag,
+        &tstamp );
 
     while ( can_status == canOK )
     {
@@ -362,21 +368,30 @@ static void oscc_update_status( canNotifyData *data )
                 brake_report_callback(brake_report);
             }
         }
+        else if ( can_id == OSCC_FAULT_REPORT_CAN_ID ) {
+            oscc_fault_report_s* fault_report =
+                ( oscc_fault_report_s* )buffer;
+
+            if (fault_report_callback != NULL)
+            {
+                fault_report_callback(fault_report);
+            }
+        }
         else
         {
-            printf("obd frame rec'vd\n");
             if ( obd_frame_callback != NULL )
             {
                 obd_frame_callback( can_id, buffer );
             }
         }
 
-        can_status = canRead( can_handle,
-                                    &can_id,
-                                    buffer,
-                                    &msg_dlc,
-                                    &msg_flag,
-                                    &tstamp );
+        can_status = canRead(
+            can_handle,
+            &can_id,
+            buffer,
+            &msg_dlc,
+            &msg_flag,
+            &tstamp );
     }
 }
 
