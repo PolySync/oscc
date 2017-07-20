@@ -1,6 +1,6 @@
 /**
- * @file obd_can_protocol.h
- * @brief Kia Soul OBD-II CAN Protocol.
+ * @file kia_soul.h
+ * @brief Kia Soul specific macros.
  *
  */
 
@@ -16,19 +16,19 @@
  * @brief ID of the Kia Soul's OBD steering wheel angle CAN frame.
  *
  */
-#define KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID (0x2B0)
+#define KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ( 0x2B0 )
 
 /*
  * @brief ID of the Kia Soul's OBD wheel speed CAN frame.
  *
  */
-#define KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID (0x4B0)
+#define KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ( 0x4B0 )
 
 /*
  * @brief ID of the Kia Soul's OBD brake pressure CAN frame.
  *
  */
-#define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID (0x220)
+#define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x220 )
 
 /*
  * @brief Minimum accumulator presure. [decibars]
@@ -52,7 +52,7 @@
  * @brief Brake pressure threshold for when to enable the brake light.
  *
  */
-#define BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS (20.0)
+#define BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS ( 20.0 )
 
 /*
  * @brief Minimum possible pressure of brake system. [decibars]
@@ -145,38 +145,83 @@
  * @brief Minimum allowed value for the low spoof signal value.
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN (0)
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 0 )
 
 /*
  * @brief Maximum allowed value for the low spoof signal value.
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX (1800)
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1800 )
 
 /*
  * @brief Minimum allowed value for the high spoof signal value.
  *
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN (0)
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 0 )
 
 /*
  * @brief Maximum allowed value for the high spoof signal value.
  *
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX (3500)
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3500 )
 
 /*
  * @brief Value of the accelerator position that indicates operator override.
  *
  */
-
 #define ACCELERATOR_OVERRIDE_THRESHOLD ( 185.0 )
+
+/*
+ * @brief Calculation to convert a brake position to a pedal position.
+ *
+ */
+#define BRAKE_POSITION_TO_PEDAL( position ) ( (position) )
+
+/*
+ * @brief Calculation to convert a brake pressure to a pedal position.
+ *
+ */
+#define BRAKE_PRESSURE_TO_PEDAL( pressure ) ( (pressure) )
+
+/*
+ * @brief Calculation to convert a throttle position to a high spoof value.
+ *
+ */
+#define THROTTLE_POSITION_TO_SPOOF_HIGH( position ) ( (position) )
+
+/*
+ * @brief Calculation to convert a throttle position to a low spoof value.
+ *
+ */
+#define THROTTLE_POSITION_TO_SPOOF_LOW( position ) ( (position) )
+
+/*
+ * @brief Calculation to convert a steering angle to a high spoof value.
+ *
+ */
+#define STEERING_ANGLE_TO_SPOOF_HIGH( angle ) ( (angle) )
+
+/*
+ * @brief Calculation to convert a steering angle to a low spoof value.
+ *
+ */
+#define STEERING_ANGLE_TO_SPOOF_LOW( angle ) ( (angle) )
+
+/*
+ * @brief Calculation to convert a steering torque to a high spoof value.
+ *
+ */
+#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) ( (torque) )
+
+/*
+ * @brief Calculation to convert a steering torque to a low spoof value.
+ *
+ */
+#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) ( (torque) )
 
 
 /**
  * @brief Steering wheel angle message data.
- *
- * Message size (CAN frame DLC): 8
  *
  */
 typedef struct
@@ -189,8 +234,6 @@ typedef struct
 
 /**
  * @brief Wheel speed message data.
- *
- * Message size (CAN frame DLC): 8
  *
  */
 typedef struct
@@ -207,8 +250,6 @@ typedef struct
 
 /**
  * @brief Brake pressure message data.
- *
- * Message size (CAN frame DLC): 8
  *
  */
 typedef struct
