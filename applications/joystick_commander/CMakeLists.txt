@@ -5,6 +5,10 @@ project(joystick-commander)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 
+if(KIA_SOUL)
+    add_definitions(-DKIA_SOUL)
+endif()
+
 add_executable(
     joystick-commander
     src/commander.c

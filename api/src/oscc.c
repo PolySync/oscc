@@ -6,6 +6,7 @@
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
+#include "vehicles/vehicles.h"
 #include "dtc.h"
 #include "oscc.h"
 
@@ -102,9 +103,7 @@ oscc_error_t oscc_publish_brake_position( unsigned int brake_position )
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    brake_cmd.pedal_command = ( uint16_t )brake_position;
-
-    // MATHHHHHHHHHHH
+    brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( brake_position );
 
     ret = oscc_can_write( OSCC_BRAKE_COMMAND_CAN_ID,
                                     (void *) &brake_cmd,
@@ -118,9 +117,7 @@ oscc_error_t oscc_publish_brake_pressure( double brake_pressure )
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    brake_cmd.pedal_command = ( uint16_t )brake_pressure;
-
-    // MATHHHHHHHHHHH
+    brake_cmd.pedal_command = ( uint16_t ) BRAKE_PRESSURE_TO_PEDAL( brake_pressure );
 
     ret = oscc_can_write( OSCC_BRAKE_COMMAND_CAN_ID,
                                     (void *) &brake_cmd,
@@ -134,10 +131,8 @@ oscc_error_t oscc_publish_throttle_position( unsigned int throttle_position )
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    // MATHHHHHHHHHHH
-
-    throttle_cmd.spoof_value_low = ( uint16_t )throttle_position;
-    throttle_cmd.spoof_value_high = ( uint16_t )throttle_position;
+    throttle_cmd.spoof_value_low = ( uint16_t) THROTTLE_POSITION_TO_SPOOF_LOW( throttle_position );
+    throttle_cmd.spoof_value_high = ( uint16_t ) THROTTLE_POSITION_TO_SPOOF_HIGH( throttle_position );
 
     ret = oscc_can_write( OSCC_THROTTLE_COMMAND_CAN_ID,
                                     (void *) &throttle_cmd,
@@ -151,10 +146,8 @@ oscc_error_t oscc_publish_steering_angle( double angle )
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    // MATHHHHHHHHHHH
-
-    steering_cmd.spoof_value_low = ( int16_t )angle;
-    steering_cmd.spoof_value_high = ( int16_t )angle;
+    steering_cmd.spoof_value_low = ( int16_t ) STEERING_ANGLE_TO_SPOOF_LOW( angle );
+    steering_cmd.spoof_value_high = ( int16_t ) STEERING_ANGLE_TO_SPOOF_HIGH( angle );
 
     ret = oscc_can_write( OSCC_STEERING_COMMAND_CAN_ID,
                                     (void *) &steering_cmd,
@@ -170,8 +163,8 @@ oscc_error_t oscc_publish_steering_torque( double torque )
 
     // MATHHHHHHHHHHH
 
-    steering_cmd.spoof_value_low = ( int16_t )torque;
-    steering_cmd.spoof_value_high = ( int16_t )torque;
+    steering_cmd.spoof_value_low = ( int16_t ) STEERING_TORQUE_TO_SPOOF_LOW( torque );
+    steering_cmd.spoof_value_high = ( int16_t ) STEERING_TORQUE_TO_SPOOF_HIGH( torque );
 
     ret = oscc_can_write( OSCC_STEERING_COMMAND_CAN_ID,
                                     (void *) &steering_cmd,
