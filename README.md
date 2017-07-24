@@ -365,7 +365,7 @@ like you normally would.
 Now that all your Arduino modules are properly setup, it is time to start sending control commands.
 There is an example application to do this that uses a gamepad. The example interfaces to the 
 joystick gamepad via the SDL2 game controller library and sends CAN commands over the control CAN bus
-via the Kvaser CANlib SDK. These CAN control commands are interpreted by the respective Arduino
+via socketcan. These CAN control commands are interpreted by the respective Arduino
 modules and used to actuate the vehicle. This application has been tested with a Logitech F310 gamepad
 and a wired Xbox 360 controller, but should work with any SDL2 supported game controller. Controllers 
 with rumble capabilities will provide feedback when OSCC is enabled or disabled. 
@@ -377,6 +377,7 @@ be pre-installed. A CAN interface adapter, such as the [Kvaser Leaf Light](https
 is also required.
 
 [Xbox 360 Wired Controller](https://www.amazon.com/dp/B004QRKWLA)
+
 [logitech-F310](http://a.co/3GoUlkN)
 
 Install the SDL2 library with the command below.
