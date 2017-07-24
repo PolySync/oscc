@@ -398,7 +398,12 @@ cmake ..
 make
 ```
 
-For more information on setting up a socketcan interface, check out [this guide](http://elinux.org/Bringing_CAN_interface_up).
+The can interface can be brought up using the following commands:
+
+```
+sudo ip link set can0 type can bitrate 500000
+sudo ip link set up can0
+```
 
 After the can interface is initialized, its channel number can be used to start joystick commander.
 
