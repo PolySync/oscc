@@ -328,7 +328,7 @@ int oscc_interface_init( int channel )
 
     oscc_interface_set_defaults();
 
-    snprintf( buffer, 16, "vcan%1d", channel );
+    snprintf( buffer, 16, "can%1d", channel );
 
     printf( "Opening CAN channel: %s\n", buffer );
 
