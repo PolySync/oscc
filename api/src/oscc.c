@@ -10,6 +10,7 @@
 #include "dtc.h"
 #include "oscc.h"
 
+#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 static CanHandle can_handle;
 static oscc_brake_command_s brake_cmd;
@@ -99,14 +100,18 @@ oscc_error_t oscc_disable( )
 }
 
 
-oscc_error_t oscc_publish_brake_position( unsigned int brake_position )
+oscc_error_t oscc_publish_brake_position( double brake_position )
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( brake_position );
-
     // use normalized position to scale between known limits
     // use that to calculate spoof values
+    const double scaled_position = (double) m_constrain (
+            brake_position * MAXIMUM_BRAKE_COMMAND,
+            MINIMUM_BRAKE_COMMAND,
+            MAXIMUM_BRAKE_COMMAND );
+
+    brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( scaled_position );
 
     ret = oscc_can_write( OSCC_BRAKE_COMMAND_CAN_ID,
                                     (void *) &brake_cmd,
@@ -133,12 +138,10 @@ oscc_error_t oscc_publish_brake_pressure( double brake_pressure )
 }
 
 
-oscc_error_t oscc_publish_throttle_position( unsigned int throttle_position )
+oscc_error_t oscc_publish_throttle_position( double throttle_position )
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    if ( oscc != NULL )
-    {
     // use normalized throttle position to scale between known limits
     // use that to calculate spoof values
 

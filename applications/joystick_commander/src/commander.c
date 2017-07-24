@@ -22,7 +22,7 @@
  * @brief Math macro: constrain(amount, low, high).
  *
  */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define CONSTRAIN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 
 // *****************************************************
@@ -50,7 +50,7 @@
  *
  */
 #define MIN_THROTTLE_PEDAL (0.0)
-#define MAX_THROTTLE_PEDAL (0.3)
+#define MAX_THROTTLE_PEDAL (1.0)
 
 
 /**
@@ -58,7 +58,7 @@
  *
  */
 #define MIN_BRAKE_PEDAL (0.0)
-#define MAX_BRAKE_PEDAL (0.8)
+#define MAX_BRAKE_PEDAL (1.0)
 
 
 /**

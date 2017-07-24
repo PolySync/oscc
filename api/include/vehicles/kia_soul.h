@@ -172,6 +172,30 @@
 #define ACCELERATOR_OVERRIDE_THRESHOLD ( 185.0 )
 
 /*
+ * @brief Minimum allowable brake value.
+ *
+ */
+#define MINIMUM_BRAKE_COMMAND( 0 )
+
+/*
+ * @brief Maximum allowable brake value.
+ *
+ */
+#define MAXIMUM_BRAKE_COMMAND( 52428 )
+
+/*
+ * @brief Minimum allowable brake value.
+ *
+ */
+#define MINIMUM_THROTTLE_COMMAND( 0 )
+
+/*
+ * @brief Maximum allowable brake value.
+ *
+ */
+#define MAXIMUM_THROTTLE_COMMAND( 19660 )
+
+/*
  * @brief Calculation to convert a brake position to a pedal position.
  *
  */
