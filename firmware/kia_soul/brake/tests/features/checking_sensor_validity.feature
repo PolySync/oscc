@@ -12,7 +12,6 @@ Feature: Checking sensor validity
 
     Then control should remain enabled
 
-
   Scenario: A sensor becomes permanently disconnected
     Given brake control is enabled
 

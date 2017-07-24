@@ -8,6 +8,24 @@ See the [Wiki](https://github.com/PolySync/OSCC/wiki) for full documentation, de
 information.
 
 
+# Versions
+
+It's important that the correct version of the firmware is used with the
+correct versions of the module boards. As the boards are updated with additional
+pins and other features, the firmware is modified accordingly to use them.
+Mismatched versions will cause problems.
+
+Consult the following table for version compatibility.
+
+| Actuator Board | Firmware  |
+| -------------- | --------  |
+| >= v1.1.0      | >= v0.7   |
+
+| Sensor Interface Board | Firmware  |
+| ---------------------- | --------- |
+| >= v1.1.0              | >= v0.7   |
+
+
 # Repository Contents
 
 * **api** - API used by applications to interface with the modules
@@ -140,12 +158,13 @@ you can get it with the following command:
 sudo apt install screen
 ```
 
-You need to tell CMake what serial port the module you want to monitor is connected
-to (see [section on uploading](#uploading-the-firmware) for details on the default
+You need to enable debug mode with `-DDEBUG=ON` and tell CMake what serial port
+the module you want to monitor is connected to
+(see [section on uploading](#uploading-the-firmware) for details on the default
 ports for each module). The default baud rate is `115200` but you can change it:
 
 ```
-cmake .. -DBUILD_KIA_SOUL=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
+cmake .. -DBUILD_KIA_SOUL=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
 ```
 
 You can use a module's `monitor` target to automatically run `screen`, or a
@@ -340,17 +359,20 @@ like you normally would.
 # Controlling Your Vehicle
 
 Now that all your Arduino modules are properly setup, it is time to start sending control commands.
-There is an example application to do this that uses the Logitech F310 Gamepad. The example interfaces
-to the joystick gamepad via the SDL2 joystick library and sends CAN commands over the control CAN bus
+There is an example application to do this that uses a gamepad. The example interfaces to the 
+joystick gamepad via the SDL2 game controller library and sends CAN commands over the control CAN bus
 via the Kvaser CANlib SDK. These CAN control commands are interpreted by the respective Arduino
-modules and used to actuate the vehicle.
+modules and used to actuate the vehicle. This application has been tested with a Logitech F310 gamepad
+and a wired Xbox 360 controller, but should work with any SDL2 supported game controller. Controllers 
+with rumble capabilities will provide feedback when OSCC is enabled or disabled. 
 
 ## Pre-requisites:
 
-A Logitech F310 gamepad is required, and the SDL2 library and CANlib SDK need to
+An SDL2 supported gamepad is required, and the SDL2 library and CANlib SDK need to
 be pre-installed. A CAN interface adapter, such as the [Kvaser Leaf Light](https://www.kvaser.com),
 is also required.
 
+[Xbox 360 Wired Controller](https://www.amazon.com/dp/B004QRKWLA)
 [logitech-F310](http://a.co/3GoUlkN)
 
 Install the SDL2 library with the command below.
@@ -358,10 +380,6 @@ Install the SDL2 library with the command below.
 ```
 sudo apt install libsdl2-dev
 ```
-
-Install the CANlib SDK via the following procedure.
-
-[CANlib-SDK](https://www.kvaser.com/linux-drivers-and-sdk/)
 
 ## Building Joystick Commander
 
@@ -371,7 +389,7 @@ Navigate to the directory for the joystick commander code.
 cd utils/joystick_commander
 ```
 
-Once you are in the home directory of the joystick commander, build the code using CMake.
+From this directory, run the following sequence to build joystick commander:
 
 ```
 mkdir build
@@ -380,36 +398,23 @@ cmake ..
 make
 ```
 
-Now that the joystick commander is built it is ready to be run. However, we need to determine what
-CAN interface the control CAN bus is connected to on your computer. This interface will be passed to
-the joystick commander as an argument, and will be used to allow the joystick commander to communicate
-with the CAN bus. To figure out what CAN interface your control CAN bus is connected to, navigate to
-the examples directory in the CANlib install.
+Once you have initialized the CAN interface, you can use the channel number to start joystick commander and begin sending commands to the OSCC modules.
+
+For example, with a Kvaser Leaf Light attached, using a bitrate of 500000:
 
 ```
-cd /usr/src/linuxcan/canlib/
+ sudo ip link set can0 type can bitrate 500000
+ sudo ip link set up can0
 ```
 
-Run make to ensure all the CANlib examples are built.
+
+You would then run:
 
 ```
-make
+./joystick-commander 0
 ```
 
-Then navigate to the examples directory of the CANlib install.
-
-```
-cd /usr/src/linuxcan/canlib/examples/
-```
-
-You can use the "listChannels" and "canmonitor" examples to determine which CAN channel your control
-bus is connected to. CAN monitor will dump any data on a selected channel and list channels will tell
-you what channels are available. You can use both to determine which channel you will need to use.
-Once you know the correct channel number, you can run the joystick example with the command below.
-
-```
-./joystick-commander <channel-number>
-```
+For more information on setting up a socketcan interface, check out [this guide](http://elinux.org/Bringing_CAN_interface_up).
 
 ## Controlling the Vehicle with the Joystick Gamepad
 

@@ -18,6 +18,8 @@ int main( void )
 {
     init_arduino( );
 
+    init_communication_interfaces( );
+
     init_globals( );
 
     init_devices( );

@@ -7,12 +7,15 @@
 
 
 
-#include <canlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_joystick.h>
+#include <SDL2/SDL_gamecontroller.h>
 
 #include "joystick.h"
 #include "oscc.h"
@@ -33,17 +36,17 @@
  * @brief Joystick axis indices
  *
  */
-#define JOYSTICK_AXIS_THROTTLE (5)
-#define JOYSTICK_AXIS_BRAKE (2)
-#define JOYSTICK_AXIS_STEER (3)
+#define JOYSTICK_AXIS_THROTTLE (SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+ #define JOYSTICK_AXIS_BRAKE (SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+ #define JOYSTICK_AXIS_STEER (SDL_CONTROLLER_AXIS_LEFTX)
 
 
 /**
  * @brief Joystick button indices
  *
  */
-#define JOYSTICK_BUTTON_ENABLE_CONTROLS (7)
-#define JOYSTICK_BUTTON_DISABLE_CONTROLS (6)
+#define JOYSTICK_BUTTON_ENABLE_CONTROLS (SDL_CONTROLLER_BUTTON_START)
+#define JOYSTICK_BUTTON_DISABLE_CONTROLS (SDL_CONTROLLER_BUTTON_BACK)
 
 /**
  * @brief Throttle pedal position values [normalized]
@@ -552,6 +555,124 @@ void obd_callback(long id, unsigned char * data){
     // printf("enabled? %d\n", report->enabled);
 }
 
+// *****************************************************
+// Function:    check_for_brake_faults
+//
+// Purpose:     Checks oscc_status_s struct for brake
+//              faults
+//
+// Returns:     bool - true if fault occurred
+//                   - false if no fault occurred
+//
+// Parameters:  oscc_status_s - struct containing OSCC status
+//
+// *****************************************************
+static bool check_for_brake_faults( oscc_status_s * status)
+{
+    bool fault_occurred = false;
+
+    if( status != NULL )
+    {
+        if ( status->fault_brake_obd_timeout == true )
+        {
+            printf( "Brake - OBD Timeout Detected\n" );
+
+            fault_occurred = true;
+        }
+
+        if ( status->fault_brake_invalid_sensor_value == true )
+        {
+            printf( "Brake - Invalid Sensor Value Detected\n" );
+
+            fault_occurred = true;
+        }
+
+        if ( status->fault_brake_actuator_error == true )
+        {
+            printf( "Brake - Actuator Error Detected\n" );
+
+            fault_occurred = true;
+        }
+
+        if ( status->fault_brake_pump_motor_error == true )
+        {
+            printf( "Brake - Accumulator Pump Error Detected\n" );
+
+            fault_occurred = true;
+        }
+    }
+
+    return fault_occurred;
+}
+
+
+// *****************************************************
+// Function:    check_for_steering_faults
+//
+// Purpose:     Checks oscc_status_s struct for steering
+//              faults
+//
+// Returns:     bool - true if fault occurred
+//                   - false if no fault occurred
+//
+// Parameters:  oscc_status_s - struct containing OSCC status
+//
+// *****************************************************
+static bool check_for_steering_faults( oscc_status_s * status)
+{
+    bool fault_occurred = false;
+
+    if( status != NULL )
+    {
+        if ( status->fault_steering_obd_timeout == true )
+        {
+            printf( "Steering - OBD Timeout Detected\n" );
+
+            fault_occurred = true;
+        }
+
+        if ( status->fault_steering_invalid_sensor_value == true )
+        {
+            printf( "Steering - Invalid Sensor Value Detected\n" );
+
+            fault_occurred = true;
+        }
+    }
+
+    return fault_occurred;
+}
+
+
+// *****************************************************
+// Function:    check_for_throttle_faults
+//
+// Purpose:     Checks oscc_status_s struct for throttle
+//              faults
+//
+// Returns:     bool - true if fault occurred
+//                   - false if no fault occurred
+//
+// Parameters:  oscc_status_s - struct containing OSCC status
+//
+// *****************************************************
+static bool check_for_throttle_faults( oscc_status_s * status)
+{
+    bool fault_occurred = false;
+
+    if( status != NULL )
+    {
+        if ( status->fault_throttle_invalid_sensor_value == true )
+        {
+            printf( "Throttle - Invalid Sensor Value Detected\n" );
+
+            fault_occurred = true;
+        }
+    }
+
+    return fault_occurred;
+}
+
+
 
 // *****************************************************
 // public definitions
@@ -733,38 +854,38 @@ int commander_high_frequency_update( )
     //     return_code = commander_disable_controls( );
     // }
 
-    // if ( status.obd_timeout_brake == true )
-    // {
-    //     printf( "Brake - OBD Timeout Detected\n" );
-    //     return_code = oscc_disable_brakes( );
+    if ( return_code == NOERR )
+    {
+        if ( status.operator_override == true )
+        {
+            printf( "Driver Override Detected\n" );
+            return_code = commander_disable_controls( );
+        }
 
-    // }
 
-    // if ( status.obd_timeout_brake == true )
-    // {
-    //     printf( "Steering - OBD Timeout Detected\n" );
+        bool brake_fault_occurred = check_for_brake_faults( &status );
 
-    //     return_code = oscc_disable_steering( );
-    // }
+        if ( brake_fault_occurred == true )
+        {
+            return_code = commander_disable_controls( );
+        }
 
-    // if ( status.invalid_sensor_value_brake == true )
-    // {
-    //     printf( "Brake - Invalid Sensor Value Detected\n" );
-    //     return_code = oscc_disable_steering( );
-    // }
 
-    // if ( status.invalid_sensor_value_steering == true )
-    // {
-    //     printf( "Steering - Invalid Sensor Value Detected\n" );
-    //     return_code = oscc_disable_steering( );
-    // }
+        bool steering_fault_occurred = check_for_steering_faults( &status );
 
-    // if ( status.invalid_sensor_value_throttle == true )
-    // {
-    //     printf( "Throttle - Invalid Sensor Value Detected\n" );
-    //     return_code = oscc_disable_throttle( );
+        if ( steering_fault_occurred == true )
+        {
+            return_code = commander_disable_controls( );
+        }
 
-    // }
+
+        bool throttle_fault_occurred = check_for_throttle_faults( &status );
+
+        if ( throttle_fault_occurred == true )
+        {
+            return_code = commander_disable_controls( );
+        }
+    }
 
     return return_code;
 }

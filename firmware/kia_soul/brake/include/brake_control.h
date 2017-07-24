@@ -19,6 +19,63 @@
 #define UINT16_MIN ( 0 )
 
 /*
+ * @brief Value of brake pressure that indicates operator override. [decibars]
+ *
+ */
+#define DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ( 43.2 )
+
+/*
+ * @brief Brake pressure threshold for when to enable the brake light.
+ *
+ */
+#define BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS (20.0)
+
+/*
+ * @brief Minimum possible pressure of brake system. [decibars]
+ *
+ */
+#define BRAKE_PRESSURE_MIN_IN_DECIBARS ( 12.0 )
+
+/*
+ * @brief Maximum possible pressure of brake system. [decibars]
+ *
+ */
+#define BRAKE_PRESSURE_MAX_IN_DECIBARS ( 878.3 )
+
+/*
+ * @brief Alpha term for the exponential filter used to smooth the sensor input.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_EXPONENTIAL_FILTER_ALPHA ( 0.05 )
+
+/*
+ * @brief Minimum possible value expected to be read from the brake pressure
+ * sensors when the pressure check pins (PCK1/PCK2) are asserted.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN ( 665 )
+
+/*
+ * @brief Maximum possible value expected to be read from the brake pressure
+ * sensors when the pressure check pins (PCK1/PCK2) are asserted.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX ( 680 )
+
+/*
+ * @brief Amount of time between sensor checks. [milliseconds]
+ *
+ */
+#define SENSOR_VALIDITY_CHECK_INTERVAL_IN_MSEC ( 250 )
+
+/*
+ * @brief Number of consecutive faults that can occur when reading the
+ *        sensors before control is disabled.
+ *
+ */
+#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
+
+/*
  * @brief Proportional gain of the PID controller.
  *
  */
@@ -68,7 +125,16 @@ typedef struct
     bool operator_override; /* Flag indicating whether steering wheel was
                                manually turned by operator. */
 
+<<<<<<< HEAD:firmware/kia_soul/brake/include/brake_control.h
     uint8_t dtcs; /* Bitfield of faults present in the module. */
+=======
+    bool startup_pressure_check_error; /* Flag indicating a problem with the actuator. */
+
+    bool startup_pump_motor_check_error; /* Flag indicating a problem with the pump motor. */
+
+    float current_sensor_brake_pressure; /* Current brake pressure as read
+                                               from the brake pressure sensor. */
+>>>>>>> devel:platforms/kia_soul/firmware/brake/include/brake_control.h
 
     int16_t brake_pressure_front_left; /* Brake pressure at front left wheel. */
 
