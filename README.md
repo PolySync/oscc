@@ -398,18 +398,23 @@ cmake ..
 make
 ```
 
-The can interface can be brought up using the following commands:
+Once you have initialized the CAN interface, you can use the channel number to start joystick commander and begin sending commands to the OSCC modules.
+
+For example, with a Kvaser Leaf Light attached, using a bitrate of 500000:
 
 ```
-sudo ip link set can0 type can bitrate 500000
-sudo ip link set up can0
+ sudo ip link set can0 type can bitrate 500000
+ sudo ip link set up can0
 ```
 
-After the can interface is initialized, its channel number can be used to start joystick commander.
+
+You would then run:
 
 ```
-./joystick-commander <channel-number>
+./joystick-commander 0
 ```
+
+For more information on setting up a socketcan interface, check out [this guide](http://elinux.org/Bringing_CAN_interface_up).
 
 ## Controlling the Vehicle with the Joystick Gamepad
 
