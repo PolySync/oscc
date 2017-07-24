@@ -50,7 +50,10 @@
 #include <errno.h>
 
 #include "macros.h"
-#include "control_protocol_can.h"
+#include "brake_can_protocol.h"
+#include "steering_can_protocol.h"
+#include "throttle_can_protocol.h"
+#include "gateway_can_protocol.h"
 
 
 // *****************************************************
@@ -73,9 +76,9 @@
 
 struct oscc_interface_data_s
 {
-    ps_ctrl_brake_command_msg brake_cmd;
-    ps_ctrl_throttle_command_msg throttle_cmd;
-    ps_ctrl_steering_command_msg steering_cmd;
+    oscc_command_brake_data_s brake_cmd;
+    oscc_command_throttle_data_s throttle_cmd;
+    oscc_command_steering_data_s steering_cmd;
 
     int can_socket;
     int can_port;
@@ -288,31 +291,21 @@ int oscc_interface_set_defaults( )
 {
     int return_code = NOERR;
 
-    ps_ctrl_brake_command_msg* brake = &oscc_interface_data.brake_cmd;
+    oscc_command_brake_data_s* brake = &oscc_interface_data.brake_cmd;
 
-    brake->brake_on = 0;
-    brake->clear = 0;
-    brake->count = 0;
     brake->enabled = 0;
-    brake->ignore = 0;
     brake->pedal_command = 0;
 
-    ps_ctrl_throttle_command_msg* throttle = &oscc_interface_data.throttle_cmd;
+    oscc_command_throttle_data_s* throttle = &oscc_interface_data.throttle_cmd;
 
-    throttle->clear = 0;
-    throttle->count = 0;
     throttle->enabled = 0;
-    throttle->ignore = 0;
-    throttle->pedal_command = 0;
+    throttle->commanded_accelerator_position = 0;
 
-    ps_ctrl_steering_command_msg* steering = &oscc_interface_data.steering_cmd;
+    oscc_command_steering_data_s* steering = &oscc_interface_data.steering_cmd;
 
-    steering->clear = 0;
-    steering->count = 0;
     steering->enabled = 0;
-    steering->ignore = 0;
-    steering->steering_wheel_angle_command = 0;
-    steering->steering_wheel_max_velocity = 0;
+    steering->commanded_steering_wheel_angle = 0;
+    steering->commanded_steering_wheel_angle_rate = 0;
 
     return ( return_code );
 }
@@ -415,9 +408,9 @@ int oscc_interface_command_brakes( unsigned int brake_setpoint )
     {
         oscc->brake_cmd.pedal_command = ( uint16_t )brake_setpoint;
 
-        return_code = oscc_can_write( PS_CTRL_MSG_ID_BRAKE_COMMAND,
+        return_code = oscc_can_write( OSCC_COMMAND_BRAKE_CAN_ID,
                                       (void *) &oscc->brake_cmd,
-                                      sizeof( ps_ctrl_brake_command_msg ) );
+                                      sizeof( oscc_command_brake_data_s ) );
     }
     return ( return_code );
 }
@@ -440,11 +433,11 @@ int oscc_interface_command_throttle( unsigned int throttle_setpoint )
 
     if ( oscc != NULL )
     {
-        oscc->throttle_cmd.pedal_command = ( uint16_t )throttle_setpoint;
+        oscc->throttle_cmd.commanded_accelerator_position = ( uint16_t )throttle_setpoint;
 
-        return_code = oscc_can_write( PS_CTRL_THROTTLE_COMMAND_ID,
+        return_code = oscc_can_write( OSCC_COMMAND_THROTTLE_CAN_ID,
                                       (void *) &oscc->throttle_cmd,
-                                      sizeof( ps_ctrl_throttle_command_msg ) );
+                                      sizeof( oscc_command_throttle_data_s ) );
     }
 
     return ( return_code );
@@ -471,12 +464,12 @@ int oscc_interface_command_steering( int angle, unsigned int rate )
 
     if ( oscc != NULL )
     {
-        oscc->steering_cmd.steering_wheel_angle_command = ( int16_t )angle;
-        oscc->steering_cmd.steering_wheel_max_velocity = ( uint16_t )rate;
+        oscc->steering_cmd.commanded_steering_wheel_angle = ( int16_t )angle;
+        oscc->steering_cmd.commanded_steering_wheel_angle_rate = ( uint16_t )rate;
 
-        return_code = oscc_can_write( PS_CTRL_MSG_ID_STEERING_COMMAND,
+        return_code = oscc_can_write( OSCC_COMMAND_STEERING_CAN_ID,
                                       (void *) &oscc->steering_cmd,
-                                      sizeof( ps_ctrl_steering_command_msg ) );
+                                      sizeof( oscc_command_steering_data_s ) );
     }
     return ( return_code );
 }
@@ -530,7 +523,7 @@ int oscc_interface_disable_throttle( )
         oscc->throttle_cmd.enabled = 0;
 
         printf( "throttle: %d %d\n", oscc->throttle_cmd.enabled,
-                oscc->throttle_cmd.pedal_command );
+                oscc->throttle_cmd.commanded_accelerator_position );
 
         return_code = oscc_interface_command_throttle( 0 );
     }
@@ -559,8 +552,8 @@ int oscc_interface_disable_steering( )
 
         printf( "steering: %d %d %d\n",
                 oscc->steering_cmd.enabled,
-                oscc->steering_cmd.steering_wheel_angle_command,
-                oscc->steering_cmd.steering_wheel_max_velocity );
+                oscc->steering_cmd.commanded_steering_wheel_angle,
+                oscc->steering_cmd.commanded_steering_wheel_angle_rate );
 
         return_code = oscc_interface_command_steering( 0, 0 );
     }
@@ -625,24 +618,24 @@ int oscc_interface_update_status( int* override )
 
             int local_override = 0;
 
-            if ( read_frame.can_id == PS_CTRL_MSG_ID_BRAKE_REPORT )
+            if ( read_frame.can_id == OSCC_REPORT_BRAKE_CAN_ID )
             {
-                ps_ctrl_brake_report_msg* report =
-                    ( ps_ctrl_brake_report_msg* )read_frame.data;
+                oscc_report_brake_data_s* report =
+                    ( oscc_report_brake_data_s* )read_frame.data;
 
                 local_override = (int) report->override;
             }
-            else if ( read_frame.can_id == PS_CTRL_MSG_ID_THROTTLE_REPORT )
+            else if ( read_frame.can_id == OSCC_REPORT_THROTTLE_CAN_ID )
             {
-                ps_ctrl_throttle_report_msg* report =
-                    ( ps_ctrl_throttle_report_msg* )read_frame.data;
+                oscc_report_throttle_data_s* report =
+                    ( oscc_report_throttle_data_s* )read_frame.data;
 
                 local_override = (int) report->override;
             }
-            else if ( read_frame.can_id == PS_CTRL_MSG_ID_STEERING_REPORT )
+            else if ( read_frame.can_id == OSCC_REPORT_STEERING_CAN_ID )
             {
-                ps_ctrl_steering_report_msg* report =
-                    ( ps_ctrl_steering_report_msg* )read_frame.data;
+                oscc_report_steering_data_s* report =
+                    ( oscc_report_steering_data_s* )read_frame.data;
 
                 local_override = (int) report->override;
             }

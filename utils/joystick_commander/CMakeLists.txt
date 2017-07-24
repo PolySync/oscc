@@ -13,7 +13,7 @@ else()
 endif()
 
 include_directories(
-	../../firmware/arduino_libraries/control_protocol_can include /usr/include/SDL2
+	../../platforms/common/include include /usr/include/SDL2
 )
 
 add_executable( ${PROJECT_NAME}
