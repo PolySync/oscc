@@ -56,6 +56,14 @@ void delay(unsigned long ms)
 {
 }
 
+void cli(void)
+{
+}
+
+void sei(void)
+{
+}
+
 void _Serial::print(const char str[])
 {
     printf("%s", str);

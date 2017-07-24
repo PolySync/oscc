@@ -67,6 +67,20 @@
 #define BRAKE_PRESSURE_MAX_IN_DECIBARS ( 878.3 )
 
 /*
+ * @brief Minimum possible value expected to be read from the brake pressure
+ * sensors when the pressure check pins (PCK1/PCK2) are asserted.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN ( 665 )
+
+/*
+ * @brief Maximum possible value expected to be read from the brake pressure
+ * sensors when the pressure check pins (PCK1/PCK2) are asserted.
+ *
+ */
+#define BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX ( 680 )
+
+/*
  * @brief Minimum clamped PID value of the actuation solenoid.
  *
  */
@@ -175,25 +189,25 @@
  * @brief Minimum allowable brake value.
  *
  */
-#define MINIMUM_BRAKE_COMMAND( 0 )
+#define MINIMUM_BRAKE_COMMAND ( 0 )
 
 /*
  * @brief Maximum allowable brake value.
  *
  */
-#define MAXIMUM_BRAKE_COMMAND( 52428 )
+#define MAXIMUM_BRAKE_COMMAND ( 52428 )
 
 /*
  * @brief Minimum allowable brake value.
  *
  */
-#define MINIMUM_THROTTLE_COMMAND( 0 )
+#define MINIMUM_THROTTLE_COMMAND ( 0 )
 
 /*
  * @brief Maximum allowable brake value.
  *
  */
-#define MAXIMUM_THROTTLE_COMMAND( 19660 )
+#define MAXIMUM_THROTTLE_COMMAND ( 19660 )
 
 /*
  * @brief Calculation to convert a brake position to a pedal position.

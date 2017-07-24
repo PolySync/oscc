@@ -8,25 +8,11 @@ WHEN("^a throttle report is published$")
 }
 
 
-WHEN("^a fault report is published$")
-{
-    publish_fault_report();
-}
-
-
 THEN("^a throttle report should be put on the control CAN bus$")
 {
     assert_that(g_mock_mcp_can_send_msg_buf_id, is_equal_to(OSCC_THROTTLE_REPORT_CAN_ID));
     assert_that(g_mock_mcp_can_send_msg_buf_ext, is_equal_to(CAN_STANDARD));
     assert_that(g_mock_mcp_can_send_msg_buf_len, is_equal_to(OSCC_THROTTLE_REPORT_CAN_DLC));
-}
-
-
-THEN("^a fault report should be put on the control CAN bus$")
-{
-    assert_that(g_mock_mcp_can_send_msg_buf_id, is_equal_to(OSCC_FAULT_REPORT_CAN_ID));
-    assert_that(g_mock_mcp_can_send_msg_buf_ext, is_equal_to(CAN_STANDARD));
-    assert_that(g_mock_mcp_can_send_msg_buf_len, is_equal_to(OSCC_FAULT_REPORT_CAN_DLC));
 }
 
 
@@ -60,15 +46,4 @@ THEN("^the throttle report's DTCs field should be set$")
     assert_that(
         throttle_report->dtcs,
         is_equal_to(g_throttle_control_state.dtcs));
-}
-
-
-THEN("^the fault report's origin ID field should be set$")
-{
-    oscc_fault_report_s * fault_report =
-        (oscc_fault_report_s *) g_mock_mcp_can_send_msg_buf_buf;
-
-    assert_that(
-        fault_report->fault_origin_id,
-        is_equal_to(FAULT_ORIGIN_THROTTLE));
 }

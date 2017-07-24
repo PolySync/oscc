@@ -5,14 +5,6 @@
 
 #define CAN_500KBPS  15
 
-#ifndef INT32U
-#define INT32U unsigned long
-#endif
-
-#ifndef INT8U
-#define INT8U uint8_t
-#endif
-
 #define CAN_OK                  (0)
 #define CAN_FAILINIT            (1)
 #define CAN_FAILTX              (2)
@@ -26,11 +18,11 @@
 class MCP_CAN
 {
     public:
-        MCP_CAN(INT8U _CS);
-        INT8U begin(INT8U speedset);
-        INT8U sendMsgBuf(INT32U id, INT8U ext, INT8U len, INT8U *buf);
-        INT8U readMsgBufID(INT32U *ID, INT8U *len, INT8U *buf);
-        INT8U checkReceive(void);
+        MCP_CAN(uint8_t _CS);
+        uint8_t begin(uint8_t speedset);
+        uint8_t sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t *buf);
+        uint8_t readMsgBufID(uint32_t *ID, uint8_t *len, uint8_t *buf);
+        uint8_t checkReceive(void);
 };
 
 #endif

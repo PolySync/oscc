@@ -18,38 +18,45 @@ using namespace cgreen;
 
 extern uint8_t g_mock_arduino_digital_write_pin;
 extern uint8_t g_mock_arduino_digital_write_val;
+
 extern int g_mock_arduino_analog_read_return;
 
-extern INT8U g_mock_mcp_can_check_receive_return;
-
-extern INT32U g_mock_mcp_can_read_msg_buf_id;
-extern INT8U g_mock_mcp_can_read_msg_buf_buf[8];
-
-extern INT32U g_mock_mcp_can_send_msg_buf_id;
-extern INT8U g_mock_mcp_can_send_msg_buf_ext;
-extern INT8U g_mock_mcp_can_send_msg_buf_len;
-extern INT8U *g_mock_mcp_can_send_msg_buf_buf;
+extern uint8_t g_mock_mcp_can_check_receive_return;
+extern uint32_t g_mock_mcp_can_read_msg_buf_id;
+extern uint8_t g_mock_mcp_can_read_msg_buf_buf[8];
+extern uint32_t g_mock_mcp_can_send_msg_buf_id;
+extern uint8_t g_mock_mcp_can_send_msg_buf_ext;
+extern uint8_t g_mock_mcp_can_send_msg_buf_len;
+extern uint8_t *g_mock_mcp_can_send_msg_buf_buf;
 
 extern unsigned short g_mock_dac_output_a;
 extern unsigned short g_mock_dac_output_b;
 
-extern kia_soul_throttle_control_state_s g_throttle_control_state;
+extern volatile kia_soul_throttle_control_state_s g_throttle_control_state;
 
 
 // return to known state before every scenario
 BEFORE()
 {
-    g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
-    g_mock_mcp_can_read_msg_buf_id = OSCC_THROTTLE_COMMAND_CAN_ID;
-
-    memset(&g_mock_mcp_can_read_msg_buf_buf, 0, sizeof(g_mock_mcp_can_read_msg_buf_buf));
-    memset(&g_throttle_control_state, 0, sizeof(g_throttle_control_state));
-
     g_mock_arduino_digital_write_pin = UINT8_MAX;
     g_mock_arduino_digital_write_val = UINT8_MAX;
+
     g_mock_arduino_analog_read_return = INT_MAX;
+
+    g_mock_mcp_can_check_receive_return = UINT8_MAX;
+    g_mock_mcp_can_read_msg_buf_id = UINT32_MAX;
+    memset(&g_mock_mcp_can_read_msg_buf_buf, 0, sizeof(g_mock_mcp_can_read_msg_buf_buf));
+
+    g_mock_mcp_can_send_msg_buf_id = UINT32_MAX;
+    g_mock_mcp_can_send_msg_buf_ext = UINT8_MAX;
+    g_mock_mcp_can_send_msg_buf_len = UINT8_MAX;
+
     g_mock_dac_output_a = USHRT_MAX;
     g_mock_dac_output_b = USHRT_MAX;
+
+    g_throttle_control_state.enabled = false;
+    g_throttle_control_state.operator_override = false;
+    g_throttle_control_state.dtcs = 0;
 }
 
 

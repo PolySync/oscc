@@ -27,6 +27,10 @@ void analogWrite(uint8_t pin, int val);
 
 void delay(unsigned long ms);
 
+void sei();
+
+void cli();
+
 class _Serial
 {
     public:
