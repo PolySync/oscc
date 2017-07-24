@@ -12,7 +12,6 @@ if( result )
   set(OSCC_INTF_LIB "-lcanlib")
 else()
   set(OSCC_INTF_SRC "src/oscc_socketcan.c")
-  set(OSCC_INTF_LIB "-lsocketcan")
 endif()
 
 add_executable(

@@ -382,10 +382,6 @@ Install the SDL2 library with the command below.
 sudo apt install libsdl2-dev
 ```
 
-Install the CANlib SDK (if needed) via the following procedure.
-
-[CANlib-SDK](https://www.kvaser.com/linux-drivers-and-sdk/)
-
 ## Building Joystick Commander
 
 Navigate to the directory for the joystick commander code.
@@ -395,8 +391,6 @@ cd utils/joystick_commander
 ```
 
 ### Building against socketcan
-
-**The socketcan libraries must be installed for this build sequence.**
 
 From the control/joystick_commander directory run the following sequence to build the joystick_commander using the socketcan libraries:
 
@@ -413,7 +407,9 @@ For more information on setting up a socketcan interface, check out [this guide]
 
 ### Building against linuxcan
 
-**The Kvaser linuxcan libraries must be installed for this build sequence.**
+Install the CANlib SDK (if needed) via the following procedure.
+
+[CANlib-SDK](https://www.kvaser.com/linux-drivers-and-sdk/)
 
 From the control/joystick_commander directory run the following sequence to build the joystick_commander using the Kvaser linuxcan libaries:
 
