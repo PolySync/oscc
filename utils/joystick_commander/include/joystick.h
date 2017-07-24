@@ -25,6 +25,20 @@
 
 
 /**
+ * @brief Lowest joystick axis value.
+ *
+ */
+#define JOYSTICK_TRIGGER_POSITION_MIN ( 0 )
+
+
+/**
+ * @brief Highest joystick axis value.
+ *
+ */
+#define JOYSTICK_TRIGGER_POSITION_MAX ( 32767 )
+
+
+/**
  * @brief Button state not pressed.
  *
  */
