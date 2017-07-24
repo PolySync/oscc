@@ -370,8 +370,7 @@ modules and used to actuate the vehicle.
 
 ## Pre-requisites:
 
-A Logitech F310 gamepad is required and the SDL2 library. Joystick commander supports socketcan by default, but provides the option to use linuxcan. If using linuxcan, the CANlib SDK needs to
-be pre-installed and a CAN interface adapter, such as the [Kvaser Leaf Light](https://www.kvaser.com),
+A Logitech F310 gamepad is required and the SDL2 library. A CAN interface adapter, such as the [Kvaser Leaf Light](https://www.kvaser.com),
 is also required.
 
 [logitech-F310](http://a.co/3GoUlkN)
@@ -390,62 +389,18 @@ Navigate to the directory for the joystick commander code.
 cd utils/joystick_commander
 ```
 
-### Building against socketcan
-
-From the control/joystick_commander directory run the following sequence to build the joystick_commander using the socketcan libraries:
+From this directory, run the following sequence to build joystick commander:
 
 ```
 mkdir build
 cd build
-cmake .. ( optionally: cmake -DOSCC_INTF=socketcan .. )
+cmake ..
 make
 ```
-
-This will build the joystick_commander in the `build` directory.
 
 For more information on setting up a socketcan interface, check out [this guide](http://elinux.org/Bringing_CAN_interface_up).
 
-### Building against linuxcan
-
-Install the CANlib SDK (if needed) via the following procedure.
-
-[CANlib-SDK](https://www.kvaser.com/linux-drivers-and-sdk/)
-
-From the control/joystick_commander directory run the following sequence to build the joystick_commander using the Kvaser linuxcan libaries:
-
-```
-mkdir build
-cd build
-cmake -DOSCC_INTF=linuxcan ..
-make
-```
-
-Now that the joystick commander is built it is ready to be run. However, we need to determine what
-CAN interface the control CAN bus is connected to on your computer. This interface will be passed to
-the joystick commander as an argument, and will be used to allow the joystick commander to communicate
-with the CAN bus. To figure out what CAN interface your control CAN bus is connected to, navigate to
-the examples directory in the CANlib install.
-
-```
-cd /usr/src/linuxcan/canlib/
-```
-
-Run make to ensure all the CANlib examples are built.
-
-```
-make
-```
-
-Then navigate to the examples directory of the CANlib install.
-
-```
-cd /usr/src/linuxcan/canlib/examples/
-```
-
-You can use the "listChannels" and "canmonitor" examples to determine which CAN channel your control
-bus is connected to. CAN monitor will dump any data on a selected channel and list channels will tell
-you what channels are available. You can use both to determine which channel you will need to use.
-Once you know the correct channel number, you can run the joystick example with the command below.
+After the can interface is initialized, its channel number can be used to start joystick commander.
 
 ```
 ./joystick-commander <channel-number>

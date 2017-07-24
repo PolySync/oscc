@@ -5,21 +5,12 @@ project(joystick-commander)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 
-string(COMPARE EQUAL "${OSCC_INTF}" linuxcan result)
-
-if( result )
-  set(OSCC_INTF_SRC "src/oscc_linuxcan.c")
-  set(OSCC_INTF_LIB "-lcanlib")
-else()
-  set(OSCC_INTF_SRC "src/oscc_socketcan.c")
-endif()
-
 add_executable(
     joystick-commander
     src/commander.c
     src/joystick.c
     src/main.c
-    ${OSCC_INTF_SRC})
+    src/oscc_interface.c)
 
 target_include_directories(
     joystick-commander
@@ -31,6 +22,5 @@ target_include_directories(
 target_link_libraries(
     joystick-commander
     PRIVATE
-    ${SDL2_LIBRARIES}
-    ${OSCC_INTF_LIB})
+    ${SDL2_LIBRARIES})
 
