@@ -22,5 +22,5 @@ target_include_directories(
 target_link_libraries(
     joystick-commander
     PRIVATE
-    ${SDL2_LIBRARIES}
-    canlib)
+    ${SDL2_LIBRARIES})
+

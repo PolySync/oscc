@@ -385,10 +385,6 @@ Install the SDL2 library with the command below.
 sudo apt install libsdl2-dev
 ```
 
-Install the CANlib SDK via the following procedure.
-
-[CANlib-SDK](https://www.kvaser.com/linux-drivers-and-sdk/)
-
 ## Building Joystick Commander
 
 Navigate to the directory for the joystick commander code.
@@ -397,7 +393,7 @@ Navigate to the directory for the joystick commander code.
 cd utils/joystick_commander
 ```
 
-Once you are in the home directory of the joystick commander, build the code using CMake.
+From this directory, run the following sequence to build joystick commander:
 
 ```
 mkdir build
@@ -406,36 +402,23 @@ cmake ..
 make
 ```
 
-Now that the joystick commander is built it is ready to be run. However, we need to determine what
-CAN interface the control CAN bus is connected to on your computer. This interface will be passed to
-the joystick commander as an argument, and will be used to allow the joystick commander to communicate
-with the CAN bus. To figure out what CAN interface your control CAN bus is connected to, navigate to
-the examples directory in the CANlib install.
+Once you have initialized the CAN interface, you can use the channel number to start joystick commander and begin sending commands to the OSCC modules.
+
+For example, with a Kvaser Leaf Light attached, using a bitrate of 500000:
 
 ```
-cd /usr/src/linuxcan/canlib/
+ sudo ip link set can0 type can bitrate 500000
+ sudo ip link set up can0
 ```
 
-Run make to ensure all the CANlib examples are built.
+
+You would then run:
 
 ```
-make
+./joystick-commander 0
 ```
 
-Then navigate to the examples directory of the CANlib install.
-
-```
-cd /usr/src/linuxcan/canlib/examples/
-```
-
-You can use the "listChannels" and "canmonitor" examples to determine which CAN channel your control
-bus is connected to. CAN monitor will dump any data on a selected channel and list channels will tell
-you what channels are available. You can use both to determine which channel you will need to use.
-Once you know the correct channel number, you can run the joystick example with the command below.
-
-```
-./joystick-commander <channel-number>
-```
+For more information on setting up a socketcan interface, check out [this guide](http://elinux.org/Bringing_CAN_interface_up).
 
 ## Controlling the Vehicle with the Joystick Gamepad
 
