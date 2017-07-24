@@ -13,6 +13,9 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_joystick.h>
+#include <SDL2/SDL_gamecontroller.h>
 
 #include "macros.h"
 #include "joystick.h"
@@ -27,17 +30,17 @@
  * @brief Joystick axis indices
  *
  */
-#define JOYSTICK_AXIS_THROTTLE (5)
-#define JOYSTICK_AXIS_BRAKE (2)
-#define JOYSTICK_AXIS_STEER (3)
+#define JOYSTICK_AXIS_THROTTLE (SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+ #define JOYSTICK_AXIS_BRAKE (SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+ #define JOYSTICK_AXIS_STEER (SDL_CONTROLLER_AXIS_LEFTX)
 
 
 /**
  * @brief Joystick button indices
  *
  */
-#define JOYSTICK_BUTTON_ENABLE_CONTROLS (7)
-#define JOYSTICK_BUTTON_DISABLE_CONTROLS (6)
+#define JOYSTICK_BUTTON_ENABLE_CONTROLS (SDL_CONTROLLER_BUTTON_START)
+#define JOYSTICK_BUTTON_DISABLE_CONTROLS (SDL_CONTROLLER_BUTTON_BACK)
 
 /**
  * @brief Throttle pedal position values [normalized]
