@@ -25,7 +25,7 @@
  * @brief Math macro: constrain(amount, low, high).
  *
  */
-#define CONSTRAIN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 
 // *****************************************************
@@ -567,43 +567,43 @@ void obd_callback(long id, unsigned char * data){
 // Parameters:  oscc_status_s - struct containing OSCC status
 //
 // *****************************************************
-static bool check_for_brake_faults( oscc_status_s * status)
-{
-    bool fault_occurred = false;
+// static bool check_for_brake_faults( oscc_status_s * status)
+// {
+//     bool fault_occurred = false;
 
-    if( status != NULL )
-    {
-        if ( status->fault_brake_obd_timeout == true )
-        {
-            printf( "Brake - OBD Timeout Detected\n" );
+//     if( status != NULL )
+//     {
+//         if ( status->fault_brake_obd_timeout == true )
+//         {
+//             printf( "Brake - OBD Timeout Detected\n" );
 
-            fault_occurred = true;
-        }
+//             fault_occurred = true;
+//         }
 
-        if ( status->fault_brake_invalid_sensor_value == true )
-        {
-            printf( "Brake - Invalid Sensor Value Detected\n" );
+//         if ( status->fault_brake_invalid_sensor_value == true )
+//         {
+//             printf( "Brake - Invalid Sensor Value Detected\n" );
 
-            fault_occurred = true;
-        }
+//             fault_occurred = true;
+//         }
 
-        if ( status->fault_brake_actuator_error == true )
-        {
-            printf( "Brake - Actuator Error Detected\n" );
+//         if ( status->fault_brake_actuator_error == true )
+//         {
+//             printf( "Brake - Actuator Error Detected\n" );
 
-            fault_occurred = true;
-        }
+//             fault_occurred = true;
+//         }
 
-        if ( status->fault_brake_pump_motor_error == true )
-        {
-            printf( "Brake - Accumulator Pump Error Detected\n" );
+//         if ( status->fault_brake_pump_motor_error == true )
+//         {
+//             printf( "Brake - Accumulator Pump Error Detected\n" );
 
-            fault_occurred = true;
-        }
-    }
+//             fault_occurred = true;
+//         }
+//     }
 
-    return fault_occurred;
-}
+//     return fault_occurred;
+// }
 
 
 // *****************************************************
@@ -618,29 +618,29 @@ static bool check_for_brake_faults( oscc_status_s * status)
 // Parameters:  oscc_status_s - struct containing OSCC status
 //
 // *****************************************************
-static bool check_for_steering_faults( oscc_status_s * status)
-{
-    bool fault_occurred = false;
+// static bool check_for_steering_faults( oscc_status_s * status)
+// {
+//     bool fault_occurred = false;
 
-    if( status != NULL )
-    {
-        if ( status->fault_steering_obd_timeout == true )
-        {
-            printf( "Steering - OBD Timeout Detected\n" );
+//     if( status != NULL )
+//     {
+//         if ( status->fault_steering_obd_timeout == true )
+//         {
+//             printf( "Steering - OBD Timeout Detected\n" );
 
-            fault_occurred = true;
-        }
+//             fault_occurred = true;
+//         }
 
-        if ( status->fault_steering_invalid_sensor_value == true )
-        {
-            printf( "Steering - Invalid Sensor Value Detected\n" );
+//         if ( status->fault_steering_invalid_sensor_value == true )
+//         {
+//             printf( "Steering - Invalid Sensor Value Detected\n" );
 
-            fault_occurred = true;
-        }
-    }
+//             fault_occurred = true;
+//         }
+//     }
 
-    return fault_occurred;
-}
+//     return fault_occurred;
+// }
 
 
 // *****************************************************
@@ -655,22 +655,22 @@ static bool check_for_steering_faults( oscc_status_s * status)
 // Parameters:  oscc_status_s - struct containing OSCC status
 //
 // *****************************************************
-static bool check_for_throttle_faults( oscc_status_s * status)
-{
-    bool fault_occurred = false;
+// static bool check_for_throttle_faults( oscc_status_s * status)
+// {
+//     bool fault_occurred = false;
 
-    if( status != NULL )
-    {
-        if ( status->fault_throttle_invalid_sensor_value == true )
-        {
-            printf( "Throttle - Invalid Sensor Value Detected\n" );
+//     if( status != NULL )
+//     {
+//         if ( status->fault_throttle_invalid_sensor_value == true )
+//         {
+//             printf( "Throttle - Invalid Sensor Value Detected\n" );
 
-            fault_occurred = true;
-        }
-    }
+//             fault_occurred = true;
+//         }
+//     }
 
-    return fault_occurred;
-}
+//     return fault_occurred;
+// }
 
 
 
@@ -840,52 +840,52 @@ int commander_high_frequency_update( )
 {
     int return_code = OSCC_OK;
 
-    int oscc_override = 0;
+    // int oscc_override = 0;
 
-    // oscc_status_s status;
+    // // oscc_status_s status;
 
-    // memset( &status,
-    //         0,
-    //         sizeof(status) );
+    // // memset( &status,
+    // //         0,
+    // //         sizeof(status) );
 
-    // if ( status.operator_override == true )
+    // // if ( status.operator_override == true )
+    // // {
+    // //     printf( "Driver Override Detected\n" );
+    // //     return_code = commander_disable_controls( );
+    // // }
+
+    // if ( return_code == NOERR )
     // {
-    //     printf( "Driver Override Detected\n" );
-    //     return_code = commander_disable_controls( );
+    //     if ( status.operator_override == true )
+    //     {
+    //         printf( "Driver Override Detected\n" );
+    //         return_code = commander_disable_controls( );
+    //     }
+
+
+    //     bool brake_fault_occurred = check_for_brake_faults( &status );
+
+    //     if ( brake_fault_occurred == true )
+    //     {
+    //         return_code = commander_disable_controls( );
+    //     }
+
+
+    //     bool steering_fault_occurred = check_for_steering_faults( &status );
+
+    //     if ( steering_fault_occurred == true )
+    //     {
+    //         return_code = commander_disable_controls( );
+    //     }
+
+
+    //     bool throttle_fault_occurred = check_for_throttle_faults( &status );
+
+    //     if ( throttle_fault_occurred == true )
+    //     {
+    //         return_code = commander_disable_controls( );
+    //     }
     // }
-
-    if ( return_code == NOERR )
-    {
-        if ( status.operator_override == true )
-        {
-            printf( "Driver Override Detected\n" );
-            return_code = commander_disable_controls( );
-        }
-
-
-        bool brake_fault_occurred = check_for_brake_faults( &status );
-
-        if ( brake_fault_occurred == true )
-        {
-            return_code = commander_disable_controls( );
-        }
-
-
-        bool steering_fault_occurred = check_for_steering_faults( &status );
-
-        if ( steering_fault_occurred == true )
-        {
-            return_code = commander_disable_controls( );
-        }
-
-
-        bool throttle_fault_occurred = check_for_throttle_faults( &status );
-
-        if ( throttle_fault_occurred == true )
-        {
-            return_code = commander_disable_controls( );
-        }
-    }
 
     return return_code;
 }

@@ -21,7 +21,6 @@ target_include_directories(
     PRIVATE
     include
     ../../api/include
-    ../../firmware/common/include
     ${SDL2_INCLUDE_DIRS})
 
 target_link_libraries(
