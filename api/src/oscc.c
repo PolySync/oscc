@@ -167,31 +167,15 @@ oscc_error_t oscc_publish_steering_torque(double normalized_torque)
 
     // use normalized steering angle to scale between known limits
     // use that to calculate spoof value
-
-    steering_cmd.magic = ( uint16_t ) OSCC_MAGIC;
-    steering_cmd.spoof_value_low = ( int16_t ) STEERING_ANGLE_TO_SPOOF_LOW( angle );
-    steering_cmd.spoof_value_high = ( int16_t ) STEERING_ANGLE_TO_SPOOF_HIGH( angle );
-
-    ret = oscc_can_write( OSCC_STEERING_COMMAND_CAN_ID,
-                                    (void *) &steering_cmd,
-                                    sizeof( steering_cmd ) );
-
-    return ret;
-}
-
-    torque = m_constrain(
-        torque,
-        STEERING_TORQUE_MIN,
-        STEERING_TORQUE_MAX
-    );
+    double torque = normalized_torque * STEERING_TORQUE_MAX;
 
     steering_cmd.magic = ( uint16_t ) OSCC_MAGIC;
     steering_cmd.spoof_value_low = ( int16_t ) STEERING_TORQUE_TO_SPOOF_LOW( torque );
     steering_cmd.spoof_value_high = ( int16_t ) STEERING_TORQUE_TO_SPOOF_HIGH( torque );
 
-    ret = oscc_can_write(OSCC_STEERING_COMMAND_CAN_ID,
-                            (void *)&steering_cmd,
-                            sizeof(steering_cmd));
+    ret = oscc_can_write( OSCC_STEERING_COMMAND_CAN_ID,
+                                    (void *) &steering_cmd,
+                                    sizeof( steering_cmd ) );
 
     return ret;
 }

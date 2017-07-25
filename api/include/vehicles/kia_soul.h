@@ -333,16 +333,16 @@ typedef struct
 #define STEERING_ANGLE_TO_SPOOF_LOW( angle ) ( (angle) )
 
 /*
- * @brief Calculation to convert a steering torque to a high spoof value.
+ * @brief Minimum allowed value for the high spoof signal value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) ( (torque) )
+#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) ( STEPS_PER_VOLT * ((TORQUE_SPOOF_HIGH_SCALAR * torque) + TORQUE_SPOOF_HIGH_OFFSET) )
 
 /*
  * @brief Calculation to convert a steering torque to a low spoof value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) ( (torque) )
+#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) ( STEPS_PER_VOLT * ((TORQUE_SPOOF_LOW_SCALAR * torque) + TORQUE_SPOOF_LOW_OFFSET) )
 
 /*
  * @brief Value of the torque sensor that indicates operator override.
@@ -393,31 +393,6 @@ typedef struct
  *
  */
 #define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1800 )
-
-/*
- * @brief Minimum allowed value for the high spoof signal value.
- *
- */
-#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) ( STEPS_PER_VOLT * ((TORQUE_SPOOF_HIGH_SCALAR * torque) + TORQUE_SPOOF_HIGH_OFFSET) )
-
-/*
- * @brief Calculation to convert a steering torque to a low spoof value.
- *
- */
-#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) ( STEPS_PER_VOLT * ((TORQUE_SPOOF_LOW_SCALAR * torque) + TORQUE_SPOOF_LOW_OFFSET) )
-
-
-/**
- * @brief Steering wheel angle message data.
- *
- */
-typedef struct
-{
-    int16_t steering_wheel_angle; /* 1/10 degrees */
-
-    uint8_t reserved[6]; /* Reserved. */
-} kia_soul_obd_steering_wheel_angle_data_s;
-
 
 /**
  * @brief Wheel speed message data.
