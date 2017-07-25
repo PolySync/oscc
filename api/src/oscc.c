@@ -1,6 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <canlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <sys/socket.h>
+#include <linux/can.h>
+#include <errno.h>
+#include <signal.h>
 
 #include "can_protocols/brake_can_protocol.h"
 #include "can_protocols/fault_can_protocol.h"
@@ -12,7 +21,8 @@
 
 #define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
-static CanHandle can_handle;
+static int can_socket;
+
 static oscc_brake_command_s brake_cmd;
 static oscc_throttle_command_s throttle_cmd;
 static oscc_steering_command_s steering_cmd;
@@ -23,22 +33,29 @@ static void( *throttle_report_callback )( oscc_throttle_report_s *report );
 static void( *fault_report_callback )( oscc_fault_report_s *report );
 static void( *obd_frame_callback )( long id, unsigned char * data );
 
-static oscc_error_t oscc_init_can( int channel );
+static oscc_error_t oscc_init_can( const char* can_channel );
 static oscc_error_t oscc_can_write( long id, void* msg, unsigned int dlc );
+static oscc_error_t oscc_async_enable( int socket );
 static oscc_error_t oscc_enable_brakes( );
 static oscc_error_t oscc_enable_throttle( );
 static oscc_error_t oscc_enable_steering( );
 static oscc_error_t oscc_disable_brakes( );
 static oscc_error_t oscc_disable_throttle( );
 static oscc_error_t oscc_disable_steering( );
-static void oscc_update_status( canNotifyData *data );
+static void oscc_update_status( );
 
 
 oscc_error_t oscc_open( unsigned int channel )
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    ret = oscc_init_can( channel );
+    char buffer[16];
+
+    snprintf( buffer, 16, "can%1d", channel );
+
+    printf( "Opening CAN channel: %s\n", buffer );
+
+    ret = oscc_init_can( buffer );
 
     return ret;
 }
@@ -47,15 +64,10 @@ oscc_error_t oscc_open( unsigned int channel )
 oscc_error_t oscc_close( unsigned int channel )
 {
     oscc_error_t ret = OSCC_ERROR;
+    
+    int result = close( can_socket );
 
-    canStatus status = canWriteSync( can_handle, 1000 );
-
-    if ( status == canOK )
-    {
-        status = canClose( can_handle );
-    }
-
-    if ( status == canOK )
+    if ( result > 0 )
     {
         ret = OSCC_OK;
     }
@@ -334,54 +346,44 @@ static oscc_error_t oscc_disable_steering( )
 }
 
 
-static void oscc_update_status( canNotifyData *data )
+static void oscc_update_status( )
 {
-    long can_id;
-    unsigned int msg_dlc;
-    unsigned int msg_flag;
-    unsigned long tstamp;
-    unsigned char buffer[ 8 ];
+    struct can_frame rx_frame;
 
-    canStatus can_status = canRead(
-        can_handle,
-        &can_id,
-        buffer,
-        &msg_dlc,
-        &msg_flag,
-        &tstamp );
+    int result = read( can_socket, &rx_frame, CAN_MTU );
 
-    while ( can_status == canOK )
+    while ( result > 0 )
     {
-        if ( can_id == OSCC_STEERING_REPORT_CAN_ID ) {
+        if ( rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID ) {
             oscc_steering_report_s* steering_report =
-                ( oscc_steering_report_s* )buffer;
+                ( oscc_steering_report_s* )rx_frame.data;
 
             if (steering_report_callback != NULL)
             {
                 steering_report_callback(steering_report);
             }
         }
-        else if ( can_id == OSCC_THROTTLE_REPORT_CAN_ID ) {
+        else if ( rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID) {
             oscc_throttle_report_s* throttle_report =
-                ( oscc_throttle_report_s* )buffer;
+                ( oscc_throttle_report_s* )rx_frame.data;
 
             if (throttle_report_callback != NULL)
             {
                 throttle_report_callback(throttle_report);
             }
         }
-        else if ( can_id == OSCC_BRAKE_REPORT_CAN_ID ) {
+        else if ( rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID ) {
             oscc_brake_report_s* brake_report =
-                ( oscc_brake_report_s* )buffer;
+                ( oscc_brake_report_s* )rx_frame.data;
 
             if (brake_report_callback != NULL)
             {
                 brake_report_callback(brake_report);
             }
         }
-        else if ( can_id == OSCC_FAULT_REPORT_CAN_ID ) {
+        else if ( rx_frame.can_id == OSCC_FAULT_REPORT_CAN_ID ) {
             oscc_fault_report_s* fault_report =
-                ( oscc_fault_report_s* )buffer;
+                ( oscc_fault_report_s* )rx_frame.data;
 
             if (fault_report_callback != NULL)
             {
@@ -392,17 +394,11 @@ static void oscc_update_status( canNotifyData *data )
         {
             if ( obd_frame_callback != NULL )
             {
-                obd_frame_callback( can_id, buffer );
+                obd_frame_callback( rx_frame.can_id, rx_frame.data );
             }
         }
 
-        can_status = canRead(
-            can_handle,
-            &can_id,
-            buffer,
-            &msg_dlc,
-            &msg_flag,
-            &tstamp );
+        result = read( can_socket, &rx_frame, CAN_MTU );
     }
 }
 
@@ -411,9 +407,15 @@ static oscc_error_t oscc_can_write( long id, void* msg, unsigned int dlc )
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    canStatus status = canWrite( can_handle, id, msg, dlc, 0 );
+    struct can_frame tx_frame;
 
-    if ( status == canOK )
+    tx_frame.can_id = id;
+    tx_frame.can_dlc = dlc;
+    memcpy( tx_frame.data, msg, dlc );
+
+    int result = write( can_socket, &tx_frame, sizeof( tx_frame ) );
+
+    if ( result > 0 )
     {
         ret = OSCC_OK;
     }
@@ -421,29 +423,56 @@ static oscc_error_t oscc_can_write( long id, void* msg, unsigned int dlc )
     return ret;
 }
 
+static oscc_error_t oscc_async_enable( int socket )
+{
+    oscc_error_t ret = OSCC_ERROR;
 
-static oscc_error_t oscc_init_can( int channel )
+    if ( socket >= 0 )
+    {
+        int state = fcntl( socket, F_GETFL, 0 );
+
+        if ( state >= 0 )
+        {
+            state |= O_ASYNC;
+
+            int result = fcntl( socket, F_SETFL, state );
+
+            if ( result >= 0 )
+            {
+                ret = OSCC_OK;
+            }
+        }
+    }
+
+    return ret;
+}
+
+static oscc_error_t oscc_init_can( const char* can_channel )
 {
     int ret = OSCC_OK;
 
-    can_handle = canOpenChannel( channel, canOPEN_EXCLUSIVE );
+    int s = socket( PF_CAN, SOCK_RAW, CAN_RAW );
 
-    if ( can_handle < 0 )
+    if ( s < 0 )
     {
-        printf( "canOpenChannel %d failed\n", channel );
+        printf( "opening can socket failed\n" );
 
         ret = OSCC_ERROR;
     }
 
-    canStatus status;
+    int status;
+
+    struct ifreq ifr;
 
     if ( ret != OSCC_ERROR )
     {
-        status = canBusOff( can_handle );
+        strncpy( ifr.ifr_name, can_channel, IFNAMSIZ );
 
-        if ( status != canOK )
+        status = ioctl( s, SIOCGIFINDEX, &ifr );
+
+        if ( status < 0 )
         {
-            printf( "canBusOff failed\n" );
+            printf( "finding can index failed\n" );
 
             ret = OSCC_ERROR;
         }
@@ -451,12 +480,18 @@ static oscc_error_t oscc_init_can( int channel )
 
     if ( ret != OSCC_ERROR )
     {
-        status = canSetBusParams( can_handle, BAUD_500K,
-                                  0, 0, 0, 0, 0 );
+        struct sockaddr_can can_address;
 
-        if ( status != canOK )
+        can_address.can_family = AF_CAN;
+        can_address.can_ifindex = ifr.ifr_ifindex;
+
+        status = bind( s,
+                       ( struct sockaddr * )&can_address,
+                       sizeof( can_address ) );
+
+        if ( status < 0 )
         {
-            printf( "canSetBusParams failed\n" );
+            printf( "socket binding failed\n" );
 
             ret = OSCC_ERROR;
         }
@@ -464,11 +499,11 @@ static oscc_error_t oscc_init_can( int channel )
 
     if ( ret != OSCC_ERROR )
     {
-        status = canSetBusOutputControl( can_handle, canDRIVER_NORMAL );
+        status = oscc_async_enable( s );
 
-        if ( status != canOK )
+        if ( status != OSCC_OK )
         {
-            printf( "canSetBusOutputControl failed\n" );
+            printf( "async enable failed\n" );
 
             ret = OSCC_ERROR;
         }
@@ -476,32 +511,11 @@ static oscc_error_t oscc_init_can( int channel )
 
     if( ret != OSCC_ERROR )
     {
-        status = canBusOn( can_handle );
+        signal( SIGIO, oscc_update_status );
 
-        if ( status != canOK )
-        {
-            printf( "canBusOn failed\n" );
+        can_socket = s;
 
-            ret = OSCC_ERROR;
-        }
-    }
-
-    if( ret != OSCC_ERROR )
-    {
-        // register callback handler
-        status = canSetNotify(
-
-            can_handle,
-            oscc_update_status,
-            canNOTIFY_RX,
-            (char*)0 );
-
-        if ( status != canOK )
-        {
-            printf( "canSetNotify failed\n" );
-
-            ret = OSCC_ERROR;
-        }
+        ret = OSCC_OK;
     }
 
     return ret;
