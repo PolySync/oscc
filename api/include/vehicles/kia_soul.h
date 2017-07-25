@@ -398,6 +398,12 @@ typedef struct
  * @brief Wheel speed message data.
  *
  */
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 0 )
+
+/**
+ * @brief Wheel speed message data.
+ *
+ */
 #define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3500 )
 
 /*
