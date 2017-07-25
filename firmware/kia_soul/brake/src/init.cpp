@@ -21,19 +21,13 @@
 
 void init_globals( void )
 {
-    f_brake_control_state.enabled = false;
+    g_brake_control_state.enabled = false;
     g_brake_control_state.operator_override = false;
     g_brake_control_state.dtcs = 0;
     g_brake_control_state.brake_pressure_front_left = 0;
     g_brake_control_state.brake_pressure_front_right = 0;
 
     g_brake_command_timeout = false;
-
-    pid_zeroize( &g_pid, PID_WINDUP_GUARD );
-
-    g_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
-    g_pid.integral_gain = PID_INTEGRAL_GAIN;
-    g_pid.derivative_gain = PID_DERIVATIVE_GAIN;
 }
 
 
