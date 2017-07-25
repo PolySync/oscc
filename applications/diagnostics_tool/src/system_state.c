@@ -14,11 +14,11 @@
 #include "can_monitor.h"
 #include "terminal_print.h"
 #include "system_state.h"
-#include "brake_can_protocol.h"
-#include "chassis_state_can_protocol.h"
-#include "gateway_can_protocol.h"
-#include "steering_can_protocol.h"
-#include "throttle_can_protocol.h"
+#include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
+#include "can_protocols/throttle_can_protocol.h"
+// #include "chassis_state_can_protocol.h"
+// #include "gateway_can_protocol.h"
 
 
 
@@ -44,10 +44,10 @@ static int update_steering_state()
     int ret = ERROR;
 
     const can_frame_s * const steering_command_frame =
-            get_can_msg_array_index_reference( OSCC_COMMAND_STEERING_CAN_ID );
+            get_can_msg_array_index_reference( OSCC_STEERING_COMMAND_CAN_ID );
 
     const can_frame_s * const steering_report_frame =
-            get_can_msg_array_index_reference( OSCC_REPORT_STEERING_CAN_ID );
+            get_can_msg_array_index_reference( OSCC_STEERING_REPORT_CAN_ID );
 
     if( steering_command_frame != NULL  ||  steering_report_frame != NULL )
     {
@@ -67,10 +67,10 @@ static int update_throttle_state()
     int ret = ERROR;
 
     const can_frame_s * const throttle_command_frame =
-            get_can_msg_array_index_reference( OSCC_COMMAND_THROTTLE_CAN_ID );
+            get_can_msg_array_index_reference( OSCC_THROTTLE_COMMAND_CAN_ID );
 
     const can_frame_s * const throttle_report_frame =
-            get_can_msg_array_index_reference( OSCC_REPORT_THROTTLE_CAN_ID );
+            get_can_msg_array_index_reference( OSCC_THROTTLE_REPORT_CAN_ID );
 
     if( throttle_command_frame != NULL || throttle_report_frame != NULL )
     {
@@ -90,10 +90,10 @@ static int update_brake_state()
     int ret = ERROR;
 
     const can_frame_s * const brake_command_frame =
-            get_can_msg_array_index_reference( OSCC_COMMAND_BRAKE_CAN_ID );
+            get_can_msg_array_index_reference( OSCC_BRAKE_COMMAND_CAN_ID );
 
     const can_frame_s * const brake_report_frame =
-            get_can_msg_array_index_reference( OSCC_REPORT_BRAKE_CAN_ID );
+            get_can_msg_array_index_reference( OSCC_BRAKE_REPORT_CAN_ID );
 
     if( brake_command_frame != NULL  ||  brake_report_frame != NULL )
     {
@@ -107,33 +107,33 @@ static int update_brake_state()
 }
 
 
-//
-static int update_gateway_state()
-{
-    int ret = ERROR;
+// //
+// static int update_gateway_state()
+// {
+//     int ret = ERROR;
 
-    const can_frame_s * const heartbeat_msg_frame =
-            get_can_msg_array_index_reference( OSCC_REPORT_HEARTBEAT_CAN_ID );
+//     const can_frame_s * const heartbeat_msg_frame =
+//             get_can_msg_array_index_reference( OSCC_REPORT_HEARTBEAT_CAN_ID );
 
-    const can_frame_s * const chassis_state1_frame =
-            get_can_msg_array_index_reference( OSCC_REPORT_CHASSIS_STATE_1_CAN_ID );
+//     const can_frame_s * const chassis_state1_frame =
+//             get_can_msg_array_index_reference( OSCC_REPORT_CHASSIS_STATE_1_CAN_ID );
 
-    const can_frame_s * const chassis_state2_frame =
-            get_can_msg_array_index_reference( OSCC_REPORT_CHASSIS_STATE_2_CAN_ID );
+//     const can_frame_s * const chassis_state2_frame =
+//             get_can_msg_array_index_reference( OSCC_REPORT_CHASSIS_STATE_2_CAN_ID );
 
-    if( heartbeat_msg_frame != NULL ||
-            chassis_state1_frame != NULL ||
-            chassis_state2_frame != NULL )
-    {
-        ret = analyze_gateway_state(
-                &system_state.gateway_module_state,
-                heartbeat_msg_frame,
-                chassis_state1_frame,
-                chassis_state2_frame );
-    }
+//     if( heartbeat_msg_frame != NULL ||
+//             chassis_state1_frame != NULL ||
+//             chassis_state2_frame != NULL )
+//     {
+//         ret = analyze_gateway_state(
+//                 &system_state.gateway_module_state,
+//                 heartbeat_msg_frame,
+//                 chassis_state1_frame,
+//                 chassis_state2_frame );
+//     }
 
-    return ret;
-}
+//     return ret;
+// }
 
 
 
@@ -169,12 +169,12 @@ int update_system_state()
         ret = ERROR;
     }
 
-    if( update_gateway_state() == ERROR )
-    {
-        system_state.gateway_module_state.module_state = STATE_FAULT;
+//     if( update_gateway_state() == ERROR )
+//     {
+//         system_state.gateway_module_state.module_state = STATE_FAULT;
 
-        ret = ERROR;
-    }
+//         ret = ERROR;
+//     }
 
     // TODO : define
     //update_overall_state();
