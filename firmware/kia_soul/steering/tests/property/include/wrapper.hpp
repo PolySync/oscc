@@ -2,3 +2,5 @@
 #include "communications.h"
 #include "oscc_can.h"
 #include "can_protocols/steering_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
+#include "vehicles/kia_soul.h"
