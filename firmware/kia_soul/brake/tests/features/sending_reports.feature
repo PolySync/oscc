@@ -12,4 +12,3 @@ Feature: Sending reports
     And the brake report's enabled field should be set
     And the brake report's override field should be set
     And the brake report's DTCs field should be set
-    And the brake report's front pressure sensor fields should be set

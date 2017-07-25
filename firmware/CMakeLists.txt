@@ -76,6 +76,7 @@ else()
     endif()
 
     if(KIA_SOUL)
+        add_definitions(-DKIA_SOUL)
         add_subdirectory(kia_soul)
     else()
         message(WARNING "No platform selected - no firmware will be built")

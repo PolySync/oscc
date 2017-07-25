@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "oscc_timer.h"
 #include "can_protocols/brake_can_protocol.h"
+#include "vehicles/vehicles.h"
 
 #include "globals.h"
 #include "init.h"
@@ -24,10 +25,13 @@ void init_globals( void )
     g_brake_control_state.enabled = false;
     g_brake_control_state.operator_override = false;
     g_brake_control_state.dtcs = 0;
-    g_brake_control_state.brake_pressure_front_left = 0;
-    g_brake_control_state.brake_pressure_front_right = 0;
 
     g_brake_command_timeout = false;
+
+    pid_zeroize( &g_pid, BRAKE_PID_WINDUP_GUARD );
+    g_pid.proportional_gain = BRAKE_PID_PROPORTIONAL_GAIN;
+    g_pid.integral_gain = BRAKE_PID_INTEGRAL_GAIN;
+    g_pid.derivative_gain = BRAKE_PID_DERIVATIVE_GAIN;
 }
 
 

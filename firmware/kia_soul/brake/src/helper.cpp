@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include "vehicles/kia_soul.h"
+#include "vehicles/vehicles.h"
 
 #include "globals.h"
 #include "helper.h"

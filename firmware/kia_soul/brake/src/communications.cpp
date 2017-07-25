@@ -9,7 +9,7 @@
 #include "can_protocols/fault_can_protocol.h"
 #include "oscc_can.h"
 #include "debug.h"
-#include "vehicles/kia_soul.h"
+#include "vehicles/vehicles.h"
 
 #include "globals.h"
 #include "communications.h"
@@ -32,8 +32,6 @@ void publish_brake_report( void )
     brake_report.enabled = (uint8_t) g_brake_control_state.enabled;
     brake_report.operator_override = (uint8_t) g_brake_control_state.operator_override;
     brake_report.dtcs = g_brake_control_state.dtcs;
-    brake_report.brake_pressure_front_left = g_brake_control_state.brake_pressure_front_left;
-    brake_report.brake_pressure_front_right = g_brake_control_state.brake_pressure_front_right;
 
     g_control_can.sendMsgBuf(
         OSCC_BRAKE_REPORT_CAN_ID,
@@ -112,7 +110,8 @@ static void process_brake_command(
             disable_control( );
         }
 
-        update_brake();
+        g_brake_control_state.commanded_pedal_position =
+            brake_command->pedal_command;
 
         g_brake_command_timeout = false;
     }

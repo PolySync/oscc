@@ -5,7 +5,7 @@
 
 
 #include <Arduino.h>
-#include "vehicles/kia_soul.h"
+#include "vehicles/vehicles.h"
 
 #include "globals.h"
 #include "accumulator.h"
@@ -47,11 +47,11 @@ void accumulator_maintain_pressure( void )
 {
     float pressure = accumulator_read_pressure( );
 
-    if ( pressure <= ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS )
+    if ( pressure <= BRAKE_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS )
     {
         accumulator_turn_pump_on( );
     }
-    else if ( pressure >= ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS )
+    else if ( pressure >= BRAKE_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS )
     {
         accumulator_turn_pump_off( );
     }

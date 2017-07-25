@@ -11,10 +11,12 @@
 #include "brake_control.h"
 #include "can_protocols/brake_can_protocol.h"
 #include "can_protocols/fault_can_protocol.h"
+#include "vehicles/vehicles.h"
 #include "globals.h"
 
 using namespace cgreen;
 
+extern unsigned long g_mock_arduino_micros_return;
 
 extern uint8_t g_mock_arduino_digital_write_pin;
 extern uint8_t g_mock_arduino_digital_write_val;
@@ -57,8 +59,6 @@ BEFORE()
     g_brake_control_state.enabled = false;
     g_brake_control_state.operator_override = false;
     g_brake_control_state.dtcs = 0;
-    g_brake_control_state.brake_pressure_front_left = 0;
-    g_brake_control_state.brake_pressure_front_left = 0;
 }
 
 

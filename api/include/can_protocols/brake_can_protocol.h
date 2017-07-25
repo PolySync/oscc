@@ -80,11 +80,7 @@ typedef struct
 
     uint8_t dtcs; /* Bitfield of DTCs present in the module. */
 
-    int16_t brake_pressure_front_left; /* Brake pressure at front left wheel. */
-
-    int16_t brake_pressure_front_right; /* Brake pressure at front right wheel. */
-
-    uint8_t reserved; /*!< Reserved. */
+    uint8_t reserved[5]; /*!< Reserved. */
 } oscc_brake_report_s;
 
 
