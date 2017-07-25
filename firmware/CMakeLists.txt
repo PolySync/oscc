@@ -7,6 +7,10 @@ if(TESTS)
         add_definitions(-DDEBUG)
     endif()
 
+    if(KIA_SOUL)
+        add_definitions(-DKIA_SOUL)
+    endif()
+
     add_subdirectory(kia_soul/brake/tests)
     add_subdirectory(kia_soul/can_gateway/tests)
     add_subdirectory(kia_soul/steering/tests)
