@@ -13,7 +13,7 @@ node('arduino') {
       parallel 'kia soul firmware': {
         sh 'cd firmware && mkdir build && cd build && cmake .. -DBUILD_KIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release && make'
       }, 'joystick commander': {
-        sh 'cd applications/joystick_commander && mkdir build && cd build && cmake .. && make'
+        sh 'cd applications/joystick_commander && mkdir build && cd build && cmake .. -DKIA_SOUL=ON && make'
       }, 'diagnostics tool': {
         sh 'cd applications/diagnostics_tool && mkdir build && cd build && cmake .. && make'
       }
