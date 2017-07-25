@@ -49,7 +49,7 @@ void publish_fault_report( void )
 {
     cli();
 
-    oscc_module_fault_report_s fault_report;
+    oscc_fault_report_s fault_report;
 
     fault_report.fault_origin_id = FAULT_ORIGIN_BRAKE;
 

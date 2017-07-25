@@ -7,20 +7,30 @@ Feature: Timeouts and overrides
   disabled.
 
 
+  Scenario: A sensor becomes temporarily disconnected
+    Given brake control is enabled
+
+    When a sensor becomes temporarily disconnected
+
+    Then control should remain enabled
+
+
+  Scenario: A sensor becomes permanently disconnected
+    Given brake control is enabled
+
+    When a sensor becomes permanently disconnected
+
+    Then control should be disabled
+    And a fault report should be published
+
+
   Scenario: Controller command timeout
     Given brake control is enabled
 
     When the time since the last received controller command exceeds the timeout
 
     Then control should be disabled
-
-
-  Scenario: OBD timeout
-    Given brake control is enabled
-
-    When the time since the last received brake pressure OBD frame exceeds the timeout
-
-    Then control should be disabled
+    And a fault report should be published
 
 
   Scenario Outline: Operator override
@@ -29,7 +39,7 @@ Feature: Timeouts and overrides
     When the operator applies <sensor_val> to the brake pedal
 
     Then control should be disabled
-    And override flag should be set
+    And a fault report should be published
 
     Examples:
       | sensor_val |

@@ -1,95 +1,66 @@
-GIVEN("^the current vehicle reported brake pressure is (.*)$")
+WHEN("^a brake report is published$")
 {
-    REGEX_PARAM(int, pressure);
+    g_brake_control_state.enabled = true;
+    g_brake_control_state.operator_override = true;
+    g_brake_control_state.dtcs = 0x55;
+    g_brake_control_state.brake_pressure_front_left = 0x56;
+    g_brake_control_state.brake_pressure_front_right = 0x57;
 
-    g_brake_control_state.current_vehicle_brake_pressure = pressure;
+    publish_brake_report();
 }
 
 
-GIVEN("^the current sensor reported brake pressure is (.*)$")
+THEN("^a brake report should be put on the control CAN bus$")
 {
-    REGEX_PARAM(int, pressure);
-
-    g_brake_control_state.current_sensor_brake_pressure = pressure;
+    assert_that(g_mock_mcp_can_send_msg_buf_id, is_equal_to(OSCC_BRAKE_REPORT_CAN_ID));
+    assert_that(g_mock_mcp_can_send_msg_buf_ext, is_equal_to(CAN_STANDARD));
+    assert_that(g_mock_mcp_can_send_msg_buf_len, is_equal_to(OSCC_BRAKE_REPORT_CAN_DLC));
 }
 
 
-WHEN("^the time since the last report publishing exceeds the interval$")
+THEN("^the brake report's enabled field should be set$")
 {
-    g_brake_report_last_tx_timestamp = 0;
-
-    g_mock_arduino_millis_return =
-        OSCC_REPORT_BRAKE_PUBLISH_INTERVAL_IN_MSEC;
-
-    publish_reports();
-}
-
-
-THEN("^a brake report should be published to the control CAN bus$")
-{
-    assert_that(
-        g_mock_mcp_can_send_msg_buf_id,
-        is_equal_to(OSCC_REPORT_BRAKE_CAN_ID));
+    oscc_brake_report_s * brake_report =
+        (oscc_brake_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        g_mock_mcp_can_send_msg_buf_ext,
-        is_equal_to(CAN_STANDARD));
-
-    assert_that(
-        g_mock_mcp_can_send_msg_buf_len,
-        is_equal_to(OSCC_REPORT_BRAKE_CAN_DLC));
-
-    oscc_report_brake_data_s * brake_report_data =
-        (oscc_report_brake_data_s *) g_mock_mcp_can_send_msg_buf_buf;
-
-    assert_that(
-        brake_report_data->enabled,
+        brake_report->enabled,
         is_equal_to(g_brake_control_state.enabled));
+}
+
+
+THEN("^the brake report's override field should be set$")
+{
+    oscc_brake_report_s * brake_report =
+        (oscc_brake_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        brake_report_data->override,
+        brake_report->operator_override,
         is_equal_to(g_brake_control_state.operator_override));
-
-    assert_that(
-        g_brake_report_last_tx_timestamp,
-        is_equal_to(g_mock_arduino_millis_return));
 }
 
 
-THEN("^the report's command field should be set to (.*)$")
+THEN("^the brake report's DTCs field should be set$")
 {
-    REGEX_PARAM(int, command);
-
-    oscc_report_brake_data_s * brake_report_data =
-        (oscc_report_brake_data_s *) g_mock_mcp_can_send_msg_buf_buf;
+    oscc_brake_report_s * brake_report =
+        (oscc_brake_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        brake_report_data->pedal_command,
-        is_equal_to(command));
+        brake_report->dtcs,
+        is_equal_to(g_brake_control_state.dtcs));
 }
 
 
-THEN("^the report's current vehicle reported brake pressure field should be set to (.*)$")
+THEN("^the brake report's front pressure sensor fields should be set$")
 {
-    REGEX_PARAM(int, pressure);
-
-    oscc_report_brake_data_s * brake_report_data =
-        (oscc_report_brake_data_s *) g_mock_mcp_can_send_msg_buf_buf;
+    oscc_brake_report_s * brake_report =
+        (oscc_brake_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        brake_report_data->pedal_input,
-        is_equal_to(pressure));
-}
-
-
-THEN("^the report's sensor reported brake pressure should be set to (.*)$")
-{
-    REGEX_PARAM(int, pressure);
-
-    oscc_report_brake_data_s * brake_report_data =
-        (oscc_report_brake_data_s *) g_mock_mcp_can_send_msg_buf_buf;
+        brake_report->brake_pressure_front_left,
+        is_equal_to(g_brake_control_state.brake_pressure_front_left));
 
     assert_that(
-        brake_report_data->pedal_output,
-        is_equal_to(pressure));
+        brake_report->brake_pressure_front_right,
+        is_equal_to(g_brake_control_state.brake_pressure_front_right));
 }
