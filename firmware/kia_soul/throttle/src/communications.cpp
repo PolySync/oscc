@@ -9,17 +9,21 @@
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "debug.h"
+#include "oscc.h"
 
 #include "globals.h"
 #include "communications.h"
 #include "throttle_control.h"
 
 
+static void process_rx_frame(
+    const can_frame_s * const frame );
+
 static void process_throttle_command(
     const uint8_t * const data );
 
-static void process_rx_frame(
-    can_frame_s * const frame );
+static void process_fault_report(
+    const uint8_t * const data );
 
 
 void publish_throttle_report( void )
@@ -28,6 +32,7 @@ void publish_throttle_report( void )
 
     oscc_throttle_report_s throttle_report;
 
+    throttle_report.magic = (uint16_t) OSCC_MAGIC;
     throttle_report.enabled = (uint8_t) g_throttle_control_state.enabled;
     throttle_report.operator_override = (uint8_t) g_throttle_control_state.operator_override;
     throttle_report.dtcs = g_throttle_control_state.dtcs;
@@ -48,6 +53,7 @@ void publish_fault_report( void )
 
     oscc_fault_report_s fault_report;
 
+    fault_report.magic = (uint16_t) OSCC_MAGIC;
     fault_report.fault_origin_id = FAULT_ORIGIN_THROTTLE;
 
     g_control_can.sendMsgBuf(
@@ -92,39 +98,8 @@ void check_for_incoming_message( void )
 }
 
 
-static void process_throttle_command(
-    const uint8_t * const data )
-{
-    if ( data != NULL )
-    {
-        const oscc_throttle_command_s * const throttle_command =
-                (oscc_throttle_command_s *) data;
-
-        if( throttle_command->enable == true )
-        {
-            enable_control( );
-
-            DEBUG_PRINT("commanded spoof low: ");
-            DEBUG_PRINT(throttle_command->spoof_value_low);
-            DEBUG_PRINT(" high: ");
-            DEBUG_PRINTLN(throttle_command->spoof_value_high);
-
-            update_throttle(
-                throttle_command->spoof_value_high,
-                throttle_command->spoof_value_low );
-        }
-        else
-        {
-            disable_control( );
-        }
-
-        g_throttle_command_timeout = false;
-    }
-}
-
-
 static void process_rx_frame(
-    can_frame_s * const frame )
+    const can_frame_s * const frame )
 {
     if ( frame != NULL )
     {
@@ -133,6 +108,56 @@ static void process_rx_frame(
             process_throttle_command( frame->data );
         }
         else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
+        {
+            process_fault_report( frame-> data );
+        }
+    }
+}
+
+
+static void process_throttle_command(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        const oscc_throttle_command_s * const throttle_command =
+                (oscc_throttle_command_s *) data;
+
+        if( throttle_command->magic == OSCC_MAGIC )
+        {
+            if( throttle_command->enable == true )
+            {
+                enable_control( );
+
+                DEBUG_PRINT("spoof low: ");
+                DEBUG_PRINT(throttle_command->spoof_value_low);
+                DEBUG_PRINT(" spoof high: ");
+                DEBUG_PRINTLN(throttle_command->spoof_value_high);
+
+                update_throttle(
+                    throttle_command->spoof_value_high,
+                    throttle_command->spoof_value_low );
+            }
+            else
+            {
+                disable_control( );
+            }
+
+            g_throttle_command_timeout = false;
+        }
+    }
+}
+
+
+static void process_fault_report(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        const oscc_fault_report_s * const fault_report =
+                (oscc_fault_report_s *) data;
+
+        if( fault_report->magic == OSCC_MAGIC )
         {
             disable_control( );
 

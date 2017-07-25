@@ -42,6 +42,10 @@
  */
 #define OSCC_STEERING_DTC_INVALID_SENSOR_VAL (0x0)
 
+
+#pragma pack(push)
+#pragma pack(1)
+
 /**
  * @brief Steering command message data.
  *
@@ -50,6 +54,9 @@
  */
 typedef struct
 {
+    uint16_t magic; /* Magic number identifying CAN frame as from OSCC.
+                       Should be \ref OSCC_MAGIC. */
+
     uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
@@ -58,7 +65,7 @@ typedef struct
                          * Zero value means disable.
                          * Non-zero value means enable. */
 
-    uint8_t reserved[3]; /*!< Reserved. */
+    uint8_t reserved; /*!< Reserved. */
 } oscc_steering_command_s;
 
 
@@ -70,6 +77,8 @@ typedef struct
  */
 typedef struct
 {
+    uint16_t magic; /* Magic number identifying CAN frame as from OSCC.
+                       Should be \ref OSCC_MAGIC. */
 
     uint8_t enabled; /*!< Steering controls enabled state.
                       * Zero value means disabled (commands are ignored).
@@ -82,8 +91,10 @@ typedef struct
 
     uint8_t dtcs; /* Bitfield of DTCs present in the module. */
 
-    uint8_t reserved[5]; /*!< Reserved. */
+    uint8_t reserved[3]; /*!< Reserved. */
 } oscc_steering_report_s;
+
+#pragma pack(pop)
 
 
 #endif /* _OSCC_STEERING_CAN_PROTOCOL_H_ */

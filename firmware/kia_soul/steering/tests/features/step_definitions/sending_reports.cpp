@@ -16,32 +16,22 @@ THEN("^a steering report should be put on the control CAN bus$")
 }
 
 
-THEN("^the steering report's enabled field should be set$")
+THEN("^the steering report's fields should be set$")
 {
     oscc_steering_report_s * steering_report =
         (oscc_steering_report_s *) g_mock_mcp_can_send_msg_buf_buf;
+
+    assert_that(
+        steering_report->magic,
+        is_equal_to(OSCC_MAGIC));
 
     assert_that(
         steering_report->enabled,
         is_equal_to(g_steering_control_state.enabled));
-}
-
-
-THEN("^the steering report's override field should be set$")
-{
-    oscc_steering_report_s * steering_report =
-        (oscc_steering_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
         steering_report->operator_override,
         is_equal_to(g_steering_control_state.operator_override));
-}
-
-
-THEN("^the steering report's DTCs field should be set$")
-{
-    oscc_steering_report_s * steering_report =
-        (oscc_steering_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
         steering_report->dtcs,

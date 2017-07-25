@@ -64,7 +64,7 @@ oscc_error_t oscc_open( unsigned int channel )
 oscc_error_t oscc_close( unsigned int channel )
 {
     oscc_error_t ret = OSCC_ERROR;
-    
+
     int result = close( can_socket );
 
     if ( result > 0 )
@@ -123,6 +123,7 @@ oscc_error_t oscc_publish_brake_position( double brake_position )
             MINIMUM_BRAKE_COMMAND,
             MAXIMUM_BRAKE_COMMAND );
 
+    brake_cmd.magic = ( uint16_t ) OSCC_MAGIC;
     brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( scaled_position );
 
     ret = oscc_can_write( OSCC_BRAKE_COMMAND_CAN_ID,
@@ -137,6 +138,7 @@ oscc_error_t oscc_publish_brake_pressure( double brake_pressure )
 {
     oscc_error_t ret = OSCC_ERROR;
 
+    brake_cmd.magic = ( uint16_t ) OSCC_MAGIC;
     brake_cmd.pedal_command = ( uint16_t ) BRAKE_PRESSURE_TO_PEDAL( brake_pressure );
 
     // use normalized pressure to scale between known limits
@@ -157,6 +159,7 @@ oscc_error_t oscc_publish_throttle_position( double throttle_position )
     // use normalized throttle position to scale between known limits
     // use that to calculate spoof values
 
+    throttle_cmd.magic = ( uint16_t ) OSCC_MAGIC;
     throttle_cmd.spoof_value_low = ( uint16_t) THROTTLE_POSITION_TO_SPOOF_LOW( throttle_position );
     throttle_cmd.spoof_value_high = ( uint16_t ) THROTTLE_POSITION_TO_SPOOF_HIGH( throttle_position );
 
@@ -175,6 +178,7 @@ oscc_error_t oscc_publish_steering_angle( double angle )
     // use normalized steering angle to scale between known limits
     // use that to calculate spoof value
 
+    steering_cmd.magic = ( uint16_t ) OSCC_MAGIC;
     steering_cmd.spoof_value_low = ( int16_t ) STEERING_ANGLE_TO_SPOOF_LOW( angle );
     steering_cmd.spoof_value_high = ( int16_t ) STEERING_ANGLE_TO_SPOOF_HIGH( angle );
 
@@ -193,6 +197,7 @@ oscc_error_t oscc_publish_steering_torque( double torque )
     // use normalized steering torque to scale between known limits
     // use that to calculate spoof value
 
+    steering_cmd.magic = ( uint16_t ) OSCC_MAGIC;
     steering_cmd.spoof_value_low = ( int16_t ) STEERING_TORQUE_TO_SPOOF_LOW( torque );
     steering_cmd.spoof_value_high = ( int16_t ) STEERING_TORQUE_TO_SPOOF_HIGH( torque );
 

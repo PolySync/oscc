@@ -9,7 +9,7 @@
 #include "can_protocols/fault_can_protocol.h"
 #include "oscc_can.h"
 #include "debug.h"
-#include "vehicles/vehicles.h"
+#include "oscc.h"
 
 #include "globals.h"
 #include "communications.h"
@@ -22,6 +22,9 @@ static void process_rx_frame(
 static void process_brake_command(
     const uint8_t * const data );
 
+static void process_fault_report(
+    const uint8_t * const data );
+
 
 void publish_brake_report( void )
 {
@@ -29,6 +32,7 @@ void publish_brake_report( void )
 
     oscc_brake_report_s brake_report;
 
+    brake_report.magic = (uint16_t) OSCC_MAGIC;
     brake_report.enabled = (uint8_t) g_brake_control_state.enabled;
     brake_report.operator_override = (uint8_t) g_brake_control_state.operator_override;
     brake_report.dtcs = g_brake_control_state.dtcs;
@@ -49,6 +53,7 @@ void publish_fault_report( void )
 
     oscc_fault_report_s fault_report;
 
+    fault_report.magic = (uint16_t) OSCC_MAGIC;
     fault_report.fault_origin_id = FAULT_ORIGIN_BRAKE;
 
     g_control_can.sendMsgBuf(
@@ -93,31 +98,6 @@ void check_for_incoming_message( void )
 }
 
 
-static void process_brake_command(
-    const uint8_t * const data )
-{
-    if (data != NULL )
-    {
-        const oscc_brake_command_s * const brake_command =
-                (oscc_brake_command_s *) data;
-
-        if( brake_command->enable == true )
-        {
-            enable_control( );
-        }
-        else
-        {
-            disable_control( );
-        }
-
-        g_brake_control_state.commanded_pedal_position =
-            brake_command->pedal_command;
-
-        g_brake_command_timeout = false;
-    }
-}
-
-
 static void process_rx_frame(
     const can_frame_s * const frame )
 {
@@ -128,6 +108,50 @@ static void process_rx_frame(
             process_brake_command( frame->data );
         }
         else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
+        {
+             process_fault_report( frame->data );
+        }
+    }
+}
+
+
+static void process_brake_command(
+    const uint8_t * const data )
+{
+    if (data != NULL )
+    {
+        const oscc_brake_command_s * const brake_command =
+                (oscc_brake_command_s *) data;
+
+        if( brake_command->magic == OSCC_MAGIC )
+        {
+            if( brake_command->enable == true )
+            {
+                enable_control( );
+            }
+            else
+            {
+                disable_control( );
+            }
+
+            g_brake_control_state.commanded_pedal_position =
+                brake_command->pedal_command;
+
+            g_brake_command_timeout = false;
+        }
+    }
+}
+
+
+static void process_fault_report(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        const oscc_fault_report_s * const fault_report =
+                (oscc_fault_report_s *) data;
+
+        if( fault_report->magic == OSCC_MAGIC )
         {
             disable_control( );
 
