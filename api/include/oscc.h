@@ -83,19 +83,6 @@ oscc_error_t oscc_publish_brake_position( double brake_position );
 
 
 /**
- * @brief Publish message with requested brake pressure to
- *        brake module.
- *
- * @param [in] pressure - Normalized requested brake pressure
- *        in the range [0, 1].
- *
- * @return OSCC_ERROR or OSCC_OK
- *
- */
-oscc_error_t oscc_publish_brake_pressure( double brake_pressure );
-
-
-/**
  * @brief Publish message with requested throttle pedal position to
  *        throttle module.
  *
@@ -106,19 +93,6 @@ oscc_error_t oscc_publish_brake_pressure( double brake_pressure );
  *
  */
 oscc_error_t oscc_publish_throttle_position( double throttle_position );
-
-
-/**
- * @brief Publish message with requested steering angle to
- *        steering module.
- *
- * @param [in] angle - Normalized requested steering wheel
- *        angle in the range [-1, 1].
- *
- * @return OSCC_ERROR or OSCC_OK
- *
- */
-oscc_error_t oscc_publish_steering_angle( double angle );
 
 
 /**

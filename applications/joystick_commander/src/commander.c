@@ -1,12 +1,3 @@
-/**
- * @file commander.c
- * @brief Commander Interface Source
- *
- */
-
-
-
-
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -17,678 +8,50 @@
 #include <SDL2/SDL_joystick.h>
 #include <SDL2/SDL_gamecontroller.h>
 
-#include "joystick.h"
 #include "oscc.h"
+#include "vehicles/vehicles.h"
 
+#include "joystick.h"
+#include "pid.h"
 
-/**
- * @brief Math macro: constrain(amount, low, high).
- *
- */
-#define m_constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-
-
-// *****************************************************
-// static global types/macros
-// *****************************************************
-
-/**
- * @brief Joystick axis indices
- *
- */
+#define PID_WINDUP_GUARD ( 1500 )
+#define PID_PROPORTIONAL_GAIN ( 0.3 )
+#define PID_INTEGRAL_GAIN ( 1.3 )
+#define PID_DERIVATIVE_GAIN ( 0.03 )
+#define STEERING_ANGLE_MIN ( -500.0 )
+#define STEERING_ANGLE_MAX ( 500.0 ))
 #define JOYSTICK_AXIS_THROTTLE (SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
- #define JOYSTICK_AXIS_BRAKE (SDL_CONTROLLER_AXIS_TRIGGERLEFT)
- #define JOYSTICK_AXIS_STEER (SDL_CONTROLLER_AXIS_LEFTX)
-
-
-/**
- * @brief Joystick button indices
- *
- */
+#define JOYSTICK_AXIS_BRAKE (SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+#define JOYSTICK_AXIS_STEER (SDL_CONTROLLER_AXIS_LEFTX)
 #define JOYSTICK_BUTTON_ENABLE_CONTROLS (SDL_CONTROLLER_BUTTON_START)
 #define JOYSTICK_BUTTON_DISABLE_CONTROLS (SDL_CONTROLLER_BUTTON_BACK)
-
-/**
- * @brief Throttle pedal position values [normalized]
- *
- */
-#define MIN_THROTTLE_PEDAL (0.0)
-#define MAX_THROTTLE_PEDAL (1.0)
-
-
-/**
- * @brief Brake pedal position values [normalized]
- *
- */
-#define MIN_BRAKE_PEDAL (0.0)
-#define MAX_BRAKE_PEDAL (1.0)
-
-
-/**
- * @brief Minimum brake value to be considered enabled [normalized]
- *
- * Throttle is disabled when brake value is greater than this value
- *
- */
 #define BRAKES_ENABLED_MIN (0.05)
-
-
-/**
- * @brief Steering wheel angle values [radians]
- *
- * Negative value means turning to the right
- *
- */
-#define MIN_STEERING_WHEEL_ANGLE (-M_PI * 2.0)
-#define MAX_STEERING_WHEEL_ANGLE (M_PI * 2.0)
-
-
-/**
- * @brief Steering command angles [int16_t]
- *
- */
-#define STEERING_COMMAND_ANGLE_MIN (-4700)
-#define STEERING_COMMAND_ANGLE_MAX (4700)
-
-
-/**
- * @brief Steering command angle scale factor
- *
- */
-#define STEERING_COMMAND_ANGLE_FACTOR ( 10.0 )
-
-
-/**
- * @brief Steering command steering wheel velocities [uint8_t]
- *
- */
-#define STEERING_COMMAND_MAX_VELOCITY_MIN (20)
-#define STEERING_COMMAND_MAX_VELOCITY_MAX (254)
-
-
-/**
- * @brief Steering command steering wheel velocity scale factor
- *
- * This factor can be increased to provide smoother, but
- * slightly less responsive, steering control. It is recommended
- * to smooth at the higher level, with this factor, before
- * trying to smooth at the lower level
- *
- */
-#define STEERING_COMMAND_MAX_VELOCITY_FACTOR (0.25)
-
-
-/**
- * @brief Exponential filter factors
- *
- */
-#define BRAKES_FILTER_FACTOR (0.2)
-#define THROTTLE_FILTER_FACTOR (0.2)
-#define STEERING_FILTER_FACTOR (0.1)
-
-/**
- * @brief joystick delay interval [microseconds]
- *
- * Defines the delay to wait for the joystick to update
- *
- * 50,000 us == 50 ms == 20 Hertz
- *
- */
 #define JOYSTICK_DELAY_INTERVAL (50000)
-
-
-/**
- * @brief Convert radians to degrees
- *
- */
-#define m_degrees(rad) ( ( rad ) * ( 180.0 / M_PI ) )
-
-
-// *****************************************************
-// Local Type definitions
-// *****************************************************
-
-/**
- * @brief Commander setpoint
- *
- * The commander setpoint is a structure that contains all the
- * relevant information to retrieve data from an external source
- * and range check it for validity.  The range-limits for this
- * instance represent the values that are typically available
- * from a joystick
- *
- */
-struct commander_setpoint_s
-{
-    double setpoint;
-
-    const unsigned long axis;
-
-    const double min_position;
-
-    const double max_position;
-};
-
-
-// *****************************************************
-// static global data
-// *****************************************************
-
 #define COMMANDER_ENABLED ( 1 )
 #define COMMANDER_DISABLED ( 0 )
 
 static int commander_enabled = COMMANDER_DISABLED;
 
-/**
- * @brief Setpoint Data
- *
- * Static definitions for brake, steering and throttle setpoints
- *
- */
-static struct commander_setpoint_s brake_setpoint =
-    { 0.0, JOYSTICK_AXIS_BRAKE, MIN_BRAKE_PEDAL, MAX_BRAKE_PEDAL };
+static pid_s steering_pid;
+static double prev_angle;
+static double curr_angle; 
+
+static int get_normalized_position( unsigned long axis_index, double * const normalized_position );
+static int check_trigger_positions( );
+static int commander_disable_controls( );
+static int commander_enable_controls( );
+static int get_button( unsigned long button, unsigned int* const state );
+static int command_brakes( );
+static int command_throttle( );
+static int command_steering( );
+static void brake_callback(oscc_brake_report_s *report);
+static void throttle_callback(oscc_throttle_report_s *report);
+static void steering_callback(oscc_steering_report_s *report);
+static void obd_callback(long id, unsigned char * data);
+static bool check_for_brake_faults( );
+static bool check_for_steering_faults( );
+static bool check_for_throttle_faults( );
 
-static struct commander_setpoint_s throttle_setpoint =
-    { 0.0, JOYSTICK_AXIS_THROTTLE, MIN_THROTTLE_PEDAL, MAX_THROTTLE_PEDAL };
-
-static struct commander_setpoint_s steering_setpoint =
-    { 0.0, JOYSTICK_AXIS_STEER, MIN_STEERING_WHEEL_ANGLE, MAX_STEERING_WHEEL_ANGLE };
-
-
-// *****************************************************
-// static definitions
-// *****************************************************
-
-
-// *****************************************************
-// Function:    get_setpoint
-//
-// Purpose:     Retrieve the data from the joystick based on which axis is
-//              selected and normalize that value along the scale that is
-//              provided
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  setpoint - the setpoint structure containing the range limits
-//                         the joystick axis, and the storage location for the
-//                         requested value
-//
-// *****************************************************
-static int get_setpoint( struct commander_setpoint_s* setpoint )
-{
-    int return_code = OSCC_ERROR;
-
-    if ( setpoint != NULL )
-    {
-        int axis_position = 0;
-
-        return_code = joystick_get_axis( setpoint->axis, &axis_position );
-
-        if ( return_code == OSCC_OK )
-        {
-            if ( setpoint->axis == JOYSTICK_AXIS_STEER )
-            {
-                setpoint->setpoint =
-                    joystick_normalize_axis_position( axis_position,
-                                                      setpoint->min_position,
-                                                      setpoint->max_position );
-            }
-            else
-            {
-                setpoint->setpoint =
-                    joystick_normalize_trigger_position( axis_position,
-                                                         setpoint->min_position,
-                                                         setpoint->max_position );
-            }
-        }
-    }
-    return ( return_code );
-
-}
-
-
-// *****************************************************
-// Function:    is_joystick_safe
-//
-// Purpose:     Examine the positions of the brake and throttle to determine
-//              if they are in a safe position to enable control
-//
-// Returns:     int - OSCC_ERROR, OSCC_OK or OSCC_WARNING
-//
-// Parameters:  void
-//
-// *****************************************************
-static int is_joystick_safe( )
-{
-    int return_code = OSCC_ERROR;
-
-    return_code = joystick_update( );
-
-    if ( return_code == OSCC_OK )
-    {
-        return_code = get_setpoint( &brake_setpoint );
-
-        if ( return_code == OSCC_OK )
-        {
-            return_code = get_setpoint( &throttle_setpoint );
-
-            if ( return_code == OSCC_OK )
-            {
-                if ( ( throttle_setpoint.setpoint > 0.0 ) ||
-                     ( brake_setpoint.setpoint > 0.0 ) )
-                {
-                    return_code = OSCC_WARNING;
-                }
-            }
-        }
-    }
-    return return_code;
-}
-
-
-// *****************************************************
-// Function:    calc_exponential_average
-//
-// Purpose:     Calculate an exponential average based on previous values
-//
-// Returns:     double - the exponentially averaged result
-//
-// Parameters:  average - previous average
-//              setpoint - new setpoint to incorperate into average
-//              factor - factor of exponential average
-//
-// *****************************************************
-static double calc_exponential_average( double average,
-                                        double setpoint,
-                                        double factor )
-{
-    double exponential_average =
-        ( setpoint * factor ) + ( ( 1 - factor ) * average );
-
-    return ( exponential_average );
-}
-
-
-// *****************************************************
-// Function:    commander_disable_controls
-//
-// Purpose:     Helper function to put the system in a safe state before
-//              disabling the OSCC module vehicle controls
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  void
-//
-// *****************************************************
-static int commander_disable_controls( )
-{
-    int return_code = OSCC_ERROR;
-
-    printf( "Disable controls\n" );
-
-    if ( commander_enabled == COMMANDER_ENABLED )
-    {
-        return_code = oscc_disable();
-    }
-    return return_code;
-}
-
-
-// *****************************************************
-// Function:    commander_enable_controls
-//
-// Purpose:     Helper function to put the system in a safe state before
-//              enabling the OSCC module vehicle controls
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  void
-//
-// *****************************************************
-static int commander_enable_controls( )
-{
-    int return_code = OSCC_ERROR;
-
-    printf( "Enable controls\n" );
-
-    if ( commander_enabled == COMMANDER_ENABLED )
-    {
-        return_code = oscc_enable();
-    }
-    return ( return_code );
-}
-
-
-// *****************************************************
-// Function:    get_button
-//
-// Purpose:     Wrapper function to get the status of a given button on the
-//              joystick
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  button - which button on the joystick to check
-//              state - pointer to an unsigned int to store the state of the
-//                      button
-//
-// *****************************************************
-static int get_button( unsigned long button, unsigned int* const state )
-{
-    int return_code = OSCC_ERROR;
-
-    if ( state != NULL )
-    {
-        unsigned int button_state;
-
-        return_code = joystick_get_button( button, &button_state );
-
-        if ( ( return_code == OSCC_OK ) &&
-             ( button_state == JOYSTICK_BUTTON_STATE_PRESSED ) )
-        {
-            ( *state ) = 1;
-        }
-        else
-        {
-            ( *state ) = 0;
-        }
-    }
-    return ( return_code );
-}
-
-
-// *****************************************************
-// Function:    command_brakes
-//
-// Purpose:     Determine the setpoint being commanded by the joystick and
-//              send that value to the OSCC Module
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  void
-//
-// *****************************************************
-static int command_brakes( )
-{
-    int return_code = OSCC_ERROR;
-    unsigned int constrained_value = 0;
-    static double brake_average = 0.0;
-
-    if ( commander_enabled == COMMANDER_ENABLED )
-    {
-        return_code = get_setpoint( &brake_setpoint );
-
-        if ( return_code == OSCC_OK )
-        {
-            brake_average = calc_exponential_average( brake_average,
-                                                      brake_setpoint.setpoint,
-                                                      BRAKES_FILTER_FACTOR );
-
-            const float normalized_value = (float) m_constrain(
-                (float) brake_average,
-                0.0f,
-                MAX_BRAKE_PEDAL );
-
-            constrained_value = ( unsigned int ) m_constrain(
-                (float) ( normalized_value * (float) UINT16_MAX ),
-                (float) 0.0f,
-                (float) UINT16_MAX );
-        }
-
-        printf( "brake: %d\n", constrained_value );
-
-        return_code = oscc_publish_brake_position( constrained_value );
-    }
-    return ( return_code );
-}
-
-
-// *****************************************************
-// Function:    command_throttle
-//
-// Purpose:     Determine the setpoint being commanded by the joystick and
-//              send that value to the OSCC Module
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  void
-//
-// *****************************************************
-static int command_throttle( )
-{
-    int return_code = OSCC_ERROR;
-
-    if ( commander_enabled == COMMANDER_ENABLED )
-    {
-        return_code = get_setpoint( &throttle_setpoint );
-
-        // don't allow throttle if brakes are applied
-        if ( return_code == OSCC_OK )
-        {
-            return_code = get_setpoint( &brake_setpoint );
-
-            if ( brake_setpoint.setpoint >= BRAKES_ENABLED_MIN )
-            {
-                throttle_setpoint.setpoint = 0.0;
-            }
-        }
-
-        // Redundant, but better safe then sorry
-        const float normalized_value = (float) m_constrain(
-                (float) throttle_setpoint.setpoint,
-                0.0f,
-                MAX_THROTTLE_PEDAL );
-
-        unsigned int constrained_value = ( unsigned int )m_constrain(
-                (float) (normalized_value * (float) UINT16_MAX),
-                (float) 0.0f,
-                (float) UINT16_MAX );
-
-        printf( "throttle: %d\n", constrained_value );
-
-        return_code = oscc_publish_throttle_position( constrained_value );
-    }
-    return ( return_code );
-}
-
-
-// *****************************************************
-// Function:    command_steering
-//
-// Purpose:     Determine the setpoint being commanded by the joystick and
-//              send that value to the OSCC Module
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  void
-//
-// *****************************************************
-static int command_steering( )
-{
-    int return_code = OSCC_ERROR;
-    static double steering_average = 0.0;
-    static double last_steering_rate = 0.0;
-
-    if ( commander_enabled == COMMANDER_ENABLED )
-    {
-        return_code = get_setpoint( &steering_setpoint );
-
-        steering_average =
-            calc_exponential_average( steering_average,
-                                      steering_setpoint.setpoint,
-                                      STEERING_FILTER_FACTOR );
-
-        const float angle_degrees =
-            (float) m_degrees( (float) steering_average );
-
-        const int constrained_angle = ( int ) m_constrain(
-                (float) (angle_degrees * STEERING_COMMAND_ANGLE_FACTOR),
-                (float) STEERING_COMMAND_ANGLE_MIN,
-                (float) STEERING_COMMAND_ANGLE_MAX );
-
-        float rate_degrees =
-            (float) fabs( constrained_angle - last_steering_rate );
-
-        last_steering_rate = constrained_angle;
-
-        unsigned int constrained_rate = ( unsigned int ) m_constrain(
-                (float) (rate_degrees / (float) STEERING_COMMAND_MAX_VELOCITY_FACTOR),
-                (float) STEERING_COMMAND_MAX_VELOCITY_MIN + 1.0f,
-                (float) STEERING_COMMAND_MAX_VELOCITY_MAX );
-
-        printf( "steering: %d\t%d\n", constrained_angle, constrained_rate );
-
-        return_code = oscc_publish_steering_angle( constrained_angle );
-    }
-    return ( return_code );
-}
-
-void throttle_callback(oscc_throttle_report_s *report){
-    printf("throttle report recieved.\n");
-}
-
-void steering_callback(oscc_steering_report_s *report){
-    // printf("steering report recieved.\n");
-}
-
-void obd_callback(long id, unsigned char * data){
-    printf("id: ? %ld\n", id);
-    // printf("enabled? %d\n", report->enabled);
-}
-
-// *****************************************************
-// Function:    check_for_brake_faults
-//
-// Purpose:     Checks oscc_status_s struct for brake
-//              faults
-//
-// Returns:     bool - true if fault occurred
-//                   - false if no fault occurred
-//
-// Parameters:  oscc_status_s - struct containing OSCC status
-//
-// *****************************************************
-// static bool check_for_brake_faults( oscc_status_s * status)
-// {
-//     bool fault_occurred = false;
-
-//     if( status != NULL )
-//     {
-//         if ( status->fault_brake_obd_timeout == true )
-//         {
-//             printf( "Brake - OBD Timeout Detected\n" );
-
-//             fault_occurred = true;
-//         }
-
-//         if ( status->fault_brake_invalid_sensor_value == true )
-//         {
-//             printf( "Brake - Invalid Sensor Value Detected\n" );
-
-//             fault_occurred = true;
-//         }
-
-//         if ( status->fault_brake_actuator_error == true )
-//         {
-//             printf( "Brake - Actuator Error Detected\n" );
-
-//             fault_occurred = true;
-//         }
-
-//         if ( status->fault_brake_pump_motor_error == true )
-//         {
-//             printf( "Brake - Accumulator Pump Error Detected\n" );
-
-//             fault_occurred = true;
-//         }
-//     }
-
-//     return fault_occurred;
-// }
-
-
-// *****************************************************
-// Function:    check_for_steering_faults
-//
-// Purpose:     Checks oscc_status_s struct for steering
-//              faults
-//
-// Returns:     bool - true if fault occurred
-//                   - false if no fault occurred
-//
-// Parameters:  oscc_status_s - struct containing OSCC status
-//
-// *****************************************************
-// static bool check_for_steering_faults( oscc_status_s * status)
-// {
-//     bool fault_occurred = false;
-
-//     if( status != NULL )
-//     {
-//         if ( status->fault_steering_obd_timeout == true )
-//         {
-//             printf( "Steering - OBD Timeout Detected\n" );
-
-//             fault_occurred = true;
-//         }
-
-//         if ( status->fault_steering_invalid_sensor_value == true )
-//         {
-//             printf( "Steering - Invalid Sensor Value Detected\n" );
-
-//             fault_occurred = true;
-//         }
-//     }
-
-//     return fault_occurred;
-// }
-
-
-// *****************************************************
-// Function:    check_for_throttle_faults
-//
-// Purpose:     Checks oscc_status_s struct for throttle
-//              faults
-//
-// Returns:     bool - true if fault occurred
-//                   - false if no fault occurred
-//
-// Parameters:  oscc_status_s - struct containing OSCC status
-//
-// *****************************************************
-// static bool check_for_throttle_faults( oscc_status_s * status)
-// {
-//     bool fault_occurred = false;
-
-//     if( status != NULL )
-//     {
-//         if ( status->fault_throttle_invalid_sensor_value == true )
-//         {
-//             printf( "Throttle - Invalid Sensor Value Detected\n" );
-
-//             fault_occurred = true;
-//         }
-//     }
-
-//     return fault_occurred;
-// }
-
-
-
-// *****************************************************
-// public definitions
-// *****************************************************
-
-// *****************************************************
-// Function:    commander_init
-//
-// Purpose:     Externally visible function to initialize the commander object
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  channel - for now, the CAN channel to use when interacting
-//              with the OSCC modules
-//
-// *****************************************************
 int commander_init( int channel )
 {
     int return_code = OSCC_ERROR;
@@ -711,7 +74,7 @@ int commander_init( int channel )
 
             while ( return_code != OSCC_ERROR )
             {
-                return_code = is_joystick_safe( );
+                return_code = check_trigger_positions( );
 
                 if ( return_code == OSCC_WARNING )
                 {
@@ -726,23 +89,12 @@ int commander_init( int channel )
                     break;
                 }
             }
+            pid_zeroize(&steering_pid, PID_WINDUP_GUARD);
         }
     }
     return ( return_code );
 }
 
-// *****************************************************
-// Function:    command_close
-//
-// Purpose:     Shuts down all of the other modules that the commander uses
-//              and closes the commander object
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  channel - the CAN channel used to communicate with OSCC
-//              modules
-//
-// *****************************************************
 void commander_close( int channel )
 {
     if ( commander_enabled == COMMANDER_ENABLED )
@@ -759,21 +111,7 @@ void commander_close( int channel )
     }
 }
 
-
-// *****************************************************
-// Function:    commander_low_frequency_update
-//
-// Purpose:     Should be run every 50ms
-//              The commander low-frequency update function polls the joystick,
-//              converts the joystick input into values that reflect what the
-//              vehicle should do and sends them to the OSCC interface
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  void
-//
-// *****************************************************
-int commander_low_frequency_update( )
+int check_for_controller_update( )
 {
     unsigned int button_pressed = 0;
 
@@ -823,20 +161,7 @@ int commander_low_frequency_update( )
     return return_code;
 }
 
-
-// *****************************************************
-// Function:    commander_high_frequency_update
-//
-// Purpose:     Should be run every 1ms (one millisecond)
-//              Run the high-frequency commander tasks
-//              Checks the vehicle for override information
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  void
-//
-// *****************************************************
-int commander_high_frequency_update( )
+int check_for_fault_update( )
 {
     int return_code = OSCC_OK;
 
@@ -888,4 +213,273 @@ int commander_high_frequency_update( )
     // }
 
     return return_code;
+}
+
+static int get_normalized_position( unsigned long axis_index, double * const normalized_position )
+{
+    int return_code = OSCC_ERROR;
+
+    int axis_position = 0;
+
+    double low = 0.0, high = 1.0;
+
+    return_code = joystick_get_axis( axis_index, &axis_position );
+
+    if ( return_code == OSCC_OK )
+    {
+        if ( axis_index == JOYSTICK_AXIS_STEER ) 
+        {
+            low = -1.0;
+        }
+
+    ( *normalized_position ) = m_constrain(
+            ((double) axis_position) / INT16_MAX,
+            low,
+            high);
+    }
+
+    return ( return_code );
+
+}
+
+static int check_trigger_positions( )
+{
+    int return_code = OSCC_ERROR;
+
+    return_code = joystick_update( );
+
+    if ( return_code == OSCC_OK )
+    {
+        double normalized_brake_position = 0;
+        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_brake_position );
+
+        if ( return_code == OSCC_OK )
+        {
+            double normalized_throttle_position = 0;
+            return_code = get_normalized_position( JOYSTICK_AXIS_THROTTLE, &normalized_throttle_position );
+
+            if ( return_code == OSCC_OK )
+            {
+                if ( ( normalized_throttle_position > 0.0 ) ||
+                     ( normalized_brake_position > 0.0 ) )
+                {
+                    return_code = OSCC_WARNING;
+                }
+            }
+        }
+    }
+    return return_code;
+}
+
+static int commander_disable_controls( )
+{
+    int return_code = OSCC_ERROR;
+
+    printf( "Disable controls\n" );
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        return_code = oscc_disable();
+    }
+    return return_code;
+}
+
+static int commander_enable_controls( )
+{
+    int return_code = OSCC_ERROR;
+
+    printf( "Enable controls\n" );
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        return_code = oscc_enable();
+    }
+    return ( return_code );
+}
+
+static int get_button( unsigned long button, unsigned int* const state )
+{
+    int return_code = OSCC_ERROR;
+
+    if ( state != NULL )
+    {
+        unsigned int button_state;
+
+        return_code = joystick_get_button( button, &button_state );
+
+        if ( ( return_code == OSCC_OK ) &&
+             ( button_state == JOYSTICK_BUTTON_STATE_PRESSED ) )
+        {
+            ( *state ) = 1;
+        }
+        else
+        {
+            ( *state ) = 0;
+        }
+    }
+    return ( return_code );
+}
+
+static int command_brakes( )
+{
+    int return_code = OSCC_ERROR;
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        double normalized_position = 0;
+        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_position );
+
+        // printf( "brake: %f\n", normalized_position );
+
+        return_code = oscc_publish_brake_position( normalized_position );
+    }
+    return ( return_code );
+}
+
+static int command_throttle( )
+{
+    int return_code = OSCC_ERROR;
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        double normalized_throttle_position = 0;
+
+        return_code = get_normalized_position( JOYSTICK_AXIS_THROTTLE, &normalized_throttle_position );
+
+        if ( return_code == OSCC_OK && normalized_throttle_position > 0.0 ) 
+        {
+            double normalized_brake_position = 0;
+
+            return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_brake_position );
+
+            if ( normalized_brake_position >= BRAKES_ENABLED_MIN ) 
+            {
+                normalized_throttle_position = 0.0;
+            }
+        }
+
+        // printf( "throttle: %f\n", normalized_throttle_position );
+
+        return_code = oscc_publish_throttle_position( normalized_throttle_position );
+    }
+    return ( return_code );
+}
+
+static int command_steering( )
+{
+    int return_code = OSCC_ERROR;
+
+    if ( commander_enabled == COMMANDER_ENABLED )
+    {
+        double normalized_position = 0;
+
+        return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &normalized_position );
+
+        // scale this up to angle (bw min, max)
+
+
+        // lies -- we want normalized pos to be pid controlled whatever
+        // need to use this as commanded steering angle, commanded torque, whatever
+        // use pid to calculate torque diff
+        // normalize that and send to API
+
+        printf( "steering: %f\n", normalized_position);
+
+        return_code = oscc_publish_steering_torque( normalized_position );
+    }
+    return ( return_code );
+}
+
+static void throttle_callback(oscc_throttle_report_s *report){
+    printf("throttle report recieved.\n");
+}
+
+static void steering_callback(oscc_steering_report_s *report){
+    // printf("steering report recieved.\n");
+}
+
+static void obd_callback(long id, unsigned char * data){
+    if ( id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID )
+    {
+        printf("steering report recieved!\n");
+    }
+}
+
+static bool check_for_brake_faults( )
+{
+    bool fault_occurred = false;
+
+//     if( status != NULL )
+//     {
+//         if ( status->fault_brake_obd_timeout == true )
+//         {
+//             printf( "Brake - OBD Timeout Detected\n" );
+
+//             fault_occurred = true;
+//         }
+
+//         if ( status->fault_brake_invalid_sensor_value == true )
+//         {
+//             printf( "Brake - Invalid Sensor Value Detected\n" );
+
+//             fault_occurred = true;
+//         }
+
+//         if ( status->fault_brake_actuator_error == true )
+//         {
+//             printf( "Brake - Actuator Error Detected\n" );
+
+//             fault_occurred = true;
+//         }
+
+//         if ( status->fault_brake_pump_motor_error == true )
+//         {
+//             printf( "Brake - Accumulator Pump Error Detected\n" );
+
+//             fault_occurred = true;
+//         }
+//     }
+
+    return fault_occurred;
+}
+
+static bool check_for_steering_faults( )
+{
+    bool fault_occurred = false;
+
+//     if( status != NULL )
+//     {
+//         if ( status->fault_steering_obd_timeout == true )
+//         {
+//             printf( "Steering - OBD Timeout Detected\n" );
+
+//             fault_occurred = true;
+//         }
+
+//         if ( status->fault_steering_invalid_sensor_value == true )
+//         {
+//             printf( "Steering - Invalid Sensor Value Detected\n" );
+
+//             fault_occurred = true;
+//         }
+//     }
+
+    return fault_occurred;
+}
+
+static bool check_for_throttle_faults( )
+{
+    bool fault_occurred = false;
+
+//     if( status != NULL )
+//     {
+//         if ( status->fault_throttle_invalid_sensor_value == true )
+//         {
+//             printf( "Throttle - Invalid Sensor Value Detected\n" );
+
+//             fault_occurred = true;
+//         }
+//     }
+
+    return fault_occurred;
 }

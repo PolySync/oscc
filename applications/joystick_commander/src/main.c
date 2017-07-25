@@ -184,15 +184,16 @@ int main( int argc, char **argv )
         while ( ret == OSCC_OK && error_thrown == OSCC_OK )
         {
             // checks for overrides
-            // ret = commander_high_frequency_update( );
+            // ret = check_for_fault_update( );
 
             elapsed_time = get_elapsed_time( update_timestamp );
 
+            // DON'T NEEEEEEEED THIS MAYBE?
             if ( elapsed_time > COMMANDER_UPDATE_INTERVAL )
             {
                 update_timestamp = get_timestamp();
-                // uses buttons
-                ret = commander_low_frequency_update( );
+                
+                ret = check_for_controller_update( );
             }
 
             // Delay 1 ms to avoid loading the CPU and to time calls

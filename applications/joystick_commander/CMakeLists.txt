@@ -14,6 +14,7 @@ add_executable(
     src/commander.c
     src/joystick.c
     src/main.c
+    src/pid.c
     ../../api/src/oscc.c)
 
 target_include_directories(

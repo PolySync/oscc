@@ -140,13 +140,55 @@
  * @brief Minimum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_SIGNAL_RANGE_MIN ( 868.0 )
+#define STEERING_SPOOF_SIGNAL_MIN ( 868.0 )
 
 /*
  * @brief Maximum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_SIGNAL_RANGE_MAX ( 3031.0 )
+#define STEERING_SPOOF_SIGNAL_MAX ( 3031.0 )
+
+/*
+ * @brief Minimum torque value [Nm]
+ *
+ */
+ #define STEERING_TORQUE_MIN ( -10.0 )
+
+ /*
+ * @brief Maximum torque value [Nm]
+ *
+ */
+ #define STEERING_TORQUE_MAX ( 10.0 )
+
+ /*
+ * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.
+ *
+ */
+#define STEPS_PER_VOLT ( 819.2 )
+
+/*
+ * @brief Scalar value for the low spoof signal taken from a calibration curve.
+ *
+ */
+#define TORQUE_SPOOF_LOW_SCALAR ( 0.12 )
+
+/*
+ * @brief Offset value for the low spoof signal taken from a calibration curve.
+ *
+ */
+#define TORQUE_SPOOF_LOW_OFFSET ( 2.26 )
+
+/*
+ * @brief Scalar value for the high spoof signal taken from a calibration curve.
+ *
+ */
+#define TORQUE_SPOOF_HIGH_SCALAR ( -0.12 )
+
+/*
+ * @brief Offset value for the high spoof signal taken from a calibration curve.
+ *
+ */
+#define TORQUE_SPOOF_HIGH_OFFSET ( 2.5 )
 
 /*
  * @brief Value of the torque sensor that indicates operator override.
@@ -249,13 +291,13 @@
  * @brief Calculation to convert a steering torque to a high spoof value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) ( (torque) )
+#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) ( STEPS_PER_VOLT * ((TORQUE_SPOOF_HIGH_SCALAR * torque) + TORQUE_SPOOF_HIGH_OFFSET) )
 
 /*
  * @brief Calculation to convert a steering torque to a low spoof value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) ( (torque) )
+#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) ( STEPS_PER_VOLT * ((TORQUE_SPOOF_LOW_SCALAR * torque) + TORQUE_SPOOF_LOW_OFFSET) )
 
 
 /**

@@ -19,13 +19,6 @@
 #include "oscc.h"
 #include "joystick.h"
 
-
-
-
-// *****************************************************
-// static global types/macros
-// *****************************************************
-
 /**
  * @brief Button press debounce delay. [microseconds]
  *
@@ -50,19 +43,6 @@
  */
 #define JOYSTICK_ID_STRING_SIZE ( 64 )
 
-
-
-// *****************************************************
-// type definitions
-// *****************************************************
-
-
-/**
- * @brief Joystick GUID
- *
- * Implementation-dependent GUID
- *
- */
 typedef struct
 {
     unsigned char data[ JOYSTICK_ID_DATA_SIZE ];
@@ -70,11 +50,6 @@ typedef struct
 
 } joystick_guid_s;
 
-
-/**
- * @brief Joystick device
- *
- */
 typedef struct
 {
     void *controller;
@@ -86,32 +61,10 @@ typedef struct
 } joystick_device_data_s;
 
 
-// *****************************************************
-// static global data
-// *****************************************************
-
-
 static joystick_guid_s joystick_guid;
 static joystick_device_data_s joystick_data = { NULL, &joystick_guid };
 static joystick_device_data_s* joystick = NULL;
 
-
-// *****************************************************
-// static definitions
-// *****************************************************
-
-
-// *****************************************************
-// Function:    joystick_init_subsystem
-//
-// Purpose:     Initialize the joystick and game 
-//              controller subsystems
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  None
-//
-// *****************************************************
 static int joystick_init_subsystem( )
 {
     oscc_error_t ret = OSCC_ERROR;
@@ -131,18 +84,6 @@ static int joystick_init_subsystem( )
     return ret;
 }
 
-
-// *****************************************************
-// Function:    joystick_get_guid_at_index
-//
-// Purpose:     Return the Globally Unique ID (GUID) for the requested joystick
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  device_index - index to the requested device
-//              guid - pointer to the guid to fill out
-//
-// *****************************************************
 static int joystick_get_guid_at_index( unsigned long device_index )
 {
     oscc_error_t ret = OSCC_ERROR;
@@ -166,17 +107,6 @@ static int joystick_get_guid_at_index( unsigned long device_index )
     return ret;
 }
 
-
-// *****************************************************
-// Function:    joystick_get_num_devices
-//
-// Purpose:     Return the number of joystick devices resident on the system
-//
-// Returns:     int - the number of devices or OSCC_ERROR
-//
-// Parameters:  None
-//
-// *****************************************************
 static int joystick_get_num_devices( )
 {
     int num_joysticks = OSCC_ERROR;
@@ -194,68 +124,6 @@ static int joystick_get_num_devices( )
     return ( num_joysticks );
 }
 
-
-// *****************************************************
-// Function:    joystick_curve_fit
-//
-// Purpose:     Calculate the logarithmic range for the joystick position
-//
-//              Create the formula:
-//              output = ( output_range / ( input_range )^2 ) * ( input )^2
-//
-//              Which is equal to:
-//              output = output_range * ( input / input_range )^2
-//
-// Returns:     double - the curve fit value
-//
-// Parameters:  input_min - input range min
-//              input_max - input range max
-//              output_min - output range min
-//              output_max - output range max
-//              position - current joystick position
-//
-// *****************************************************
-static double joystick_curve_fit( double input_min,
-                                  double input_max,
-                                  double output_min,
-                                  double output_max,
-                                  double position )
-{
-    const double input_range = input_max - input_min;
-    const double output_range = output_max - output_min;
-
-    double input = position - input_min;
-    double output = 0.0;
-
-    input /= input_range;   // input / input_range
-    input *= input;         // ( input / input_range )^2
-
-    // output = output_range * ( input / input_range )^2
-    output = output_range * input;
-
-    output += output_min;   // normalize to output range
-
-    return ( output );
-}
-
-
-
-// *****************************************************
-// public definitions
-// *****************************************************
-
-
-
-// *****************************************************
-// Function:    joystick_init_subsystem
-//
-// Purpose:     Initialize the joystick subsystem
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  None
-//
-// *****************************************************
 int joystick_init( )
 {
     oscc_error_t ret = OSCC_OK;
@@ -297,17 +165,6 @@ int joystick_init( )
 
 }
 
-
-// *****************************************************
-// Function:    joystick_open
-//
-// Purpose:     Open the requested joystick for use
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  device_index - index to the requested device
-//
-// *****************************************************
 int joystick_open( unsigned long device_index )
 {
     oscc_error_t ret = OSCC_ERROR;
@@ -352,17 +209,6 @@ int joystick_open( unsigned long device_index )
     return ret;
 }
 
-
-// *****************************************************
-// Function:    jstick_close
-//
-// Purpose:     Close the joystick for use
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// *****************************************************
 void joystick_close( )
 {
     if ( joystick != NULL )
@@ -386,17 +232,6 @@ void joystick_close( )
     SDL_Quit();
 }
 
-
-// *****************************************************
-// Function:    joystick_update
-//
-// Purpose:     Update the requested joystick for use
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  device_index - index to the requested device
-//
-// *****************************************************
 int joystick_update( )
 {
     oscc_error_t ret = OSCC_ERROR;
@@ -420,18 +255,6 @@ int joystick_update( )
     return ret;
 }
 
-
-// *****************************************************
-// Function:    joystick_get_axis
-//
-// Purpose:     Get the axis state
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  axis_index - index to the axis to use
-//              position - pointer to the position to update
-//
-// *****************************************************
 int joystick_get_axis( unsigned long axis_index, int * const position )
 {
     oscc_error_t ret = OSCC_ERROR;
@@ -442,24 +265,14 @@ int joystick_get_axis( unsigned long axis_index, int * const position )
 
         const Sint16 pos = SDL_GameControllerGetAxis( joystick->controller,
                                                       axis_index );
+
+        
         ( *position ) = (int) pos;
     }
 
     return ret;
 }
 
-
-// *****************************************************
-// Function:    joystick_get_button
-//
-// Purpose:     Get which button was pressed for the requested joystick
-//
-// Returns:     int - OSCC_ERROR or OSCC_OK
-//
-// Parameters:  button_index - index to the button to use
-//              button_state - pointer to the button state to update
-//
-// *****************************************************
 int joystick_get_button( unsigned long button_index,
                          unsigned int * const button_state )
 {
@@ -491,73 +304,3 @@ int joystick_get_button( unsigned long button_index,
 
     return ret;
 }
-
-
-// *****************************************************
-// Function:    joystick_normalize_axis_position
-//
-// Purpose:     Convert the integer current joystick input position into a
-//              scaled value for the variable that the joystick input
-//              represents
-//
-// Returns:     double - the normalized axis position
-//
-// Parameters:  position - current input position on the joystick
-//              range_min - minimum scaled value for the variable
-//              range_max - maximum scaled value for the variable
-//
-// *****************************************************
-double joystick_normalize_axis_position( const int position,
-                                         const double range_min,
-                                         const double range_max )
-{
-    const double input_min = 0.0;
-    const double output_min = 0.0;
-
-    double input_max = ( double )JOYSTICK_AXIS_POSITION_MAX;
-    double output_max = range_min;
-
-    if ( position < 0 )
-    {
-        input_max = ( double )JOYSTICK_AXIS_POSITION_MIN;
-        output_max = range_max;
-    }
-
-    const double output = joystick_curve_fit( input_min,
-                                              input_max,
-                                              output_min,
-                                              output_max,
-                                              ( double )position );
-
-    return ( output );
-}
-
-
-// *****************************************************
-// Function:    joystick_normalize_trigger_position
-//
-// Purpose:     Convert the integer current joystick trigger position
-//              to a scaled value
-//
-// Returns:     double - the normalized trigger position
-//
-// Parameters:  position - current trigger position on the joystick
-//              range_min - minimum scaled value for the variable
-//              range_max - maximum scaled value for the variable
-//
-// *****************************************************
-double joystick_normalize_trigger_position( const int position,
-                                            const double range_min,
-                                            const double range_max )
-{
-    const double output = joystick_curve_fit(
-        ( double )JOYSTICK_TRIGGER_POSITION_MIN,
-        ( double )JOYSTICK_TRIGGER_POSITION_MAX,
-        range_min,
-        range_max,
-        ( double )position );
-
-    return ( output );
-}
-
-
