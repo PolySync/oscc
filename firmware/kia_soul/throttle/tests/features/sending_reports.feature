@@ -9,6 +9,4 @@ Feature: Sending reports
     When a throttle report is published
 
     Then a throttle report should be put on the control CAN bus
-    And the throttle report's enabled field should be set
-    And the throttle report's override field should be set
-    And the throttle report's DTCs field should be set
+    And the throttle report's fields should be set

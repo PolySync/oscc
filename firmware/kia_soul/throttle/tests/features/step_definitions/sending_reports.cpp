@@ -16,32 +16,22 @@ THEN("^a throttle report should be put on the control CAN bus$")
 }
 
 
-THEN("^the throttle report's enabled field should be set$")
+THEN("^the throttle report's fields should be set$")
 {
     oscc_throttle_report_s * throttle_report =
         (oscc_throttle_report_s *) g_mock_mcp_can_send_msg_buf_buf;
+
+    assert_that(
+        throttle_report->magic,
+        is_equal_to(OSCC_MAGIC));
 
     assert_that(
         throttle_report->enabled,
         is_equal_to(g_throttle_control_state.enabled));
-}
-
-
-THEN("^the throttle report's override field should be set$")
-{
-    oscc_throttle_report_s * throttle_report =
-        (oscc_throttle_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
         throttle_report->operator_override,
         is_equal_to(g_throttle_control_state.operator_override));
-}
-
-
-THEN("^the throttle report's DTCs field should be set$")
-{
-    oscc_throttle_report_s * throttle_report =
-        (oscc_throttle_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
         throttle_report->dtcs,

@@ -33,6 +33,9 @@ typedef enum
 } fault_origin_id_t;
 
 
+#pragma pack(push)
+#pragma pack(1)
+
 /**
  * @brief Fault report message data.
  *
@@ -41,10 +44,15 @@ typedef enum
  */
 typedef struct
 {
+    uint16_t magic; /* Magic number identifying CAN frame as from OSCC.
+                       Should be \ref OSCC_MAGIC. */
+
     uint32_t fault_origin_id; /* ID of the module that is sending out the fault. */
 
-    uint8_t reserved[4]; /* Reserved */
+    uint8_t reserved[2]; /* Reserved */
 } oscc_fault_report_s;
+
+#pragma pack(pop)
 
 
 #endif /* _OSCC_FAULT_CAN_PROTOCOL_H_ */

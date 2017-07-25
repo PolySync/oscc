@@ -113,12 +113,28 @@ oscc_error_t oscc_publish_brake_position(double brake_position)
 
     // use normalized position to scale between known limits
     // use that to calculate spoof values
-    const double scaled_position = (double)m_constrain(
-        brake_position * MAXIMUM_BRAKE_COMMAND,
-        MINIMUM_BRAKE_COMMAND,
-        MAXIMUM_BRAKE_COMMAND);
+    const double scaled_position = (double) m_constrain (
+            brake_position * MAXIMUM_BRAKE_COMMAND,
+            MINIMUM_BRAKE_COMMAND,
+            MAXIMUM_BRAKE_COMMAND );
 
-    brake_cmd.pedal_command = (uint16_t)BRAKE_POSITION_TO_PEDAL(scaled_position);
+    brake_cmd.magic = ( uint16_t ) OSCC_MAGIC;
+    brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( scaled_position );
+
+    ret = oscc_can_write( OSCC_BRAKE_COMMAND_CAN_ID,
+                                    (void *) &brake_cmd,
+                                    sizeof( brake_cmd ) );
+
+    return ret;
+}
+
+
+oscc_error_t oscc_publish_brake_pressure( double brake_pressure )
+{
+    oscc_error_t ret = OSCC_ERROR;
+
+    brake_cmd.magic = ( uint16_t ) OSCC_MAGIC;
+    brake_cmd.pedal_command = ( uint16_t ) BRAKE_PRESSURE_TO_PEDAL( brake_pressure );
 
     ret = oscc_can_write(OSCC_BRAKE_COMMAND_CAN_ID,
                          (void *)&brake_cmd,
@@ -134,8 +150,9 @@ oscc_error_t oscc_publish_throttle_position(double throttle_position)
     // use normalized throttle position to scale between known limits
     // use that to calculate spoof values
 
-    throttle_cmd.spoof_value_low = (uint16_t)THROTTLE_POSITION_TO_SPOOF_LOW(throttle_position);
-    throttle_cmd.spoof_value_high = (uint16_t)THROTTLE_POSITION_TO_SPOOF_HIGH(throttle_position);
+    throttle_cmd.magic = ( uint16_t ) OSCC_MAGIC;
+    throttle_cmd.spoof_value_low = ( uint16_t) THROTTLE_POSITION_TO_SPOOF_LOW( throttle_position );
+    throttle_cmd.spoof_value_high = ( uint16_t ) THROTTLE_POSITION_TO_SPOOF_HIGH( throttle_position );
 
     ret = oscc_can_write(OSCC_THROTTLE_COMMAND_CAN_ID,
                          (void *)&throttle_cmd,
@@ -148,7 +165,19 @@ oscc_error_t oscc_publish_steering_torque(double normalized_torque)
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    double torque = normalized_torque * STEERING_TORQUE_MAX;
+    // use normalized steering angle to scale between known limits
+    // use that to calculate spoof value
+
+    steering_cmd.magic = ( uint16_t ) OSCC_MAGIC;
+    steering_cmd.spoof_value_low = ( int16_t ) STEERING_ANGLE_TO_SPOOF_LOW( angle );
+    steering_cmd.spoof_value_high = ( int16_t ) STEERING_ANGLE_TO_SPOOF_HIGH( angle );
+
+    ret = oscc_can_write( OSCC_STEERING_COMMAND_CAN_ID,
+                                    (void *) &steering_cmd,
+                                    sizeof( steering_cmd ) );
+
+    return ret;
+}
 
     torque = m_constrain(
         torque,
@@ -156,6 +185,7 @@ oscc_error_t oscc_publish_steering_torque(double normalized_torque)
         STEERING_TORQUE_MAX
     );
 
+    steering_cmd.magic = ( uint16_t ) OSCC_MAGIC;
     steering_cmd.spoof_value_low = ( int16_t ) STEERING_TORQUE_TO_SPOOF_LOW( torque );
     steering_cmd.spoof_value_high = ( int16_t ) STEERING_TORQUE_TO_SPOOF_HIGH( torque );
 

@@ -9,7 +9,4 @@ Feature: Sending reports
     When a brake report is published
 
     Then a brake report should be put on the control CAN bus
-    And the brake report's enabled field should be set
-    And the brake report's override field should be set
-    And the brake report's DTCs field should be set
-    And the brake report's front pressure sensor fields should be set
+    And the brake report's fields should be set

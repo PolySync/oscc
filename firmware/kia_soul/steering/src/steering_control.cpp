@@ -11,7 +11,7 @@
 #include "oscc_dac.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "dtc.h"
-#include "vehicles/kia_soul.h"
+#include "vehicles/vehicles.h"
 
 #include "communications.h"
 #include "steering_control.h"
@@ -69,8 +69,8 @@ void check_for_sensor_faults( void )
         int sensor_low = analogRead( PIN_TORQUE_SENSOR_LOW );
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (sensor_high == -1)
-            || (sensor_low == -1) )
+        if( (sensor_high == 0)
+            || (sensor_low == 0) )
         {
             ++fault_count;
 

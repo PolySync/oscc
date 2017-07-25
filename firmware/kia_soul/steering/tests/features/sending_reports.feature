@@ -9,6 +9,4 @@ Feature: Sending reports
     When a steering report is published
 
     Then a steering report should be put on the control CAN bus
-    And the steering report's enabled field should be set
-    And the steering report's override field should be set
-    And the steering report's DTCs field should be set
+    And the steering report's fields should be set

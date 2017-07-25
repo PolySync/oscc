@@ -12,21 +12,6 @@
 #include <stdint.h>
 
 
-/*
- * @brief Minimum value of an unsigned 16-bit integer.
- *
- */
-#define UINT16_MIN ( 0 )
-
-
-/*
- * @brief Number of consecutive faults that can occur when reading the
- *        sensors before control is disabled.
- *
- */
-#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
-
-
 /**
  * @brief Current brake control state.
  *
@@ -42,9 +27,12 @@ typedef struct
 
     uint8_t dtcs; /* Bitfield of faults present in the module. */
 
-    int16_t brake_pressure_front_left; /* Brake pressure at front left wheel. */
+    float commanded_pedal_position; /* Brake pedal position commanded by
+                                       controller. */
 
-    int16_t brake_pressure_front_right; /* Brake pressure at front right wheel. */
+    bool startup_pressure_check_error; /* Flag indicating a problem with the actuator. */
+
+    bool startup_pump_motor_check_error; /* Flag indicating a problem with the pump motor. */
 } kia_soul_brake_control_state_s;
 
 
@@ -129,20 +117,6 @@ void check_for_operator_override( void );
 //
 // ****************************************************************************
 void check_for_sensor_faults( void );
-
-
-
-// ****************************************************************************
-// Function:    read_pressure_sensor
-//
-// Purpose:     Update brake pressure.
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// ****************************************************************************
-void read_pressure_sensor( void );
 
 
 // ****************************************************************************

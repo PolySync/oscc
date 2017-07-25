@@ -1,6 +1,3 @@
-#include "vehicles/kia_soul.h"
-
-
 WHEN("^an OBD CAN frame is received on the OBD CAN bus$")
 {
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;

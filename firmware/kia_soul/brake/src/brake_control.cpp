@@ -4,14 +4,14 @@
  */
 
 
-#include <Arduino.h>
 #include "debug.h"
 #include "oscc_pid.h"
 #include "dtc.h"
 #include "can_protocols/brake_can_protocol.h"
-#include "vehicles/kia_soul.h"
+#include "vehicles/vehicles.h"
 
 #include "globals.h"
+#include "accumulator.h"
 #include "brake_control.h"
 #include "communications.h"
 #include "master_cylinder.h"
@@ -26,11 +26,15 @@
 #define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 
+static float read_pressure_sensor( void );
 static void disable_brake_lights( void );
 static void enable_brake_lights( void );
 static bool check_master_cylinder_pressure_sensor_for_fault( void );
 static bool check_accumulator_pressure_sensor_for_fault( void );
 static bool check_wheel_pressure_sensor_for_fault( void );
+static void startup_check( void );
+static void pressure_startup_check( void );
+static void pump_startup_check( void );
 
 
 void set_accumulator_solenoid_duty_cycle( const uint16_t duty_cycle )
@@ -50,7 +54,9 @@ void set_release_solenoid_duty_cycle( const uint16_t duty_cycle )
 void enable_control( void )
 {
     if ( g_brake_control_state.enabled == false
-         && g_brake_control_state.operator_override == false )
+         && g_brake_control_state.operator_override == false
+         && (g_brake_control_state.startup_pressure_check_error == false)
+         && (g_brake_control_state.startup_pump_motor_check_error== false) )
     {
         master_cylinder_close( );
 
@@ -95,8 +101,8 @@ void check_for_operator_override( void )
 
         master_cylinder_read_pressure( &master_cylinder_pressure );
 
-        if ( ( master_cylinder_pressure.sensor_1_pressure >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
-            ( master_cylinder_pressure.sensor_2_pressure >= DRIVER_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+        if ( ( master_cylinder_pressure.sensor_1_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
+            ( master_cylinder_pressure.sensor_2_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
         {
             disable_control( );
 
@@ -168,39 +174,150 @@ void check_for_sensor_faults( void )
 }
 
 
-void read_pressure_sensor( void )
-{
-    g_brake_control_state.brake_pressure_front_left =
-        analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
-
-    g_brake_control_state.brake_pressure_front_right =
-        analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
-}
-
-
 void brake_init( void )
 {
     digitalWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, LOW );
     digitalWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, LOW );
     digitalWrite( PIN_RELEASE_SOLENOID_FRONT_LEFT, LOW );
     digitalWrite( PIN_RELEASE_SOLENOID_FRONT_RIGHT, LOW );
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, LOW );
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, LOW );
 
     pinMode( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, OUTPUT );
     pinMode( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, OUTPUT );
     pinMode( PIN_RELEASE_SOLENOID_FRONT_LEFT, OUTPUT );
     pinMode( PIN_RELEASE_SOLENOID_FRONT_RIGHT, OUTPUT );
+    pinMode( PIN_WHEEL_PRESSURE_CHECK_1, OUTPUT );
+    pinMode( PIN_WHEEL_PRESSURE_CHECK_2, OUTPUT );
 
     set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
     set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
     disable_brake_lights( );
     pinMode( PIN_BRAKE_LIGHT, OUTPUT );
+
+    startup_check( );
 }
 
 
 void update_brake( void )
 {
-    read_pressure_sensor( );
+    if ( g_brake_control_state.enabled == true )
+    {
+        static float pressure_at_wheels_target = 0.0;
+        static float pressure_at_wheels_current = 0.0;
+
+        static uint32_t control_loop_time = 0;
+
+        uint32_t current_time = micros();
+
+        float time_between_loops = current_time - control_loop_time;
+
+        control_loop_time = current_time;
+
+        // Division by 1000 twice overcomes the Arduino's mathematic limitations
+        // and allows for a conversion from microseconds to seconds
+        time_between_loops /= 1000.0;
+        time_between_loops /= 1000.0;
+
+        static interpolate_range_s pressure_ranges =
+            { 0, UINT16_MAX, BRAKE_PRESSURE_MIN_IN_DECIBARS, BRAKE_PRESSURE_MAX_IN_DECIBARS };
+
+        pressure_at_wheels_target = interpolate(
+            g_brake_control_state.commanded_pedal_position,
+            &pressure_ranges );
+
+        pressure_at_wheels_current = read_pressure_sensor( );
+
+        if ( pressure_at_wheels_current < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
+        {
+            disable_brake_lights( );
+        }
+        else
+        {
+            enable_brake_lights( );
+        }
+
+        int16_t ret = pid_update(
+            &g_pid,
+            pressure_at_wheels_target,
+            pressure_at_wheels_current,
+            time_between_loops );
+
+        if ( ret == PID_SUCCESS )
+        {
+            float pid_output = g_pid.control;
+
+            // pressure too high
+            if ( pid_output < BRAKE_PID_OUTPUT_MIN )
+            {
+                static interpolate_range_s slr_ranges = {
+                    BRAKE_PID_RELEASE_SOLENOID_CLAMPED_MIN,
+                    BRAKE_PID_RELEASE_SOLENOID_CLAMPED_MAX,
+                    BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MIN,
+                    BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MAX };
+
+                uint16_t slr_duty_cycle = 0;
+
+                set_accumulator_solenoid_duty_cycle( SOLENOID_PWM_OFF );
+
+                pid_output = -pid_output;
+                slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
+
+                if ( slr_duty_cycle > ( uint16_t )BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MAX )
+                {
+                    slr_duty_cycle = ( uint16_t )BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MAX;
+                }
+
+                set_release_solenoid_duty_cycle( slr_duty_cycle );
+
+                if ( pressure_at_wheels_target < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
+                {
+                    disable_brake_lights( );
+                }
+            }
+
+            // pressure too low
+            else if ( pid_output > BRAKE_PID_OUTPUT_MAX )
+            {
+                static interpolate_range_s sla_ranges = {
+                    BRAKE_PID_ACCUMULATOR_SOLENOID_CLAMPED_MIN,
+                    BRAKE_PID_ACCUMULATOR_SOLENOID_CLAMPED_MAX,
+                    BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MIN,
+                    BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX };
+
+                uint16_t sla_duty_cycle = 0;
+
+                enable_brake_lights( );
+
+                set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
+
+                sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
+
+                if ( sla_duty_cycle > ( uint16_t )BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX )
+                {
+                    sla_duty_cycle = ( uint16_t )BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX;
+                }
+
+                set_accumulator_solenoid_duty_cycle( sla_duty_cycle );
+            }
+        }
+    }
+}
+
+
+static float read_pressure_sensor( void )
+{
+    int raw_adc_front_left =
+        analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
+
+    int raw_adc_front_right =
+        analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
+
+    float pressure_front_left = raw_adc_to_pressure( raw_adc_front_left );
+    float pressure_front_right = raw_adc_to_pressure( raw_adc_front_right );
+
+    return ( (pressure_front_left + pressure_front_right) / 2.0 );
 }
 
 
@@ -299,3 +416,64 @@ static bool check_wheel_pressure_sensor_for_fault( void )
 
     return fault_occurred;
 }
+
+
+static void startup_check( void )
+{
+    pressure_startup_check( );
+    pump_startup_check( );
+}
+
+
+static void pressure_startup_check( void )
+{
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, HIGH );
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, HIGH );
+    delay(250);
+
+    int pressure_front_left = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
+    int pressure_front_right = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
+    int pressure_accumulator = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
+
+    if( (pressure_front_left < BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN)
+        || (pressure_front_left > BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX)
+        || (pressure_front_right < BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN)
+        || (pressure_front_right > BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX) )
+    {
+        g_brake_control_state.startup_pressure_check_error = true;
+
+        DEBUG_PRINTLN( "Startup pressure check error" );
+    }
+    else
+    {
+        g_brake_control_state.startup_pressure_check_error = false;
+    }
+
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, LOW );
+    digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, LOW );
+    delay(250);
+}
+
+
+static void pump_startup_check( void )
+{
+    accumulator_turn_pump_on();
+    delay(250);
+
+    int motor_check = analogRead( PIN_ACCUMULATOR_PUMP_MOTOR_CHECK );
+
+    // should not be 0 if the pump is on
+    if( motor_check == 0 )
+    {
+        g_brake_control_state.startup_pump_motor_check_error = true;
+
+        DEBUG_PRINTLN( "Startup pump motor error" );
+    }
+    else
+    {
+        g_brake_control_state.startup_pump_motor_check_error = false;
+    }
+
+    accumulator_turn_pump_off();
+}
+

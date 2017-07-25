@@ -10,7 +10,7 @@
 #include "oscc_dac.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "dtc.h"
-#include "vehicles/kia_soul.h"
+#include "vehicles/vehicles.h"
 
 #include "communications.h"
 #include "throttle_control.h"

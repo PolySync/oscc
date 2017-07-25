@@ -15,6 +15,14 @@
 #include "can_protocols/steering_can_protocol.h"
 
 
+/*
+ * @brief Magic value in commands and reports indicating that its source is
+ *        OSCC.
+ *
+ */
+#define OSCC_MAGIC ( 0x05CC )
+
+
 typedef enum
 {
     OSCC_OK,
@@ -86,7 +94,7 @@ oscc_error_t oscc_publish_brake_position( double brake_position );
  * @brief Publish message with requested throttle pedal position to
  *        throttle module.
  *
- * @param [in] position - Normalized requested throttle pedal 
+ * @param [in] position - Normalized requested throttle pedal
  *        position in the range [0, 1].
  *
  * @return OSCC_ERROR or OSCC_OK

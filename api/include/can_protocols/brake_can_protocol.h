@@ -43,6 +43,9 @@
 #define OSCC_BRAKE_DTC_INVALID_SENSOR_VAL (0x0)
 
 
+#pragma pack(push)
+#pragma pack(1)
+
 /**
  * @brief Brake command message data.
  *
@@ -51,13 +54,16 @@
  */
 typedef struct
 {
+    uint16_t magic; /* Magic number identifying CAN frame as from OSCC.
+                       Should be \ref OSCC_MAGIC. */
+
     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
     uint8_t enable; /*!< Command to enable or disable steering control.
                      * Zero value means disable.
                      * Non-zero value means enable. */
 
-    uint8_t reserved[5]; /*!< Reserved. */
+    uint8_t reserved[3]; /*!< Reserved. */
 } oscc_brake_command_s;
 
 
@@ -69,6 +75,9 @@ typedef struct
  */
 typedef struct
 {
+    uint16_t magic; /* Magic number identifying CAN frame as from OSCC.
+                       Should be \ref OSCC_MAGIC. */
+
     uint8_t enabled; /*!< Braking controls enabled state.
                       * Zero value means disabled (commands are ignored).
                       * Non-zero value means enabled (no timeouts or overrides have occured). */
@@ -80,12 +89,9 @@ typedef struct
 
     uint8_t dtcs; /* Bitfield of DTCs present in the module. */
 
-    int16_t brake_pressure_front_left; /* Brake pressure at front left wheel. */
-
-    int16_t brake_pressure_front_right; /* Brake pressure at front right wheel. */
-
-    uint8_t reserved; /*!< Reserved. */
+    uint8_t reserved[3]; /*!< Reserved. */
 } oscc_brake_report_s;
 
+#pragma pack(pop)
 
 #endif /* _OSCC_BRAKE_CAN_PROTOCOL_H_ */
