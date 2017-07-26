@@ -282,13 +282,13 @@ typedef struct
  * @brief Minimum torque value [Nm]
  *
  */
- #define STEERING_TORQUE_MIN ( -10.0 )
+ #define STEERING_TORQUE_MIN ( -1500.0 )
 
  /*
  * @brief Maximum torque value [Nm]
  *
  */
- #define STEERING_TORQUE_MAX ( 10.0 )
+ #define STEERING_TORQUE_MAX ( 1500.0 )
 
  /*
  * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.
