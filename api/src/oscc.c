@@ -19,7 +19,7 @@
 #include "dtc.h"
 #include "oscc.h"
 
-#define m_constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
+#define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
 static int can_socket;
 
@@ -113,7 +113,7 @@ oscc_error_t oscc_publish_brake_position(double brake_position)
 
     // use normalized position to scale between known limits
     // use that to calculate spoof values
-    const double scaled_position = (double) m_constrain (
+    const double scaled_position = (double) CONSTRAIN (
             brake_position * MAXIMUM_BRAKE_COMMAND,
             MINIMUM_BRAKE_COMMAND,
             MAXIMUM_BRAKE_COMMAND );
@@ -149,10 +149,28 @@ oscc_error_t oscc_publish_throttle_position(double throttle_position)
 
     // use normalized throttle position to scale between known limits
     // use that to calculate spoof values
+    double normalized_position = CONSTRAIN(
+        throttle_position * MAXIMUM_THROTTLE_COMMAND,
+        MINIMUM_THROTTLE_COMMAND,
+        MAXIMUM_THROTTLE_COMMAND);
+
+    uint16_t spoof_value_low = THROTTLE_POSITION_TO_SPOOF_LOW( normalized_position );
+
+    spoof_value_low = CONSTRAIN(
+        spoof_value_low,
+        THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
+        THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX);
+
+    uint16_t spoof_value_high = THROTTLE_POSITION_TO_SPOOF_HIGH( normalized_position );
+
+    spoof_value_high = CONSTRAIN(
+        spoof_value_high,
+        THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+        THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX);
 
     throttle_cmd.magic = ( uint16_t ) OSCC_MAGIC;
-    throttle_cmd.spoof_value_low = ( uint16_t) THROTTLE_POSITION_TO_SPOOF_LOW( throttle_position );
-    throttle_cmd.spoof_value_high = ( uint16_t ) THROTTLE_POSITION_TO_SPOOF_HIGH( throttle_position );
+    throttle_cmd.spoof_value_low = spoof_value_low;
+    throttle_cmd.spoof_value_high = spoof_value_high;
 
     ret = oscc_can_write(OSCC_THROTTLE_COMMAND_CAN_ID,
                          (void *)&throttle_cmd,

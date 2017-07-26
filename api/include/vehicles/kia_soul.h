@@ -359,13 +359,13 @@ typedef struct
 // ****************************************************************************
 
 /*
- * @brief Minimum allowable brake value.
+ * @brief Minimum allowable throttle value.
  *
  */
 #define MINIMUM_THROTTLE_COMMAND ( 0 )
 
 /*
- * @brief Maximum allowable brake value.
+ * @brief Maximum allowable throttle value.
  *
  */
 #define MAXIMUM_THROTTLE_COMMAND ( 19660 )
@@ -374,13 +374,17 @@ typedef struct
  * @brief Calculation to convert a throttle position to a high spoof value.
  *
  */
-#define THROTTLE_POSITION_TO_SPOOF_HIGH( position ) ( (position) )
+#define THROTTLE_POSITION_TO_SPOOF_HIGH( position ) (STEPS_PER_VOLT\
+            * ((THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
+            + THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Calculation to convert a throttle position to a low spoof value.
  *
  */
-#define THROTTLE_POSITION_TO_SPOOF_LOW( position ) ( (position) )
+#define THROTTLE_POSITION_TO_SPOOF_LOW( position ) (STEPS_PER_VOLT\
+            * ((THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
+            + THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Minimum allowed value for the low spoof signal value.
@@ -405,6 +409,30 @@ typedef struct
  *
  */
 #define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3500 )
+
+/*
+ * @brief Scalar value for the low spoof signal taken from a calibration curve.
+ *
+ */
+#define THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE (0.0004)
+
+/*
+ * @brief Offset value for the low spoof signal taken from a calibration curve.
+ *
+ */
+#define THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET (0.366)
+
+/*
+ * @brief Scalar value for the high spoof signal taken from a calibration curve.
+ *
+ */
+#define THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE (0.0008)
+
+/*
+ * @brief Offset value for the high spoof signal taken from a calibration curve.
+ *
+ */
+#define THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET (0.732)
 
 /*
  * @brief Value of the accelerator position that indicates operator override.

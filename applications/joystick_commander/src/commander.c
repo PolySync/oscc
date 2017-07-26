@@ -34,7 +34,7 @@ static int commander_enabled = COMMANDER_DISABLED;
 
 static pid_s steering_pid;
 static double prev_angle;
-static double curr_angle; 
+static double curr_angle;
 
 static int get_normalized_position( unsigned long axis_index, double * const normalized_position );
 static int check_trigger_positions( );
@@ -227,7 +227,7 @@ static int get_normalized_position( unsigned long axis_index, double * const nor
 
     if ( return_code == OSCC_OK )
     {
-        if ( axis_index == JOYSTICK_AXIS_STEER ) 
+        if ( axis_index == JOYSTICK_AXIS_STEER )
         {
             low = -1.0;
         }
@@ -346,13 +346,13 @@ static int command_throttle( )
 
         return_code = get_normalized_position( JOYSTICK_AXIS_THROTTLE, &normalized_throttle_position );
 
-        if ( return_code == OSCC_OK && normalized_throttle_position > 0.0 ) 
+        if ( return_code == OSCC_OK && normalized_throttle_position > 0.0 )
         {
             double normalized_brake_position = 0;
 
             return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_brake_position );
 
-            if ( normalized_brake_position >= BRAKES_ENABLED_MIN ) 
+            if ( normalized_brake_position >= BRAKES_ENABLED_MIN )
             {
                 normalized_throttle_position = 0.0;
             }
