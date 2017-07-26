@@ -22,8 +22,12 @@ THEN("^the throttle report's fields should be set$")
         (oscc_throttle_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        throttle_report->magic,
-        is_equal_to(OSCC_MAGIC));
+        throttle_report->magic[0],
+        is_equal_to(OSCC_MAGIC_BYTE_0));
+
+    assert_that(
+        throttle_report->magic[1],
+        is_equal_to(OSCC_MAGIC_BYTE_1));
 
     assert_that(
         throttle_report->enabled,

@@ -32,7 +32,8 @@ void publish_brake_report( void )
 
     oscc_brake_report_s brake_report;
 
-    brake_report.magic = (uint16_t) OSCC_MAGIC;
+    brake_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
+    brake_report.magic[1] = (uint8_t) OSCC_MAGIC_BYTE_1;
     brake_report.enabled = (uint8_t) g_brake_control_state.enabled;
     brake_report.operator_override = (uint8_t) g_brake_control_state.operator_override;
     brake_report.dtcs = g_brake_control_state.dtcs;
@@ -53,7 +54,8 @@ void publish_fault_report( void )
 
     oscc_fault_report_s fault_report;
 
-    fault_report.magic = (uint16_t) OSCC_MAGIC;
+    fault_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
+    fault_report.magic[1] = (uint8_t) OSCC_MAGIC_BYTE_1;
     fault_report.fault_origin_id = FAULT_ORIGIN_BRAKE;
 
     g_control_can.sendMsgBuf(
@@ -103,13 +105,17 @@ static void process_rx_frame(
 {
     if ( frame != NULL )
     {
-        if ( frame->id == OSCC_BRAKE_COMMAND_CAN_ID )
+        if( (frame->data[0] == OSCC_MAGIC_BYTE_0)
+             && (frame->data[1] == OSCC_MAGIC_BYTE_1) )
         {
-            process_brake_command( frame->data );
-        }
-        else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
-        {
-             process_fault_report( frame->data );
+            if ( frame->id == OSCC_BRAKE_COMMAND_CAN_ID )
+            {
+                process_brake_command( frame->data );
+            }
+            else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
+            {
+                process_fault_report( frame->data );
+            }
         }
     }
 }
@@ -123,22 +129,19 @@ static void process_brake_command(
         const oscc_brake_command_s * const brake_command =
                 (oscc_brake_command_s *) data;
 
-        if( brake_command->magic == OSCC_MAGIC )
+        if( brake_command->enable == true )
         {
-            if( brake_command->enable == true )
-            {
-                enable_control( );
-            }
-            else
-            {
-                disable_control( );
-            }
-
-            g_brake_control_state.commanded_pedal_position =
-                brake_command->pedal_command;
-
-            g_brake_command_timeout = false;
+            enable_control( );
         }
+        else
+        {
+            disable_control( );
+        }
+
+        g_brake_control_state.commanded_pedal_position =
+            brake_command->pedal_command;
+
+        g_brake_command_timeout = false;
     }
 }
 
@@ -151,11 +154,8 @@ static void process_fault_report(
         const oscc_fault_report_s * const fault_report =
                 (oscc_fault_report_s *) data;
 
-        if( fault_report->magic == OSCC_MAGIC )
-        {
             disable_control( );
 
             DEBUG_PRINTLN( "Fault report received" );
-        }
     }
 }

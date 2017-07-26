@@ -368,7 +368,7 @@ typedef struct
  * @brief Maximum allowable throttle value.
  *
  */
-#define MAXIMUM_THROTTLE_COMMAND ( 19660 )
+#define MAXIMUM_THROTTLE_COMMAND ( 820 )
 
 /*
  * @brief Calculation to convert a throttle position to a high spoof value.

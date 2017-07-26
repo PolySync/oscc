@@ -111,34 +111,19 @@ oscc_error_t oscc_publish_brake_position(double brake_position)
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    // use normalized position to scale between known limits
-    // use that to calculate spoof values
     const double scaled_position = (double) CONSTRAIN (
             brake_position * MAXIMUM_BRAKE_COMMAND,
             MINIMUM_BRAKE_COMMAND,
             MAXIMUM_BRAKE_COMMAND );
 
-    brake_cmd.magic = ( uint16_t ) OSCC_MAGIC;
+    brake_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    brake_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( scaled_position );
 
-    ret = oscc_can_write( OSCC_BRAKE_COMMAND_CAN_ID,
-                                    (void *) &brake_cmd,
-                                    sizeof( brake_cmd ) );
-
-    return ret;
-}
-
-
-oscc_error_t oscc_publish_brake_pressure( double brake_pressure )
-{
-    oscc_error_t ret = OSCC_ERROR;
-
-    brake_cmd.magic = ( uint16_t ) OSCC_MAGIC;
-    brake_cmd.pedal_command = ( uint16_t ) BRAKE_PRESSURE_TO_PEDAL( brake_pressure );
-
-    ret = oscc_can_write(OSCC_BRAKE_COMMAND_CAN_ID,
-                         (void *)&brake_cmd,
-                         sizeof(brake_cmd));
+    ret = oscc_can_write(
+        OSCC_BRAKE_COMMAND_CAN_ID,
+        (void *) &brake_cmd,
+        sizeof( brake_cmd ) );
 
     return ret;
 }
@@ -147,34 +132,34 @@ oscc_error_t oscc_publish_throttle_position(double throttle_position)
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    // use normalized throttle position to scale between known limits
-    // use that to calculate spoof values
-    double normalized_position = CONSTRAIN(
+    const double scaled_position = CONSTRAIN(
         throttle_position * MAXIMUM_THROTTLE_COMMAND,
         MINIMUM_THROTTLE_COMMAND,
         MAXIMUM_THROTTLE_COMMAND);
 
-    uint16_t spoof_value_low = THROTTLE_POSITION_TO_SPOOF_LOW( normalized_position );
+    uint16_t spoof_value_low = THROTTLE_POSITION_TO_SPOOF_LOW( scaled_position );
 
     spoof_value_low = CONSTRAIN(
         spoof_value_low,
         THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
         THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX);
 
-    uint16_t spoof_value_high = THROTTLE_POSITION_TO_SPOOF_HIGH( normalized_position );
+    uint16_t spoof_value_high = THROTTLE_POSITION_TO_SPOOF_HIGH( scaled_position );
 
     spoof_value_high = CONSTRAIN(
         spoof_value_high,
         THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
         THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX);
 
-    throttle_cmd.magic = ( uint16_t ) OSCC_MAGIC;
+    throttle_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    throttle_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     throttle_cmd.spoof_value_low = spoof_value_low;
     throttle_cmd.spoof_value_high = spoof_value_high;
 
-    ret = oscc_can_write(OSCC_THROTTLE_COMMAND_CAN_ID,
-                         (void *)&throttle_cmd,
-                         sizeof(throttle_cmd));
+    ret = oscc_can_write(
+        OSCC_THROTTLE_COMMAND_CAN_ID,
+        (void *)&throttle_cmd,
+        sizeof(throttle_cmd));
 
     return ret;
 }
@@ -185,7 +170,8 @@ oscc_error_t oscc_publish_steering_torque(double normalized_torque)
 
     double torque = normalized_torque * STEERING_TORQUE_MAX;
 
-    steering_cmd.magic = ( uint16_t ) OSCC_MAGIC;
+    steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     steering_cmd.spoof_value_low = ( int16_t ) STEERING_TORQUE_TO_SPOOF_LOW( torque );
     steering_cmd.spoof_value_high = ( int16_t ) STEERING_TORQUE_TO_SPOOF_HIGH( torque );
 
@@ -335,44 +321,47 @@ static void oscc_update_status()
 
     while (result > 0)
     {
-        if (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID)
+        if ( (rx_frame.data[0] == OSCC_MAGIC_BYTE_0)
+             && (rx_frame.data[1] = OSCC_MAGIC_BYTE_1) )
         {
-            oscc_steering_report_s *steering_report =
-                (oscc_steering_report_s *)rx_frame.data;
-
-            if (steering_report_callback != NULL)
+            if (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID)
             {
-                steering_report_callback(steering_report);
+                oscc_steering_report_s *steering_report =
+                    (oscc_steering_report_s *)rx_frame.data;
+
+                if (steering_report_callback != NULL)
+                {
+                    steering_report_callback( steering_report );
+                }
             }
-        }
-        else if (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID)
-        {  
-            oscc_throttle_report_s *throttle_report =
-                (oscc_throttle_report_s *)rx_frame.data;
-
-            if (throttle_report_callback != NULL)
+            else if (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID)
             {
-                throttle_report_callback(throttle_report);
+                oscc_throttle_report_s *throttle_report =
+                    (oscc_throttle_report_s *)rx_frame.data;
+
+                if (throttle_report_callback != NULL)
+                {
+                    throttle_report_callback( throttle_report );
+                }
             }
-        }
-        else if (rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID)
-        {
-            oscc_brake_report_s *brake_report =
-                (oscc_brake_report_s *)rx_frame.data;
-
-            if (brake_report_callback != NULL)
+            else if (rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID)
             {
-                brake_report_callback(brake_report);
+                oscc_brake_report_s *brake_report =
+                    (oscc_brake_report_s *)rx_frame.data;
+
+                if (brake_report_callback != NULL)
+                {
+                    brake_report_callback( brake_report );
+                }
             }
-        }
-        else if (rx_frame.can_id == OSCC_FAULT_REPORT_CAN_ID)
-        {
-            oscc_fault_report_s *fault_report =
-                (oscc_fault_report_s *)rx_frame.data;
-
-            if (fault_report_callback != NULL)
+            else if (rx_frame.can_id == OSCC_FAULT_REPORT_CAN_ID)
             {
-                fault_report_callback(fault_report);
+                oscc_fault_report_s *fault_report =
+                    (oscc_fault_report_s *)rx_frame.data;
+                if (fault_report_callback != NULL)
+                {
+                    fault_report_callback(fault_report);
+                }
             }
         }
         else

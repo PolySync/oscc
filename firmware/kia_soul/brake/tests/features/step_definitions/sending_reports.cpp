@@ -22,8 +22,12 @@ THEN("^the brake report's fields should be set$")
         (oscc_brake_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        brake_report->magic,
-        is_equal_to(OSCC_MAGIC));
+        brake_report->magic[0],
+        is_equal_to(OSCC_MAGIC_BYTE_0));
+
+    assert_that(
+        brake_report->magic[1],
+        is_equal_to(OSCC_MAGIC_BYTE_1));
 
     assert_that(
         brake_report->enabled,

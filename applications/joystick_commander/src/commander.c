@@ -329,9 +329,8 @@ static int command_brakes( )
     if ( commander_enabled == COMMANDER_ENABLED )
     {
         double normalized_position = 0;
-        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_position );
 
-        // printf( "brake: %f\n", normalized_position );
+        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_position );
 
         return_code = oscc_publish_brake_position( normalized_position );
     }
@@ -360,10 +359,9 @@ static int command_throttle( )
             }
         }
 
-        // printf( "throttle: %f\n", normalized_throttle_position );
-
         return_code = oscc_publish_throttle_position( normalized_throttle_position );
     }
+
     return ( return_code );
 }
 
@@ -413,102 +411,22 @@ static int command_steering( )
     return ( return_code );
 }
 
-static void throttle_callback(oscc_throttle_report_s *report){
-    printf("throttle report recieved.\n");
+static void throttle_callback(oscc_throttle_report_s *report)
+{
 }
 
-static void steering_callback(oscc_steering_report_s *report){
-    printf("steering report rec'vd\n");
-    commander_enabled = report->enabled;
+static void steering_callback(oscc_steering_report_s *report)
+{
 }
 
-static void obd_callback(long id, unsigned char * data){
-    printf("OBD CALLBACK\n");
+static void fault_callback(oscc_fault_report_s *report)
+{
+}
+
+static void obd_callback(long id, unsigned char * data)
+{
     if ( id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID )
     {
-        kia_soul_obd_steering_wheel_angle_data_s* angle_data = (kia_soul_obd_steering_wheel_angle_data_s*) data;
-
-        curr_angle = angle_data->steering_wheel_angle * 0.1;
-
-        printf("curr angle: %f\n", curr_angle);
+        printf("OBD Steering Wheel Angle received\n");
     }
-}
-
-static bool check_for_brake_faults( )
-{
-    bool fault_occurred = false;
-
-//     if( status != NULL )
-//     {
-//         if ( status->fault_brake_obd_timeout == true )
-//         {
-//             printf( "Brake - OBD Timeout Detected\n" );
-
-//             fault_occurred = true;
-//         }
-
-//         if ( status->fault_brake_invalid_sensor_value == true )
-//         {
-//             printf( "Brake - Invalid Sensor Value Detected\n" );
-
-//             fault_occurred = true;
-//         }
-
-//         if ( status->fault_brake_actuator_error == true )
-//         {
-//             printf( "Brake - Actuator Error Detected\n" );
-
-//             fault_occurred = true;
-//         }
-
-//         if ( status->fault_brake_pump_motor_error == true )
-//         {
-//             printf( "Brake - Accumulator Pump Error Detected\n" );
-
-//             fault_occurred = true;
-//         }
-//     }
-
-    return fault_occurred;
-}
-
-static bool check_for_steering_faults( )
-{
-    bool fault_occurred = false;
-
-//     if( status != NULL )
-//     {
-//         if ( status->fault_steering_obd_timeout == true )
-//         {
-//             printf( "Steering - OBD Timeout Detected\n" );
-
-//             fault_occurred = true;
-//         }
-
-//         if ( status->fault_steering_invalid_sensor_value == true )
-//         {
-//             printf( "Steering - Invalid Sensor Value Detected\n" );
-
-//             fault_occurred = true;
-//         }
-//     }
-
-    return fault_occurred;
-}
-
-static bool check_for_throttle_faults( )
-{
-    bool fault_occurred = false;
-
-//     if( status != NULL )
-//     {
-//         if ( status->fault_throttle_invalid_sensor_value == true )
-//         {
-//             printf( "Throttle - Invalid Sensor Value Detected\n" );
-
-//             fault_occurred = true;
-//         }
-//     }
-
-    return fault_occurred;
 }

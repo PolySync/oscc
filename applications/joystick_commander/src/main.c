@@ -185,7 +185,7 @@ int main( int argc, char **argv )
             if ( elapsed_time > COMMANDER_UPDATE_INTERVAL )
             {
                 update_timestamp = get_timestamp();
-                
+
                 ret = check_for_controller_update( );
             }
 

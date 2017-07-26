@@ -53,8 +53,8 @@ void set_release_solenoid_duty_cycle( const uint16_t duty_cycle )
 
 void enable_control( void )
 {
-    if ( g_brake_control_state.enabled == false
-         && g_brake_control_state.operator_override == false
+    if ( (g_brake_control_state.enabled == false)
+         && (g_brake_control_state.operator_override == false)
          && (g_brake_control_state.startup_pressure_check_error == false)
          && (g_brake_control_state.startup_pump_motor_check_error== false) )
     {
@@ -228,15 +228,6 @@ void update_brake( void )
             &pressure_ranges );
 
         pressure_at_wheels_current = read_pressure_sensor( );
-
-        if ( pressure_at_wheels_current < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
-        {
-            disable_brake_lights( );
-        }
-        else
-        {
-            enable_brake_lights( );
-        }
 
         int16_t ret = pid_update(
             &g_pid,

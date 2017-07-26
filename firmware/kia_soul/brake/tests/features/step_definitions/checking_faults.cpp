@@ -59,8 +59,12 @@ THEN("^a fault report should be published$")
         (oscc_fault_report_s *) g_mock_mcp_can_send_msg_buf_buf;
 
     assert_that(
-        fault_report->magic,
-        is_equal_to(OSCC_MAGIC));
+        fault_report->magic[0],
+        is_equal_to(OSCC_MAGIC_BYTE_0));
+
+    assert_that(
+        fault_report->magic[1],
+        is_equal_to(OSCC_MAGIC_BYTE_1));
 
     assert_that(
         fault_report->fault_origin_id,

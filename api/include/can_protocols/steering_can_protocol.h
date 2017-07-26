@@ -54,8 +54,9 @@
  */
 typedef struct
 {
-    uint16_t magic; /* Magic number identifying CAN frame as from OSCC.
-                       Should be \ref OSCC_MAGIC. */
+    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
@@ -77,8 +78,9 @@ typedef struct
  */
 typedef struct
 {
-    uint16_t magic; /* Magic number identifying CAN frame as from OSCC.
-                       Should be \ref OSCC_MAGIC. */
+    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint8_t enabled; /*!< Steering controls enabled state.
                       * Zero value means disabled (commands are ignored).
