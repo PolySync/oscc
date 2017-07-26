@@ -183,8 +183,6 @@ oscc_error_t oscc_publish_steering_torque(double normalized_torque)
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    // use normalized steering angle to scale between known limits
-    // use that to calculate spoof value
     double torque = normalized_torque * STEERING_TORQUE_MAX;
 
     steering_cmd.magic = ( uint16_t ) OSCC_MAGIC;
@@ -348,7 +346,7 @@ static void oscc_update_status()
             }
         }
         else if (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID)
-        {
+        {  
             oscc_throttle_report_s *throttle_report =
                 (oscc_throttle_report_s *)rx_frame.data;
 
@@ -421,16 +419,22 @@ static oscc_error_t oscc_async_enable(int socket)
         {
             state |= O_ASYNC;
 
-            int result = fcntl(socket, F_SETFL, state);
+            int result = fcntl(socket, F_SETFL, state );
 
             if (result >= 0)
             {
+                fcntl(socket, F_SETOWN, getpid());
                 ret = OSCC_OK;
             }
         }
     }
 
     return ret;
+}
+
+static void quit_handler()
+{
+    exit(0);
 }
 
 static oscc_error_t oscc_init_can(const char *can_channel)
@@ -497,7 +501,8 @@ static oscc_error_t oscc_init_can(const char *can_channel)
 
     if (ret != OSCC_ERROR)
     {
-        signal(SIGIO, oscc_update_status);
+        signal(SIGIO, &oscc_update_status);
+        signal(SIGINT, &quit_handler);
 
         can_socket = s;
 

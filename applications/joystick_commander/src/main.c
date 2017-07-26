@@ -28,17 +28,11 @@
 #include <stdio.h>
 #include <signal.h>
 #include <time.h>
+#include <fcntl.h>
 
 #include "oscc.h"
 #include "commander.h"
 #include "can_protocols/steering_can_protocol.h"
-
-
-
-
-// *****************************************************
-// static global types/macros
-// *****************************************************
 
 /**
  * @brief update interval. [microseconds]
@@ -188,7 +182,6 @@ int main( int argc, char **argv )
 
             elapsed_time = get_elapsed_time( update_timestamp );
 
-            // DON'T NEEEEEEEED THIS MAYBE?
             if ( elapsed_time > COMMANDER_UPDATE_INTERVAL )
             {
                 update_timestamp = get_timestamp();
