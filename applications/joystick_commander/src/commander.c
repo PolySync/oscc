@@ -18,8 +18,8 @@
 #define PID_PROPORTIONAL_GAIN ( 0.3 )
 #define PID_INTEGRAL_GAIN ( 1.3 )
 #define PID_DERIVATIVE_GAIN ( 0.03 )
-#define STEERING_ANGLE_MIN ( -500.0 )
-#define STEERING_ANGLE_MAX ( 500.0 ))
+#define STEERING_ANGLE_MIN ( -360.0 )
+#define STEERING_ANGLE_MAX ( 360.0 )
 #define JOYSTICK_AXIS_THROTTLE (SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
 #define JOYSTICK_AXIS_BRAKE (SDL_CONTROLLER_AXIS_TRIGGERLEFT)
 #define JOYSTICK_AXIS_STEER (SDL_CONTROLLER_AXIS_LEFTX)
@@ -29,6 +29,8 @@
 #define JOYSTICK_DELAY_INTERVAL (50000)
 #define COMMANDER_ENABLED ( 1 )
 #define COMMANDER_DISABLED ( 0 )
+
+#define MSEC_TO_SEC(msec) ( (msec) / 1000.0 )
 
 static int commander_enabled = COMMANDER_DISABLED;
 
@@ -375,17 +377,38 @@ static int command_steering( )
 
         return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &normalized_position );
 
-        // scale this up to angle (bw min, max)
+        double commanded_angle = normalized_position * STEERING_ANGLE_MAX;
 
+        float time_between_loops_in_sec = 0.5;
 
-        // lies -- we want normalized pos to be pid controlled whatever
-        // need to use this as commanded steering angle, commanded torque, whatever
-        // use pid to calculate torque diff
-        // normalize that and send to API
+        float steering_wheel_angle_rate =
+            ( curr_angle - prev_angle ) / time_between_loops_in_sec;
 
-        printf( "steering: %f\n", normalized_position);
+        float steering_wheel_angle_rate_target =
+            ( commanded_angle - curr_angle ) / time_between_loops_in_sec;
 
-        return_code = oscc_publish_steering_torque( normalized_position );
+        prev_angle = curr_angle;
+
+        pid_update(
+                &steering_pid,
+                steering_wheel_angle_rate_target,
+                steering_wheel_angle_rate,
+                time_between_loops_in_sec );
+
+        float torque = steering_pid.control;
+
+        torque = m_constrain(
+            torque,
+            STEERING_TORQUE_MIN,
+            STEERING_TORQUE_MAX
+        );
+
+        //normalize torque
+        torque /= STEERING_TORQUE_MAX;
+
+        // printf( "steering: %f\n", commanded_angle);
+
+        return_code = oscc_publish_steering_torque( torque );
     }
     return ( return_code );
 }
@@ -395,13 +418,19 @@ static void throttle_callback(oscc_throttle_report_s *report){
 }
 
 static void steering_callback(oscc_steering_report_s *report){
-    // printf("steering report recieved.\n");
+    printf("steering report rec'vd\n");
+    commander_enabled = report->enabled;
 }
 
 static void obd_callback(long id, unsigned char * data){
+    printf("OBD CALLBACK\n");
     if ( id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID )
     {
-        printf("steering report recieved!\n");
+        kia_soul_obd_steering_wheel_angle_data_s* angle_data = (kia_soul_obd_steering_wheel_angle_data_s*) data;
+
+        curr_angle = angle_data->steering_wheel_angle * 0.1;
+
+        printf("curr angle: %f\n", curr_angle);
     }
 }
 
