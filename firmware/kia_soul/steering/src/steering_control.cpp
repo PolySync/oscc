@@ -69,8 +69,8 @@ void check_for_sensor_faults( void )
         int sensor_low = analogRead( PIN_TORQUE_SENSOR_LOW );
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (sensor_high == 0)
-            || (sensor_low == 0) )
+        if( (sensor_high == -1)
+            || (sensor_low == -1) )
         {
             ++fault_count;
 
@@ -117,14 +117,9 @@ void update_steering(
                 STEERING_SPOOF_SIGNAL_MIN,
                 STEERING_SPOOF_SIGNAL_MAX );
 
-        DEBUG_PRINT("spoof low: ");
-        DEBUG_PRINT(spoof_low);
-        DEBUG_PRINT(" high: ");
-        DEBUG_PRINTLN(spoof_high);
-
         g_dac.outputA( spoof_high );
         g_dac.outputB( spoof_low );
-    }
+     }
 }
 
 
