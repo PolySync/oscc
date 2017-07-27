@@ -395,7 +395,7 @@ static void throttle_callback(oscc_throttle_report_s *report)
 {
     if ( report->operator_override )
     {
-        oscc_disable();
+        printf("Override: Throttle\n");
     }
 }
 
@@ -403,7 +403,7 @@ static void steering_callback(oscc_steering_report_s *report)
 {
     if ( report->operator_override )
     {
-        oscc_disable();
+        printf("Override: Steering\n");
     }
 }
 
@@ -411,13 +411,28 @@ static void brake_callback(oscc_brake_report_s * report)
 {
     if ( report->operator_override )
     {
-        oscc_disable();
+        printf("Override: Brake\n");
     }
 }
 
 static void fault_callback(oscc_fault_report_s *report)
 {
     oscc_disable();
+
+    printf("Fault: ");
+
+    if ( report->fault_origin_id == FAULT_ORIGIN_BRAKE )
+    {
+        printf("Brake\n");
+    }
+    else if ( report->fault_origin_id == FAULT_ORIGIN_STEERING )
+    {
+        printf("Steering\n");
+    }
+    else if ( report->fault_origin_id == FAULT_ORIGIN_THROTTLE )
+    {
+        printf("Throttle\n");
+    }
 }
 
 static void obd_callback(struct can_frame *frame)
