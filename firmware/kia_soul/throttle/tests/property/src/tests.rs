@@ -10,69 +10,53 @@ extern crate quickcheck;
 extern crate rand;
 
 use quickcheck::{QuickCheck, TestResult, Arbitrary, StdGen, Gen};
+use rand::Rng;
 
 extern "C" {
     #[link_name = "g_mock_mcp_can_check_receive_return"]
     pub static mut g_mock_mcp_can_check_receive_return: u8;
     #[link_name = "g_mock_mcp_can_read_msg_buf_id"]
-    pub static mut g_mock_mcp_can_read_msg_buf_id: ::std::os::raw::c_ulong;
+    pub static mut g_mock_mcp_can_read_msg_buf_id: u32;
     #[link_name = "g_mock_mcp_can_read_msg_buf_buf"]
     pub static mut g_mock_mcp_can_read_msg_buf_buf: [u8; 8usize];
     #[link_name = "g_mock_mcp_can_send_msg_buf_id"]
-    pub static mut g_mock_mcp_can_send_msg_buf_id: ::std::os::raw::c_ulong;
+    pub static mut g_mock_mcp_can_send_msg_buf_id: u32;
     #[link_name = "g_mock_mcp_can_send_msg_buf_ext"]
     pub static mut g_mock_mcp_can_send_msg_buf_ext: u8;
     #[link_name = "g_mock_mcp_can_send_msg_buf_len"]
     pub static mut g_mock_mcp_can_send_msg_buf_len: u8;
     #[link_name = "g_mock_mcp_can_send_msg_buf_buf"]
     pub static mut g_mock_mcp_can_send_msg_buf_buf: *mut u8;
-    #[link_name = "g_mock_arduino_millis_return"]
-    pub static mut g_mock_arduino_millis_return: ::std::os::raw::c_ulong;
     #[link_name = "g_mock_arduino_analog_read_return"]
-    pub static mut g_mock_arduino_analog_read_return: u16;
+    pub static mut g_mock_arduino_analog_read_return: isize;
+    #[link_name = "g_mock_dac_output_a"]
+    pub static mut g_mock_dac_output_a: u16;
+    #[link_name = "g_mock_dac_output_b"]
+    pub static mut g_mock_dac_output_b: u16;
+    #[link_name = "g_throttle_control_state"]
+    pub static mut g_throttle_control_state: kia_soul_throttle_control_state_s;
 }
 
-impl Arbitrary for oscc_report_throttle_data_s {
-    fn arbitrary<G: Gen>(g: &mut G) -> oscc_report_throttle_data_s {
-        oscc_report_throttle_data_s {
-            current_accelerator_position: u16::arbitrary(g),
-            commanded_accelerator_position: u16::arbitrary(g),
-            spoofed_accelerator_output: u16::arbitrary(g),
-            _bitfield_1: u16::arbitrary(g),
+impl Arbitrary for oscc_throttle_report_s {
+    fn arbitrary<G: Gen>(g: &mut G) -> oscc_throttle_report_s {
+        oscc_throttle_report_s {
+            magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
+            enabled: u8::arbitrary(g),
+            operator_override: u8::arbitrary(g),
+            dtcs: u8::arbitrary(g),
+            reserved: [u8::arbitrary(g); 3]
         }
     }
 }
 
-impl Arbitrary for oscc_report_throttle_s {
-    fn arbitrary<G: Gen>(g: &mut G) -> oscc_report_throttle_s {
-        oscc_report_throttle_s {
-            id: u32::arbitrary(g),
-            dlc: u8::arbitrary(g),
-            timestamp: u32::arbitrary(g),
-            data: oscc_report_throttle_data_s::arbitrary(g),
-        }
-    }
-}
-
-impl Arbitrary for oscc_command_throttle_data_s {
-    fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_throttle_data_s {
-        oscc_command_throttle_data_s {
-            commanded_accelerator_position: u16::arbitrary(g),
-            reserved_0: u8::arbitrary(g),
-            _bitfield_1: u8::arbitrary(g),
-            reserved_4: u8::arbitrary(g),
-            reserved_5: u8::arbitrary(g),
-            reserved_6: u8::arbitrary(g),
-            reserved_7: u8::arbitrary(g),
-        }
-    }
-}
-
-impl Arbitrary for oscc_command_throttle_s {
-    fn arbitrary<G: Gen>(g: &mut G) -> oscc_command_throttle_s {
-        oscc_command_throttle_s {
-            timestamp: u32::arbitrary(g),
-            data: oscc_command_throttle_data_s::arbitrary(g),
+impl Arbitrary for oscc_throttle_command_s {
+    fn arbitrary<G: Gen>(g: &mut G) -> oscc_throttle_command_s {
+        oscc_throttle_command_s {
+            magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
+            spoof_value_low: u16::arbitrary(g),
+            spoof_value_high: u16::arbitrary(g),
+            enable: u8::arbitrary(g),
+            reserved: u8::arbitrary(g)
         }
     }
 }
@@ -84,36 +68,40 @@ impl Arbitrary for can_frame_s {
             id: u32::arbitrary(g),
             dlc: u8::arbitrary(g),
             timestamp: u32::arbitrary(g),
-            data: [u8::arbitrary(g),
-                   u8::arbitrary(g),
-                   u8::arbitrary(g),
-                   u8::arbitrary(g),
-                   u8::arbitrary(g),
-                   u8::arbitrary(g),
-                   u8::arbitrary(g),
-                   u8::arbitrary(g)],
+            data: [u8::arbitrary(g); 8]
         }
     }
 }
 
 /// the throttle firmware should not attempt processing any messages
-/// that are not throttle commands
-fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, current_target: u16) -> TestResult {
-    // if we generate a throttle can message, ignore the result
-    if rx_can_msg.id == OSCC_COMMAND_THROTTLE_CAN_ID {
+/// that are not throttle or fault commands
+/// this means that none of the throttle control state would
+/// change, nor would it output any values onto the DAC.
+fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, enabled: bool, operator_override: bool, dtcs: u8) -> TestResult {
+    if rx_can_msg.id == OSCC_THROTTLE_COMMAND_CAN_ID || 
+       rx_can_msg.id == OSCC_FAULT_REPORT_CAN_ID
+    {
         return TestResult::discard();
     }
     unsafe {
-        g_throttle_control_state.commanded_accelerator_position = current_target;
+        let dac_a = g_mock_dac_output_a;
+        let dac_b = g_mock_dac_output_b;
+        g_throttle_control_state.enabled = enabled;
+        g_throttle_control_state.operator_override = operator_override;
+        g_throttle_control_state.dtcs = dtcs;
 
-        g_mock_mcp_can_read_msg_buf_id = rx_can_msg.id as u64;
+        g_mock_mcp_can_read_msg_buf_id = rx_can_msg.id;
         g_mock_mcp_can_read_msg_buf_buf = rx_can_msg.data;
         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_throttle_control_state.commanded_accelerator_position ==
-                              current_target)
+        TestResult::from_bool(g_throttle_control_state.enabled ==
+                              enabled &&
+                              g_throttle_control_state.operator_override == operator_override &&
+                              g_throttle_control_state.dtcs == dtcs &&
+                              g_mock_dac_output_a == dac_a &&
+                              g_mock_dac_output_b == dac_b)
     }
 }
 
@@ -121,44 +109,22 @@ fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, current_target: u16
 fn check_message_type_validity() {
     QuickCheck::new()
         .tests(1000)
-        .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
-        .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, u16) -> TestResult)
-}
-
-/// the throttle firmware should set the commanded accelerator position
-/// upon reciept of a valid command throttle message
-fn prop_no_invalid_targets(command_throttle_msg: oscc_command_throttle_s) -> TestResult {
-    unsafe {
-        g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_THROTTLE_CAN_ID as u64;
-        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_throttle_msg.data);
-        g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
-
-        check_for_incoming_message();
-
-        TestResult::from_bool(g_throttle_control_state.commanded_accelerator_position ==
-                              (command_throttle_msg.data.commanded_accelerator_position / 24))
-    }
-}
-
-#[test]
-fn check_accel_pos_validity() {
-    QuickCheck::new()
-        .tests(1000)
-        .quickcheck(prop_no_invalid_targets as fn(oscc_command_throttle_s) -> TestResult)
+        .gen(StdGen::new(rand::thread_rng(), u32::max_value() as usize))
+        .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, bool, bool, u8) -> TestResult)
 }
 
 /// the throttle firmware should set the control state as enabled
 /// upon reciept of a valid command throttle message telling it to enable
-fn prop_process_enable_command(mut command_throttle_msg: oscc_command_throttle_s) -> TestResult {
+fn prop_process_enable_command(mut throttle_command_msg: oscc_throttle_command_s) -> TestResult {
     unsafe {
-        command_throttle_msg.data.set_enabled(1);
+        throttle_command_msg.enable = 1u8;
 
         g_throttle_control_state.enabled = false;
         g_throttle_control_state.operator_override = false;
 
-        g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_THROTTLE_CAN_ID as u64;
-        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_throttle_msg.data);
+        g_mock_mcp_can_read_msg_buf_id = OSCC_THROTTLE_COMMAND_CAN_ID;
         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(throttle_command_msg);
 
         check_for_incoming_message();
 
@@ -170,17 +136,17 @@ fn prop_process_enable_command(mut command_throttle_msg: oscc_command_throttle_s
 fn check_process_enable_command() {
     QuickCheck::new()
         .tests(1000)
-        .quickcheck(prop_process_enable_command as fn(oscc_command_throttle_s) -> TestResult)
+        .quickcheck(prop_process_enable_command as fn(oscc_throttle_command_s) -> TestResult)
 }
 
 /// the throttle firmware should set the control state as disabled
 /// upon reciept of a valid command throttle message telling it to disable
-fn prop_process_disable_command(mut command_throttle_msg: oscc_command_throttle_s) -> TestResult {
+fn prop_process_disable_command(mut throttle_command_msg: oscc_throttle_command_s) -> TestResult {
     unsafe {
-        command_throttle_msg.data.set_enabled(0);
+        throttle_command_msg.enable = 0u8;
 
-        g_mock_mcp_can_read_msg_buf_id = OSCC_COMMAND_THROTTLE_CAN_ID as u64;
-        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(command_throttle_msg.data);
+        g_mock_mcp_can_read_msg_buf_id = OSCC_THROTTLE_COMMAND_CAN_ID;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(throttle_command_msg);
         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
 
         check_for_incoming_message();
@@ -193,83 +159,119 @@ fn prop_process_disable_command(mut command_throttle_msg: oscc_command_throttle_
 fn check_process_disable_command() {
     QuickCheck::new()
         .tests(1000)
-        .quickcheck(prop_process_disable_command as fn(oscc_command_throttle_s) -> TestResult)
+        .quickcheck(prop_process_disable_command as fn(oscc_throttle_command_s) -> TestResult)
+}
+
+/// the throttle firmware should send requested spoof values
+/// upon recieving a throttle command message
+fn prop_output_accurate_spoofs(mut throttle_command_msg: oscc_throttle_command_s) -> TestResult {
+    throttle_command_msg.enable = 1u8;
+    throttle_command_msg.spoof_value_low = rand::thread_rng().gen_range(THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16, THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16);
+    throttle_command_msg.spoof_value_high = rand::thread_rng().gen_range(THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16, THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16);
+    unsafe {
+        g_throttle_control_state.enabled = true;
+
+        g_mock_mcp_can_read_msg_buf_id = OSCC_THROTTLE_COMMAND_CAN_ID;
+        g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(throttle_command_msg);
+
+        check_for_incoming_message();
+
+        TestResult::from_bool(g_mock_dac_output_b ==                                throttle_command_msg.spoof_value_low &&
+            g_mock_dac_output_a ==
+            throttle_command_msg.spoof_value_high )
+    }
+}
+
+#[test]
+fn check_output_accurate_spoofs() {
+    QuickCheck::new()
+        .tests(1000)
+        .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
+        .quickcheck(prop_output_accurate_spoofs as fn(oscc_throttle_command_s) -> TestResult)
+}
+
+/// the throttle firmware should constrain requested spoof values
+/// upon recieving a throttle command message
+fn prop_output_constrained_spoofs(mut throttle_command_msg: oscc_throttle_command_s) -> TestResult {
+    throttle_command_msg.enable = 1u8;
+    unsafe {
+        if (throttle_command_msg.spoof_value_low >= 
+            THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
+            throttle_command_msg.spoof_value_low <=
+            THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16) ||
+            (throttle_command_msg.spoof_value_high >= 
+            THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
+            throttle_command_msg.spoof_value_high <=
+            THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16) 
+        {
+            return TestResult::discard();
+        }
+
+        g_throttle_control_state.enabled = true;
+
+        g_mock_mcp_can_read_msg_buf_id = OSCC_THROTTLE_COMMAND_CAN_ID;
+        g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(throttle_command_msg);
+
+        check_for_incoming_message();
+
+        TestResult::from_bool(
+            g_mock_dac_output_a >= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
+            g_mock_dac_output_a <= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16 &&
+            g_mock_dac_output_b >= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 && 
+            g_mock_dac_output_b <= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16)
+    }
+}
+
+#[test]
+fn check_output_constrained_spoofs() {
+    QuickCheck::new()
+        .tests(1000)
+        .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
+        .quickcheck(prop_output_constrained_spoofs as fn(oscc_throttle_command_s) -> TestResult)
 }
 
 /// the throttle firmware should create only valid CAN frames
-fn prop_send_valid_can_fields(operator_override: bool,
-                              commanded_accelerator_position: u16)
+fn prop_send_valid_can_fields(enabled: bool,
+                              operator_override: bool,
+                              dtcs: u8)
                               -> TestResult {
-    static mut time: u64 = 0;
     unsafe {
         g_throttle_control_state.operator_override = operator_override;
-        g_throttle_control_state.commanded_accelerator_position = commanded_accelerator_position;
+        g_throttle_control_state.enabled = enabled;
+        g_throttle_control_state.dtcs = dtcs;
 
-        time = time + OSCC_REPORT_THROTTLE_PUBLISH_INTERVAL_IN_MSEC as u64;
+        publish_throttle_report();
 
-        g_mock_arduino_millis_return = time;
+        let throttle_report_msg = g_mock_mcp_can_send_msg_buf_buf as *mut oscc_throttle_report_s;
 
-        publish_reports();
-
-        let throttle_data = oscc_report_throttle_data_s {
-            current_accelerator_position: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf,
-                                                               *g_mock_mcp_can_send_msg_buf_buf
-                                                                    .offset(1)]),
-            commanded_accelerator_position: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf
-                                                                      .offset(2),
-                                                                 *g_mock_mcp_can_send_msg_buf_buf
-                                                                      .offset(3)]),
-            spoofed_accelerator_output: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf
-                                                                  .offset(4),
-                                                             *g_mock_mcp_can_send_msg_buf_buf
-                                                                  .offset(5)]),
-            _bitfield_1: std::mem::transmute([*g_mock_mcp_can_send_msg_buf_buf.offset(6),
-                                              *g_mock_mcp_can_send_msg_buf_buf.offset(7)]),
-        };
-
-        TestResult::from_bool((g_mock_mcp_can_send_msg_buf_id ==
-                               OSCC_REPORT_THROTTLE_CAN_ID as u64) &&
-                              (g_mock_mcp_can_send_msg_buf_ext == (CAN_STANDARD as u8)) &&
-                              (g_mock_mcp_can_send_msg_buf_len ==
-                               (OSCC_REPORT_THROTTLE_CAN_DLC as u8)) &&
-                              (throttle_data.commanded_accelerator_position ==
-                               commanded_accelerator_position) &&
-                              (throttle_data.enabled() ==
-                               (g_throttle_control_state.enabled as u8)) &&
-                              (throttle_data.override_() == (operator_override as u8)))
+        TestResult::from_bool((*throttle_report_msg).enabled == enabled as u8 &&(*throttle_report_msg).operator_override == operator_override as u8 &&
+        (*throttle_report_msg).dtcs == dtcs)
     }
 }
 
 #[test]
 fn check_valid_can_frame() {
     QuickCheck::new()
-        .tests(1000)
-        .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
-        .quickcheck(prop_send_valid_can_fields as fn(bool, u16) -> TestResult)
+        .tests(10)
+        .gen(StdGen::new(rand::thread_rng(), u8::max_value() as usize))
+        .quickcheck(prop_send_valid_can_fields as fn(bool, bool, u8) -> TestResult)
 }
 
 // the throttle firmware should be able to correctly and consistently
-// detect operator overrides
+// detect operator overrides, disable on reciept, and send a fault report
 fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
     unsafe {
         g_throttle_control_state.enabled = true;
-        g_mock_arduino_analog_read_return = analog_read_spoof;
-
-        let mut accelerator_position = accelerator_position_s {
-            low: 0,
-            high: 0
-        };
-
-        read_accelerator_position_sensor(&mut accelerator_position);
-
-        let accelerator_position_average: u32 = 
-            (accelerator_position.low as u32 + accelerator_position.high as u32) / 2;
+        g_throttle_control_state.operator_override = false;
+        g_mock_arduino_analog_read_return = analog_read_spoof as isize;
 
         check_for_operator_override();
 
-        if accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD as u32 {
-            TestResult::from_bool(g_throttle_control_state.operator_override == true &&
-                                  g_throttle_control_state.enabled == false)
+        if analog_read_spoof >= (ACCELERATOR_OVERRIDE_THRESHOLD as u16) {
+            TestResult::from_bool(g_throttle_control_state.operator_override == true && g_throttle_control_state.enabled == false &&
+            g_mock_mcp_can_send_msg_buf_id == OSCC_FAULT_REPORT_CAN_ID)
         } else {
             TestResult::from_bool(g_throttle_control_state.operator_override == false)
         }
@@ -282,4 +284,27 @@ fn check_operator_override() {
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
         .quickcheck(prop_check_operator_override as fn(u16) -> TestResult)
+}
+
+/// the throttle firmware should set disable itself when it recieves a
+/// fault report from any other module
+fn prop_process_fault_command(enabled: bool, operator_override: bool) -> TestResult {
+    unsafe {
+        g_throttle_control_state.enabled = enabled;
+        g_throttle_control_state.operator_override = operator_override;
+
+        g_mock_mcp_can_read_msg_buf_id = OSCC_FAULT_REPORT_CAN_ID;
+        g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+
+        check_for_incoming_message();
+
+        TestResult::from_bool(g_throttle_control_state.enabled == false)
+    }
+}
+
+#[test]
+fn check_process_fault_command() {
+    QuickCheck::new()
+        .tests(1000)
+        .quickcheck(prop_process_fault_command as fn(bool, bool) -> TestResult)
 }
