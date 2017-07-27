@@ -7,6 +7,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_joystick.h>
 #include <SDL2/SDL_gamecontroller.h>
+#include <sys/time.h>
 
 #include "oscc.h"
 #include "vehicles/vehicles.h"
@@ -30,7 +31,7 @@
 #define COMMANDER_ENABLED ( 1 )
 #define COMMANDER_DISABLED ( 0 )
 
-#define MSEC_TO_SEC(msec) ( (msec) / 1000.0 )
+#define USEC_TO_SEC(usec) ( (usec) / 1000000.0 )
 
 static int commander_enabled = COMMANDER_DISABLED;
 
@@ -92,6 +93,9 @@ int commander_init( int channel )
                 }
             }
             pid_zeroize(&steering_pid, PID_WINDUP_GUARD);
+            steering_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
+            steering_pid.integral_gain = PID_INTEGRAL_GAIN;
+            steering_pid.derivative_gain = PID_DERIVATIVE_GAIN;
         }
     }
     return ( return_code );
@@ -369,44 +373,53 @@ static int command_steering( )
 {
     int return_code = OSCC_ERROR;
 
+    static struct timeval time_now, last_loop_time;
+
     if ( commander_enabled == COMMANDER_ENABLED )
     {
+        gettimeofday(&time_now, NULL);
+
+        double time_between_loops_in_sec = 
+            USEC_TO_SEC((time_now.tv_usec - last_loop_time.tv_usec));
+
         double normalized_position = 0;
 
         return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &normalized_position );
 
         double commanded_angle = normalized_position * STEERING_ANGLE_MAX;
 
-        float time_between_loops_in_sec = 0.5;
+        if ( time_between_loops_in_sec > 0.0 )
+        {
+            printf("%9f\n", time_between_loops_in_sec);
+            double steering_wheel_angle_rate =
+                ( curr_angle - prev_angle ) / time_between_loops_in_sec;
 
-        float steering_wheel_angle_rate =
-            ( curr_angle - prev_angle ) / time_between_loops_in_sec;
+            double steering_wheel_angle_rate_target =
+                ( commanded_angle - curr_angle ) / time_between_loops_in_sec;
 
-        float steering_wheel_angle_rate_target =
-            ( commanded_angle - curr_angle ) / time_between_loops_in_sec;
+            prev_angle = curr_angle;
 
-        prev_angle = curr_angle;
+            pid_update(
+                    &steering_pid,
+                    steering_wheel_angle_rate_target,
+                    steering_wheel_angle_rate,
+                    time_between_loops_in_sec );
 
-        pid_update(
-                &steering_pid,
-                steering_wheel_angle_rate_target,
-                steering_wheel_angle_rate,
-                time_between_loops_in_sec );
+            double torque = steering_pid.control;
 
-        float torque = steering_pid.control;
+            torque = m_constrain(
+                torque,
+                MINIMUM_TORQUE_COMMAND,
+                MAXIMUM_TORQUE_COMMAND
+            );
 
-        torque = m_constrain(
-            torque,
-            STEERING_TORQUE_MIN,
-            STEERING_TORQUE_MAX
-        );
+            //normalize torque
+            torque /= (double) MAXIMUM_TORQUE_COMMAND;
 
-        //normalize torque
-        torque /= STEERING_TORQUE_MAX;
+            return_code = oscc_publish_steering_torque( torque );
+        }
 
-        // printf( "steering: %f\n", commanded_angle);
-
-        return_code = oscc_publish_steering_torque( torque );
+        gettimeofday(&last_loop_time, NULL);
     }
     return ( return_code );
 }

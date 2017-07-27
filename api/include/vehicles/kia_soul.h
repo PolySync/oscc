@@ -301,25 +301,25 @@ typedef struct
  * @brief Scalar value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SCALAR ( 0.12 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.0008 )
 
 /*
  * @brief Offset value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_OFFSET ( 2.26 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.26 )
 
 /*
  * @brief Scalar value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SCALAR ( -0.12 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.0008 )
 
 /*
  * @brief Offset value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_OFFSET ( 2.5 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
 
 /*
  * @brief Calculation to convert a steering angle to a high spoof value.
@@ -337,13 +337,17 @@ typedef struct
  * @brief Minimum allowed value for the high spoof signal value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) ( STEPS_PER_VOLT * ((TORQUE_SPOOF_HIGH_SCALAR * torque) + TORQUE_SPOOF_HIGH_OFFSET) )
+#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) (STEPS_PER_VOLT\
+            * ((TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
+            + TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Calculation to convert a steering torque to a low spoof value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) ( STEPS_PER_VOLT * ((TORQUE_SPOOF_LOW_SCALAR * torque) + TORQUE_SPOOF_LOW_OFFSET) )
+#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) (STEPS_PER_VOLT\
+            * ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
+            + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Value of the torque sensor that indicates operator override.

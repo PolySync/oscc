@@ -3,6 +3,7 @@
  *
  */
 
+#include <stdio.h>
 
 #include "pid.h"
 

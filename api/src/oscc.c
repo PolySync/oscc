@@ -178,14 +178,14 @@ oscc_error_t oscc_publish_steering_torque(double torque)
     spoof_value_low = CONSTRAIN(
         spoof_value_low,
         STEERING_SPOOF_SIGNAL_MIN,
-        STEERING_SPOOF_SIGNAL_MIN);
+        STEERING_SPOOF_SIGNAL_MAX);
 
     uint16_t spoof_value_high = STEERING_TORQUE_TO_SPOOF_HIGH( scaled_torque );
 
     spoof_value_high = CONSTRAIN(
         spoof_value_high,
         STEERING_SPOOF_SIGNAL_MIN,
-        STEERING_SPOOF_SIGNAL_MIN);
+        STEERING_SPOOF_SIGNAL_MAX);
 
     steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
     steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
