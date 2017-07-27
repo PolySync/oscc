@@ -18,14 +18,7 @@
 #include "vehicles/vehicles.h"
 
 #include "joystick.h"
-#include "pid.h"
 
-#define PID_WINDUP_GUARD ( 1500 )
-#define PID_PROPORTIONAL_GAIN ( 0.3 )
-#define PID_INTEGRAL_GAIN ( 1.3 )
-#define PID_DERIVATIVE_GAIN ( 0.03 )
-#define STEERING_ANGLE_MIN ( -360.0 )
-#define STEERING_ANGLE_MAX ( 360.0 )
 #define JOYSTICK_AXIS_THROTTLE (SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
 #define JOYSTICK_AXIS_BRAKE (SDL_CONTROLLER_AXIS_TRIGGERLEFT)
 #define JOYSTICK_AXIS_STEER (SDL_CONTROLLER_AXIS_LEFTX)
@@ -37,14 +30,12 @@
 #define COMMANDER_DISABLED ( 0 )
 #define BRAKE_FILTER_FACTOR (0.2)
 #define THROTTLE_FILTER_FACTOR (0.2)
-
-#define USEC_TO_SEC(usec) ( (usec) / 1000000.0 )
+#define STEERING_FILTER_FACTOR (0.1)
 
 static int commander_enabled = COMMANDER_DISABLED;
+
 static bool control_enabled = false;
 
-static pid_s steering_pid;
-static double prev_angle;
 static double curr_angle;
 
 static int get_normalized_position( unsigned long axis_index, double * const normalized_position );
@@ -368,52 +359,17 @@ static int command_steering( )
 {
     int return_code = OSCC_ERROR;
 
-    static struct timeval time_now, last_loop_time;
+    static double steering_average = 0.0;
 
     if ( commander_enabled == COMMANDER_ENABLED )
     {
-        gettimeofday(&time_now, NULL);
-
-        double time_between_loops_in_sec =
-            USEC_TO_SEC((time_now.tv_usec - last_loop_time.tv_usec));
-
         double normalized_position = 0;
 
-        return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &normalized_position );
+        return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &               normalized_position );
 
-        double commanded_angle = normalized_position * STEERING_ANGLE_MAX;
+        steering_average = calc_exponential_average(steering_average, normalized_position, STEERING_FILTER_FACTOR);
 
-        if ( time_between_loops_in_sec > 0.0 )
-        {
-            double steering_wheel_angle_rate =
-                ( curr_angle - prev_angle ) / time_between_loops_in_sec;
-
-            double steering_wheel_angle_rate_target =
-                ( commanded_angle - curr_angle ) / time_between_loops_in_sec;
-
-            prev_angle = curr_angle;
-
-            pid_update(
-                    &steering_pid,
-                    steering_wheel_angle_rate_target,
-                    steering_wheel_angle_rate,
-                    time_between_loops_in_sec );
-
-            double torque = steering_pid.control;
-
-            torque = m_constrain(
-                torque,
-                MINIMUM_TORQUE_COMMAND,
-                MAXIMUM_TORQUE_COMMAND
-            );
-
-            //normalize torque
-            torque /= (double) MAXIMUM_TORQUE_COMMAND;
-
-            return_code = oscc_publish_steering_torque( torque );
-        }
-
-        gettimeofday(&last_loop_time, NULL);
+        return_code = oscc_publish_steering_torque( steering_average );
     }
     return ( return_code );
 }
@@ -468,17 +424,16 @@ static void obd_callback(struct can_frame *frame)
     {
         kia_soul_obd_steering_wheel_angle_data_s * steering_data = (kia_soul_obd_steering_wheel_angle_data_s*) frame->data;
 
-        curr_angle = steering_data->steering_wheel_angle * 0.1;
+        curr_angle = steering_data->steering_wheel_angle * KIA_SOUL_OBD_STEERING_ANGLE_SCALAR;
     }
 }
-
 
 static double calc_exponential_average( double average,
                                         double setpoint,
                                         double factor )
 {
     double exponential_average =
-        ( setpoint * factor ) + ( ( 1 - factor ) * average );
+        ( setpoint * factor ) + ( ( 1.0 - factor ) * average );
 
     return ( exponential_average );
 }

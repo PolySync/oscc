@@ -49,6 +49,12 @@
  */
 #define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x220 )
 
+/*
+ * @brief Factor to scale OBD steering angle to degrees
+ *
+ */
+#define KIA_SOUL_OBD_STEERING_ANGLE_SCALAR ( 0.1 )
+
 /**
  * @brief Steering wheel angle message data.
  *
@@ -282,13 +288,13 @@ typedef struct
  * @brief Minimum allowable torque value.
  *
  */
-#define MINIMUM_TORQUE_COMMAND ( -1500 )
+#define MINIMUM_TORQUE_COMMAND ( -10 )
 
 /*
  * @brief Maximum allowable torque value.
  *
  */
-#define MAXIMUM_TORQUE_COMMAND ( 1500 )
+#define MAXIMUM_TORQUE_COMMAND ( 10 )
 
 
  /*
@@ -301,19 +307,19 @@ typedef struct
  * @brief Scalar value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.0008 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.05 )
 
 /*
  * @brief Offset value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.26 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
 
 /*
  * @brief Scalar value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.0008 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.05 )
 
 /*
  * @brief Offset value for the high spoof signal taken from a calibration curve.
