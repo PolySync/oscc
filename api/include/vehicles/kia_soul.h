@@ -279,16 +279,17 @@ typedef struct
 #define STEERING_SPOOF_SIGNAL_MAX ( 3031.0 )
 
 /*
- * @brief Minimum torque value [Nm]
+ * @brief Minimum allowable torque value.
  *
  */
- #define STEERING_TORQUE_MIN ( -1500.0 )
+#define MINIMUM_TORQUE_COMMAND ( -1500 )
 
- /*
- * @brief Maximum torque value [Nm]
+/*
+ * @brief Maximum allowable torque value.
  *
  */
- #define STEERING_TORQUE_MAX ( 1500.0 )
+#define MAXIMUM_TORQUE_COMMAND ( 1500 )
+
 
  /*
  * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.

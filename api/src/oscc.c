@@ -164,20 +164,38 @@ oscc_error_t oscc_publish_throttle_position(double throttle_position)
     return ret;
 }
 
-oscc_error_t oscc_publish_steering_torque(double normalized_torque)
+oscc_error_t oscc_publish_steering_torque(double torque)
 {
     oscc_error_t ret = OSCC_ERROR;
 
-    double torque = normalized_torque * STEERING_TORQUE_MAX;
+    const double scaled_torque = CONSTRAIN(
+        torque * MAXIMUM_TORQUE_COMMAND,
+        MINIMUM_TORQUE_COMMAND,
+        MAXIMUM_TORQUE_COMMAND);
+
+    uint16_t spoof_value_low = STEERING_TORQUE_TO_SPOOF_LOW( scaled_torque );
+
+    spoof_value_low = CONSTRAIN(
+        spoof_value_low,
+        STEERING_SPOOF_SIGNAL_MIN,
+        STEERING_SPOOF_SIGNAL_MIN);
+
+    uint16_t spoof_value_high = STEERING_TORQUE_TO_SPOOF_HIGH( scaled_torque );
+
+    spoof_value_high = CONSTRAIN(
+        spoof_value_high,
+        STEERING_SPOOF_SIGNAL_MIN,
+        STEERING_SPOOF_SIGNAL_MIN);
 
     steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
     steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
-    steering_cmd.spoof_value_low = ( int16_t ) STEERING_TORQUE_TO_SPOOF_LOW( torque );
-    steering_cmd.spoof_value_high = ( int16_t ) STEERING_TORQUE_TO_SPOOF_HIGH( torque );
+    steering_cmd.spoof_value_low = spoof_value_low;
+    steering_cmd.spoof_value_high = spoof_value_high;
 
-    ret = oscc_can_write( OSCC_STEERING_COMMAND_CAN_ID,
-                                    (void *) &steering_cmd,
-                                    sizeof( steering_cmd ) );
+    ret = oscc_can_write(
+        OSCC_STEERING_COMMAND_CAN_ID,
+        (void *)&steering_cmd,
+        sizeof(steering_cmd));
 
     return ret;
 }
@@ -322,7 +340,7 @@ static void oscc_update_status()
     while (result > 0)
     {
         if ( (rx_frame.data[0] == OSCC_MAGIC_BYTE_0)
-             && (rx_frame.data[1] = OSCC_MAGIC_BYTE_1) )
+            && (rx_frame.data[1] = OSCC_MAGIC_BYTE_1) )
         {
             if (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID)
             {
@@ -396,39 +414,38 @@ static oscc_error_t oscc_can_write(long id, void *msg, unsigned int dlc)
     return ret;
 }
 
-static oscc_error_t oscc_async_enable(int socket)
-{
-    oscc_error_t ret = OSCC_ERROR;
-
-    if (socket >= 0)
-    {
-        int state = fcntl(socket, F_GETFL, 0);
-
-        if (state >= 0)
-        {
-            state |= O_ASYNC;
-
-            int result = fcntl(socket, F_SETFL, state );
-
-            if (result >= 0)
-            {
-                fcntl(socket, F_SETOWN, getpid());
-                ret = OSCC_OK;
-            }
-        }
-    }
-
-    return ret;
-}
-
 static void quit_handler()
 {
     exit(0);
 }
 
+static oscc_error_t oscc_async_enable(int socket)
+{
+    oscc_error_t ret = OSCC_ERROR;
+
+   ret = fcntl(socket, F_SETOWN, getpid());
+
+   if (ret < 0 )
+   {
+       printf("set own failed\n");
+   }
+
+   ret = fcntl(socket, F_SETFL, FASYNC | O_NONBLOCK);
+   
+   if ( ret < 0 )
+   {
+       printf("set async failed\n");
+   }
+
+    return ret;
+}
+
 static oscc_error_t oscc_init_can(const char *can_channel)
 {
     int ret = OSCC_OK;
+
+    signal(SIGIO, &oscc_update_status);
+    signal(SIGINT, &quit_handler);
 
     int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
@@ -478,6 +495,13 @@ static oscc_error_t oscc_init_can(const char *can_channel)
 
     if (ret != OSCC_ERROR)
     {
+        can_socket = s;
+
+        ret = OSCC_OK;
+    }
+
+    if (ret != OSCC_ERROR)
+    {
         status = oscc_async_enable(s);
 
         if (status != OSCC_OK)
@@ -486,16 +510,6 @@ static oscc_error_t oscc_init_can(const char *can_channel)
 
             ret = OSCC_ERROR;
         }
-    }
-
-    if (ret != OSCC_ERROR)
-    {
-        signal(SIGIO, &oscc_update_status);
-        signal(SIGINT, &quit_handler);
-
-        can_socket = s;
-
-        ret = OSCC_OK;
     }
 
     return ret;
