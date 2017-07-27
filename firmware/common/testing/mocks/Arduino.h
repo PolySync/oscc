@@ -7,8 +7,11 @@
 
 #define A0 0
 #define A1 1
+#define A2 2
+#define A3 3
 #define LOW 0
 #define HIGH 1
+#define INPUT 0
 #define OUTPUT 1
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
