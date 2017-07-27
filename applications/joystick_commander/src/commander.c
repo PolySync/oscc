@@ -35,6 +35,8 @@
 #define JOYSTICK_DELAY_INTERVAL (50000)
 #define COMMANDER_ENABLED ( 1 )
 #define COMMANDER_DISABLED ( 0 )
+#define BRAKE_FILTER_FACTOR (0.2)
+#define THROTTLE_FILTER_FACTOR (0.2)
 
 #define USEC_TO_SEC(usec) ( (usec) / 1000000.0 )
 
@@ -58,9 +60,9 @@ static void throttle_callback(oscc_throttle_report_s *report);
 static void steering_callback(oscc_steering_report_s *report);
 static void fault_callback(oscc_fault_report_s *report);
 static void obd_callback(struct can_frame *frame);
-static bool check_for_brake_faults( );
-static bool check_for_steering_faults( );
-static bool check_for_throttle_faults( );
+static double calc_exponential_average( double average,
+                                        double setpoint,
+                                        double factor );
 
 int commander_init( int channel )
 {
@@ -298,14 +300,27 @@ static int command_brakes( )
 {
     int return_code = OSCC_ERROR;
 
+    static double average = 0.0;
+
     if ( commander_enabled == COMMANDER_ENABLED )
     {
-        double normalized_position = 0;
+        double normalized_brake_position = 0;
 
-        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_position );
+        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_brake_position );
 
-        return_code = oscc_publish_brake_position( normalized_position );
+        if ( return_code == OSCC_OK && normalized_brake_position >= 0.0 )
+        {
+            average = calc_exponential_average(
+                average,
+                normalized_brake_position,
+                BRAKE_FILTER_FACTOR );
+
+            printf("Brake: %f\n", average);
+
+            return_code = oscc_publish_brake_position( average );
+        }
     }
+
     return ( return_code );
 }
 
@@ -313,13 +328,15 @@ static int command_throttle( )
 {
     int return_code = OSCC_ERROR;
 
+    static double average = 0.0;
+
     if ( commander_enabled == COMMANDER_ENABLED )
     {
         double normalized_throttle_position = 0;
 
         return_code = get_normalized_position( JOYSTICK_AXIS_THROTTLE, &normalized_throttle_position );
 
-        if ( return_code == OSCC_OK && normalized_throttle_position > 0.0 )
+        if ( return_code == OSCC_OK && normalized_throttle_position >= 0.0 )
         {
             double normalized_brake_position = 0;
 
@@ -331,7 +348,17 @@ static int command_throttle( )
             }
         }
 
-        return_code = oscc_publish_throttle_position( normalized_throttle_position );
+        if ( return_code == OSCC_OK && normalized_throttle_position >= 0.0 )
+        {
+            average = calc_exponential_average(
+                average,
+                normalized_throttle_position,
+                THROTTLE_FILTER_FACTOR );
+
+            printf("Throttle: %f\n", average);
+
+            return_code = oscc_publish_throttle_position( average );
+        }
     }
 
     return ( return_code );
@@ -443,4 +470,15 @@ static void obd_callback(struct can_frame *frame)
 
         curr_angle = steering_data->steering_wheel_angle * 0.1;
     }
+}
+
+
+static double calc_exponential_average( double average,
+                                        double setpoint,
+                                        double factor )
+{
+    double exponential_average =
+        ( setpoint * factor ) + ( ( 1 - factor ) * average );
+
+    return ( exponential_average );
 }
