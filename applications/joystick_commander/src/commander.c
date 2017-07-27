@@ -19,6 +19,9 @@
 
 #include "joystick.h"
 
+
+#define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
+
 #define JOYSTICK_AXIS_THROTTLE (SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
 #define JOYSTICK_AXIS_BRAKE (SDL_CONTROLLER_AXIS_TRIGGERLEFT)
 #define JOYSTICK_AXIS_STEER (SDL_CONTROLLER_AXIS_LEFTX)
@@ -94,10 +97,6 @@ int commander_init( int channel )
                     break;
                 }
             }
-            pid_zeroize(&steering_pid, PID_WINDUP_GUARD);
-            steering_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
-            steering_pid.integral_gain = PID_INTEGRAL_GAIN;
-            steering_pid.derivative_gain = PID_DERIVATIVE_GAIN;
         }
     }
     return ( return_code );
@@ -189,7 +188,7 @@ static int get_normalized_position( unsigned long axis_index, double * const nor
             low = -1.0;
         }
 
-    ( *normalized_position ) = m_constrain(
+    ( *normalized_position ) = CONSTRAIN(
             ((double) axis_position) / INT16_MAX,
             low,
             high);
@@ -293,20 +292,20 @@ static int command_brakes( )
 
     static double average = 0.0;
 
-    if ( commander_enabled == COMMANDER_ENABLED )
+    if ( commander_enabled == COMMANDER_ENABLED && control_enabled == true )
     {
-        double normalized_brake_position = 0;
+        double normalized_position = 0;
 
-        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_brake_position );
+        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_position );
 
-        if ( return_code == OSCC_OK && normalized_brake_position >= 0.0 )
+        if ( return_code == OSCC_OK && normalized_position >= 0.0 )
         {
             average = calc_exponential_average(
                 average,
-                normalized_brake_position,
+                normalized_position,
                 BRAKE_FILTER_FACTOR );
 
-            printf("Brake: %f\n", average);
+            printf("Brake:\t%f\n", average);
 
             return_code = oscc_publish_brake_position( average );
         }
@@ -321,7 +320,7 @@ static int command_throttle( )
 
     static double average = 0.0;
 
-    if ( commander_enabled == COMMANDER_ENABLED )
+    if ( commander_enabled == COMMANDER_ENABLED && control_enabled == true )
     {
         double normalized_throttle_position = 0;
 
@@ -346,7 +345,7 @@ static int command_throttle( )
                 normalized_throttle_position,
                 THROTTLE_FILTER_FACTOR );
 
-            printf("Throttle: %f\n", average);
+            printf("Throttle:\t%f\n", average);
 
             return_code = oscc_publish_throttle_position( average );
         }
@@ -359,17 +358,27 @@ static int command_steering( )
 {
     int return_code = OSCC_ERROR;
 
-    static double steering_average = 0.0;
+    static double average = 0.0;
 
-    if ( commander_enabled == COMMANDER_ENABLED )
+    if ( commander_enabled == COMMANDER_ENABLED && control_enabled == true )
     {
         double normalized_position = 0;
 
-        return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &               normalized_position );
+        return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &normalized_position );
 
-        steering_average = calc_exponential_average(steering_average, normalized_position, STEERING_FILTER_FACTOR);
+        if( return_code == OSCC_OK )
+        {
+            average = calc_exponential_average(
+                average,
+                normalized_position,
+                STEERING_FILTER_FACTOR);
 
-        return_code = oscc_publish_steering_torque( steering_average );
+            printf("Steering:\t%f\n", average);
+
+            return_code = oscc_publish_steering_torque( average );
+        }
+
+
     }
     return ( return_code );
 }
@@ -400,7 +409,7 @@ static void brake_callback(oscc_brake_report_s * report)
 
 static void fault_callback(oscc_fault_report_s *report)
 {
-    oscc_disable();
+    commander_disable_controls();
 
     printf("Fault: ");
 
