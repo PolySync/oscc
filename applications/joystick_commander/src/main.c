@@ -1,144 +1,37 @@
-/**
- * @file main.c
- * @brief Entry point for the joystick commander application
- *
- * Joystick device: Logitech Gamepad F310
- * Mode switch (on back of controller): set to mode X
- * Front mode button: set to off (LED is off)
- * Brake controls: left trigger
- * Throttle controls: right trigger
- * Steering controls: right stick
- * Left turn signal: left trigger button
- * Right turn signal: right trigger button
- * Shift to drive: 'A' button
- * Shift to park: 'Y' button
- * Shift to neutral: 'X' button
- * Shift to reverse: 'B' button
- * Enable controls: 'start' button
- * Disable controls: 'back' button
- *
- */
-
-
-
-
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
-#include <time.h>
+#include <sys/time.h>
 #include <fcntl.h>
 
 #include "oscc.h"
 #include "commander.h"
 #include "can_protocols/steering_can_protocol.h"
 
-/**
- * @brief update interval. [microseconds]
- *
- * Defines the update rate of the low frequency commander tasks
- *
- * 50,000 us == 50 ms == 20 Hertz
- *
- */
-#define COMMANDER_UPDATE_INTERVAL (50000)
+#define COMMANDER_UPDATE_INTERVAL_MICRO (50000)
+#define SLEEP_TICK_INTERVAL_MICRO (1000)
 
-
-/**
- * @brief sleep interval. [microseconds]
- *
- * Specifies the amount of time to sleep for during each wait/sleep cycle
- *
- * Defines the update rate for the high frequency commander tasks
- *
- * Prevents overloading the host CPU
- *
- */
-#define SLEEP_TICK_INTERVAL (1000)
-
-
-
-// *****************************************************
-// static global data
-// *****************************************************
-
-/**
- * @brief Error thrown from SIGINT
- *
- */
 static int error_thrown = OSCC_OK;
 
-
-// *****************************************************
-// static declarations
-// *****************************************************
-
-
-// *****************************************************
-// static definitions
-// *****************************************************
-
-
-// *****************************************************
-// Function:    get_timestamp
-//
-// Purpose:     Get the current timestamp from the system time
-//              Value is returned in microseconds
-//
-// Returns:     unsigned long long - current time in microseconds
-//
-// Parameters:  void
-//
-// *****************************************************
-static unsigned long long get_timestamp( )
+static unsigned long long get_timestamp_micro( )
 {
-    unsigned long long microseconds = 0;
-    struct timespec timespec;
+    struct timeval time;
 
-    clock_gettime( CLOCK_REALTIME, &timespec );
+    gettimeofday( &time, NULL );
 
-    // convert to microseconds
-    microseconds = (unsigned long long)
-        ( 1000000 * ( (unsigned long long) timespec.tv_sec ) );
-
-    // convert nanosecond remainder to micro seconds
-    microseconds += (unsigned long long)
-        ( ( (unsigned long long) timespec.tv_nsec ) / 1000 );
-
-    return ( microseconds );
+    return ( time.tv_usec );
 }
 
-
-// *****************************************************
-// Function:    get_elapsed_time
-//
-// Purpose:     Determine the elapsed time since the last check
-//
-// Returns:     unsigned long long - the elapsed time in microseconds
-//
-// Parameters:  timestamp - pointer to a timestamp value
-//
-// *****************************************************
 static unsigned long long get_elapsed_time( unsigned long long timestamp )
 {
-    unsigned long long now = get_timestamp( );
+    unsigned long long now = get_timestamp_micro( );
     unsigned long long elapsed_time = now - timestamp;
 
     return elapsed_time;
 }
 
-
-// *****************************************************
-// Function:    signal_handler
-//
-// Purpose:     Function to catch and handle SIGINT operations
-//
-// Returns:     void
-//
-// Parameters:  signal_number - number of the signal sent
-//
-// *****************************************************
 void signal_handler( int signal_number )
 {
     if ( signal_number == SIGINT )
@@ -147,16 +40,10 @@ void signal_handler( int signal_number )
     }
 }
 
-
-// *****************************************************
-// public definitions
-// *****************************************************
-
-
 int main( int argc, char **argv )
 {
     oscc_error_t ret = OSCC_OK;
-    unsigned long long update_timestamp = get_timestamp();
+    unsigned long long update_timestamp = get_timestamp_micro();
     unsigned long long elapsed_time = 0;
 
     int channel;
@@ -177,21 +64,17 @@ int main( int argc, char **argv )
     {
         while ( ret == OSCC_OK && error_thrown == OSCC_OK )
         {
-            // checks for overrides
-            // ret = check_for_fault_update( );
-
             elapsed_time = get_elapsed_time( update_timestamp );
 
-            if ( elapsed_time > COMMANDER_UPDATE_INTERVAL )
+            if ( elapsed_time > COMMANDER_UPDATE_INTERVAL_MICRO )
             {
-                update_timestamp = get_timestamp();
+                update_timestamp = get_timestamp_micro();
 
                 ret = check_for_controller_update( );
             }
 
-            // Delay 1 ms to avoid loading the CPU and to time calls
-            // to commander_high_frequency_update
-            (void) usleep( SLEEP_TICK_INTERVAL );
+            // Delay 1 ms to avoid loading the CPU
+            (void) usleep( SLEEP_TICK_INTERVAL_MICRO );
         }
         commander_close( channel );
     }

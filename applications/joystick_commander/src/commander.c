@@ -69,6 +69,7 @@ int commander_init( int channel )
         if ( return_code != OSCC_ERROR )
         {
             oscc_subscribe_to_obd_messages(obd_callback);
+            oscc_subscribe_to_brake_reports(brake_callback);
             oscc_subscribe_to_steering_reports(steering_callback);
             oscc_subscribe_to_throttle_reports(throttle_callback);
             oscc_subscribe_to_fault_reports(fault_callback);
@@ -166,60 +167,6 @@ int check_for_controller_update( )
             }
         }
     }
-    return return_code;
-}
-
-int check_for_fault_update( )
-{
-    int return_code = OSCC_OK;
-
-    // int oscc_override = 0;
-
-    // // oscc_status_s status;
-
-    // // memset( &status,
-    // //         0,
-    // //         sizeof(status) );
-
-    // // if ( status.operator_override == true )
-    // // {
-    // //     printf( "Driver Override Detected\n" );
-    // //     return_code = commander_disable_controls( );
-    // // }
-
-    // if ( return_code == NOERR )
-    // {
-    //     if ( status.operator_override == true )
-    //     {
-    //         printf( "Driver Override Detected\n" );
-    //         return_code = commander_disable_controls( );
-    //     }
-
-
-    //     bool brake_fault_occurred = check_for_brake_faults( &status );
-
-    //     if ( brake_fault_occurred == true )
-    //     {
-    //         return_code = commander_disable_controls( );
-    //     }
-
-
-    //     bool steering_fault_occurred = check_for_steering_faults( &status );
-
-    //     if ( steering_fault_occurred == true )
-    //     {
-    //         return_code = commander_disable_controls( );
-    //     }
-
-
-    //     bool throttle_fault_occurred = check_for_throttle_faults( &status );
-
-    //     if ( throttle_fault_occurred == true )
-    //     {
-    //         return_code = commander_disable_controls( );
-    //     }
-    // }
-
     return return_code;
 }
 
@@ -392,7 +339,6 @@ static int command_steering( )
 
         if ( time_between_loops_in_sec > 0.0 )
         {
-            printf("%9f\n", time_between_loops_in_sec);
             double steering_wheel_angle_rate =
                 ( curr_angle - prev_angle ) / time_between_loops_in_sec;
 
@@ -428,10 +374,26 @@ static int command_steering( )
 
 static void throttle_callback(oscc_throttle_report_s *report)
 {
+    if ( report->operator_override )
+    {
+        oscc_disable();
+    }
 }
 
 static void steering_callback(oscc_steering_report_s *report)
 {
+    if ( report->operator_override )
+    {
+        oscc_disable();
+    }
+}
+
+static void brake_callback(oscc_brake_report_s * report)
+{
+    if ( report->operator_override )
+    {
+        oscc_disable();
+    }
 }
 
 static void fault_callback(oscc_fault_report_s *report)
