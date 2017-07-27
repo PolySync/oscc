@@ -49,6 +49,7 @@ static int command_steering( );
 static void brake_callback(oscc_brake_report_s *report);
 static void throttle_callback(oscc_throttle_report_s *report);
 static void steering_callback(oscc_steering_report_s *report);
+static void fault_callback(oscc_fault_report_s *report);
 static void obd_callback(long id, unsigned char * data);
 static bool check_for_brake_faults( );
 static bool check_for_steering_faults( );
@@ -69,6 +70,7 @@ int commander_init( int channel )
             oscc_subscribe_to_obd_messages(obd_callback);
             oscc_subscribe_to_steering_reports(steering_callback);
             oscc_subscribe_to_throttle_reports(throttle_callback);
+            oscc_subscribe_to_fault_reports(fault_callback);
 
             return_code = joystick_init( );
 
@@ -421,6 +423,7 @@ static void steering_callback(oscc_steering_report_s *report)
 
 static void fault_callback(oscc_fault_report_s *report)
 {
+    oscc_disable();
 }
 
 static void obd_callback(long id, unsigned char * data)
