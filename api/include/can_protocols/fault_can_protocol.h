@@ -10,7 +10,7 @@
 
 
 #include <stdint.h>
-
+#include "magic.h"
 
 /*
  * @brief Fault report message (CAN frame) ID.

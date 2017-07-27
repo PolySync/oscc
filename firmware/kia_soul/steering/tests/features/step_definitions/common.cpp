@@ -11,7 +11,6 @@
 #include "steering_control.h"
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
-#include "oscc.h"
 #include "globals.h"
 
 using namespace cgreen;

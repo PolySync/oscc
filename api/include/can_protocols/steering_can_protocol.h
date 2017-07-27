@@ -10,6 +10,7 @@
 
 
 #include <stdint.h>
+#include "magic.h"
 
 
 /*

@@ -10,6 +10,10 @@
 #include <sys/time.h>
 #include <linux/can.h>
 
+#include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
+#include "can_protocols/throttle_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "oscc.h"
 #include "vehicles/vehicles.h"
 

@@ -9,7 +9,6 @@
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "debug.h"
-#include "oscc.h"
 
 #include "globals.h"
 #include "communications.h"

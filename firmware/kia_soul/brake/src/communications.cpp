@@ -9,7 +9,6 @@
 #include "can_protocols/fault_can_protocol.h"
 #include "oscc_can.h"
 #include "debug.h"
-#include "oscc.h"
 
 #include "globals.h"
 #include "communications.h"
@@ -154,8 +153,8 @@ static void process_fault_report(
         const oscc_fault_report_s * const fault_report =
                 (oscc_fault_report_s *) data;
 
-            disable_control( );
+        disable_control( );
 
-            DEBUG_PRINTLN( "Fault report received" );
+        DEBUG_PRINTLN( "Fault report received" );
     }
 }

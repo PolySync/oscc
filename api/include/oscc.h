@@ -16,21 +16,6 @@
 #include "can_protocols/steering_can_protocol.h"
 
 
-/*
- * @brief First magic byte used in commands and reports to distinguish CAN
- *        frame as coming from OSCC (and not OBD).
- *
- */
-#define OSCC_MAGIC_BYTE_0 ( 0x05 )
-
-/*
- * @brief Second magic byte used in commands and reports to distinguish CAN
- *        frame as coming from OSCC (and not OBD).
- *
- */
-#define OSCC_MAGIC_BYTE_1 ( 0xCC )
-
-
 typedef enum
 {
     OSCC_OK,
