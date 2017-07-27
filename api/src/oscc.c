@@ -376,6 +376,7 @@ static void oscc_update_status()
             {
                 oscc_fault_report_s *fault_report =
                     (oscc_fault_report_s *)rx_frame.data;
+
                 if (fault_report_callback != NULL)
                 {
                     fault_report_callback(fault_report);
@@ -426,7 +427,7 @@ static oscc_error_t oscc_async_enable(int socket)
    }
 
    ret = fcntl(socket, F_SETFL, FASYNC | O_NONBLOCK);
-   
+
    if ( ret < 0 )
    {
        printf("set async failed\n");
