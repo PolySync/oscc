@@ -414,11 +414,6 @@ static oscc_error_t oscc_can_write(long id, void *msg, unsigned int dlc)
     return ret;
 }
 
-static void quit_handler()
-{
-    exit(0);
-}
-
 static oscc_error_t oscc_async_enable(int socket)
 {
     oscc_error_t ret = OSCC_ERROR;
@@ -444,8 +439,9 @@ static oscc_error_t oscc_init_can(const char *can_channel)
 {
     int ret = OSCC_OK;
 
-    signal(SIGIO, &oscc_update_status);
-    signal(SIGINT, &quit_handler);
+    struct sigaction sig;
+    sig.sa_handler = oscc_update_status;
+    sigaction(SIGIO, &sig, NULL);
 
     int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
