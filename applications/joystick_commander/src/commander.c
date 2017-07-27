@@ -8,6 +8,7 @@
 #include <SDL2/SDL_joystick.h>
 #include <SDL2/SDL_gamecontroller.h>
 #include <sys/time.h>
+#include <linux/can.h>
 
 #include "oscc.h"
 #include "vehicles/vehicles.h"
@@ -52,7 +53,7 @@ static void brake_callback(oscc_brake_report_s *report);
 static void throttle_callback(oscc_throttle_report_s *report);
 static void steering_callback(oscc_steering_report_s *report);
 static void fault_callback(oscc_fault_report_s *report);
-static void obd_callback(long id, unsigned char * data);
+static void obd_callback(struct can_frame *frame);
 static bool check_for_brake_faults( );
 static bool check_for_steering_faults( );
 static bool check_for_throttle_faults( );
@@ -342,7 +343,7 @@ static int command_steering( )
     {
         gettimeofday(&time_now, NULL);
 
-        double time_between_loops_in_sec = 
+        double time_between_loops_in_sec =
             USEC_TO_SEC((time_now.tv_usec - last_loop_time.tv_usec));
 
         double normalized_position = 0;
@@ -415,10 +416,12 @@ static void fault_callback(oscc_fault_report_s *report)
     oscc_disable();
 }
 
-static void obd_callback(long id, unsigned char * data)
+static void obd_callback(struct can_frame *frame)
 {
-    if ( id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID )
+    if ( frame->can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID )
     {
-        printf("OBD Steering Wheel Angle received\n");
+        kia_soul_obd_steering_wheel_angle_data_s * steering_data = (kia_soul_obd_steering_wheel_angle_data_s*) frame->data;
+
+        curr_angle = steering_data->steering_wheel_angle * 0.1;
     }
 }

@@ -31,7 +31,7 @@ static void (*steering_report_callback)(oscc_steering_report_s *report);
 static void (*brake_report_callback)(oscc_brake_report_s *report);
 static void (*throttle_report_callback)(oscc_throttle_report_s *report);
 static void (*fault_report_callback)(oscc_fault_report_s *report);
-static void (*obd_frame_callback)(long id, unsigned char *data);
+static void (*obd_frame_callback)(struct can_frame *frame);
 
 static oscc_error_t oscc_init_can(const char *can_channel);
 static oscc_error_t oscc_can_write(long id, void *msg, unsigned int dlc);
@@ -252,7 +252,7 @@ oscc_error_t oscc_subscribe_to_fault_reports(void (*callback)(oscc_fault_report_
     return ret;
 }
 
-oscc_error_t oscc_subscribe_to_obd_messages(void (*callback)(long id, unsigned char *data))
+oscc_error_t oscc_subscribe_to_obd_messages(void (*callback)(struct can_frame *frame))
 {
     oscc_error_t ret = OSCC_ERROR;
 
@@ -387,7 +387,7 @@ static void oscc_update_status()
         {
             if (obd_frame_callback != NULL)
             {
-                obd_frame_callback(rx_frame.can_id, rx_frame.data);
+                obd_frame_callback(&rx_frame);
             }
         }
 

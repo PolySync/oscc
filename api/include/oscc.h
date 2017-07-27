@@ -9,6 +9,7 @@
 #define _OSCC_H
 
 #include <stdbool.h>
+#include <linux/can.h>
 #include "can_protocols/brake_can_protocol.h"
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
@@ -185,7 +186,7 @@ oscc_error_t oscc_subscribe_to_fault_reports( void( *callback )( oscc_fault_repo
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_subscribe_to_obd_messages( void( *callback )( long id, unsigned char * data ) );
+oscc_error_t oscc_subscribe_to_obd_messages( void( *callback )( struct can_frame *frame ) );
 
 
 #endif /* _OSCC_H */
