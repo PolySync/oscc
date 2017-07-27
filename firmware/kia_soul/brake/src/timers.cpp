@@ -17,7 +17,7 @@
  * @brief Fault checking frequency. [Hz]
  *
  */
-#define FAULT_CHECK_FREQUENCY_IN_HZ ( 10 )
+#define FAULT_CHECK_FREQUENCY_IN_HZ ( 1 )
 
 
 static void check_for_faults( void );
