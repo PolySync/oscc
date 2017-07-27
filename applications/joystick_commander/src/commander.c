@@ -34,6 +34,7 @@
 #define USEC_TO_SEC(usec) ( (usec) / 1000000.0 )
 
 static int commander_enabled = COMMANDER_DISABLED;
+static bool control_enabled = false;
 
 static pid_s steering_pid;
 static double prev_angle;
@@ -151,16 +152,19 @@ int check_for_controller_update( )
                     }
                     else
                     {
-                        return_code = command_brakes( );
-
-                        if ( return_code == OSCC_OK )
+                        if ( control_enabled )
                         {
-                            return_code = command_throttle( );
-                        }
+                            return_code = command_brakes( );
 
-                        if ( return_code == OSCC_OK )
-                        {
-                            return_code = command_steering( );
+                            if ( return_code == OSCC_OK )
+                            {
+                                return_code = command_throttle( );
+                            }
+
+                            if ( return_code == OSCC_OK )
+                            {
+                                return_code = command_steering( );
+                            }
                         }
                     }
                 }
@@ -235,6 +239,11 @@ static int commander_disable_controls( )
     if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = oscc_disable();
+
+        if ( return_code == OSCC_OK )
+        {
+            control_enabled = false;
+        }
     }
     return return_code;
 }
@@ -248,6 +257,11 @@ static int commander_enable_controls( )
     if ( commander_enabled == COMMANDER_ENABLED )
     {
         return_code = oscc_enable();
+
+        if ( return_code == OSCC_OK )
+        {
+            control_enabled = true;
+        }
     }
     return ( return_code );
 }
