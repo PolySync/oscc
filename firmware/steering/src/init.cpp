@@ -34,9 +34,10 @@ void init_devices( void )
     pinMode( PIN_TORQUE_SPOOF_LOW, INPUT );
     pinMode( PIN_SPOOF_ENABLE, OUTPUT );
 
+    cli();
     digitalWrite( PIN_DAC_CHIP_SELECT, HIGH );
-
     digitalWrite( PIN_SPOOF_ENABLE, LOW );
+    sei();
 }
 
 

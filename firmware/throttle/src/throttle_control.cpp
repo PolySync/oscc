@@ -119,8 +119,10 @@ void update_throttle(
                 THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
                 THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
+        cli();
         g_dac.outputA( spoof_high );
         g_dac.outputB( spoof_low );
+        sei();
     }
 }
 
@@ -137,7 +139,9 @@ void enable_control( void )
             PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
             PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 
+        cli();
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
+        sei();
 
         g_throttle_control_state.enabled = true;
 
@@ -157,7 +161,9 @@ void disable_control( void )
             PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
             PIN_ACCELERATOR_POSITION_SENSOR_LOW );
 
+        cli();
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
+        sei();
 
         g_throttle_control_state.enabled = false;
 
@@ -169,6 +175,8 @@ void disable_control( void )
 static void read_accelerator_position_sensor(
     accelerator_position_s * const value )
 {
+    cli();
     value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
     value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+    sei();
 }

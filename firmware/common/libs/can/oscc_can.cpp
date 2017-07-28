@@ -24,6 +24,8 @@ can_status_t check_for_rx_frame( MCP_CAN &can, can_frame_s * const frame )
 
     if( frame != NULL )
     {
+        cli();
+
         if( can.checkReceive( ) == CAN_MSGAVAIL )
         {
             memset( frame, 0, sizeof(*frame) );
@@ -41,6 +43,8 @@ can_status_t check_for_rx_frame( MCP_CAN &can, can_frame_s * const frame )
         {
             ret = CAN_RX_FRAME_UNAVAILABLE;
         }
+
+        sei();
     }
 
     return ret;

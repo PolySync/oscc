@@ -27,8 +27,6 @@ static void process_fault_report(
 
 void publish_throttle_report( void )
 {
-    cli();
-
     oscc_throttle_report_s throttle_report;
 
     throttle_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
@@ -37,32 +35,30 @@ void publish_throttle_report( void )
     throttle_report.operator_override = (uint8_t) g_throttle_control_state.operator_override;
     throttle_report.dtcs = g_throttle_control_state.dtcs;
 
+    cli();
     g_control_can.sendMsgBuf(
         OSCC_THROTTLE_REPORT_CAN_ID,
         CAN_STANDARD,
         OSCC_THROTTLE_REPORT_CAN_DLC,
         (uint8_t*) &throttle_report );
-
     sei();
 }
 
 
 void publish_fault_report( void )
 {
-    cli();
-
     oscc_fault_report_s fault_report;
 
     fault_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
     fault_report.magic[1] = (uint8_t) OSCC_MAGIC_BYTE_1;
     fault_report.fault_origin_id = FAULT_ORIGIN_THROTTLE;
 
+    cli();
     g_control_can.sendMsgBuf(
         OSCC_FAULT_REPORT_CAN_ID,
         CAN_STANDARD,
         OSCC_FAULT_REPORT_CAN_DLC,
         (uint8_t *) &fault_report );
-
     sei();
 }
 
@@ -85,8 +81,6 @@ void check_for_controller_command_timeout( void )
 
 void check_for_incoming_message( void )
 {
-    cli();
-
     can_frame_s rx_frame;
     can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
 
@@ -94,8 +88,6 @@ void check_for_incoming_message( void )
     {
         process_rx_frame( &rx_frame );
     }
-
-    sei();
 }
 
 
@@ -131,11 +123,6 @@ static void process_throttle_command(
         if( throttle_command->enable == true )
         {
             enable_control( );
-
-            DEBUG_PRINT("spoof low: ");
-            DEBUG_PRINT(throttle_command->spoof_value_low);
-            DEBUG_PRINT(" spoof high: ");
-            DEBUG_PRINTLN(throttle_command->spoof_value_high);
 
             update_throttle(
                 throttle_command->spoof_value_high,

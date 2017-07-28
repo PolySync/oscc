@@ -176,12 +176,14 @@ void check_for_sensor_faults( void )
 
 void brake_init( void )
 {
+    cli();
     digitalWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, LOW );
     digitalWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, LOW );
     digitalWrite( PIN_RELEASE_SOLENOID_FRONT_LEFT, LOW );
     digitalWrite( PIN_RELEASE_SOLENOID_FRONT_RIGHT, LOW );
     digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, LOW );
     digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, LOW );
+    sei();
 
     pinMode( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, OUTPUT );
     pinMode( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, OUTPUT );
@@ -204,6 +206,8 @@ void update_brake( void )
 {
     if ( g_brake_control_state.enabled == true )
     {
+        cli();
+
         static float pressure_at_wheels_target = 0.0;
         static float pressure_at_wheels_current = 0.0;
 
@@ -293,17 +297,21 @@ void update_brake( void )
                 set_accumulator_solenoid_duty_cycle( sla_duty_cycle );
             }
         }
+
+        sei();
     }
 }
 
 
 static float read_pressure_sensor( void )
 {
+    cli();
     int raw_adc_front_left =
         analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
 
     int raw_adc_front_right =
         analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
+    sei();
 
     float pressure_front_left = raw_adc_to_pressure( raw_adc_front_left );
     float pressure_front_right = raw_adc_to_pressure( raw_adc_front_right );
@@ -314,13 +322,17 @@ static float read_pressure_sensor( void )
 
 static void disable_brake_lights( void )
 {
+    cli();
     digitalWrite( PIN_BRAKE_LIGHT, LOW );
+    sei();
 }
 
 
 static void enable_brake_lights( void )
 {
+    cli();
     digitalWrite( PIN_BRAKE_LIGHT, HIGH );
+    sei();
 }
 
 
@@ -330,8 +342,10 @@ static bool check_master_cylinder_pressure_sensor_for_fault( void )
 
     static int fault_count = 0;
 
+    cli();
     int master_cylinder_pressure_1 = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_1 );
     int master_cylinder_pressure_2 = analogRead( PIN_MASTER_CYLINDER_PRESSURE_SENSOR_2 );
+    sei();
 
     // sensor pins tied to ground - a value of zero indicates disconnection
     if( (master_cylinder_pressure_1 == 0)
@@ -359,7 +373,9 @@ static bool check_accumulator_pressure_sensor_for_fault( void )
 
     static int fault_count = 0;
 
+    cli();
     int accumulator_pressure = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
+    sei();
 
     // sensor pins tied to ground - a value of zero indicates disconnection
     if( accumulator_pressure == 0 )
@@ -386,8 +402,10 @@ static bool check_wheel_pressure_sensor_for_fault( void )
 
     static int fault_count = 0;
 
+    cli();
     int wheel_pressure_front_left =  analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
     int wheel_pressure_front_right = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
+    sei();
 
     // sensor pins tied to ground - a value of zero indicates disconnection
     if( (wheel_pressure_front_left == 0)
@@ -418,13 +436,18 @@ static void startup_check( void )
 
 static void pressure_startup_check( void )
 {
+    cli();
     digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, HIGH );
     digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, HIGH );
+    sei();
+
     delay(250);
 
+    cli();
     int pressure_front_left = analogRead( PIN_PRESSURE_SENSOR_FRONT_LEFT );
     int pressure_front_right = analogRead( PIN_PRESSURE_SENSOR_FRONT_RIGHT );
     int pressure_accumulator = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
+    sei();
 
     if( (pressure_front_left < BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN)
         || (pressure_front_left > BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX)
@@ -440,8 +463,11 @@ static void pressure_startup_check( void )
         g_brake_control_state.startup_pressure_check_error = false;
     }
 
+    cli();
     digitalWrite( PIN_WHEEL_PRESSURE_CHECK_1, LOW );
     digitalWrite( PIN_WHEEL_PRESSURE_CHECK_2, LOW );
+    sei();
+
     delay(250);
 }
 
