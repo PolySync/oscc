@@ -357,8 +357,8 @@ We've created an example application, joystick commander, that uses the OSCC API
 **Use provided CAN channel to open and close communications to CAN bus connected to the OSCC modules.**
 
 ```c
-oscc_error_t oscc_open( uint channel )
-oscc_error_t oscc_close( uint )
+oscc_result_t oscc_open( uint channel )
+oscc_result_t oscc_close( uint )
 ```
 
 These methods are the start and end points of using the OSCC API in your application. ```oscc_open``` will open a socket connection
@@ -368,8 +368,8 @@ When you are ready to terminate your application, ```oscc_close``` can terminate
 **Send enable or disable commands to all OSCC modules.**
 
 ```c
-oscc_error_t oscc_enable( void )
-oscc_error_t oscc_disable( void )
+oscc_result_t oscc_enable( void )
+oscc_result_t oscc_disable( void )
 ```
 
 After you have initialized your CAN connection to the firmware modules, these methods can be used to enable or disable the system. This
@@ -379,9 +379,9 @@ enabled, you can receive reports at any time.
 **Publish message with requested normalized value to the corresponding module.**
 
 ```c
-oscc_error_t publish_brake_position( double normalized_position )
-oscc_error_t publish_steering_torque( double normalized_torque )
-oscc_error_t publish_throttle_position( double normalized_position )
+oscc_result_t publish_brake_position( double normalized_position )
+oscc_result_t publish_steering_torque( double normalized_torque )
+oscc_result_t publish_throttle_position( double normalized_position )
 ```
 
 These commands will forward a double value, *[0.0, 1.0]*, to the specified firmware module. The API will construct the appropriate values
@@ -391,11 +391,11 @@ can be written onto the hardware.
 **Register callback function to be called when OBD message received from vehicle.**
 
 ```c
-oscc_error_t subscribe_to_brake_reports( void(*callback)(oscc_brake_report_s *report)  )
-oscc_error_t subscribe_to_steering_reports( void(*callback)(oscc_steering_report_s *report) )
-oscc_error_t subscribe_to_throttle_reports( void(*callback)(oscc_throttle_report_s *report) )
-oscc_error_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *report) )
-oscc_error_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame) )
+oscc_result_t subscribe_to_brake_reports( void(*callback)(oscc_brake_report_s *report)  )
+oscc_result_t subscribe_to_steering_reports( void(*callback)(oscc_steering_report_s *report) )
+oscc_result_t subscribe_to_throttle_reports( void(*callback)(oscc_throttle_report_s *report) )
+oscc_result_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *report) )
+oscc_result_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame) )
 ```
 
 In order to receive reports from the modules, your application will need to register a callback handler with the OSCC API.
