@@ -10,7 +10,6 @@ add_executable(
     src/brake_module_state.c
     src/can_monitor.c
     src/diagnostics.c
-    src/gateway_module_state.c
     src/steering_module_state.c
     src/system_state.c
     src/terminal_print.c
@@ -20,7 +19,7 @@ target_include_directories(
     diagnostics-tool
     PRIVATE
     include
-    ../../platforms/common/include
+    ../../api/include
     ${SDL2_INCLUDE_DIRS})
 
 target_link_libraries(

@@ -1,0 +1,10 @@
+// include source files to prevent step files from conflicting with each other
+#include "common.cpp"
+<<<<<<< HEAD
+#include "checking_faults.cpp"
+=======
+#include "checking_actuator_functionality.cpp"
+#include "checking_sensor_validity.cpp"
+>>>>>>> 7573ad032a09a9325d6dc7400c19e9532fea7547
+#include "receiving_commands.cpp"
+#include "sending_reports.cpp"

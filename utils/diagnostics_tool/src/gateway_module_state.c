@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "gateway_can_protocol.h"
+#include "can_protocols/gateway_can_protocol.h"
 #include "chassis_state_can_protocol.h"
 
 #include "macros.h"
