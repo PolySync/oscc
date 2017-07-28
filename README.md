@@ -1,12 +1,11 @@
 <img src="https://raw.githubusercontent.com/wiki/PolySync/OSCC/images/oscc_logo_title.png">
 
 
-The Open Source Car Control project is a hardware and software project that facilitates conversion of a
-late model vehicle into an autonomous driving R&D machine.
+Open Source Car Control (OSCC) is an assemblage of software and hardware designs that enable computer control of modern cars in order to facilitate the development of autonomous vehicle technology. It is a modular and stable way of using software to interface with a vehicle’s communications network and control systems.
 
-OSCC enables developers to intercept messages from the car's on-board OBD-II CAN network, forwarding reports on the states of various vehicle components, like steering angle or wheel speeds, into your application. After you've used this data in your algorithm, you can then use our API to send spoofed commands back into the car's ECUs. OSCC provides a modular and stable way of using software to interface with a vehicle's communications network and electrical system.
+OSCC enables developers to send control commands to the vehicle, read control messages from the vehicle’s OBD-II CAN network, and forward reports for current vehicle control state. Such as steering angle & wheel speeds. Control commands are issued to the vehicle component ECUs via the steering wheel torque sensor, throttle position sensor, and brake position sensor. (Because the gas-powered Kia Soul isn’t brake by-wire capable, an auxiliary actuator is added to enable braking.) This low-level interface means that OSCC offers full-range control of the vehicle without altering the factory safety-case, spoofing CAN messages, or hacking ADAS features.
 
-Although we currently support late model Kia Souls, the API and firmware have been designed to make it easy to add new vehicle details as the specific details of other systems are determined. Additionally, the separation between API and firmware means it is easier to modify and test parts of your program without having to update the flashed modules.
+Although we currently support only the 2014 or later Kia Soul (w/ Kia Soul EV & Kia Niro support coming in Q3/Q4 2017, respectively), the API and firmware have been designed to make it easy to add new vehicle support. Additionally, the separation between API and firmware means it is easier to modify and test parts of your program without having to update the flashed OSCC modules.
 
 Our [Wiki](https://github.com/PolySync/OSCC/wiki) is in the process of being updated to reflect the new changes, but contains a bunch of valuable information to help you get started in understanding the details of the system.
 
