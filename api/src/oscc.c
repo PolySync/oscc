@@ -43,6 +43,7 @@ static oscc_result_t oscc_disable_brakes();
 static oscc_result_t oscc_disable_throttle();
 static oscc_result_t oscc_disable_steering();
 static void oscc_update_status();
+static void oscc_init_commands();
 
 oscc_result_t oscc_open(unsigned int channel)
 {
@@ -55,6 +56,8 @@ oscc_result_t oscc_open(unsigned int channel)
     printf("Opening CAN channel: %s\n", buffer);
 
     ret = oscc_init_can(buffer);
+
+    oscc_init_commands( );
 
     return ret;
 }
@@ -116,8 +119,6 @@ oscc_result_t oscc_publish_brake_position(double brake_position)
             MINIMUM_BRAKE_COMMAND,
             MAXIMUM_BRAKE_COMMAND );
 
-    brake_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    brake_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( scaled_position );
 
     ret = oscc_can_write(
@@ -151,8 +152,6 @@ oscc_result_t oscc_publish_throttle_position(double throttle_position)
         THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
         THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX);
 
-    throttle_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    throttle_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     throttle_cmd.spoof_value_low = spoof_value_low;
     throttle_cmd.spoof_value_high = spoof_value_high;
 
@@ -187,8 +186,6 @@ oscc_result_t oscc_publish_steering_torque(double torque)
         STEERING_SPOOF_SIGNAL_MIN,
         STEERING_SPOOF_SIGNAL_MAX);
 
-    steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     steering_cmd.spoof_value_low = spoof_value_low;
     steering_cmd.spoof_value_high = spoof_value_high;
 
@@ -510,4 +507,16 @@ static oscc_result_t oscc_init_can(const char *can_channel)
     }
 
     return ret;
+}
+
+static void oscc_init_commands( void )
+{
+    brake_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    brake_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
+
+    throttle_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    throttle_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
+
+    steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
 }
