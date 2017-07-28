@@ -10,12 +10,13 @@
 #include <sys/time.h>
 #include <linux/can.h>
 
+#include "oscc.h"
+#include "vehicles/vehicles.h"
+
 #include "can_protocols/brake_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "can_protocols/fault_can_protocol.h"
-#include "oscc.h"
-#include "vehicles/vehicles.h"
 
 #include "joystick.h"
 
@@ -70,6 +71,7 @@ int commander_init( int channel )
 
         if ( return_code != OSCC_ERROR )
         {
+            // register callback handlers
             oscc_subscribe_to_obd_messages(obd_callback);
             oscc_subscribe_to_brake_reports(brake_callback);
             oscc_subscribe_to_steering_reports(steering_callback);
@@ -286,6 +288,7 @@ static int get_button( unsigned long button, unsigned int* const state )
     return ( return_code );
 }
 
+// Since the OSCC API requires a normalized value, we will read in and normalzie a value from the game pad, using that as our requested brake position.
 static int command_brakes( )
 {
     int return_code = OSCC_ERROR;
@@ -314,6 +317,7 @@ static int command_brakes( )
     return ( return_code );
 }
 
+// For the throttle command, we want to send a normalized position based on the throttle position trigger. We also don't want to send throttle commands if we are currently braking.
 static int command_throttle( )
 {
     int return_code = OSCC_ERROR;
@@ -354,6 +358,7 @@ static int command_throttle( )
     return ( return_code );
 }
 
+// To send the steering command, we first get the normalized axis position from the game controller. Since the car will fault if it detects too much discontinuity between spoofed output signals, we use an exponential average filter to smooth our output.
 static int command_steering( )
 {
     int return_code = OSCC_ERROR;
@@ -383,6 +388,12 @@ static int command_steering( )
     return ( return_code );
 }
 
+/*
+ * These callback functions just check the reports for operator overrides. The 
+ * firmware modules should have disabled themselves, but we will send the 
+ * command again just to be safe.
+ *
+ */
 static void throttle_callback(oscc_throttle_report_s *report)
 {
     if ( report->operator_override )
@@ -433,6 +444,8 @@ static void fault_callback(oscc_fault_report_s *report)
     }
 }
 
+// To cast specific OBD messages, you need to know the structure of the
+// data fields and the CAN_ID. 
 static void obd_callback(struct can_frame *frame)
 {
     if ( frame->can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID )

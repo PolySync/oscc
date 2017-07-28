@@ -46,18 +46,5 @@ void commander_close( int channel );
  */
 int check_for_controller_update( );
 
-/**
- * @brief Checks the state of the driver override to disable the OSCC
- * modules. Is expected to execute every 1ms
- *
- * @param [void]
- *
- * @return ERROR code:
- * \li \ref NOERR (1) if success.
- * \li \ref ERROR (0) if failure.
- *
- */
-int check_for_fault_update( );
-
 
 #endif /* COMMANDER_H */
