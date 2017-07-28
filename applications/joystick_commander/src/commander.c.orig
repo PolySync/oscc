@@ -19,9 +19,6 @@
 
 #include "joystick.h"
 
-
-#define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
-
 #define JOYSTICK_AXIS_THROTTLE (SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
 #define JOYSTICK_AXIS_BRAKE (SDL_CONTROLLER_AXIS_TRIGGERLEFT)
 #define JOYSTICK_AXIS_STEER (SDL_CONTROLLER_AXIS_LEFTX)
@@ -33,6 +30,7 @@
 #define COMMANDER_DISABLED ( 0 )
 #define BRAKE_FILTER_FACTOR (0.2)
 #define THROTTLE_FILTER_FACTOR (0.2)
+
 #define STEERING_FILTER_FACTOR (0.1)
 
 static int commander_enabled = COMMANDER_DISABLED;
@@ -54,9 +52,16 @@ static void throttle_callback(oscc_throttle_report_s *report);
 static void steering_callback(oscc_steering_report_s *report);
 static void fault_callback(oscc_fault_report_s *report);
 static void obd_callback(struct can_frame *frame);
+<<<<<<< HEAD
 static double calc_exponential_average( double average,
                                         double setpoint,
                                         double factor );
+=======
+static bool check_for_brake_faults( );
+static bool check_for_steering_faults( );
+static bool check_for_throttle_faults( );
+static double calc_exponential_average( double average, double setpoint, double factor );
+>>>>>>> 6530c8bdab70d8e4d1f36e2eac83d244a655f02a
 
 int commander_init( int channel )
 {
@@ -97,6 +102,10 @@ int commander_init( int channel )
                     break;
                 }
             }
+            pid_zeroize(&steering_pid, PID_WINDUP_GUARD);
+            steering_pid.proportional_gain = PID_PROPORTIONAL_GAIN;
+            steering_pid.integral_gain = PID_INTEGRAL_GAIN;
+            steering_pid.derivative_gain = PID_DERIVATIVE_GAIN;
         }
     }
     return ( return_code );
@@ -188,7 +197,7 @@ static int get_normalized_position( unsigned long axis_index, double * const nor
             low = -1.0;
         }
 
-    ( *normalized_position ) = CONSTRAIN(
+    ( *normalized_position ) = m_constrain(
             ((double) axis_position) / INT16_MAX,
             low,
             high);
@@ -292,20 +301,20 @@ static int command_brakes( )
 
     static double average = 0.0;
 
-    if ( commander_enabled == COMMANDER_ENABLED && control_enabled == true )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
-        double normalized_position = 0;
+        double normalized_brake_position = 0;
 
-        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_position );
+        return_code = get_normalized_position( JOYSTICK_AXIS_BRAKE, &normalized_brake_position );
 
-        if ( return_code == OSCC_OK && normalized_position >= 0.0 )
+        if ( return_code == OSCC_OK && normalized_brake_position >= 0.0 )
         {
             average = calc_exponential_average(
                 average,
-                normalized_position,
+                normalized_brake_position,
                 BRAKE_FILTER_FACTOR );
 
-            printf("Brake:\t%f\n", average);
+            printf("Brake: %f\n", average);
 
             return_code = oscc_publish_brake_position( average );
         }
@@ -320,7 +329,7 @@ static int command_throttle( )
 
     static double average = 0.0;
 
-    if ( commander_enabled == COMMANDER_ENABLED && control_enabled == true )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         double normalized_throttle_position = 0;
 
@@ -345,7 +354,7 @@ static int command_throttle( )
                 normalized_throttle_position,
                 THROTTLE_FILTER_FACTOR );
 
-            printf("Throttle:\t%f\n", average);
+            printf("Throttle: %f\n", average);
 
             return_code = oscc_publish_throttle_position( average );
         }
@@ -358,27 +367,17 @@ static int command_steering( )
 {
     int return_code = OSCC_ERROR;
 
-    static double average = 0.0;
+    static double steering_average = 0.0;
 
-    if ( commander_enabled == COMMANDER_ENABLED && control_enabled == true )
+    if ( commander_enabled == COMMANDER_ENABLED )
     {
         double normalized_position = 0;
 
-        return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &normalized_position );
+        return_code = get_normalized_position( JOYSTICK_AXIS_STEER, &               normalized_position );
 
-        if( return_code == OSCC_OK )
-        {
-            average = calc_exponential_average(
-                average,
-                normalized_position,
-                STEERING_FILTER_FACTOR);
+        steering_average = calc_exponential_average(steering_average, normalized_position, STEERING_FILTER_FACTOR);
 
-            printf("Steering:\t%f\n", average);
-
-            return_code = oscc_publish_steering_torque( average );
-        }
-
-
+        return_code = oscc_publish_steering_torque( steering_average );
     }
     return ( return_code );
 }
@@ -388,8 +387,6 @@ static void throttle_callback(oscc_throttle_report_s *report)
     if ( report->operator_override )
     {
         printf("Override: Throttle\n");
-
-        commander_disable_controls();
     }
 }
 
@@ -398,8 +395,6 @@ static void steering_callback(oscc_steering_report_s *report)
     if ( report->operator_override )
     {
         printf("Override: Steering\n");
-
-        commander_disable_controls();
     }
 }
 
@@ -408,14 +403,12 @@ static void brake_callback(oscc_brake_report_s * report)
     if ( report->operator_override )
     {
         printf("Override: Brake\n");
-
-        commander_disable_controls();
     }
 }
 
 static void fault_callback(oscc_fault_report_s *report)
 {
-    commander_disable_controls();
+    oscc_disable();
 
     printf("Fault: ");
 
@@ -443,12 +436,20 @@ static void obd_callback(struct can_frame *frame)
     }
 }
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 6530c8bdab70d8e4d1f36e2eac83d244a655f02a
 static double calc_exponential_average( double average,
                                         double setpoint,
                                         double factor )
 {
     double exponential_average =
+<<<<<<< HEAD
+        ( setpoint * factor ) + ( ( 1 - factor ) * average );
+=======
         ( setpoint * factor ) + ( ( 1.0 - factor ) * average );
+>>>>>>> 6530c8bdab70d8e4d1f36e2eac83d244a655f02a
 
     return ( exponential_average );
 }
