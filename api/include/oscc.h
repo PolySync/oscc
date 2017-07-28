@@ -21,7 +21,7 @@ typedef enum
     OSCC_OK,
     OSCC_ERROR,
     OSCC_WARNING
-} oscc_error_t;
+} oscc_result_t;
 
 
 /**
@@ -33,7 +33,7 @@ typedef enum
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_open( unsigned int channel );
+oscc_result_t oscc_open( unsigned int channel );
 
 
 /**
@@ -45,7 +45,7 @@ oscc_error_t oscc_open( unsigned int channel );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_close( unsigned int channel );
+oscc_result_t oscc_close( unsigned int channel );
 
 
 /**
@@ -56,7 +56,7 @@ oscc_error_t oscc_close( unsigned int channel );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_enable( );
+oscc_result_t oscc_enable( );
 
 
 /**
@@ -67,7 +67,7 @@ oscc_error_t oscc_enable( );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_disable( );
+oscc_result_t oscc_disable( );
 
 
 /**
@@ -80,7 +80,7 @@ oscc_error_t oscc_disable( );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_publish_brake_position( double brake_position );
+oscc_result_t oscc_publish_brake_position( double brake_position );
 
 
 /**
@@ -93,7 +93,7 @@ oscc_error_t oscc_publish_brake_position( double brake_position );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_publish_throttle_position( double throttle_position );
+oscc_result_t oscc_publish_throttle_position( double throttle_position );
 
 
 /**
@@ -106,7 +106,7 @@ oscc_error_t oscc_publish_throttle_position( double throttle_position );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_publish_steering_torque( double torque );
+oscc_result_t oscc_publish_steering_torque( double torque );
 
 
 /**
@@ -119,7 +119,7 @@ oscc_error_t oscc_publish_steering_torque( double torque );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_report_s *report ) );
+oscc_result_t oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_report_s *report ) );
 
 
 /**
@@ -132,7 +132,7 @@ oscc_error_t oscc_subscribe_to_brake_reports( void( *callback )( oscc_brake_repo
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttle_report_s *report ) );
+oscc_result_t oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttle_report_s *report ) );
 
 
 /**
@@ -145,7 +145,7 @@ oscc_error_t oscc_subscribe_to_throttle_reports( void( *callback )( oscc_throttl
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_subscribe_to_steering_reports( void( *callback )( oscc_steering_report_s *report ) );
+oscc_result_t oscc_subscribe_to_steering_reports( void( *callback )( oscc_steering_report_s *report ) );
 
 
 /**
@@ -158,7 +158,7 @@ oscc_error_t oscc_subscribe_to_steering_reports( void( *callback )( oscc_steerin
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_subscribe_to_fault_reports( void( *callback )( oscc_fault_report_s *report ) );
+oscc_result_t oscc_subscribe_to_fault_reports( void( *callback )( oscc_fault_report_s *report ) );
 
 
 /**
@@ -171,7 +171,7 @@ oscc_error_t oscc_subscribe_to_fault_reports( void( *callback )( oscc_fault_repo
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_error_t oscc_subscribe_to_obd_messages( void( *callback )( struct can_frame *frame ) );
+oscc_result_t oscc_subscribe_to_obd_messages( void( *callback )( struct can_frame *frame ) );
 
 
 #endif /* _OSCC_H */
