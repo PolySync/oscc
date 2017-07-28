@@ -56,7 +56,7 @@ oscc_result_t oscc_close( unsigned int channel );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_enable( );
+oscc_result_t oscc_enable( void );
 
 
 /**
@@ -67,7 +67,7 @@ oscc_result_t oscc_enable( );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_disable( );
+oscc_result_t oscc_disable( void );
 
 
 /**
