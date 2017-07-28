@@ -1,12 +1,12 @@
 <img src="https://raw.githubusercontent.com/wiki/PolySync/OSCC/images/oscc_logo_title.png">
 
 
-The Open Source Car Control project is a hardware and software project that faciliates conversion of a
+The Open Source Car Control project is a hardware and software project that facilitates conversion of a
 late model vehicle into an autonomous driving R&D machine.
 
 OSCC enables developers to intercept messages from the car's on-board OBD-II CAN network, forwarding reports on the states of various vehicle components, like steering angle or wheel speeds, into your application. After you've used this data in your algorithm, you can then use our API to send spoofed commands back into the car's ECUs. OSCC provides a modular and stable way of using software to interface with a vehicle's communications network and electrical system.
 
-Although we currently support late model Kia Souls, the API and firmware have been designed to make it easy to add new vehicle details as the specific details of other systems are determined. Additionally, the seperation between API and firmware means it is easier to modify and test parts of your program without having to update the flashed modules.
+Although we currently support late model Kia Souls, the API and firmware have been designed to make it easy to add new vehicle details as the specific details of other systems are determined. Additionally, the separation between API and firmware means it is easier to modify and test parts of your program without having to update the flashed modules.
 
 Our [Wiki](https://github.com/PolySync/OSCC/wiki) is in the process of being updated to reflect the new changes, but contains a bunch of valuable information to help you get started in understanding the details of the system.
 
@@ -21,7 +21,7 @@ Our [Wiki](https://github.com/PolySync/OSCC/wiki) is in the process of being upd
 ## Boards
 
 The sensor interface and actuator control board schematics and design files are located in the
-`boards` directory. If you don't have the time or fabrication resources, the boards can be
+`hardware/boards` directory. If you don't have the time or fabrication resources, the boards can be
 purchased as a kit from the [OSCC website](http://oscc.io).
 
 Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://macrofab.com/) for
@@ -50,10 +50,10 @@ Consult the following table for version compatibility.
 
 # Building and Uploading Firmware
 
-The OSCC Project is built around a number of individual firmware modules that interoperate to allow communication with your vehicle.
+The OSCC Project is built around a number of individual firmware modules that inter-operate to allow communication with your vehicle.
 These modules are built from Arduinos and Arduino shields designed specifically for interfacing with various vehicle components.
 Once these modules have been installed in the vehicle and flashed with the firmware, the API can be used to
-recieve reports from the car and send spoofed commands.
+receive reports from the car and send spoofed commands.
 
 ## Pre-requisites
 
@@ -87,7 +87,7 @@ cmake .. -DKIA_SOUL=ON
 ```
 
 By default, your firmware will have debug symbols which is good for debugging but increases
-the size of the firmware significantly. To compile without debug symbols and optimizatons
+the size of the firmware significantly. To compile without debug symbols and optimizations
 enabled, use the following instead:
 
 ```
@@ -172,7 +172,7 @@ cmake .. -DBUILD_KIA_SOUL=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSE
 
 You can use a module's `monitor` target to automatically run `screen`, or a
 module's `monitor-log` target to run `screen` and output to a file called
-`screenlog.0` in your current directory:
+`screenlog.0` in the module's build directory:
 
 ```
 make brake-monitor
@@ -197,13 +197,14 @@ Building and running the tests is similar to the firmware itself, but you must i
 CMake to build the tests instead of the firmware with the `-DTESTS=ON` flag. We also pass
 the `-DCMAKE_BUILD_TYPE=Release` flag so that CMake will disable debug symbols and enable
 optimizations, good things to do when running tests to ensure nothing breaks with
-optimizations.
+optimizations. Lastly, you must tell the tests which vehicle header to use for
+the tests (e.g., `-DKIA_SOUL=ON`).
 
 ```
 cd firmware
 mkdir build
 cd build
-cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release
+cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release -DKIA_SOUL=ON
 ```
 
 ### Unit Tests
@@ -238,12 +239,6 @@ make run-brake-unit-tests
 make run-can-gateway-unit-tests
 make run-steering-unit-tests
 make run-throttle-unit-tests
-```
-
-Or run only the tests of a single platform:
-
-```
-make run-unit-tests
 ```
 
 If everything works correctly you should see something like this:
@@ -293,12 +288,6 @@ make run-brake-property-tests
 make run-steering-property-tests
 make run-throttle-property-tests
 make run-pid-library-property-tests
-```
-
-Or run only the tests of a single platform:
-
-```
-make run-property-tests
 ```
 
 Once the tests have completed, the output should look similar to the following:
@@ -374,7 +363,7 @@ oscc_error_t oscc_close( uint )
 ```
 
 These methods are the start and end points of using the OSCC API in your application. ```oscc_open``` will open a socket connection
-on the specified CAN channel, enabling it to quickly recieve reports from and send commands to the firmware modules.
+on the specified CAN channel, enabling it to quickly receive reports from and send commands to the firmware modules.
 When you are ready to terminate your application, ```oscc_close``` can terminate the connection.
 
 **Send enable or disable commands to all OSCC modules.**
@@ -386,7 +375,7 @@ oscc_error_t oscc_disable( void )
 
 After you have initialized your CAN connection to the firmware modules, these methods can be used to enable or disable the system. This
 allows your application to choose when to enable sending commands to the firmware. Although you can only send commands when the system is
-enabled, you can recieve reports at any time.
+enabled, you can receive reports at any time.
 
 **Publish message with requested normalized value to the corresponding module.**
 
@@ -410,12 +399,12 @@ oscc_error_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *re
 oscc_error_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame) )
 ```
 
-In order to recieve reports from the modules, your application will need to register a callback handler with the OSCC API.
-When the appropriate report for your callback function is recieved from the API's socket connection, it will then forward the
+In order to receive reports from the modules, your application will need to register a callback handler with the OSCC API.
+When the appropriate report for your callback function is received from the API's socket connection, it will then forward the
 report to your software.
 
 In addition to OSCC specific reports, it will also forward any non-OSCC reports to any callback function registered with
-```subscribe_to_obd_messages```. This can be used to view CAN frames recieved from the vehicle's OBD-II CAN channel. If you know
+```subscribe_to_obd_messages```. This can be used to view CAN frames received from the vehicle's OBD-II CAN channel. If you know
 the corresponding CAN frame's id, you can parse reports sent from the car.
 
 # Additional Vehicles & Contributing

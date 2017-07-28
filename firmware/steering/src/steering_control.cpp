@@ -65,12 +65,13 @@ void check_for_sensor_faults( void )
     {
         static int fault_count = 0;
 
-        int sensor_high = analogRead( PIN_TORQUE_SENSOR_HIGH );
-        int sensor_low = analogRead( PIN_TORQUE_SENSOR_LOW );
+        steering_torque_s torque;
+
+        read_torque_sensor(&torque);
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (sensor_high == 0)
-            || (sensor_low == 0) )
+        if( (torque.high == 0)
+            || (torque.low == 0) )
         {
             ++fault_count;
 
@@ -117,8 +118,10 @@ void update_steering(
                 STEERING_SPOOF_SIGNAL_MIN,
                 STEERING_SPOOF_SIGNAL_MAX );
 
+        cli();
         g_dac.outputA( spoof_high );
         g_dac.outputB( spoof_low );
+        sei();
      }
 }
 
@@ -135,8 +138,9 @@ void enable_control( void )
             PIN_TORQUE_SENSOR_HIGH,
             PIN_TORQUE_SENSOR_LOW );
 
-        // Enable the signal interrupt relays
+        cli();
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
+        sei();
 
         g_steering_control_state.enabled = true;
 
@@ -156,8 +160,9 @@ void disable_control( void )
             PIN_TORQUE_SENSOR_HIGH,
             PIN_TORQUE_SENSOR_LOW );
 
-        // Disable the signal interrupt relays
+        cli();
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
+        sei();
 
         g_steering_control_state.enabled = false;
 
@@ -168,7 +173,9 @@ void disable_control( void )
 static void read_torque_sensor(
     steering_torque_s * value )
 {
+    cli();
     value->high = analogRead( PIN_TORQUE_SENSOR_HIGH );
     value->low = analogRead( PIN_TORQUE_SENSOR_LOW );
+    sei();
 }
 

@@ -23,19 +23,25 @@ void accumulator_init( void )
 
 void accumulator_turn_pump_off( void )
 {
+    cli();
     digitalWrite( PIN_ACCUMULATOR_PUMP_MOTOR, LOW );
+    sei();
 }
 
 
 void accumulator_turn_pump_on( void )
 {
+    cli();
     digitalWrite( PIN_ACCUMULATOR_PUMP_MOTOR, HIGH );
+    sei();
 }
 
 
 float accumulator_read_pressure( void )
 {
+    cli();
     int raw_adc = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
+    sei();
 
     float pressure = raw_adc_to_pressure( raw_adc );
 

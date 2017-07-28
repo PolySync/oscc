@@ -34,9 +34,10 @@ void init_devices( void )
     pinMode( PIN_ACCELERATOR_POSITION_SPOOF_LOW, INPUT );
     pinMode( PIN_SPOOF_ENABLE, OUTPUT );
 
-    digitalWrite( PIN_DAC_CHIP_SELECT, HIGH ); // Deselect DAC CS
-
+    cli();
+    digitalWrite( PIN_DAC_CHIP_SELECT, HIGH );
     digitalWrite( PIN_SPOOF_ENABLE, LOW );
+    sei();
 }
 
 
