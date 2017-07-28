@@ -19,10 +19,15 @@ void republish_obd_frames_to_control_can_bus( void )
 
     if( ret == CAN_RX_FRAME_AVAILABLE )
     {
-        g_control_can.sendMsgBuf(
-            rx_frame.id,
-            CAN_STANDARD,
-            sizeof(rx_frame),
-            (uint8_t *) &rx_frame.data );
+        if( (rx_frame.id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID)
+            || (rx_frame.id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+            || (rx_frame.id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID) )
+        {
+            g_control_can.sendMsgBuf(
+                rx_frame.id,
+                CAN_STANDARD,
+                sizeof(rx_frame),
+                (uint8_t *) &rx_frame.data );
+        }
     }
 }
