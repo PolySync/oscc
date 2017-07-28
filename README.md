@@ -6,7 +6,7 @@ late model vehicle into an autonomous driving R&D machine.
 
 OSCC enables developers to intercept messages from the car's on-board OBD-II CAN network, forwarding reports on the states of various vehicle components, like steering angle or wheel speeds, into your application. After you've used this data in your algorithm, you can then use our API to send spoofed commands back into the car's ECUs. OSCC provides a modular and stable way of using software to interface with a vehicle's communications network and electrical system.
 
-Although we currently support late model Kia Souls, the API and firmware have been designed to make it easy to add new vehicle details as the specific details of other systems are determined. Additionally, the seperation between API and firmware means it is easier to modify and test parts of your program without having to update the flashed modules. 
+Although we currently support late model Kia Souls, the API and firmware have been designed to make it easy to add new vehicle details as the specific details of other systems are determined. Additionally, the seperation between API and firmware means it is easier to modify and test parts of your program without having to update the flashed modules.
 
 Our [Wiki](https://github.com/PolySync/OSCC/wiki) is in the process of being updated to reflect the new changes, but contains a bunch of valuable information to help you get started in understanding the details of the system.
 
@@ -50,8 +50,8 @@ Consult the following table for version compatibility.
 
 # Building and Uploading Firmware
 
-The OSCC Project is built around a number of individual firmware modules that interoperate to allow communication with your vehicle. 
-These modules are built from Arduinos and Arduino shields designed specifically for interfacing with various vehicle components. 
+The OSCC Project is built around a number of individual firmware modules that interoperate to allow communication with your vehicle.
+These modules are built from Arduinos and Arduino shields designed specifically for interfacing with various vehicle components.
 Once these modules have been installed in the vehicle and flashed with the firmware, the API can be used to
 recieve reports from the car and send spoofed commands.
 
@@ -106,10 +106,10 @@ If you'd like to build only a specific module, you can provide a target name to
 `make` for whichever module you'd like to build:
 
 ```
-make kia-soul-brake
-make kia-soul-can-gateway
-make kia-soul-steering
-make kia-soul-throttle
+make brake
+make gateway
+make steering
+make throttle
 ```
 
 ## Uploading the Firmware
@@ -124,7 +124,7 @@ is configured to expect each module to be `/dev/ttyACM0`, so if you connect a
 single module to your machine, you can flash it without changing anything:
 
 ```
-make kia-soul-throttle-upload
+make throttle-upload
 ```
 
 However, if you want to flash all modules, you need to change the ports in
@@ -140,7 +140,7 @@ cmake .. -DKIA_SOUL=ON -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWA
 Then you can flash all with one command:
 
 ```
-make kia-soul-all-upload
+make all-upload
 ```
 
 Sometimes it takes a little while for the Arduino to initialize once connected, so if there is an
@@ -175,8 +175,8 @@ module's `monitor-log` target to run `screen` and output to a file called
 `screenlog.0` in your current directory:
 
 ```
-make kia-soul-brake-monitor
-make kia-soul-brake-monitor-log
+make brake-monitor
+make brake-monitor-log
 ```
 
 You can exit `screen` with `C-a \`.
@@ -234,16 +234,16 @@ make run-unit-tests
 Each module's test can also be run individually:
 
 ```
-make run-kia-soul-brake-unit-tests
-make run-kia-soul-can-gateway-unit-tests
-make run-kia-soul-steering-unit-tests
-make run-kia-soul-throttle-unit-tests
+make run-brake-unit-tests
+make run-can-gateway-unit-tests
+make run-steering-unit-tests
+make run-throttle-unit-tests
 ```
 
 Or run only the tests of a single platform:
 
 ```
-make run-kia-soul-unit-tests
+make run-unit-tests
 ```
 
 If everything works correctly you should see something like this:
@@ -271,7 +271,7 @@ Feature: Receiving commands
       | 1024       | 4096      | 4096      |
 ```
 
-### Property-Based Tests
+## Property-Based Tests
 
 The throttle, steering, and brake modules, along with the PID controller library, also contain a series of
 property-based tests.
@@ -289,16 +289,16 @@ make run-property-tests
 Each module's test can also be run individually:
 
 ```
-make run-kia-soul-brake-property-tests
-make run-kia-soul-steering-property-tests
-make run-kia-soul-throttle-property-tests
+make run-brake-property-tests
+make run-steering-property-tests
+make run-throttle-property-tests
 make run-pid-library-property-tests
 ```
 
 Or run only the tests of a single platform:
 
 ```
-make run-kia-soul-property-tests
+make run-property-tests
 ```
 
 Once the tests have completed, the output should look similar to the following:
@@ -360,9 +360,9 @@ like you normally would.
 # Controlling Your Vehicle - an Example Application
 
 Now that all your Arduino modules are properly setup, it is time to start sending control commands.
-We've created an example application, joystick commander, that uses the OSCC API to interface with the firmware,allowing you to send commands using a game controller and recieve reports from the on-board. OBD-II CAN. These commands are converted into CAN messages, which the OSCC API sends to the respective Arduino modules and are used to actuate the vehicle.
+We've created an example application, joystick commander, that uses the OSCC API to interface with the firmware, allowing you to send commands using a game controller and receive reports from the on-board OBD-II CAN. These commands are converted into CAN messages, which the OSCC API sends to the respective Arduino modules and are used to actuate the vehicle.
 
-# LINK TO JOYSTICK COMMANDER REPO DUH
+[OSCC Joystick Commander](https://github.com/PolySync/oscc-joystick-commander)
 
 # OSCC API
 
@@ -374,7 +374,7 @@ oscc_error_t oscc_close( uint )
 ```
 
 These methods are the start and end points of using the OSCC API in your application. ```oscc_open``` will open a socket connection
-on the specified CAN channel, enabling it to quickly recieve reports from and send commands to the firmware modules. 
+on the specified CAN channel, enabling it to quickly recieve reports from and send commands to the firmware modules.
 When you are ready to terminate your application, ```oscc_close``` can terminate the connection.
 
 **Send enable or disable commands to all OSCC modules.**
@@ -410,11 +410,11 @@ oscc_error_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *re
 oscc_error_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame) )
 ```
 
-In order to recieve reports from the modules, your application will need to register a callback handler with the OSCC API. 
-When the appropriate report for your callback function is recieved from the API's socket connection, it will then forward the 
-report to your software. 
+In order to recieve reports from the modules, your application will need to register a callback handler with the OSCC API.
+When the appropriate report for your callback function is recieved from the API's socket connection, it will then forward the
+report to your software.
 
-In addition to OSCC specific reports, it will also forward any non-OSCC reports to any callback function registered with 
+In addition to OSCC specific reports, it will also forward any non-OSCC reports to any callback function registered with
 ```subscribe_to_obd_messages```. This can be used to view CAN frames recieved from the vehicle's OBD-II CAN channel. If you know
 the corresponding CAN frame's id, you can parse reports sent from the car.
 
@@ -448,4 +448,3 @@ Please direct questions regarding OSCC and/or licensing to help@polysync.io.
 *Distributed as-is; no warranty is given.*
 
 Copyright (c) 2017 PolySync Technologies, Inc.  All Rights Reserved.
-    

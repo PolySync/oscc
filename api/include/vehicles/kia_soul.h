@@ -189,7 +189,7 @@ typedef struct
  * @brief Derivative gain of the PID controller.
  *
  */
-#define BRAKE_PID_DERIVATIVE_GAIN ( 0.001 )
+#define BRAKE_PID_DERIVATIVE_GAIN ( 0.000 )
 
 /*
  * @brief Windup guard of the PID controller.
