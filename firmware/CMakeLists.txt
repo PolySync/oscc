@@ -1,3 +1,5 @@
+
+
 if(TESTS)
     cmake_minimum_required(VERSION 2.8)
 
@@ -11,42 +13,31 @@ if(TESTS)
         add_definitions(-DKIA_SOUL)
     endif()
 
-    add_subdirectory(kia_soul/brake/tests)
-    add_subdirectory(kia_soul/can_gateway/tests)
-    add_subdirectory(kia_soul/steering/tests)
-    add_subdirectory(kia_soul/throttle/tests)
+    add_subdirectory(brake/tests)
+    add_subdirectory(can_gateway/tests)
+    add_subdirectory(steering/tests)
+    add_subdirectory(throttle/tests)
     add_subdirectory(common/libs/pid/tests)
 
     add_custom_target(
-        run-kia-soul-unit-tests
+        run-unit-tests
         DEPENDS
-        run-kia-soul-brake-unit-tests
-        run-kia-soul-can-gateway-unit-tests
-        run-kia-soul-steering-unit-tests
-        run-kia-soul-throttle-unit-tests)
+        run-brake-unit-tests
+        run-can-gateway-unit-tests
+        run-steering-unit-tests
+        run-throttle-unit-tests)
 
     add_custom_target(
-        run-kia-soul-property-tests
+        run-property-tests
         DEPENDS
-        run-kia-soul-brake-property-tests
-        run-kia-soul-steering-property-tests
-        run-kia-soul-throttle-property-tests)
+        run-brake-property-tests
+        run-steering-property-tests
+        run-throttle-property-tests)
 
     add_custom_target(
         run-library-property-tests
         DEPENDS
         run-pid-library-property-tests)
-
-    add_custom_target(
-        run-unit-tests
-        DEPENDS
-        run-kia-soul-unit-tests)
-
-    add_custom_target(
-        run-property-tests
-        DEPENDS
-        run-kia-soul-property-tests
-        run-library-property-tests)
 
     add_custom_target(
         run-all-tests
@@ -60,8 +51,11 @@ else()
 
     project(firmware)
 
+    set(CMAKE_CFLAGS "-std=gnu11 -Os")
+    set(CMAKE_CXX_FLAGS "-std=gnu++11 -Os")
+
     option(DEBUG "Enable debug mode" OFF)
-    option(BUILD_KIA_SOUL "Build firmware for Kia Soul" OFF)
+    option(KIA_SOUL "Build firmware for Kia Soul" OFF)
 
     set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
     set(SERIAL_BAUD_BRAKE "115200" CACHE STRING "Serial baud rate of the brake module")
@@ -81,8 +75,20 @@ else()
 
     if(KIA_SOUL)
         add_definitions(-DKIA_SOUL)
-        add_subdirectory(kia_soul)
     else()
         message(WARNING "No platform selected - no firmware will be built")
     endif()
+
+    add_subdirectory(brake)
+    add_subdirectory(can_gateway)
+    add_subdirectory(steering)
+    add_subdirectory(throttle)
+
+    add_custom_target(
+        all-upload
+        DEPENDS
+        brake-upload
+        can-gateway-upload
+        steering-upload
+        throttle-upload)
 endif()
