@@ -40,7 +40,7 @@ typedef struct
 // Function:    set_accumulator_solenoid_duty_cycle
 //
 // Purpose:     Set the PWM that controls the "accumulator" solenoids to the
-//              the specified value.
+//              specified value.
 //
 // Returns:     void
 //
@@ -55,7 +55,7 @@ void set_accumulator_solenoid_duty_cycle(
 // Function:    set_release_solenoid_duty_cycle
 //
 // Purpose:     Set the PWM that controls the "release" solenoids to the
-//              the specified value.
+//              specified value.
 //
 // Returns:     void
 //
