@@ -10,7 +10,7 @@
 
 
 #ifdef KIA_SOUL
-#include "kia_soul.h"
+#include "vehicles/kia_soul.h"
 #endif
 
 

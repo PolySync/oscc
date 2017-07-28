@@ -6,7 +6,7 @@
 
 #include "mcp_can.h"
 #include "oscc_can.h"
-#include "vehicles/vehicles.h"
+#include "vehicles.h"
 
 #include "globals.h"
 #include "communications.h"

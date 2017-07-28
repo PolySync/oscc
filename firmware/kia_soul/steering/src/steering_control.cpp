@@ -11,7 +11,7 @@
 #include "oscc_dac.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "dtc.h"
-#include "vehicles/vehicles.h"
+#include "vehicles.h"
 
 #include "communications.h"
 #include "steering_control.h"
