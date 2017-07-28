@@ -271,7 +271,7 @@ Feature: Receiving commands
       | 1024       | 4096      | 4096      |
 ```
 
-### Property-Based Tests
+## Property-Based Tests
 
 The throttle, steering, and brake modules, along with the PID controller library, also contain a series of
 property-based tests.
