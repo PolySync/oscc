@@ -5,13 +5,6 @@ use std::env;
 use std::path::Path;
 
 fn main() {
-    println!("cargo:rerun-if-changed=../../include");
-    println!("cargo:rerun-if-changed=../../include/*");
-    println!("cargo:rerun-if-changed=../src");
-    println!("cargo:rerun-if-changed=../../src/*");
-    println!("cargo:rerun-if-changed=../../../../../common/testing/mocks");
-    println!("cargo:rerun-if-changed=../../../../../common/testing/mocks/*");
-
     gcc::Config::new()
         .flag("-w")
         .define("KIA_SOUL", Some("ON"))

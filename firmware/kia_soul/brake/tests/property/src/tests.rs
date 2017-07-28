@@ -100,6 +100,7 @@ fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, enabled: bool, oper
 }
 
 #[test]
+#[ignore]
 fn check_message_type_validity() {
     QuickCheck::new()
         .tests(1000)
@@ -127,7 +128,7 @@ fn prop_process_enable_command(mut brake_command_msg: oscc_brake_command_s) -> T
 }
 
 #[test]
-// #[ignore]
+#[ignore]
 fn check_process_enable_command() {
     QuickCheck::new()
         .tests(1000)
@@ -177,6 +178,7 @@ fn prop_output_accurate_spoofs(mut brake_command_msg: oscc_brake_command_s) -> T
 }
 
 #[test]
+#[ignore]
 fn check_output_accurate_spoofs() {
     QuickCheck::new()
         .tests(1000)
@@ -211,6 +213,7 @@ fn prop_output_constrained_spoofs(mut brake_command_msg: oscc_brake_command_s) -
 }
 
 #[test]
+#[ignore]
 fn check_output_constrained_spoofs() {
     QuickCheck::new()
         .tests(1000)
