@@ -1,12 +1,11 @@
 <img src="https://raw.githubusercontent.com/wiki/PolySync/OSCC/images/oscc_logo_title.png">
 
 
-The Open Source Car Control project is a hardware and software project that facilitates conversion of a
-late model vehicle into an autonomous driving R&D machine.
+Open Source Car Control (OSCC) is an assemblage of software and hardware designs that enable computer control of modern cars in order to facilitate the development of autonomous vehicle technology. It is a modular and stable way of using software to interface with a vehicle’s communications network and control systems.
 
-OSCC enables developers to intercept messages from the car's on-board OBD-II CAN network, forwarding reports on the states of various vehicle components, like steering angle or wheel speeds, into your application. After you've used this data in your algorithm, you can then use our API to send spoofed commands back into the car's ECUs. OSCC provides a modular and stable way of using software to interface with a vehicle's communications network and electrical system.
+OSCC enables developers to send control commands to the vehicle, read control messages from the vehicle’s OBD-II CAN network, and forward reports for current vehicle control state. Such as steering angle & wheel speeds. Control commands are issued to the vehicle component ECUs via the steering wheel torque sensor, throttle position sensor, and brake position sensor. (Because the gas-powered Kia Soul isn’t brake by-wire capable, an auxiliary actuator is added to enable braking.) This low-level interface means that OSCC offers full-range control of the vehicle without altering the factory safety-case, spoofing CAN messages, or hacking ADAS features.
 
-Although we currently support late model Kia Souls, the API and firmware have been designed to make it easy to add new vehicle details as the specific details of other systems are determined. Additionally, the separation between API and firmware means it is easier to modify and test parts of your program without having to update the flashed modules.
+Although we currently support only the 2014 or later Kia Soul (w/ Kia Soul EV & Kia Niro support coming in Q3/Q4 2017, respectively), the API and firmware have been designed to make it easy to add new vehicle support. Additionally, the separation between API and firmware means it is easier to modify and test parts of your program without having to update the flashed OSCC modules.
 
 Our [Wiki](https://github.com/PolySync/OSCC/wiki) is in the process of being updated to reflect the new changes, but contains a bunch of valuable information to help you get started in understanding the details of the system.
 
@@ -358,8 +357,8 @@ We've created an example application, joystick commander, that uses the OSCC API
 **Use provided CAN channel to open and close communications to CAN bus connected to the OSCC modules.**
 
 ```c
-oscc_error_t oscc_open( uint channel )
-oscc_error_t oscc_close( uint )
+oscc_result_t oscc_open( uint channel )
+oscc_result_t oscc_close( uint )
 ```
 
 These methods are the start and end points of using the OSCC API in your application. ```oscc_open``` will open a socket connection
@@ -369,8 +368,8 @@ When you are ready to terminate your application, ```oscc_close``` can terminate
 **Send enable or disable commands to all OSCC modules.**
 
 ```c
-oscc_error_t oscc_enable( void )
-oscc_error_t oscc_disable( void )
+oscc_result_t oscc_enable( void )
+oscc_result_t oscc_disable( void )
 ```
 
 After you have initialized your CAN connection to the firmware modules, these methods can be used to enable or disable the system. This
@@ -380,9 +379,9 @@ enabled, you can receive reports at any time.
 **Publish message with requested normalized value to the corresponding module.**
 
 ```c
-oscc_error_t publish_brake_position( double normalized_position )
-oscc_error_t publish_steering_torque( double normalized_torque )
-oscc_error_t publish_throttle_position( double normalized_position )
+oscc_result_t publish_brake_position( double normalized_position )
+oscc_result_t publish_steering_torque( double normalized_torque )
+oscc_result_t publish_throttle_position( double normalized_position )
 ```
 
 These commands will forward a double value, *[0.0, 1.0]*, to the specified firmware module. The API will construct the appropriate values
@@ -392,11 +391,11 @@ can be written onto the hardware.
 **Register callback function to be called when OBD message received from vehicle.**
 
 ```c
-oscc_error_t subscribe_to_brake_reports( void(*callback)(oscc_brake_report_s *report)  )
-oscc_error_t subscribe_to_steering_reports( void(*callback)(oscc_steering_report_s *report) )
-oscc_error_t subscribe_to_throttle_reports( void(*callback)(oscc_throttle_report_s *report) )
-oscc_error_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *report) )
-oscc_error_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame) )
+oscc_result_t subscribe_to_brake_reports( void(*callback)(oscc_brake_report_s *report)  )
+oscc_result_t subscribe_to_steering_reports( void(*callback)(oscc_steering_report_s *report) )
+oscc_result_t subscribe_to_throttle_reports( void(*callback)(oscc_throttle_report_s *report) )
+oscc_result_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *report) )
+oscc_result_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame) )
 ```
 
 In order to receive reports from the modules, your application will need to register a callback handler with the OSCC API.

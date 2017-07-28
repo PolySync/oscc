@@ -33,39 +33,42 @@ static void (*throttle_report_callback)(oscc_throttle_report_s *report);
 static void (*fault_report_callback)(oscc_fault_report_s *report);
 static void (*obd_frame_callback)(struct can_frame *frame);
 
-static oscc_error_t oscc_init_can(const char *can_channel);
-static oscc_error_t oscc_can_write(long id, void *msg, unsigned int dlc);
-static oscc_error_t oscc_async_enable(int socket);
-static oscc_error_t oscc_enable_brakes();
-static oscc_error_t oscc_enable_throttle();
-static oscc_error_t oscc_enable_steering();
-static oscc_error_t oscc_disable_brakes();
-static oscc_error_t oscc_disable_throttle();
-static oscc_error_t oscc_disable_steering();
-static void oscc_update_status();
+static oscc_result_t oscc_init_can( const char *can_channel );
+static oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc );
+static oscc_result_t oscc_async_enable( int socket );
+static oscc_result_t oscc_enable_brakes( void );
+static oscc_result_t oscc_enable_throttle( void );
+static oscc_result_t oscc_enable_steering( void );
+static oscc_result_t oscc_disable_brakes( void );
+static oscc_result_t oscc_disable_throttle( void );
+static oscc_result_t oscc_disable_steering( void );
+static void oscc_update_status( );
+static void oscc_init_commands( void );
 
-oscc_error_t oscc_open(unsigned int channel)
+oscc_result_t oscc_open( unsigned int channel )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     char buffer[16];
 
-    snprintf(buffer, 16, "can%1d", channel);
+    snprintf( buffer, 16, "can%1d", channel );
 
-    printf("Opening CAN channel: %s\n", buffer);
+    printf( "Opening CAN channel: %s\n", buffer );
 
-    ret = oscc_init_can(buffer);
+    ret = oscc_init_can( buffer );
+
+    oscc_init_commands( );
 
     return ret;
 }
 
-oscc_error_t oscc_close(unsigned int channel)
+oscc_result_t oscc_close( unsigned int channel )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
-    int result = close(can_socket);
+    int result = close( can_socket );
 
-    if (result > 0)
+    if ( result > 0 )
     {
         ret = OSCC_OK;
     }
@@ -73,51 +76,49 @@ oscc_error_t oscc_close(unsigned int channel)
     return ret;
 }
 
-oscc_error_t oscc_enable()
+oscc_result_t oscc_enable( void )
 {
-    oscc_error_t ret = oscc_enable_brakes();
+    oscc_result_t ret = oscc_enable_brakes( );
 
-    if (ret == OSCC_OK)
+    if (ret == OSCC_OK )
     {
-        ret = oscc_enable_throttle();
+        ret = oscc_enable_throttle( );
 
-        if (ret == OSCC_OK)
+        if (ret == OSCC_OK )
         {
-            ret = oscc_enable_steering();
+            ret = oscc_enable_steering( );
         }
     }
 
     return ret;
 }
 
-oscc_error_t oscc_disable()
+oscc_result_t oscc_disable( void )
 {
-    oscc_error_t ret = oscc_disable_brakes();
+    oscc_result_t ret = oscc_disable_brakes( );
 
-    if (ret == OSCC_OK)
+    if ( ret == OSCC_OK )
     {
-        ret = oscc_disable_throttle();
+        ret = oscc_disable_throttle( );
 
-        if (ret == OSCC_OK)
+        if ( ret == OSCC_OK )
         {
-            ret = oscc_disable_steering();
+            ret = oscc_disable_steering( );
         }
     }
 
     return ret;
 }
 
-oscc_error_t oscc_publish_brake_position(double brake_position)
+oscc_result_t oscc_publish_brake_position( double brake_position )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     const double scaled_position = (double) CONSTRAIN (
             brake_position * MAXIMUM_BRAKE_COMMAND,
             MINIMUM_BRAKE_COMMAND,
             MAXIMUM_BRAKE_COMMAND );
 
-    brake_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    brake_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( scaled_position );
 
     ret = oscc_can_write(
@@ -128,9 +129,9 @@ oscc_error_t oscc_publish_brake_position(double brake_position)
     return ret;
 }
 
-oscc_error_t oscc_publish_throttle_position(double throttle_position)
+oscc_result_t oscc_publish_throttle_position( double throttle_position )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     const double scaled_position = CONSTRAIN(
         throttle_position * MAXIMUM_THROTTLE_COMMAND,
@@ -151,8 +152,6 @@ oscc_error_t oscc_publish_throttle_position(double throttle_position)
         THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
         THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX);
 
-    throttle_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    throttle_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     throttle_cmd.spoof_value_low = spoof_value_low;
     throttle_cmd.spoof_value_high = spoof_value_high;
 
@@ -164,9 +163,9 @@ oscc_error_t oscc_publish_throttle_position(double throttle_position)
     return ret;
 }
 
-oscc_error_t oscc_publish_steering_torque(double torque)
+oscc_result_t oscc_publish_steering_torque( double torque )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     const double scaled_torque = CONSTRAIN(
         torque * MAXIMUM_TORQUE_COMMAND,
@@ -187,8 +186,6 @@ oscc_error_t oscc_publish_steering_torque(double torque)
         STEERING_SPOOF_SIGNAL_MIN,
         STEERING_SPOOF_SIGNAL_MAX);
 
-    steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
     steering_cmd.spoof_value_low = spoof_value_low;
     steering_cmd.spoof_value_high = spoof_value_high;
 
@@ -200,11 +197,11 @@ oscc_error_t oscc_publish_steering_torque(double torque)
     return ret;
 }
 
-oscc_error_t oscc_subscribe_to_brake_reports(void (*callback)(oscc_brake_report_s *report))
+oscc_result_t oscc_subscribe_to_brake_reports( void (*callback)(oscc_brake_report_s *report) )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
-    if (callback != NULL)
+    if ( callback != NULL )
     {
         brake_report_callback = callback;
         ret = OSCC_OK;
@@ -213,11 +210,11 @@ oscc_error_t oscc_subscribe_to_brake_reports(void (*callback)(oscc_brake_report_
     return ret;
 }
 
-oscc_error_t oscc_subscribe_to_throttle_reports(void (*callback)(oscc_throttle_report_s *report))
+oscc_result_t oscc_subscribe_to_throttle_reports( void (*callback)(oscc_throttle_report_s *report) )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
-    if (callback != NULL)
+    if ( callback != NULL )
     {
         throttle_report_callback = callback;
         ret = OSCC_OK;
@@ -226,11 +223,11 @@ oscc_error_t oscc_subscribe_to_throttle_reports(void (*callback)(oscc_throttle_r
     return ret;
 }
 
-oscc_error_t oscc_subscribe_to_steering_reports(void (*callback)(oscc_steering_report_s *report))
+oscc_result_t oscc_subscribe_to_steering_reports( void (*callback)(oscc_steering_report_s *report))
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
-    if (callback != NULL)
+    if ( callback != NULL )
     {
         steering_report_callback = callback;
         ret = OSCC_OK;
@@ -239,11 +236,11 @@ oscc_error_t oscc_subscribe_to_steering_reports(void (*callback)(oscc_steering_r
     return ret;
 }
 
-oscc_error_t oscc_subscribe_to_fault_reports(void (*callback)(oscc_fault_report_s *report))
+oscc_result_t oscc_subscribe_to_fault_reports( void (*callback)(oscc_fault_report_s *report))
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
-    if (callback != NULL)
+    if ( callback != NULL )
     {
         fault_report_callback = callback;
         ret = OSCC_OK;
@@ -252,11 +249,11 @@ oscc_error_t oscc_subscribe_to_fault_reports(void (*callback)(oscc_fault_report_
     return ret;
 }
 
-oscc_error_t oscc_subscribe_to_obd_messages(void (*callback)(struct can_frame *frame))
+oscc_result_t oscc_subscribe_to_obd_messages( void (*callback)(struct can_frame *frame))
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
-    if (callback != NULL)
+    if ( callback != NULL )
     {
         obd_frame_callback = callback;
         ret = OSCC_OK;
@@ -265,149 +262,149 @@ oscc_error_t oscc_subscribe_to_obd_messages(void (*callback)(struct can_frame *f
     return ret;
 }
 
-static oscc_error_t oscc_enable_brakes()
+static oscc_result_t oscc_enable_brakes( void )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     brake_cmd.enable = 1;
 
-    ret = oscc_publish_brake_position(0);
+    ret = oscc_publish_brake_position( 0 );
 
     return ret;
 }
 
-static oscc_error_t oscc_enable_throttle()
+static oscc_result_t oscc_enable_throttle( void )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     throttle_cmd.enable = 1;
 
-    ret = oscc_publish_throttle_position(0);
+    ret = oscc_publish_throttle_position( 0 );
 
     return ret;
 }
 
-static oscc_error_t oscc_enable_steering()
+static oscc_result_t oscc_enable_steering( void )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     steering_cmd.enable = 1;
 
-    ret = oscc_publish_steering_torque(0);
+    ret = oscc_publish_steering_torque( 0 );
 
     return ret;
 }
 
-static oscc_error_t oscc_disable_brakes()
+static oscc_result_t oscc_disable_brakes( void )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     brake_cmd.enable = 0;
 
-    ret = oscc_publish_brake_position(0);
+    ret = oscc_publish_brake_position( 0 );
 
     return ret;
 }
 
-static oscc_error_t oscc_disable_throttle()
+static oscc_result_t oscc_disable_throttle( void )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     throttle_cmd.enable = 0;
 
-    ret = oscc_publish_throttle_position(0);
+    ret = oscc_publish_throttle_position( 0 );
 
     return ret;
 }
 
-static oscc_error_t oscc_disable_steering()
+static oscc_result_t oscc_disable_steering( void )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     steering_cmd.enable = 0;
 
-    ret = oscc_publish_steering_torque(0);
+    ret = oscc_publish_steering_torque( 0 );
 
     return ret;
 }
 
-static void oscc_update_status()
+static void oscc_update_status( )
 {
     struct can_frame rx_frame;
 
-    int result = read(can_socket, &rx_frame, CAN_MTU);
+    int result = read( can_socket, &rx_frame, CAN_MTU );
 
-    while (result > 0)
+    while ( result > 0 )
     {
         if ( (rx_frame.data[0] == OSCC_MAGIC_BYTE_0)
             && (rx_frame.data[1] = OSCC_MAGIC_BYTE_1) )
         {
-            if (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID)
+            if ( rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID )
             {
                 oscc_steering_report_s *steering_report =
                     (oscc_steering_report_s *)rx_frame.data;
 
-                if (steering_report_callback != NULL)
+                if ( steering_report_callback != NULL )
                 {
                     steering_report_callback( steering_report );
                 }
             }
-            else if (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID)
+            else if ( rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID )
             {
                 oscc_throttle_report_s *throttle_report =
-                    (oscc_throttle_report_s *)rx_frame.data;
+                    ( oscc_throttle_report_s *)rx_frame.data;
 
-                if (throttle_report_callback != NULL)
+                if ( throttle_report_callback != NULL )
                 {
                     throttle_report_callback( throttle_report );
                 }
             }
-            else if (rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID)
+            else if ( rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID )
             {
                 oscc_brake_report_s *brake_report =
-                    (oscc_brake_report_s *)rx_frame.data;
+                    ( oscc_brake_report_s *)rx_frame.data;
 
-                if (brake_report_callback != NULL)
+                if ( brake_report_callback != NULL )
                 {
                     brake_report_callback( brake_report );
                 }
             }
-            else if (rx_frame.can_id == OSCC_FAULT_REPORT_CAN_ID)
+            else if ( rx_frame.can_id == OSCC_FAULT_REPORT_CAN_ID )
             {
                 oscc_fault_report_s *fault_report =
-                    (oscc_fault_report_s *)rx_frame.data;
+                    ( oscc_fault_report_s *)rx_frame.data;
 
-                if (fault_report_callback != NULL)
+                if ( fault_report_callback != NULL )
                 {
-                    fault_report_callback(fault_report);
+                    fault_report_callback( fault_report );
                 }
             }
         }
         else
         {
-            if (obd_frame_callback != NULL)
+            if ( obd_frame_callback != NULL )
             {
-                obd_frame_callback(&rx_frame);
+                obd_frame_callback( &rx_frame );
             }
         }
 
-        result = read(can_socket, &rx_frame, CAN_MTU);
+        result = read( can_socket, &rx_frame, CAN_MTU );
     }
 }
 
-static oscc_error_t oscc_can_write(long id, void *msg, unsigned int dlc)
+static oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
     struct can_frame tx_frame;
 
     tx_frame.can_id = id;
     tx_frame.can_dlc = dlc;
-    memcpy(tx_frame.data, msg, dlc);
+    memcpy( tx_frame.data, msg, dlc);
 
-    int result = write(can_socket, &tx_frame, sizeof(tx_frame));
+    int result = write( can_socket, &tx_frame, sizeof(tx_frame ));
 
-    if (result > 0)
+    if ( result > 0 )
     {
         ret = OSCC_OK;
     }
@@ -415,40 +412,40 @@ static oscc_error_t oscc_can_write(long id, void *msg, unsigned int dlc)
     return ret;
 }
 
-static oscc_error_t oscc_async_enable(int socket)
+static oscc_result_t oscc_async_enable( int socket )
 {
-    oscc_error_t ret = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
-   ret = fcntl(socket, F_SETOWN, getpid());
-
-   if (ret < 0 )
-   {
-       printf("set own failed\n");
-   }
-
-   ret = fcntl(socket, F_SETFL, FASYNC | O_NONBLOCK);
+   ret = fcntl( socket, F_SETOWN, getpid( ) );
 
    if ( ret < 0 )
    {
-       printf("set async failed\n");
+       printf( "set own failed\n" );
+   }
+
+   ret = fcntl( socket, F_SETFL, FASYNC | O_NONBLOCK );
+
+   if ( ret < 0 )
+   {
+       printf( "set async failed\n" );
    }
 
     return ret;
 }
 
-static oscc_error_t oscc_init_can(const char *can_channel)
+static oscc_result_t oscc_init_can( const char *can_channel )
 {
     int ret = OSCC_OK;
 
     struct sigaction sig;
     sig.sa_handler = oscc_update_status;
-    sigaction(SIGIO, &sig, NULL);
+    sigaction( SIGIO, &sig, NULL );
 
-    int s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    int s = socket( PF_CAN, SOCK_RAW, CAN_RAW );
 
-    if (s < 0)
+    if ( s < 0 )
     {
-        printf("opening can socket failed\n");
+        printf( "opening can socket failed\n" );
 
         ret = OSCC_ERROR;
     }
@@ -457,57 +454,69 @@ static oscc_error_t oscc_init_can(const char *can_channel)
 
     struct ifreq ifr;
 
-    if (ret != OSCC_ERROR)
+    if ( ret != OSCC_ERROR )
     {
-        strncpy(ifr.ifr_name, can_channel, IFNAMSIZ);
+        strncpy( ifr.ifr_name, can_channel, IFNAMSIZ );
 
-        status = ioctl(s, SIOCGIFINDEX, &ifr);
+        status = ioctl( s, SIOCGIFINDEX, &ifr );
 
-        if (status < 0)
+        if ( status < 0 )
         {
-            printf("finding can index failed\n");
+            printf( "finding can index failed\n" );
 
             ret = OSCC_ERROR;
         }
     }
 
-    if (ret != OSCC_ERROR)
+    if ( ret != OSCC_ERROR )
     {
         struct sockaddr_can can_address;
 
         can_address.can_family = AF_CAN;
         can_address.can_ifindex = ifr.ifr_ifindex;
 
-        status = bind(s,
+        status = bind( s,
                       (struct sockaddr *)&can_address,
                       sizeof(can_address));
 
-        if (status < 0)
+        if ( status < 0 )
         {
-            printf("socket binding failed\n");
+            printf( "socket binding failed\n" );
 
             ret = OSCC_ERROR;
         }
     }
 
-    if (ret != OSCC_ERROR)
+    if ( ret != OSCC_ERROR )
     {
         can_socket = s;
 
         ret = OSCC_OK;
     }
 
-    if (ret != OSCC_ERROR)
+    if ( ret != OSCC_ERROR )
     {
-        status = oscc_async_enable(s);
+        status = oscc_async_enable( s );
 
-        if (status != OSCC_OK)
+        if ( status != OSCC_OK )
         {
-            printf("async enable failed\n");
+            printf( "async enable failed\n" );
 
             ret = OSCC_ERROR;
         }
     }
 
     return ret;
+}
+
+static void oscc_init_commands( void )
+{
+    brake_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    brake_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
+
+    throttle_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    throttle_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
+
+    steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
+    steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
 }
