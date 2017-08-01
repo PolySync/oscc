@@ -26,26 +26,34 @@ purchased as a kit from the [OSCC website](http://oscc.io).
 Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://macrofab.com/) for
 help designing and manufacturing the custom boards.
 
-## Versions
+## Compatibility
 
-It's important that the correct version of the firmware is used with the
-correct versions of the module boards. As the boards are updated with additional
-pins and other features, the firmware is modified accordingly to use them.
-Mismatched versions will cause problems.
+Your hardware version is printed on the front of the OSCC shield.
 
-*Your hardware version is printed on the front of the OSCC shield.*
+### Kia Soul (2014-2017)
 
-Consult the following table for version compatibility.
+#### Steering (Sensor Interface Board)
+| Board Version | Firmware Version |
+| ------------- | ---------------- |
+| >= 1.0.0      | >= 1.0.0         |
 
-| Actuator Board | Firmware  |
-| -------------- | --------  |
-| >= v1.1.0      | >= v0.7   |
+#### CAN Gateway (Sensor Interface Board)
+| Board Version | Firmware Version |
+| ------------- | ---------------- |
+| >= 1.0.0      | >= 1.0.0         |
 
-| Sensor Interface Board | Firmware  |
-| ---------------------- | --------- |
-| >= v1.1.0              | >= v0.7   |
+#### Throttle (Sensor Interface Board)
+| Board Version | Firmware Version |
+| ------------- | ---------------- |
+| >= 1.0.0      | >= 1.0.0         |
 
+#### Brake (Actuator Control Board)
+| Board Version | Firmware Version |
+| ------------- | ---------------- |
+| 1.0.0 - 1.0.1 | >= 1.0.1 __*__       |
+| >= 1.0.0      | >= 1.0.0         |
 
+__*__ *Later versions of the actuator control board utilize new pins to perform additional safety checks on startup. To use the new firmware on older models, please see additional instructions in the [build](#startup-test) section.*
 
 # Building and Uploading Firmware
 
@@ -92,6 +100,8 @@ enabled, use the following instead:
 ```
 cmake .. -DKIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release
 ```
+
+<a name="startup-test"></a>*For older (< 1.1.0) versions of the actuator control board, you need to set an additional flag using `cmake .. -DKIA_SOUL=ON -DBRAKE_STARTUP_TEST=OFF` to disable startup tests that are not compatible with the previous board design.*
 
 This will generate the necessary files for building.
 
