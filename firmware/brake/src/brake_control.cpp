@@ -198,7 +198,9 @@ void brake_init( void )
     disable_brake_lights( );
     pinMode( PIN_BRAKE_LIGHT, OUTPUT );
 
+#ifdef BRAKE_STARTUP_TEST
     startup_check( );
+#endif
 }
 
 
