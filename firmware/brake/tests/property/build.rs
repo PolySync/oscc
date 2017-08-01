@@ -16,7 +16,6 @@ fn main() {
         .include("../../../common/libs/time")
         .include("../../../common/libs/pid")
         .include("../../../../api/include")
-        .include("/usr/include")
         .file("../../../common/testing/mocks/Arduino_mock.cpp")
         .file("../../../common/testing/mocks/mcp_can_mock.cpp")
         .file("../../src/communications.cpp")
@@ -26,7 +25,6 @@ fn main() {
         .file("../../src/helper.cpp")
         .file("../../../common/libs/can/oscc_can.cpp")
         .cpp(true)
-        .compiler("/usr/bin/g++")
         .compile("libbrake_test.a");
 
     let out_dir = env::var("OUT_DIR").unwrap();
