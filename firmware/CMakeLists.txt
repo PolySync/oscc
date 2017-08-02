@@ -56,6 +56,7 @@ else()
 
     option(DEBUG "Enable debug mode" OFF)
     option(KIA_SOUL "Build firmware for Kia Soul" OFF)
+    option(BRAKE_STARTUP_TEST "Enable brake startup sensor tests" ON)
 
     set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
     set(SERIAL_BAUD_BRAKE "115200" CACHE STRING "Serial baud rate of the brake module")
@@ -77,6 +78,12 @@ else()
         add_definitions(-DKIA_SOUL)
     else()
         message(WARNING "No platform selected - no firmware will be built")
+    endif()
+
+    if(BRAKE_STARTUP_TEST)
+        add_definitions(-DBRAKE_STARTUP_TEST)
+    else()
+        message(WARNING "Brake sensor startup tests disabled")
     endif()
 
     add_subdirectory(brake)
