@@ -197,6 +197,12 @@ Any changes to the OSCC modules must undergo a series of tests that conclude wit
     4. The regression test suite completes successfully
     5. The [system acceptance tests](#system-acceptance-testing) completes successfully (system acceptance test listed below, some parts automated)
   - Once all the status checks have passed, resolve any merge conflicts and merge the changed branch with devel
+    1. The merge commit will need to be signed, which means local, command-line
+       merge rather than GitHub UI.
+    2. The [hub](https://hub.github.com/) tool can help with this.
+    3. `git checkout devel`
+    4. `hub merge --no-ff https://github.com/PolySync/oscc/pull/169`
+    5. `git push origin devel`
 
 ## System Acceptance Testing
 
