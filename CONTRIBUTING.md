@@ -76,6 +76,11 @@ Below is a sample of how additional vehicle directories should be created.
 
 - Code should conform to the [coding standard](#oscc-coding-standard)
 - Push your changes to a topic branch in your branch of the repository
+- Ideally, your commits would also be [GPG signed](https://help.github.com/articles/signing-commits-using-gpg/)
+  - `git config --global commit.gpgSign true`
+  - `git config --global gpg.program gpg2`
+  - `git config --global push.gpgSign if-asked`
+  - `git config --global user.signingKey <Your Public Key ID>`
 - Submit a pull request to the repository in the PolySync organization
 - Update your github issue to mark that you have submitted code and are ready for it to be reviewed (Status: Ready for Merge)
   - Include a link to the pull request in the ticket
