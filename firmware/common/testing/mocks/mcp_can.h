@@ -22,7 +22,6 @@ class MCP_CAN
         uint8_t begin(uint8_t speedset);
         uint8_t sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t *buf);
         uint8_t readMsgBufID(uint32_t *ID, uint8_t *len, uint8_t *buf);
-        uint8_t checkReceive(void);
 };
 
 #endif
