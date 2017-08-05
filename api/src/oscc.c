@@ -176,15 +176,15 @@ oscc_result_t oscc_publish_steering_torque( double torque )
 
     spoof_value_low = CONSTRAIN(
         spoof_value_low,
-        STEERING_SPOOF_SIGNAL_MIN,
-        STEERING_SPOOF_SIGNAL_MAX);
+        STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
+        STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX);
 
     uint16_t spoof_value_high = STEERING_TORQUE_TO_SPOOF_HIGH( scaled_torque );
 
     spoof_value_high = CONSTRAIN(
         spoof_value_high,
-        STEERING_SPOOF_SIGNAL_MIN,
-        STEERING_SPOOF_SIGNAL_MAX);
+        STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+        STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX);
 
     steering_cmd.spoof_value_low = spoof_value_low;
     steering_cmd.spoof_value_high = spoof_value_high;
