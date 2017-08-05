@@ -109,14 +109,14 @@ void update_steering(
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
-                STEERING_SPOOF_SIGNAL_MIN,
-                STEERING_SPOOF_SIGNAL_MAX );
+                STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+                STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX );
 
         uint16_t spoof_low =
             constrain(
                 spoof_command_low,
-                STEERING_SPOOF_SIGNAL_MIN,
-                STEERING_SPOOF_SIGNAL_MAX );
+                STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
+                STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
         cli();
         g_dac.outputA( spoof_high );
@@ -174,8 +174,8 @@ static void read_torque_sensor(
     steering_torque_s * value )
 {
     cli();
-    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH );
-    value->low = analogRead( PIN_TORQUE_SENSOR_LOW );
+    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
+    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
 }
 
