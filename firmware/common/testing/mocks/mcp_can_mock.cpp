@@ -26,11 +26,6 @@ uint8_t MCP_CAN::begin(uint8_t speedset)
     return CAN_OK;
 }
 
-uint8_t MCP_CAN::checkReceive(void)
-{
-    return g_mock_mcp_can_check_receive_return;
-}
-
 uint8_t MCP_CAN::sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t *buf)
 {
     g_mock_mcp_can_send_msg_buf_id = id;
@@ -46,6 +41,12 @@ uint8_t MCP_CAN::sendMsgBuf(uint32_t id, uint8_t ext, uint8_t len, uint8_t *buf)
 
 uint8_t MCP_CAN::readMsgBufID(uint32_t *ID, uint8_t *len, uint8_t *buf)
 {
+    if( g_mock_mcp_can_check_receive_return != CAN_MSGAVAIL)
+    {
+        *len = 0;
+        return CAN_NOMSG;
+    }
+
     *ID = g_mock_mcp_can_read_msg_buf_id;
     *len = 8;
 

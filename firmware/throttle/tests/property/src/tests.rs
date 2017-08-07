@@ -13,27 +13,16 @@ use quickcheck::{QuickCheck, TestResult, Arbitrary, StdGen, Gen};
 use rand::Rng;
 
 extern "C" {
-    #[link_name = "g_mock_mcp_can_check_receive_return"]
     pub static mut g_mock_mcp_can_check_receive_return: u8;
-    #[link_name = "g_mock_mcp_can_read_msg_buf_id"]
     pub static mut g_mock_mcp_can_read_msg_buf_id: u32;
-    #[link_name = "g_mock_mcp_can_read_msg_buf_buf"]
     pub static mut g_mock_mcp_can_read_msg_buf_buf: [u8; 8usize];
-    #[link_name = "g_mock_mcp_can_send_msg_buf_id"]
     pub static mut g_mock_mcp_can_send_msg_buf_id: u32;
-    #[link_name = "g_mock_mcp_can_send_msg_buf_ext"]
     pub static mut g_mock_mcp_can_send_msg_buf_ext: u8;
-    #[link_name = "g_mock_mcp_can_send_msg_buf_len"]
     pub static mut g_mock_mcp_can_send_msg_buf_len: u8;
-    #[link_name = "g_mock_mcp_can_send_msg_buf_buf"]
     pub static mut g_mock_mcp_can_send_msg_buf_buf: *mut u8;
-    #[link_name = "g_mock_arduino_analog_read_return"]
     pub static mut g_mock_arduino_analog_read_return: isize;
-    #[link_name = "g_mock_dac_output_a"]
     pub static mut g_mock_dac_output_a: u16;
-    #[link_name = "g_mock_dac_output_b"]
     pub static mut g_mock_dac_output_b: u16;
-    #[link_name = "g_throttle_control_state"]
     pub static mut g_throttle_control_state: throttle_control_state_s;
 }
 
