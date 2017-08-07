@@ -294,7 +294,7 @@ typedef struct
  * @brief Maximum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3000 )
+#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2995 )
 
 /*
  * @brief Minimum allowable torque value.
@@ -372,7 +372,7 @@ typedef struct
  *        [degrees/microsecond]
  *
  */
-#define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 3000 )
+#define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 750 )
 
 
 
