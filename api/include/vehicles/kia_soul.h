@@ -276,13 +276,25 @@ typedef struct
  * @brief Minimum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_SIGNAL_MIN ( 868.0 )
+#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN ( 1000 )
 
 /*
  * @brief Maximum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_SIGNAL_MAX ( 3031.0 )
+#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX ( 2965 )
+
+/*
+ * @brief Minimum allowable steering DAC output. [steps]
+ *
+ */
+#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 1030 )
+
+/*
+ * @brief Maximum allowable steering DAC output. [steps]
+ *
+ */
+#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2995 )
 
 /*
  * @brief Minimum allowable torque value.
@@ -307,25 +319,25 @@ typedef struct
  * @brief Scalar value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.05 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.12 )
 
 /*
  * @brief Offset value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.42 )
 
 /*
  * @brief Scalar value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.05 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.12 )
 
 /*
  * @brief Offset value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.46 )
 
 /*
  * @brief Calculation to convert a steering angle to a high spoof value.
