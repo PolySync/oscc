@@ -12,21 +12,13 @@ extern crate rand;
 use quickcheck::{QuickCheck, TestResult, Arbitrary, Gen, StdGen};
 
 extern "C" {
-    #[link_name = "g_mock_mcp_can_check_receive_return"]
     pub static mut g_mock_mcp_can_check_receive_return: u8;
-    #[link_name = "g_mock_mcp_can_read_msg_buf_id"]
     pub static mut g_mock_mcp_can_read_msg_buf_id: u32;
-    #[link_name = "g_mock_mcp_can_read_msg_buf_buf"]
     pub static mut g_mock_mcp_can_read_msg_buf_buf: [u8; 8usize];
-    #[link_name = "g_mock_mcp_can_send_msg_buf_id"]
     pub static mut g_mock_mcp_can_send_msg_buf_id: u32;
-    #[link_name = "g_mock_mcp_can_send_msg_buf_ext"]
     pub static mut g_mock_mcp_can_send_msg_buf_ext: u8;
-    #[link_name = "g_mock_mcp_can_send_msg_buf_len"]
     pub static mut g_mock_mcp_can_send_msg_buf_len: u8;
-    #[link_name = "g_mock_mcp_can_send_msg_buf_buf"]
     pub static mut g_mock_mcp_can_send_msg_buf_buf: *mut u8;
-    #[link_name = "g_mock_arduino_analog_read_return"]
     pub static mut g_mock_arduino_analog_read_return: isize;
 }
 

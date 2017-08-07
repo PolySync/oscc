@@ -23,6 +23,7 @@ fn main() {
         .file("../../src/communications.cpp")
         .file("../../src/throttle_control.cpp")
         .file("../../src/globals.cpp")
+        .cpp(true)
         .compile("libthrottle_test.a");
 
     let out_dir = env::var("OUT_DIR").unwrap();

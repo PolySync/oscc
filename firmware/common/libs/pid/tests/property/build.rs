@@ -9,7 +9,6 @@ fn main() {
         .flag("-w")
         .file("../../oscc_pid.cpp")
         .cpp(true)
-        .compiler("/usr/bin/g++")
         .compile("libpid_test.a");
 
     let out_dir = env::var("OUT_DIR").unwrap();
