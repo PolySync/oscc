@@ -355,16 +355,16 @@ typedef struct
  * @brief Minimum allowed value for the high spoof signal value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) (STEPS_PER_VOLT\
-            * ((TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
+#define STEERING_TORQUE_TO_VOLTS_HIGH( torque ) (
+            ((TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
             + TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Calculation to convert a steering torque to a low spoof value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) (STEPS_PER_VOLT\
-            * ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
+#define STEERING_TORQUE_TO_VOLTS_LOW( torque ) (
+            ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
             + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
@@ -397,16 +397,16 @@ typedef struct
  * @brief Calculation to convert a throttle position to a high spoof value.
  *
  */
-#define THROTTLE_POSITION_TO_SPOOF_HIGH( position ) (STEPS_PER_VOLT\
-            * ((THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
+#define THROTTLE_POSITION_TO_VOLTS_HIGH( position ) (
+            ((THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
             + THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Calculation to convert a throttle position to a low spoof value.
  *
  */
-#define THROTTLE_POSITION_TO_SPOOF_LOW( position ) (STEPS_PER_VOLT\
-            * ((THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
+#define THROTTLE_POSITION_TO_VOLTS_LOW( position ) (
+            ((THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
             + THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
