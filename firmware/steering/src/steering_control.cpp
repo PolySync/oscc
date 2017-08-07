@@ -174,8 +174,8 @@ static void read_torque_sensor(
     steering_torque_s * value )
 {
     cli();
-    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
-    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
+    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH );
+    value->low = analogRead( PIN_TORQUE_SENSOR_LOW );
     sei();
 }
 

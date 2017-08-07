@@ -268,7 +268,7 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
 
         check_for_operator_override();
 
-        if (analog_read_spoof << 2) >= (OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as u16) {
+        if analog_read_spoof >= (OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as u16) {
             TestResult::from_bool(g_steering_control_state.operator_override == true && g_steering_control_state.enabled == false &&
             g_mock_mcp_can_send_msg_buf_id == OSCC_FAULT_REPORT_CAN_ID)
         } else {
