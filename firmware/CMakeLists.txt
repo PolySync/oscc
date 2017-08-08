@@ -1,5 +1,3 @@
-
-
 if(TESTS)
     cmake_minimum_required(VERSION 2.8)
 
@@ -9,15 +7,15 @@ if(TESTS)
         add_definitions(-DDEBUG)
     endif()
 
-    if(KIA_SOUL)
-        add_definitions(-DKIA_SOUL)
-    endif()
+    if(KIA_SOUL_PETROL)
+        add_definitions(-DKIA_SOUL_PETROL)
 
-    add_subdirectory(brake/tests)
-    add_subdirectory(can_gateway/tests)
-    add_subdirectory(steering/tests)
-    add_subdirectory(throttle/tests)
-    add_subdirectory(common/libs/pid/tests)
+        add_subdirectory(brake/kia_soul_petrol/tests)
+        add_subdirectory(can_gateway/tests)
+        add_subdirectory(steering/tests)
+        add_subdirectory(throttle/tests)
+        add_subdirectory(common/libs/pid/tests)
+    endif()
 
     add_custom_target(
         run-unit-tests
@@ -55,7 +53,7 @@ else()
     set(CMAKE_CXX_FLAGS "-std=gnu++11 -Os")
 
     option(DEBUG "Enable debug mode" OFF)
-    option(KIA_SOUL "Build firmware for Kia Soul" OFF)
+    option(KIA_SOUL_PETROL "Build firmware for the petrol Kia Soul" OFF)
     option(BRAKE_STARTUP_TEST "Enable brake startup sensor tests" ON)
 
     set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
@@ -74,8 +72,8 @@ else()
         add_definitions(-DDEBUG)
     endif()
 
-    if(KIA_SOUL)
-        add_definitions(-DKIA_SOUL)
+    if(KIA_SOUL_PETROL)
+        add_definitions(-DKIA_SOUL_PETROL)
     else()
         message(WARNING "No platform selected - no firmware will be built")
     endif()

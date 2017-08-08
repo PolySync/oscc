@@ -90,7 +90,7 @@ To generate Makefiles, tell CMake which platform to build firmware for. For exam
 firmware for the Kia Soul:
 
 ```
-cmake .. -DKIA_SOUL=ON
+cmake .. -DKIA_SOUL_PETROL=ON
 ```
 
 By default, your firmware will have debug symbols which is good for debugging but increases
@@ -98,10 +98,10 @@ the size of the firmware significantly. To compile without debug symbols and opt
 enabled, use the following instead:
 
 ```
-cmake .. -DKIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release
+cmake .. -DKIA_SOUL_PETROL=ON -DCMAKE_BUILD_TYPE=Release
 ```
 
-<a name="startup-test"></a>*For older (< 1.1.0) versions of the actuator control board, you need to set an additional flag using `cmake .. -DKIA_SOUL=ON -DBRAKE_STARTUP_TEST=OFF` to disable startup tests that are not compatible with the previous board design.*
+<a name="startup-test"></a>*For older (< 1.1.0) versions of the actuator control board, you need to set an additional flag using `cmake .. -DKIA_SOUL_PETROL=ON -DBRAKE_STARTUP_TEST=OFF` to disable startup tests that are not compatible with the previous board design.*
 
 This will generate the necessary files for building.
 
@@ -143,7 +143,7 @@ throttle) so that they are assigned `/dev/ttyACM0` through `/dev/ttyACM3` in
 a known order. You can then change the ports during the `cmake ..` step:
 
 ```
-cmake .. -DKIA_SOUL=ON -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
+cmake .. -DKIA_SOUL_PETROL=ON -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
 ```
 
 Then you can flash all with one command:
@@ -176,7 +176,7 @@ the module you want to monitor is connected to
 ports for each module). The default baud rate is `115200` but you can change it:
 
 ```
-cmake .. -DKIA_SOUL=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
+cmake .. -DKIA_SOUL_PETROL=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
 ```
 
 You can use a module's `monitor` target to automatically run `screen`, or a
@@ -207,13 +207,13 @@ CMake to build the tests instead of the firmware with the `-DTESTS=ON` flag. We 
 the `-DCMAKE_BUILD_TYPE=Release` flag so that CMake will disable debug symbols and enable
 optimizations, good things to do when running tests to ensure nothing breaks with
 optimizations. Lastly, you must tell the tests which vehicle header to use for
-the tests (e.g., `-DKIA_SOUL=ON`).
+the tests (e.g., `-DKIA_SOUL_PETROL=ON`).
 
 ```
 cd firmware
 mkdir build
 cd build
-cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release -DKIA_SOUL=ON
+cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release -DKIA_SOUL_PETROL=ON
 ```
 
 ### Unit Tests

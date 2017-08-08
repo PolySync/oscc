@@ -9,7 +9,7 @@
 #define _OSCC_VEHICLES_H_
 
 
-#ifdef KIA_SOUL
+#ifdef KIA_SOUL_PETROL
 #include "vehicles/kia_soul.h"
 #endif
 

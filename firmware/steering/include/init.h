@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_STEERING_INIT_H_
-#define _OSCC_KIA_SOUL_STEERING_INIT_H_
+#ifndef _OSCC_STEERING_INIT_H_
+#define _OSCC_STEERING_INIT_H_
 
 
 // ****************************************************************************
