@@ -115,71 +115,71 @@ typedef struct
  * @brief Calculation to convert a throttle position to a high spoof value.
  *
  */
-#define BRAKE_POSITION_TO_SPOOF_HIGH( position ) (STEPS_PER_VOLT\
-            * ((BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
+#define BRAKE_POSITION_TO_SPOOF_HIGH( position ) (\
+            ((BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
             + BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Calculation to convert a throttle position to a low spoof value.
  *
  */
-#define BRAKE_POSITION_TO_SPOOF_LOW( position ) (STEPS_PER_VOLT\
-            * ((BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
+#define BRAKE_POSITION_TO_SPOOF_LOW( position ) (\
+            ((BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
             + BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Minimum allowed value for the low spoof signal value.
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 0 )
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 248 )
 
 /*
  * @brief Maximum allowed value for the low spoof signal value.
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1800 )
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1147 )
 
 /**
  * @brief Wheel speed message data.
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 0 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 520 )
 
 /**
  * @brief Wheel speed message data.
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3500 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2351 )
 
 /*
  * @brief Scalar value for the low spoof signal taken from a calibration curve.
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE (0.0004)
+#define BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE (0.000021)
 
 /*
  * @brief Offset value for the low spoof signal taken from a calibration curve.
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET (0.366)
+#define BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET (0.303)
 
 /*
  * @brief Scalar value for the high spoof signal taken from a calibration curve.
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE (0.0008)
+#define BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE (0.000043)
 
 /*
  * @brief Offset value for the high spoof signal taken from a calibration curve.
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET (0.732)
+#define BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET (0.635)
 
 /*
  * @brief Value of the accelerator position that indicates operator override.
  *
  */
-#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 185.0 )
+#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130.0 )
 
 
 
@@ -192,13 +192,25 @@ typedef struct
  * @brief Minimum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_SIGNAL_MIN ( 868.0 )
+#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN ( 1000 )
 
 /*
  * @brief Maximum allowable steering DAC output. [steps]
  *
  */
-#define STEERING_SPOOF_SIGNAL_MAX ( 3031.0 )
+#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX ( 2965 )
+
+/*
+ * @brief Minimum allowable steering DAC output. [steps]
+ *
+ */
+#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 1030 )
+
+/*
+ * @brief Maximum allowable steering DAC output. [steps]
+ *
+ */
+#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2995 )
 
 /*
  * @brief Minimum allowable torque value.
@@ -223,25 +235,25 @@ typedef struct
  * @brief Scalar value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.05 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.12 )
 
 /*
  * @brief Offset value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.42 )
 
 /*
  * @brief Scalar value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.05 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.12 )
 
 /*
  * @brief Offset value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.46 )
 
 /*
  * @brief Calculation to convert a steering angle to a high spoof value.
@@ -259,16 +271,16 @@ typedef struct
  * @brief Minimum allowed value for the high spoof signal value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_HIGH( torque ) (STEPS_PER_VOLT\
-            * ((TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
+#define STEERING_TORQUE_TO_VOLTS_HIGH( torque ) (\
+            ((TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
             + TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Calculation to convert a steering torque to a low spoof value.
  *
  */
-#define STEERING_TORQUE_TO_SPOOF_LOW( torque ) (STEPS_PER_VOLT\
-            * ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
+#define STEERING_TORQUE_TO_VOLTS_LOW( torque ) (\
+            ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
             + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
@@ -301,16 +313,16 @@ typedef struct
  * @brief Calculation to convert a throttle position to a high spoof value.
  *
  */
-#define THROTTLE_POSITION_TO_SPOOF_HIGH( position ) (STEPS_PER_VOLT\
-            * ((THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
+#define THROTTLE_POSITION_TO_VOLTS_HIGH( position ) (\
+            ((THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
             + THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Calculation to convert a throttle position to a low spoof value.
  *
  */
-#define THROTTLE_POSITION_TO_SPOOF_LOW( position ) (STEPS_PER_VOLT\
-            * ((THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
+#define THROTTLE_POSITION_TO_VOLTS_LOW( position ) (\
+            ((THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
             + THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
