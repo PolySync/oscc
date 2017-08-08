@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_BRAKE_COMMUNICATIONS_H_
-#define _OSCC_KIA_SOUL_BRAKE_COMMUNICATIONS_H_
+#ifndef _OSCC_BRAKE_COMMUNICATIONS_H_
+#define _OSCC_BRAKE_COMMUNICATIONS_H_
 
 
 // ****************************************************************************
@@ -61,4 +61,4 @@ void check_for_controller_command_timeout( void );
 void check_for_incoming_message( void );
 
 
-#endif /* _OSCC_KIA_SOUL_BRAKE_COMMUNICATIONS_H_ */
+#endif /* _OSCC_BRAKE_COMMUNICATIONS_H_ */

@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_BRAKE_TIMERS_H_
-#define _OSCC_KIA_SOUL_BRAKE_TIMERS_H_
+#ifndef _OSCC_BRAKE_TIMERS_H_
+#define _OSCC_BRAKE_TIMERS_H_
 
 
 // ****************************************************************************
@@ -22,4 +22,4 @@
 void start_timers( void );
 
 
-#endif /* _OSCC_KIA_SOUL_BRAKE_TIMERS_H_ */
+#endif /* _OSCC_BRAKE_TIMERS_H_ */

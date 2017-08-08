@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_BRAKE_CONTROL_H_
-#define _OSCC_KIA_SOUL_BRAKE_CONTROL_H_
+#ifndef _OSCC_BRAKE_CONTROL_H_
+#define _OSCC_BRAKE_CONTROL_H_
 
 
 #include <stdint.h>
@@ -145,4 +145,4 @@ void brake_init( void );
 void update_brake( void );
 
 
-#endif /* _OSCC_KIA_SOUL_BRAKE_CONTROL_H_ */
+#endif /* _OSCC_BRAKE_CONTROL_H_ */

@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_BRAKE_GLOBALS_H_
-#define _OSCC_KIA_SOUL_BRAKE_GLOBALS_H_
+#ifndef _OSCC_BRAKE_GLOBALS_H_
+#define _OSCC_BRAKE_GLOBALS_H_
 
 
 #include "mcp_can.h"
@@ -150,4 +150,4 @@ EXTERN volatile brake_control_state_s g_brake_control_state;
 EXTERN pid_s g_pid;
 
 
-#endif /* _OSCC_KIA_SOUL_BRAKE_GLOBALS_H_ */
+#endif /* _OSCC_BRAKE_GLOBALS_H_ */

@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_BRAKE_MASTER_CYLINDER_H_
-#define _OSCC_KIA_SOUL_BRAKE_MASTER_CYLINDER_H_
+#ifndef _OSCC_BRAKE_MASTER_CYLINDER_H_
+#define _OSCC_BRAKE_MASTER_CYLINDER_H_
 
 
 typedef struct
@@ -69,4 +69,4 @@ void master_cylinder_init( void );
 void master_cylinder_read_pressure( master_cylinder_pressure_s * pressure );
 
 
-#endif /* _OSCC_KIA_SOUL_BRAKE_MASTER_CYLINDER_H_ */
+#endif /* _OSCC_BRAKE_MASTER_CYLINDER_H_ */

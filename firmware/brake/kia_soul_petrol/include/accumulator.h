@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_BRAKE_ACCUMULATOR_H_
-#define _OSCC_KIA_SOUL_BRAKE_ACCUMULATOR_H_
+#ifndef _OSCC_BRAKE_ACCUMULATOR_H_
+#define _OSCC_BRAKE_ACCUMULATOR_H_
 
 
 // ****************************************************************************
@@ -74,4 +74,4 @@ float accumulator_read_pressure( void );
 void accumulator_maintain_pressure( void );
 
 
-#endif /* _OSCC_KIA_SOUL_BRAKE_ACCUMULATOR_H_ */
+#endif /* _OSCC_BRAKE_ACCUMULATOR_H_ */
