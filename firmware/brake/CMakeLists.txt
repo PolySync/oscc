@@ -1,6 +1,5 @@
 project(brake)
 
-set(ARDUINO_DEFAULT_BOARD mega2560)
 SET(ARDUINO_DEFAULT_PORT ${SERIAL_PORT_BRAKE})
 set(ARDUINO_DEFAULT_BAUDRATE ${SERIAL_BAUD_BRAKE})
 
@@ -16,4 +15,6 @@ add_custom_target(
 
 if(KIA_SOUL_PETROL)
     add_subdirectory(kia_soul_petrol)
+elseif(KIA_SOUL_EV)
+    add_subdirectory(kia_soul_ev)
 endif()

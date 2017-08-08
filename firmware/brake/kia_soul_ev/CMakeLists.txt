@@ -1,19 +1,17 @@
-set(ARDUINO_DEFAULT_BOARD mega2560)
+set(ARDUINO_DEFAULT_BOARD uno)
 
 generate_arduino_firmware(
     brake
     SRCS
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/DAC_MCP49xx/DAC_MCP49xx.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/timer/oscc_timer.cpp
     src/main.cpp
     src/globals.cpp
-    src/accumulator.cpp
-    src/helper.cpp
-    src/master_cylinder.cpp
     src/brake_control.cpp
     src/communications.cpp
     src/init.cpp
@@ -25,11 +23,10 @@ target_include_directories(
     include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init
+    ${CMAKE_SOURCE_DIR}/common/libs/DAC_MCP49xx
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
-    ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/dac
     ${CMAKE_SOURCE_DIR}/common/libs/timer
     ${CMAKE_SOURCE_DIR}/../api/include)
-
-add_subdirectory(utils)

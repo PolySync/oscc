@@ -54,6 +54,7 @@ else()
 
     option(DEBUG "Enable debug mode" OFF)
     option(KIA_SOUL_PETROL "Build firmware for the petrol Kia Soul" OFF)
+    option(KIA_SOUL_EV "Build firmware for the Kia Soul EV" OFF)
     option(BRAKE_STARTUP_TEST "Enable brake startup sensor tests" ON)
 
     set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
@@ -74,6 +75,8 @@ else()
 
     if(KIA_SOUL_PETROL)
         add_definitions(-DKIA_SOUL_PETROL)
+    elseif(KIA_SOUL_EV)
+        add_definitions(-DKIA_SOUL_EV)
     else()
         message(WARNING "No platform selected - no firmware will be built")
     endif()
