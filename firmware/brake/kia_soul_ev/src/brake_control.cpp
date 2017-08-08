@@ -25,8 +25,8 @@
 #define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 
-static void read_accelerator_position_sensor(
-    accelerator_position_s * const value );
+static void read_brake_pedal_position_sensor(
+    brake_pedal_position_s * const value );
 
 
 void check_for_operator_override( void )
@@ -34,14 +34,14 @@ void check_for_operator_override( void )
     if ( g_brake_control_state.enabled == true
         || g_brake_control_state.operator_override == true )
     {
-        accelerator_position_s accelerator_position;
+        brake_pedal_position_s brake_pedal_position;
 
-        read_accelerator_position_sensor( &accelerator_position );
+        read_brake_pedal_position_sensor( &brake_pedal_position );
 
-        uint32_t accelerator_position_average =
-            (accelerator_position.low + accelerator_position.high) / 2;
+        uint32_t brake_pedal_position_average =
+            (brake_pedal_position.low + brake_pedal_position.high) / 2;
 
-        if ( accelerator_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
+        if ( brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
         {
             disable_control( );
 
@@ -66,13 +66,13 @@ void check_for_sensor_faults( void )
     {
         static int fault_count = 0;
 
-        accelerator_position_s accelerator_position;
+        brake_pedal_position_s brake_pedal_position;
 
-        read_accelerator_position_sensor( &accelerator_position );
+        read_brake_pedal_position_sensor( &brake_pedal_position );
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (accelerator_position.high == 0)
-            || (accelerator_position.low == 0) )
+        if( (brake_pedal_position.high == 0)
+            || (brake_pedal_position.low == 0) )
         {
             ++fault_count;
 
@@ -86,7 +86,7 @@ void check_for_sensor_faults( void )
                     g_brake_control_state.dtcs,
                     OSCC_BRAKE_DTC_INVALID_SENSOR_VAL );
 
-                DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
+                DEBUG_PRINTLN( "Bad value read from brake pedal position sensor" );
             }
         }
         else
@@ -136,8 +136,8 @@ void enable_control( void )
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
-            PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
-            PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH,
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
@@ -158,8 +158,8 @@ void disable_control( void )
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
-            PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
-            PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH,
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
@@ -172,11 +172,11 @@ void disable_control( void )
 }
 
 
-static void read_accelerator_position_sensor(
-    accelerator_position_s * const value )
+static void read_brake_pedal_position_sensor(
+    brake_pedal_position_s * const value )
 {
     cli();
-    value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
-    value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+    value->high = analogRead( PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH );
+    value->low = analogRead( PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
     sei();
 }

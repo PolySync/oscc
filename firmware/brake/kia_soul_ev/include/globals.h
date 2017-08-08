@@ -28,28 +28,28 @@
 #define PIN_CAN_CHIP_SELECT ( 10 )
 
 /*
- * @brief High signal pin of the accelerator position sensor.
+ * @brief High signal pin of the brake pedal position sensor.
  *
  */
-#define PIN_ACCELERATOR_POSITION_SENSOR_HIGH ( A0 )
+#define PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH ( A0 )
 
 /*
- * @brief Low signal pin of the accelerator position sensor.
+ * @brief Low signal pin of the brake pedal position sensor.
  *
  */
-#define PIN_ACCELERATOR_POSITION_SENSOR_LOW ( A1 )
+#define PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW ( A1 )
 
 /*
- * @brief High signal pin of the accelerator position spoof output.
+ * @brief High signal pin of the brake pedal position spoof output.
  *
  */
-#define PIN_ACCELERATOR_POSITION_SPOOF_HIGH ( A2 )
+#define PIN_BRAKE_PEDAL_POSITION_SPOOF_HIGH ( A4 )
 
 /*
- * @brief Low signal pin of the accelerator position spoof output.
+ * @brief Low signal pin of the brake pedal position spoof output.
  *
  */
-#define PIN_ACCELERATOR_POSITION_SPOOF_LOW ( A3 )
+#define PIN_BRAKE_PEDAL_POSITION_SPOOF_LOW ( A6 )
 
 /*
  * @brief Relay enable pin for the spoof output.

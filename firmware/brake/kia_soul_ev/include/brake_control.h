@@ -13,17 +13,17 @@
 
 
 /**
- * @brief Accelerator position values.
+ * @brief Brake pedal position values.
  *
- * Contains high and low accelerator values.
+ * Contains high and low brake pedal values.
  *
  */
 typedef struct
 {
-    uint16_t low; /* Low value of accelerator position. */
+    uint16_t low; /* Low value of brake pedal position. */
 
-    uint16_t high; /* High value of accelerator position. */
-} accelerator_position_s;
+    uint16_t high; /* High value of brake pedal position. */
+} brake_pedal_position_s;
 
 
 /**
@@ -36,7 +36,7 @@ typedef struct
 {
     bool enabled; /* Flag indicating whether control is currently enabled. */
 
-    bool operator_override; /* Flag indicating whether accelerator was manually
+    bool operator_override; /* Flag indicating whether brake pedal was manually
                                pressed by operator. */
 
     uint8_t dtcs; /* Bitfield of faults present in the module. */
@@ -47,7 +47,7 @@ typedef struct
 // Function:    check_for_operator_override
 //
 // Purpose:     Checks to see if the vehicle's operator has manually pressed
-//              the accelerator and disables control if they have.
+//              the brake pedal and disables control if they have.
 //
 // Returns:     void
 //
