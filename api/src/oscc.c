@@ -138,14 +138,18 @@ oscc_result_t oscc_publish_throttle_position( double throttle_position )
         MINIMUM_THROTTLE_COMMAND,
         MAXIMUM_THROTTLE_COMMAND);
 
-    uint16_t spoof_value_low = THROTTLE_POSITION_TO_SPOOF_LOW( scaled_position );
+    double spoof_voltage_low = THROTTLE_POSITION_TO_VOLTS_LOW( scaled_position );
+
+    uint16_t spoof_value_low = STEPS_PER_VOLT * spoof_voltage_low;
 
     spoof_value_low = CONSTRAIN(
         spoof_value_low,
         THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
         THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX);
 
-    uint16_t spoof_value_high = THROTTLE_POSITION_TO_SPOOF_HIGH( scaled_position );
+    double spoof_voltage_high = THROTTLE_POSITION_TO_VOLTS_HIGH( scaled_position );
+
+    uint16_t spoof_value_high = STEPS_PER_VOLT * spoof_voltage_high;
 
     spoof_value_high = CONSTRAIN(
         spoof_value_high,
@@ -172,19 +176,23 @@ oscc_result_t oscc_publish_steering_torque( double torque )
         MINIMUM_TORQUE_COMMAND,
         MAXIMUM_TORQUE_COMMAND);
 
-    uint16_t spoof_value_low = STEERING_TORQUE_TO_SPOOF_LOW( scaled_torque );
+    double spoof_voltage_low = STEERING_TORQUE_TO_VOLTS_LOW( scaled_torque );
+
+    uint16_t spoof_value_low = STEPS_PER_VOLT * spoof_voltage_low;
 
     spoof_value_low = CONSTRAIN(
         spoof_value_low,
-        STEERING_SPOOF_SIGNAL_MIN,
-        STEERING_SPOOF_SIGNAL_MAX);
+        STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
+        STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX);
 
-    uint16_t spoof_value_high = STEERING_TORQUE_TO_SPOOF_HIGH( scaled_torque );
+    double spoof_voltage_high = STEERING_TORQUE_TO_VOLTS_HIGH( scaled_torque );
+
+    uint16_t spoof_value_high = STEPS_PER_VOLT * spoof_voltage_high;
 
     spoof_value_high = CONSTRAIN(
         spoof_value_high,
-        STEERING_SPOOF_SIGNAL_MIN,
-        STEERING_SPOOF_SIGNAL_MAX);
+        STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+        STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX);
 
     steering_cmd.spoof_value_low = spoof_value_low;
     steering_cmd.spoof_value_high = spoof_value_high;
