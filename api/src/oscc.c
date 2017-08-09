@@ -114,12 +114,43 @@ oscc_result_t oscc_publish_brake_position( double brake_position )
 {
     oscc_result_t ret = OSCC_ERROR;
 
+#if defined(KIA_SOUL_PETROL)
     const double clamped_position = (double) CONSTRAIN (
             brake_position * MAXIMUM_BRAKE_COMMAND,
             MINIMUM_BRAKE_COMMAND,
             MAXIMUM_BRAKE_COMMAND );
 
     brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( clamped_position );
+
+#elif defined(KIA_SOUL_EV)
+    const double clamped_position = CONSTRAIN(
+        brake_position,
+        MINIMUM_BRAKE_COMMAND,
+        MAXIMUM_BRAKE_COMMAND);
+
+
+    double spoof_voltage_low = BRAKE_POSITION_TO_VOLTS_LOW( clamped_position );
+
+    spoof_voltage_low = CONSTRAIN(
+        spoof_voltage_low,
+        BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN,
+        BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX);
+
+
+    double spoof_voltage_high = BRAKE_POSITION_TO_VOLTS_HIGH( clamped_position );
+
+    spoof_voltage_high = CONSTRAIN(
+        spoof_voltage_high,
+        BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
+        BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX);
+
+
+    uint16_t spoof_value_low = STEPS_PER_VOLT * spoof_voltage_low;
+    uint16_t spoof_value_high = STEPS_PER_VOLT * spoof_voltage_high;
+
+    brake_cmd.spoof_value_low = spoof_value_low;
+    brake_cmd.spoof_value_high = spoof_value_high;
+#endif
 
     ret = oscc_can_write(
         OSCC_BRAKE_COMMAND_CAN_ID,

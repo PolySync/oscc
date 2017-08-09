@@ -103,80 +103,84 @@ typedef struct
  * @brief Minimum allowable brake value.
  *
  */
-#define MINIMUM_BRAKE_COMMAND ( 0 )
+#define MINIMUM_BRAKE_COMMAND ( 0.0 )
 
 /*
  * @brief Maximum allowable brake value.
  *
  */
-#define MAXIMUM_BRAKE_COMMAND ( 52428 )
+#define MAXIMUM_BRAKE_COMMAND ( 1.0 )
 
 /*
- * @brief Calculation to convert a throttle position to a high spoof value.
+ * @brief Minimum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define BRAKE_POSITION_TO_SPOOF_HIGH( position ) (\
-            ((BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
-            + BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
+#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.303 )
 
 /*
- * @brief Calculation to convert a throttle position to a low spoof value.
+ * @brief Maximum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define BRAKE_POSITION_TO_SPOOF_LOW( position ) (\
-            ((BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
-            + BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
-
-/*
- * @brief Minimum allowed value for the low spoof signal value.
- *
- */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 248 )
-
-/*
- * @brief Maximum allowed value for the low spoof signal value.
- *
- */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1147 )
+#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 1.40 )
 
 /**
- * @brief Wheel speed message data.
+ * @brief Minimum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 520 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.635 )
 
 /**
- * @brief Wheel speed message data.
+ * @brief Maximum allowed voltage for the high spoof signal voltage. [volts]
  *
+ */
+#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 2.87 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ */
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 249 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
+ */
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1146 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ */
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 521 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
 #define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2351 )
 
 /*
- * @brief Scalar value for the low spoof signal taken from a calibration curve.
+ * @brief Calculation to convert a brake position to a low spoof voltage.
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE (0.000021)
+#define BRAKE_POSITION_TO_VOLTS_LOW( position ) ( (position) *\
+    (BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) +\
+    BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN  )
 
 /*
- * @brief Offset value for the low spoof signal taken from a calibration curve.
+ * @brief Calculation to convert a brake position to a high spoof voltage.
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET (0.303)
+#define BRAKE_POSITION_TO_VOLTS_HIGH( position ) ( (position) *\
+    (BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) +\
+    BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN  )
 
 /*
- * @brief Scalar value for the high spoof signal taken from a calibration curve.
- *
- */
-#define BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE (0.000043)
-
-/*
- * @brief Offset value for the high spoof signal taken from a calibration curve.
- *
- */
-#define BRAKE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET (0.635)
-
-/*
- * @brief Value of the accelerator position that indicates operator override.
+ * @brief Value of the accelerator position that indicates operator override. [steps]
  *
  */
 #define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130.0 )

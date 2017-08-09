@@ -43,19 +43,25 @@
  * @brief High signal pin of the brake pedal position spoof output.
  *
  */
-#define PIN_BRAKE_PEDAL_POSITION_SPOOF_HIGH ( A4 )
+#define PIN_BRAKE_PEDAL_POSITION_SPOOF_HIGH ( A2 )
 
 /*
  * @brief Low signal pin of the brake pedal position spoof output.
  *
  */
-#define PIN_BRAKE_PEDAL_POSITION_SPOOF_LOW ( A6 )
+#define PIN_BRAKE_PEDAL_POSITION_SPOOF_LOW ( A3 )
 
 /*
  * @brief Relay enable pin for the spoof output.
  *
  */
 #define PIN_SPOOF_ENABLE ( 6 )
+
+/*
+ * @brief Relay enable pin for the brake lights.
+ *
+ */
+#define PIN_BRAKE_ENABLE ( 5 )
 
 
 #ifdef GLOBAL_DEFINED
