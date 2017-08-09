@@ -93,6 +93,11 @@ typedef struct
 } kia_soul_obd_brake_pressure_data_s;
 
 
+ /*
+ * @brief Number of steps per volt corresponding to 4096 steps (2^12) across 5 volts.
+ *
+ */
+#define STEPS_PER_VOLT ( 819.2 )
 
 
 // ****************************************************************************
@@ -273,83 +278,92 @@ typedef struct
 // ****************************************************************************
 
 /*
- * @brief Minimum allowable steering DAC output. [steps]
- *
- */
-#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN ( 1000 )
-
-/*
- * @brief Maximum allowable steering DAC output. [steps]
- *
- */
-#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX ( 2965 )
-
-/*
- * @brief Minimum allowable steering DAC output. [steps]
- *
- */
-#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 1030 )
-
-/*
- * @brief Maximum allowable steering DAC output. [steps]
- *
- */
-#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2995 )
-
-/*
  * @brief Minimum allowable torque value.
  *
  */
-#define MINIMUM_TORQUE_COMMAND ( -10 )
+#define MINIMUM_TORQUE_COMMAND ( -10.0 )
 
 /*
  * @brief Maximum allowable torque value.
  *
  */
-#define MAXIMUM_TORQUE_COMMAND ( 10 )
+#define MAXIMUM_TORQUE_COMMAND ( 10.0 )
 
-
- /*
- * @brief Number of steps per volt corresponding to 4096 steps across 5 volts.
+/*
+ * @brief Minimum allowable steering DAC output. [volts]
  *
  */
-#define STEPS_PER_VOLT ( 819.2 )
+#define STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.80 )
+
+/*
+ * @brief Maximum allowable steering DAC output. [volts]
+ *
+ */
+#define STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 4.10 )
+
+/*
+ * @brief Minimum allowable steering DAC output. [volts]
+ *
+ */
+#define STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.90 )
+
+/*
+ * @brief Maximum allowable steering DAC output. [volts]
+ *
+ */
+#define STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 4.20 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ */
+#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN ( 656 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
+ */
+#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX ( 3358 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ */
+#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 738 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
+ */
+#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3440 )
 
 /*
  * @brief Scalar value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.12 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.17 )
 
 /*
  * @brief Offset value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.42 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.40 )
 
 /*
  * @brief Scalar value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.12 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.16 )
 
 /*
  * @brief Offset value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.46 )
-
-/*
- * @brief Calculation to convert a steering angle to a high spoof value.
- *
- */
-#define STEERING_ANGLE_TO_SPOOF_HIGH( angle ) ( (angle) )
-
-/*
- * @brief Calculation to convert a steering angle to a low spoof value.
- *
- */
-#define STEERING_ANGLE_TO_SPOOF_LOW( angle ) ( (angle) )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
 
 /*
  * @brief Minimum allowed value for the high spoof signal value.
@@ -385,80 +399,84 @@ typedef struct
  * @brief Minimum allowable throttle value.
  *
  */
-#define MINIMUM_THROTTLE_COMMAND ( 0 )
+#define MINIMUM_THROTTLE_COMMAND ( 0.0 )
 
 /*
  * @brief Maximum allowable throttle value.
  *
  */
-#define MAXIMUM_THROTTLE_COMMAND ( 820 )
+#define MAXIMUM_THROTTLE_COMMAND ( 1.0 )
 
 /*
- * @brief Calculation to convert a throttle position to a high spoof value.
+ * @brief Minimum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_POSITION_TO_VOLTS_HIGH( position ) (\
-            ((THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
-            + THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET))
+#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.40 )
 
 /*
- * @brief Calculation to convert a throttle position to a low spoof value.
+ * @brief Maximum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_POSITION_TO_VOLTS_LOW( position ) (\
-            ((THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (position))\
-            + THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
-
-/*
- * @brief Minimum allowed value for the low spoof signal value.
- *
- */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 0 )
-
-/*
- * @brief Maximum allowed value for the low spoof signal value.
- *
- */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1800 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 2.00 )
 
 /**
- * @brief Wheel speed message data.
+ * @brief Minimum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 0 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.80 )
 
 /**
- * @brief Wheel speed message data.
+ * @brief Maximum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3500 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 4.10 )
 
 /*
- * @brief Scalar value for the low spoof signal taken from a calibration curve.
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ */
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 328 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
+ */
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1638 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ */
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 656 )
+
+/*
+ * @brief Minimum allowed value for the low spoof signal value. [steps]
+ *
+ * Equal to \ref THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
+ */
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3358 )
+
+/*
+ * @brief Calculation to convert a throttle position to a low spoof voltage.
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE (0.0004)
+#define THROTTLE_POSITION_TO_VOLTS_LOW( position ) ( (position) *\
+    (THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) +\
+    THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN  )
 
 /*
- * @brief Offset value for the low spoof signal taken from a calibration curve.
+ * @brief Calculation to convert a throttle position to a high spoof voltage.
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET (0.366)
+#define THROTTLE_POSITION_TO_VOLTS_HIGH( position ) ( (position) *\
+    (THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) +\
+    THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN  )
 
 /*
- * @brief Scalar value for the high spoof signal taken from a calibration curve.
- *
- */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE (0.0008)
-
-/*
- * @brief Offset value for the high spoof signal taken from a calibration curve.
- *
- */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET (0.732)
-
-/*
- * @brief Value of the accelerator position that indicates operator override.
+ * @brief Value of the accelerator position that indicates operator override. [steps]
  *
  */
 #define ACCELERATOR_OVERRIDE_THRESHOLD ( 185.0 )
