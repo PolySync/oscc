@@ -150,7 +150,7 @@ oscc_result_t oscc_publish_throttle_position( double throttle_position )
     double spoof_voltage_high = THROTTLE_POSITION_TO_VOLTS_HIGH( clamped_position );
 
     spoof_voltage_high = CONSTRAIN(
-        spoof_voltage_low,
+        spoof_voltage_high,
         THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
         THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX);
 
