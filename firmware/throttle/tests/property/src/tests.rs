@@ -186,9 +186,9 @@ fn prop_output_constrained_spoofs(mut throttle_command_msg: oscc_throttle_comman
     throttle_command_msg.enable = 1u8;
     unsafe {
         if (throttle_command_msg.spoof_value_low >= 
-            THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
+            THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
             throttle_command_msg.spoof_value_low <=
-            THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16) ||
+            THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16) ||
             (throttle_command_msg.spoof_value_high >= 
             THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
             throttle_command_msg.spoof_value_high <=
@@ -208,8 +208,8 @@ fn prop_output_constrained_spoofs(mut throttle_command_msg: oscc_throttle_comman
         TestResult::from_bool(
             g_mock_dac_output_a >= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
             g_mock_dac_output_a <= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16 &&
-            g_mock_dac_output_b >= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 && 
-            g_mock_dac_output_b <= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16)
+            g_mock_dac_output_b >= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 && 
+            g_mock_dac_output_b <= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16)
     }
 }
 
