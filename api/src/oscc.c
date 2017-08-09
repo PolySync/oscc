@@ -151,8 +151,8 @@ oscc_result_t oscc_publish_throttle_position( double throttle_position )
 
     spoof_voltage_high = CONSTRAIN(
         spoof_voltage_low,
-        THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN,
-        THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX);
+        THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
+        THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX);
 
 
     uint16_t spoof_value_low = STEPS_PER_VOLT * spoof_voltage_low;
