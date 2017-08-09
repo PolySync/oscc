@@ -10,17 +10,19 @@ node('arduino') {
       ])
     }
     stage('Build') {
-      parallel 'kia soul firmware': {
-        sh 'cd firmware && mkdir build && cd build && cmake .. -DKIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release && make'
+      parallel 'kia soul petrol firmware': {
+        sh 'cd firmware && mkdir build_kia_soul_petrol && cd build_kia_soul_petrol && cmake .. -DKIA_SOUL_PETROL=ON -DCMAKE_BUILD_TYPE=Release && make'
+      }, 'kia soul EV firmware': {
+        sh 'cd firmware && mkdir build_kia_soul_ev && cd build_kia_soul_ev && cmake .. -DKIA_SOUL_EV=ON -DCMAKE_BUILD_TYPE=Release && make'
       }
       echo 'Build Complete!'
     }
     stage('Test') {
       parallel 'unit tests': {
-        sh 'cd firmware && mkdir build_unit_tests && cd build_unit_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-unit-tests'
+        sh 'cd firmware && mkdir build_unit_tests && cd build_unit_tests && cmake .. -DKIA_SOUL_PETROL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-unit-tests'
         echo 'Unit Tests Complete!'
       }, 'property-based tests': {
-        sh 'cd firmware && mkdir build_property_tests && cd build_property_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
+        sh 'cd firmware && mkdir build_property_tests && cd build_property_tests && cmake .. -DKIA_SOUL_PETROL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
         echo 'Property-Based Tests Complete!'
       }, 'acceptance tests': {
         echo 'Acceptance Tests Complete!'
