@@ -93,6 +93,13 @@ typedef struct
 } kia_soul_obd_brake_pressure_data_s;
 
 
+ /*
+ * @brief Number of steps per volt corresponding to 4096 steps (2^12) across 5 volts.
+ *
+ */
+#define STEPS_PER_VOLT ( 819.2 )
+
+
 
 
 // ****************************************************************************
@@ -184,6 +191,18 @@ typedef struct
  *
  */
 #define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130.0 )
+
+/*
+ * @brief Minimum value of the low spoof signal that activates the brake lights. [steps]
+ *
+ */
+#define BRAKE_LIGHT_SPOOF_LOW_THRESHOLD ( 300 )
+
+/*
+ * @brief Minimum value of the high spoof signal that activates the brake lights. [steps]
+ *
+ */
+#define BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD ( 600 )
 
 
 

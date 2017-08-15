@@ -61,7 +61,7 @@
  * @brief Relay enable pin for the brake lights.
  *
  */
-#define PIN_BRAKE_ENABLE ( 5 )
+#define PIN_BRAKE_LIGHT_ENABLE ( 5 )
 
 
 #ifdef GLOBAL_DEFINED

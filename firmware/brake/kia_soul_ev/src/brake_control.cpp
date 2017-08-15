@@ -119,6 +119,20 @@ void update_brake(
                 BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN,
                 BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
+        if( (spoof_high > BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD)
+            || (spoof_low > BRAKE_LIGHT_SPOOF_LOW_THRESHOLD) )
+        {
+            cli();
+            digitalWrite(PIN_BRAKE_LIGHT_ENABLE, HIGH);
+            sei();
+        }
+        else
+        {
+            cli();
+            digitalWrite(PIN_BRAKE_LIGHT_ENABLE, LOW);
+            sei();
+        }
+
         cli();
         g_dac.outputA( spoof_high );
         g_dac.outputB( spoof_low );
