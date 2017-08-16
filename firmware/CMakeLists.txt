@@ -9,13 +9,18 @@ if(TESTS)
 
     if(KIA_SOUL_PETROL)
         add_definitions(-DKIA_SOUL_PETROL)
-
         add_subdirectory(brake/kia_soul_petrol/tests)
-        add_subdirectory(can_gateway/tests)
-        add_subdirectory(steering/tests)
-        add_subdirectory(throttle/tests)
-        add_subdirectory(common/libs/pid/tests)
+    elseif(KIA_SOUL_EV)
+        add_definitions(-DKIA_SOUL_EV)
+        add_subdirectory(brake/kia_soul_ev/tests)
+    else()
+        message(FATAL_ERROR "No platform selected - no firmware will be tested")
     endif()
+
+    add_subdirectory(can_gateway/tests)
+    add_subdirectory(steering/tests)
+    add_subdirectory(throttle/tests)
+    add_subdirectory(common/libs/pid/tests)
 
     add_custom_target(
         run-unit-tests
