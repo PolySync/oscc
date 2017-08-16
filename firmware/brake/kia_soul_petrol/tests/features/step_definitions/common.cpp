@@ -18,8 +18,9 @@ using namespace cgreen;
 
 extern unsigned long g_mock_arduino_micros_return;
 
-extern uint8_t g_mock_arduino_digital_write_pin;
-extern uint8_t g_mock_arduino_digital_write_val;
+extern uint8_t g_mock_arduino_digital_write_pins[100];
+extern uint8_t g_mock_arduino_digital_write_val[100];
+extern int g_mock_arduino_digital_write_count;
 
 extern int g_mock_arduino_analog_read_return;
 extern int g_mock_arduino_analog_write_count;
@@ -40,8 +41,9 @@ extern volatile brake_control_state_s g_brake_control_state;
 // return to known state before every scenario
 BEFORE()
 {
-    g_mock_arduino_digital_write_pin = UINT8_MAX;
-    g_mock_arduino_digital_write_val = UINT8_MAX;
+    g_mock_arduino_digital_write_count = 0;
+    memset(&g_mock_arduino_digital_write_pins, 0, sizeof(g_mock_arduino_digital_write_pins));
+    memset(&g_mock_arduino_digital_write_val, 0, sizeof(g_mock_arduino_digital_write_val));
 
     g_mock_arduino_analog_read_return = INT_MAX;
     g_mock_arduino_analog_write_count = 0;
@@ -148,11 +150,11 @@ THEN("^control should be disabled$")
 
     // turn brake lights off
     assert_that(
-        g_mock_arduino_digital_write_pin,
+        g_mock_arduino_digital_write_pins[0],
         is_equal_to(PIN_BRAKE_LIGHT));
 
     assert_that(
-        g_mock_arduino_digital_write_val,
+        g_mock_arduino_digital_write_val[0],
         is_equal_to(LOW));
 
     // open master cylinder
