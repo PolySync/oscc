@@ -18,6 +18,9 @@
 typedef struct
 {
     bool operator_override;
+    bool brake_override;
+    bool throttle_override;
+    bool steering_override;
     bool obd_timeout_brake;
     bool obd_timeout_steering;
 } oscc_status_s;

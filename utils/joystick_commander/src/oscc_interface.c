@@ -168,12 +168,15 @@ static bool oscc_interface_check_for_operator_override(
     long can_id,
     unsigned char * buffer )
 {
+    bool ret = false;
     if ( can_id == OSCC_REPORT_BRAKE_CAN_ID )
     {
         oscc_report_brake_data_s* brake_report_data =
             ( oscc_report_brake_data_s* )buffer;
 
         status->operator_override = (bool) brake_report_data->override;
+        status->brake_override = (bool) brake_report_data->override;
+        ret = true;
     }
     else if ( can_id == OSCC_REPORT_THROTTLE_CAN_ID )
     {
@@ -181,6 +184,8 @@ static bool oscc_interface_check_for_operator_override(
             ( oscc_report_throttle_data_s* )buffer;
 
         status->operator_override = (bool) throttle_report_data->override;
+        status->throttle_override = (bool) throttle_report_data->override;
+        ret = true;
     }
     else if ( can_id == OSCC_REPORT_STEERING_CAN_ID )
     {
@@ -188,7 +193,11 @@ static bool oscc_interface_check_for_operator_override(
             ( oscc_report_steering_data_s* )buffer;
 
         status->operator_override = (bool) steering_report_data->override;
+        status->steering_override = (bool) steering_report_data->override;
+        ret = true;
     }
+
+    return ret;
 }
 
 // *****************************************************
