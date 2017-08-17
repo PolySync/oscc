@@ -11,6 +11,7 @@
 #include "globals.h"
 #include "communications.h"
 #include "init.h"
+#include "timer.h"
 
 
 int main( void )
@@ -20,6 +21,8 @@ int main( void )
     init_globals( );
 
     init_communication_interfaces( );
+
+    start_timer( );
 
     wdt_enable( WDTO_250MS );
 

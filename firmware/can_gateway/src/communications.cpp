@@ -23,11 +23,13 @@ void republish_obd_frames_to_control_can_bus( void )
             || (rx_frame.id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
             || (rx_frame.id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID) )
         {
+            cli();
             g_control_can.sendMsgBuf(
                 rx_frame.id,
                 CAN_STANDARD,
                 sizeof(rx_frame),
                 (uint8_t *) &rx_frame.data );
+            sei();
         }
     }
 }

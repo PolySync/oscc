@@ -14,6 +14,13 @@
 #include "can_protocols/throttle_can_protocol.h"
 
 
+/*
+* @brief Frequency of updates of display content. [Hz]
+*
+*/
+#define DISPLAY_UPDATE_FREQUENCY_IN_HZ ( 4 )
+
+
 /**
  * @brief Enumeration of possible screens.
  *

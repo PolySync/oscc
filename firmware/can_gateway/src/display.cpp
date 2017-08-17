@@ -8,7 +8,6 @@
 #include "can_protocols/brake_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
-#include "oscc_time.h"
 
 #include "display.h"
 
@@ -49,12 +48,6 @@
  */
 #define CHARACTER_HEIGHT ( 10 )
 
-/*
- * @brief Amount of time between updates of display content. [milliseconds]
- *
- */
-#define DISPLAY_UPDATE_INTERVAL_IN_MS ( 250 )
-
 
 static const char * module_status_strings[] =
 {
@@ -82,6 +75,7 @@ static void enable_error_led( void );
 
 void init_display( void )
 {
+    cli();
     digitalWrite(PIN_DISPLAY_LED_GOOD, LOW);
     digitalWrite(PIN_DISPLAY_LED_WARNING, LOW);
     digitalWrite(PIN_DISPLAY_LED_ERROR, LOW);
@@ -91,42 +85,31 @@ void init_display( void )
     pinMode(PIN_DISPLAY_LED_ERROR, OUTPUT);
 
     g_display.begin();
+    sei();
 }
 
 
 void update_display( void )
 {
+    cli();
+
     update_leds( );
 
+    g_display.setCursor( ORIGIN_X_POS, ORIGIN_Y_POS );
+    g_display.setTextColor( WHITE, BLACK );
 
-    static unsigned long last_update_time = 0;
+    read_button( );
 
-    bool timeout = false;
-    unsigned long current_time = GET_TIMESTAMP_MS();
-
-    timeout = is_timeout(
-            last_update_time,
-            current_time,
-            DISPLAY_UPDATE_INTERVAL_IN_MS );
-
-    if ( timeout == true )
+    if( g_display_state.current_screen == STATUS_SCREEN )
     {
-        last_update_time = current_time;
-
-        g_display.setCursor( ORIGIN_X_POS, ORIGIN_Y_POS );
-        g_display.setTextColor( WHITE, BLACK );
-
-        read_button( );
-
-        if( g_display_state.current_screen == STATUS_SCREEN )
-        {
-            display_status_screen( );
-        }
-        else if( g_display_state.current_screen == DTC_SCREEN )
-        {
-            display_dtc_screen( );
-        }
+        display_status_screen( );
     }
+    else if( g_display_state.current_screen == DTC_SCREEN )
+    {
+        display_dtc_screen( );
+    }
+
+    sei();
 }
 
 
