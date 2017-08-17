@@ -76,6 +76,11 @@ Below is a sample of how additional vehicle directories should be created.
 
 - Code should conform to the [coding standard](#oscc-coding-standard)
 - Push your changes to a topic branch in your branch of the repository
+- Ideally, your commits would also be [GPG signed](https://help.github.com/articles/signing-commits-using-gpg/)
+  - `git config --global commit.gpgSign true`
+  - `git config --global gpg.program gpg2`
+  - `git config --global push.gpgSign if-asked`
+  - `git config --global user.signingKey <Your Public Key ID>`
 - Submit a pull request to the repository in the PolySync organization
 - Update your github issue to mark that you have submitted code and are ready for it to be reviewed (Status: Ready for Merge)
   - Include a link to the pull request in the ticket
@@ -197,6 +202,12 @@ Any changes to the OSCC modules must undergo a series of tests that conclude wit
     4. The regression test suite completes successfully
     5. The [system acceptance tests](#system-acceptance-testing) completes successfully (system acceptance test listed below, some parts automated)
   - Once all the status checks have passed, resolve any merge conflicts and merge the changed branch with devel
+    1. The merge commit will need to be signed, which means local, command-line
+       merge rather than GitHub UI.
+    2. The [hub](https://hub.github.com/) tool can help with this.
+    3. `git checkout devel`
+    4. `hub merge --no-ff https://github.com/PolySync/oscc/pull/169`
+    5. `git push origin devel`
 
 ## System Acceptance Testing
 

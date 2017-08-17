@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "steering_can_protocol.h"
+#include "can_protocols/steering_can_protocol.h"
 
 #include "macros.h"
 #include "can_monitor.h"
@@ -27,7 +27,7 @@
 //
 static int analyze_command_frame(
         steering_module_state_s * const state,
-        const oscc_command_steering_data_s * const steering_command )
+        const oscc_steering_command_s * const steering_command )
 {
     int module_state = STATE_OK;
 
@@ -46,15 +46,15 @@ static int analyze_command_frame(
 //
 static int analyze_report_frame(
         steering_module_state_s * const state,
-        const oscc_report_steering_data_s * const steering_report )
+        const oscc_steering_report_s * const steering_report )
 {
     int module_state = STATE_OK;
 
     state->control_state = steering_report->enabled;
 
-    state->override_triggered = steering_report->override;
+    state->override_triggered = steering_report->operator_override;
 
-    if( steering_report->dtc01_obd_timeout == 1 )
+    if( steering_report->dtcs != 0 )
     {
         module_state = STATE_FAULT;
     }
@@ -84,12 +84,12 @@ int analyze_steering_state(
 
     analyze_command_frame(
             state,
-            (oscc_command_steering_data_s*)
+            (oscc_steering_command_s*)
                     steering_command_frame->frame_contents.buffer ); // TODO : do we need this?
 
     state->module_state = analyze_report_frame(
             state,
-            (oscc_report_steering_data_s*)
+            (oscc_steering_report_s*)
                     steering_report_frame->frame_contents.buffer );
 
     return ret;
