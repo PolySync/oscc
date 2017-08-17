@@ -77,6 +77,7 @@ class SSD1325 : public GFX {
   void begin(void);
   void eraseBuffer(void);
   void sendBuffer(void);
+  void drawPixel(int16_t x, int16_t y, uint16_t color);
 
  private:
   int8_t sid;
@@ -89,6 +90,4 @@ class SSD1325 : public GFX {
   void stopSendCommand(void);
   void startSendData(void);
   void stopSendData(void);
-
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
 };

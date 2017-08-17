@@ -13,40 +13,84 @@
 
 
 /*
- * @brief Pixel position of the display's X origin.
+ * @brief X pixel position of where display drawing begins.
  *
  */
-#define ORIGIN_X_POS ( 0 )
+#define ORIGIN_X ( 4 )
 
 /*
- * @brief Pixel position of the display's Y origin.
+ * @brief Y pixel position of where display drawing begins.
  *
  */
-#define ORIGIN_Y_POS ( 0 )
+#define ORIGIN_Y ( 4 )
+
+/*
+ * @brief Y pixel position of where the horizontal header line is drawn.
+ *
+ */
+#define HEADER_LINE_Y ( 14 )
+
+/*
+ * @brief X pixel position of where the horizontal header line starts being drawn.
+ *
+ */
+#define HEADER_LINE_X_START ( 4 )
+
+/*
+ * @brief X pixel position of where the horizontal header line stops being drawn.
+ *
+ */
+#define HEADER_LINE_X_STOP ( 125 )
+
+/*
+ * @brief Y pixel position of where the brake status line is drawn.
+ *
+ */
+#define BRAKE_STATUS_Y ( 18 )
+
+/*
+ * @brief Y pixel position of where the steering status line is drawn.
+ *
+ */
+#define STEERING_STATUS_Y ( 30 )
+
+/*
+ * @brief Y pixel position of where the throttle status line is drawn.
+ *
+ */
+#define THROTTLE_STATUS_Y ( 42 )
+
+/*
+ * @brief Y pixel position of the the first row on the DTC screen.
+ *
+ */
+#define DTC_Y_START ( 18 )
 
 /*
  * @brief X pixel position of the DTC screen's brake column.
  *
  */
-#define BRAKE_DTC_X_POS ( 0 )
+#define BRAKE_DTC_X ( 4 )
 
 /*
  * @brief X pixel position of the DTC screen's steering column.
  *
  */
-#define STEERING_DTC_X_POS ( 33 )
+#define STEERING_DTC_X ( 46 )
 
 /*
  * @brief X pixel position of the DTC screen's throttle column.
  *
  */
-#define THROTTLE_DTC_X_POS ( 66 )
+#define THROTTLE_DTC_X ( 88 )
+
 
 /*
- * @brief Pixel height of a character on the display.
+ * @brief Number of pixels between top of character in one row and top of character
+ *        in the next row.
  *
  */
-#define CHARACTER_HEIGHT ( 10 )
+#define ROW_SPACING ( 12 )
 
 
 static const char * module_status_strings[] =
@@ -60,6 +104,7 @@ static const char * module_status_strings[] =
 
 static void display_status_screen( void );
 static void display_dtc_screen( void );
+static void draw_header_line( void );
 static void update_leds( );
 static void print_module_status( module_status_t status );
 static void print_brake_dtcs( void );
@@ -95,7 +140,7 @@ void update_display( void )
 
     update_leds( );
 
-    g_display.setCursor( ORIGIN_X_POS, ORIGIN_Y_POS );
+    g_display.setCursor( ORIGIN_X, ORIGIN_Y );
     g_display.setTextColor( WHITE, BLACK );
 
     read_button( );
@@ -138,13 +183,24 @@ static void display_status_screen( void )
 {
     g_display.eraseBuffer();
 
-    g_display.print( "Brakes:    " );
+    g_display.setCursor( ORIGIN_X, ORIGIN_Y );
+    g_display.print( "STATUS" );
+
+    draw_header_line( );
+
+    g_display.setCursor( ORIGIN_X, BRAKE_STATUS_Y );
+
+    g_display.print( "BRAKES: " );
     print_module_status( g_display_state.status_screen.brakes );
 
-    g_display.print( "Steering:  " );
+    g_display.setCursor( ORIGIN_X, STEERING_STATUS_Y );
+
+    g_display.print( "STEERING: " );
     print_module_status( g_display_state.status_screen.steering );
 
-    g_display.print( "Throttle:  " );
+    g_display.setCursor( ORIGIN_X, THROTTLE_STATUS_Y );
+
+    g_display.print( "THROTTLE: " );
     print_module_status( g_display_state.status_screen.throttle );
 
     g_display.sendBuffer();
@@ -154,6 +210,11 @@ static void display_status_screen( void )
 static void display_dtc_screen( void )
 {
     g_display.eraseBuffer( );
+
+    g_display.setCursor( ORIGIN_X, ORIGIN_Y );
+    g_display.print( "DTCS" );
+
+    draw_header_line( );
 
     if( g_display_state.status_screen.brakes == MODULE_STATUS_ERROR )
     {
@@ -171,6 +232,18 @@ static void display_dtc_screen( void )
     }
 
     g_display.sendBuffer( );
+}
+
+
+static void draw_header_line( void )
+{
+    g_display.setCursor( ORIGIN_X, HEADER_LINE_Y );
+
+    int pixel;
+    for( pixel = HEADER_LINE_X_START; pixel <= HEADER_LINE_X_STOP; ++pixel )
+    {
+        g_display.drawPixel(pixel, HEADER_LINE_Y, WHITE);
+    }
 }
 
 
@@ -195,54 +268,66 @@ static void print_module_status( module_status_t status )
 
 static void print_brake_dtcs( void )
 {
-    g_display.setCursor( BRAKE_DTC_X_POS, ORIGIN_Y_POS );
+    g_display.setCursor( BRAKE_DTC_X, DTC_Y_START );
+
+    int row_position = DTC_Y_START;
 
     for( int dtc = 0; dtc < OSCC_BRAKE_DTC_COUNT; ++dtc )
     {
         if( g_display_state.dtc_screen.brake[dtc] == true )
         {
-            print_dtc( "P1B", dtc );
-        }
+            g_display.setCursor(
+                BRAKE_DTC_X,
+                row_position );
 
-        g_display.setCursor(
-            BRAKE_DTC_X_POS,
-            (CHARACTER_HEIGHT + (dtc * CHARACTER_HEIGHT)) );
+            print_dtc( "P1B", dtc );
+
+            row_position += ROW_SPACING;
+        }
     }
 }
 
 
 static void print_steering_dtcs( void )
 {
-    g_display.setCursor( STEERING_DTC_X_POS, ORIGIN_Y_POS ) ;
+    g_display.setCursor( STEERING_DTC_X, DTC_Y_START ) ;
+
+    int row_position = DTC_Y_START;
 
     for( int dtc = 0; dtc < OSCC_STEERING_DTC_COUNT; ++dtc )
     {
         if( g_display_state.dtc_screen.steering[dtc] == true )
         {
-            print_dtc( "P1S", dtc );
-        }
+            g_display.setCursor(
+                STEERING_DTC_X,
+                row_position );
 
-        g_display.setCursor(
-            STEERING_DTC_X_POS,
-            (CHARACTER_HEIGHT + (dtc * CHARACTER_HEIGHT)) );
+            print_dtc( "P1S", dtc );
+
+            row_position += ROW_SPACING;
+        }
     }
 }
 
 
 static void print_throttle_dtcs( void )
 {
-    g_display.setCursor( THROTTLE_DTC_X_POS, ORIGIN_Y_POS );
+    g_display.setCursor( THROTTLE_DTC_X, DTC_Y_START );
+
+    int row_position = DTC_Y_START;
 
     for( int dtc = 0; dtc < OSCC_THROTTLE_DTC_COUNT; ++dtc )
     {
         if( g_display_state.dtc_screen.throttle[dtc] == true )
         {
-            print_dtc( "P1T", dtc );
-        }
+            g_display.setCursor(
+                THROTTLE_DTC_X,
+                row_position );
 
-        g_display.setCursor(
-            THROTTLE_DTC_X_POS,
-            (CHARACTER_HEIGHT + (dtc * CHARACTER_HEIGHT)) );
+            print_dtc( "P1T", dtc );
+
+            row_position += ROW_SPACING;
+        }
     }
 }
 
