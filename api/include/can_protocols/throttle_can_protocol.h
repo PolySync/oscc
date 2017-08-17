@@ -40,12 +40,18 @@
  */
 #define OSCC_REPORT_THROTTLE_PUBLISH_FREQ_IN_HZ (50)
 
-
 /*
- * @brief Throttle DTC bitfield position indicating an invalid sensor value.
+ * @brief Enumeration of all possible throttle DTCs.
  *
  */
-#define OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL (0x0)
+enum
+{
+    /* DTC bitfield position indicating an invalid sensor value. */
+    OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL = 0,
+
+    /* Number of possible throttle DTCs. */
+    OSCC_THROTTLE_DTC_COUNT
+};
 
 
 #pragma pack(push)
