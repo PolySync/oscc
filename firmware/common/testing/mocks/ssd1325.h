@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 class SSD1325 {
 public:
  SSD1325(int8_t SID, int8_t SCLK, int8_t DC, int8_t RST, int8_t CS){}
