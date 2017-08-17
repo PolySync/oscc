@@ -130,6 +130,10 @@ void init_display( void )
     pinMode(PIN_DISPLAY_LED_ERROR, OUTPUT);
 
     g_display.begin();
+
+    g_display.eraseBuffer();
+    g_display.sendBuffer();
+
     sei();
 }
 
