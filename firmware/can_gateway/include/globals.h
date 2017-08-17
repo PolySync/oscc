@@ -97,4 +97,8 @@
 #endif
 
 
+EXTERN kia_soul_gateway_display_state_s g_display_state;
+
+
+
 #endif /* _OSCC_KIA_SOUL_CAN_GATEWAY_GLOBALS_H_ */

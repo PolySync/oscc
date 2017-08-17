@@ -12,6 +12,15 @@
 #include "init.h"
 
 
+void init_globals( void )
+{
+    memset(
+        &g_display_state,
+        0,
+        sizeof(g_display_state) );
+}
+
+
 void init_communication_interfaces( void )
 {
     #ifdef DEBUG
@@ -23,4 +32,7 @@ void init_communication_interfaces( void )
 
     DEBUG_PRINT( "init Control CAN - ");
     init_can( g_control_can );
+
+    DEBUG_PRINTLN( "init display");
+    init_display( );
 }
