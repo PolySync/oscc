@@ -64,7 +64,7 @@ typedef struct
  */
 typedef struct
 {
-    bool brake[OSCC_BRAKE_DTC_COUNT];
+    bool brakes[OSCC_BRAKE_DTC_COUNT];
     bool steering[OSCC_STEERING_DTC_COUNT];
     bool throttle[OSCC_THROTTLE_DTC_COUNT];
 } dtc_screen_s;

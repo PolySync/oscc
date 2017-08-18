@@ -4,12 +4,41 @@
  */
 
 
+#include "dtc.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
 #include "vehicles.h"
 
 #include "globals.h"
 #include "communications.h"
+
+
+static void parse_brake_report( uint8_t *data );
+static void parse_steering_report( uint8_t *data );
+static void parse_throttle_report( uint8_t *data );
+
+
+void check_for_module_reports( void )
+{
+    can_frame_s rx_frame;
+    can_status_t ret = check_for_rx_frame( g_control_can, &rx_frame );
+
+    if( ret == CAN_RX_FRAME_AVAILABLE )
+    {
+        if ( rx_frame.id == OSCC_BRAKE_REPORT_CAN_ID )
+        {
+            parse_brake_report( rx_frame.data );
+        }
+        else if ( rx_frame.id == OSCC_STEERING_REPORT_CAN_ID )
+        {
+            parse_steering_report( rx_frame.data );
+        }
+        else if ( rx_frame.id == OSCC_THROTTLE_REPORT_CAN_ID )
+        {
+            parse_throttle_report( rx_frame.data );
+        }
+    }
+}
 
 
 void republish_obd_frames_to_control_can_bus( void )
@@ -30,6 +59,81 @@ void republish_obd_frames_to_control_can_bus( void )
                 sizeof(rx_frame),
                 (uint8_t *) &rx_frame.data );
             sei();
+        }
+    }
+}
+
+
+static void parse_brake_report( uint8_t *data )
+{
+    oscc_brake_report_s *report = (oscc_brake_report_s *) data;
+
+    if ( report->enabled == 1 )
+    {
+        g_display_state.status_screen.brakes = MODULE_STATUS_ENABLED;
+    }
+    else
+    {
+        g_display_state.status_screen.brakes = MODULE_STATUS_DISABLED;
+    }
+
+    if( report->dtcs != 0 )
+    {
+        g_display_state.status_screen.brakes = MODULE_STATUS_ERROR;
+
+        if ( DTC_CHECK( report->dtcs, OSCC_BRAKE_DTC_INVALID_SENSOR_VAL ) != 0)
+        {
+            g_display_state.dtc_screen.brakes[OSCC_BRAKE_DTC_INVALID_SENSOR_VAL] = true;
+        }
+    }
+}
+
+
+static void parse_steering_report( uint8_t *data )
+{
+    oscc_steering_report_s *report = (oscc_steering_report_s *) data;
+
+    if ( report->enabled == 1 )
+    {
+        g_display_state.status_screen.steering = MODULE_STATUS_ENABLED;
+    }
+    else
+    {
+        g_display_state.status_screen.steering = MODULE_STATUS_DISABLED;
+    }
+
+    if( report->dtcs != 0 )
+    {
+        g_display_state.status_screen.steering = MODULE_STATUS_ERROR;
+
+        if ( DTC_CHECK( report->dtcs, OSCC_STEERING_DTC_INVALID_SENSOR_VAL ) != 0)
+        {
+            g_display_state.dtc_screen.steering[OSCC_STEERING_DTC_INVALID_SENSOR_VAL] = true;
+        }
+    }
+}
+
+
+static void parse_throttle_report( uint8_t *data )
+{
+    oscc_throttle_report_s *report = (oscc_throttle_report_s *) data;
+
+    if ( report->enabled == 1 )
+    {
+        g_display_state.status_screen.throttle = MODULE_STATUS_ENABLED;
+    }
+    else
+    {
+        g_display_state.status_screen.throttle = MODULE_STATUS_DISABLED;
+    }
+
+    if( report->dtcs != 0 )
+    {
+        g_display_state.status_screen.throttle = MODULE_STATUS_ERROR;
+
+        if ( DTC_CHECK( report->dtcs, OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL ) != 0)
+        {
+            g_display_state.dtc_screen.throttle[OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL] = true;
         }
     }
 }

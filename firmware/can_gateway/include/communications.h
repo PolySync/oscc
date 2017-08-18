@@ -13,6 +13,19 @@
 
 
 // ****************************************************************************
+// Function:    check_for_module_reports
+//
+// Purpose:     Checks Control CAN bus for reports from the modules.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void check_for_module_reports( void );
+
+
+// ****************************************************************************
 // Function:    republish_obd_frames_to_control_can_bus
 //
 // Purpose:     Republish pertinent frames on the OBD CAN bus to the Control CAN

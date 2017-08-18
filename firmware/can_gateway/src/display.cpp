@@ -278,7 +278,7 @@ static void print_brake_dtcs( void )
 
     for( int dtc = 0; dtc < OSCC_BRAKE_DTC_COUNT; ++dtc )
     {
-        if( g_display_state.dtc_screen.brake[dtc] == true )
+        if( g_display_state.dtc_screen.brakes[dtc] == true )
         {
             g_display.setCursor(
                 BRAKE_DTC_X,
