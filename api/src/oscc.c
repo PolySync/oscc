@@ -510,13 +510,6 @@ static oscc_result_t oscc_init_can( const char *can_channel )
 
     if ( ret != OSCC_ERROR )
     {
-        can_socket = s;
-
-        ret = OSCC_OK;
-    }
-
-    if ( ret != OSCC_ERROR )
-    {
         status = oscc_async_enable( s );
 
         if ( status != OSCC_OK )
@@ -524,6 +517,35 @@ static oscc_result_t oscc_init_can( const char *can_channel )
             printf( "async enable failed\n" );
 
             ret = OSCC_ERROR;
+        }
+    }
+
+    if ( ret != OSCC_ERROR )
+    {
+        /* all prior checks will pass even if a valid interface has not been
+           set up - attempt to write an empty CAN frame to the interface to see
+           if it is valid */
+
+        char buf = 0;
+        int bytes_written = 0;
+
+        struct can_frame tx_frame;
+
+        tx_frame.can_id = 0;
+        tx_frame.can_dlc = 8;
+        memset( tx_frame.data, 0, sizeof(tx_frame.data) );
+
+        bytes_written = write( s, &tx_frame, sizeof(tx_frame) );
+
+        if ( bytes_written < 0 )
+        {
+            printf( "failed to write test frame to %s\n", can_channel );
+
+            ret = OSCC_ERROR;
+        }
+        else
+        {
+            can_socket = s;
         }
     }
 
