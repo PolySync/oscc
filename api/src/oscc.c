@@ -525,17 +525,13 @@ static oscc_result_t oscc_init_can( const char *can_channel )
         /* all prior checks will pass even if a valid interface has not been
            set up - attempt to write an empty CAN frame to the interface to see
            if it is valid */
-
-        char buf = 0;
-        int bytes_written = 0;
-
         struct can_frame tx_frame;
 
         tx_frame.can_id = 0;
         tx_frame.can_dlc = 8;
         memset( tx_frame.data, 0, sizeof(tx_frame.data) );
 
-        bytes_written = write( s, &tx_frame, sizeof(tx_frame) );
+        int bytes_written = write( s, &tx_frame, sizeof(tx_frame) );
 
         if ( bytes_written < 0 )
         {
