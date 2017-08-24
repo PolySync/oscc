@@ -31,6 +31,18 @@
  */
 #define UNAVAILABLE 2
 
+/**
+ * @brief OSCC_DISABLED macro.
+ *
+ */
+#define OSCC_DISABLED 0
+
+
+/**
+ * @brief OSCC_ENABLED macro.
+ *
+ */
+#define OSCC_ENABLED 1
 
 /**
  * @brief Math macro: constrain(amount, low, high).
