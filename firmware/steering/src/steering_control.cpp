@@ -25,6 +25,20 @@
  */
 #define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
+/*
+ * @brief Number of consecutive faults that can occur when reading the
+ *        torque sensor before an operator override is reported.
+ *
+ */
+#define OPERATOR_OVERRIDE_CHECK_FAULT_COUNT ( 20 )
+
+/*
+ * @brief Value of torque sensor difference that indicates likely operator 
+ *        override.
+ *
+ */
+#define TORQUE_DIFFERENCE_THRESHOLD ( 2750 )
+
 
 static void read_torque_sensor(
     steering_torque_s * value );
@@ -35,24 +49,34 @@ void check_for_operator_override( void )
     if( g_steering_control_state.enabled == true
         || g_steering_control_state.operator_override == true )
     {
+        static int fault_count = 0;
+
         steering_torque_s torque;
 
         read_torque_sensor( &torque );
 
-        if ( (abs(torque.high) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC)
-            || (abs(torque.low) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC) )
+        float diff = (float)torque.high - (float)torque.low;
+
+        if( abs(diff) > TORQUE_DIFFERENCE_THRESHOLD)
         {
-            disable_control( );
+            ++fault_count;
 
-            publish_fault_report( );
+            if( fault_count >= OPERATOR_OVERRIDE_CHECK_FAULT_COUNT )
+            {
+                disable_control( );
 
-            g_steering_control_state.operator_override = true;
+                publish_fault_report( );
 
-            DEBUG_PRINTLN( "Operator override" );
+                g_steering_control_state.operator_override = true;
+
+                DEBUG_PRINTLN( "Operator override" );
+            }
         }
         else
         {
             g_steering_control_state.operator_override = false;
+
+            fault_count = 0;
         }
     }
 }
@@ -70,8 +94,8 @@ void check_for_sensor_faults( void )
         read_torque_sensor(&torque);
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (torque.high == 0)
-            || (torque.low == 0) )
+        if( (torque.high == -1)
+            || (torque.low == -1) )
         {
             ++fault_count;
 
@@ -117,6 +141,8 @@ void update_steering(
                 spoof_command_low,
                 STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
                 STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
+
+        DEBUG_PRINTLN("recieving command");
 
         cli();
         g_dac.outputA( spoof_high );
@@ -174,8 +200,8 @@ static void read_torque_sensor(
     steering_torque_s * value )
 {
     cli();
-    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH );
-    value->low = analogRead( PIN_TORQUE_SENSOR_LOW );
+    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
+    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
 }
 
