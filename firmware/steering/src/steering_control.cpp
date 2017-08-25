@@ -30,14 +30,14 @@
  *        torque sensor before an operator override is reported.
  *
  */
-#define OPERATOR_OVERRIDE_CHECK_FAULT_COUNT ( 20 )
+#define OPERATOR_OVERRIDE_CHECK_FAULT_COUNT ( 4 )
 
 /*
  * @brief Value of torque sensor difference that indicates likely operator 
  *        override.
  *
  */
-#define TORQUE_DIFFERENCE_THRESHOLD ( 2750 )
+#define TORQUE_DIFFERENCE_THRESHOLD ( 2500 )
 
 
 static void read_torque_sensor(
@@ -49,8 +49,6 @@ void check_for_operator_override( void )
     if( g_steering_control_state.enabled == true
         || g_steering_control_state.operator_override == true )
     {
-        static int fault_count = 0;
-
         steering_torque_s torque;
 
         read_torque_sensor( &torque );
@@ -59,24 +57,17 @@ void check_for_operator_override( void )
 
         if( abs(diff) > TORQUE_DIFFERENCE_THRESHOLD)
         {
-            ++fault_count;
+            disable_control( );
 
-            if( fault_count >= OPERATOR_OVERRIDE_CHECK_FAULT_COUNT )
-            {
-                disable_control( );
+            publish_fault_report( );
 
-                publish_fault_report( );
+            g_steering_control_state.operator_override = true;
 
-                g_steering_control_state.operator_override = true;
-
-                DEBUG_PRINTLN( "Operator override" );
-            }
+            DEBUG_PRINTLN( "Operator override" );
         }
         else
         {
             g_steering_control_state.operator_override = false;
-
-            fault_count = 0;
         }
     }
 }
@@ -142,8 +133,6 @@ void update_steering(
                 STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
                 STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
-        DEBUG_PRINTLN("recieving command");
-
         cli();
         g_dac.outputA( spoof_high );
         g_dac.outputB( spoof_low );
@@ -196,12 +185,39 @@ void disable_control( void )
     }
 }
 
+float exponential_moving_average(
+    const float alpha,
+    const float input,
+    const float average )
+{
+    return ( (alpha * input) + ((1.0 - alpha) * average) );
+}
+
 static void read_torque_sensor(
     steering_torque_s * value )
 {
+    steering_torque_s unfiltered_torque;
+
     cli();
-    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
-    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
+    unfiltered_torque.high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
+    unfiltered_torque.low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
+
+    const float filter_alpha = 0.01;
+    static float filtered_torque_high = 0.0;
+    static float filtered_torque_low = 0.0;
+
+    filtered_torque_high = exponential_moving_average(
+        filter_alpha,
+        unfiltered_torque.high,
+        filtered_torque_high);
+
+    filtered_torque_low = exponential_moving_average(
+        filter_alpha,
+        unfiltered_torque.low,
+        filtered_torque_low);
+
+    value->high = filtered_torque_high;
+    value->low = filtered_torque_low;
 }
 
