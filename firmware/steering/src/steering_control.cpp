@@ -75,8 +75,8 @@ void check_for_sensor_faults( void )
         read_torque_sensor(&torque);
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (torque.high == -1)
-            || (torque.low == -1) )
+        if( (torque.high == 0)
+            || (torque.low == 0) )
         {
             ++fault_count;
 
