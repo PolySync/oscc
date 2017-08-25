@@ -25,23 +25,13 @@
  */
 #define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
-/*
- * @brief Number of consecutive faults that can occur when reading the
- *        torque sensor before an operator override is reported.
- *
- */
-#define OPERATOR_OVERRIDE_CHECK_FAULT_COUNT ( 4 )
-
-/*
- * @brief Value of torque sensor difference that indicates likely operator 
- *        override.
- *
- */
-#define TORQUE_DIFFERENCE_THRESHOLD ( 2500 )
-
-
 static void read_torque_sensor(
     steering_torque_s * value );
+
+static float exponential_moving_average(
+    const float alpha,
+    const float input,
+    const float average );
 
 
 void check_for_operator_override( void )
@@ -185,7 +175,7 @@ void disable_control( void )
     }
 }
 
-float exponential_moving_average(
+static float exponential_moving_average(
     const float alpha,
     const float input,
     const float average )
