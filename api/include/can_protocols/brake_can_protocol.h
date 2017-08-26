@@ -59,7 +59,7 @@ typedef struct
                          Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                          Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-#if defined(KIA_SOUL_PETROL)
+#if defined(KIA_SOUL)
     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
     uint8_t enable; /*!< Command to enable or disable steering control.

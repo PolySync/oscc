@@ -13,7 +13,7 @@ add_custom_target(
     brake-monitor-log
     COMMAND screen -L ${ARDUINO_DEFAULT_PORT} ${ARDUINO_DEFAULT_BAUDRATE})
 
-if(KIA_SOUL_PETROL)
+if(KIA_SOUL)
     add_subdirectory(kia_soul_petrol)
 elseif(KIA_SOUL_EV)
     add_subdirectory(kia_soul_ev)

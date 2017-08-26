@@ -114,7 +114,7 @@ oscc_result_t oscc_publish_brake_position( double brake_position )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-#if defined(KIA_SOUL_PETROL)
+#if defined(KIA_SOUL)
     const double clamped_position = (double) CONSTRAIN (
             brake_position * MAXIMUM_BRAKE_COMMAND,
             MINIMUM_BRAKE_COMMAND,

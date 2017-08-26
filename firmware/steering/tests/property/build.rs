@@ -7,7 +7,7 @@ use std::path::Path;
 fn main() {
     gcc::Config::new()
         .flag("-w")
-        .define("KIA_SOUL_PETROL", Some("ON"))
+        .define("KIA_SOUL", Some("ON"))
         .include("include")
         .include("../../include")
         .include("../../../common/include")
@@ -32,7 +32,7 @@ fn main() {
         .header("include/wrapper.hpp")
         .generate_comments(false)
         .layout_tests(false)
-        .clang_arg("-DKIA_SOUL_PETROL=ON")
+        .clang_arg("-DKIA_SOUL=ON")
         .clang_arg("-I../../include")
         .clang_arg("-I../../../common/include")
         .clang_arg("-I../../../common/libs/can")
