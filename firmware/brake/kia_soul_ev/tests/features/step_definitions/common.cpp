@@ -20,7 +20,7 @@ extern uint8_t g_mock_arduino_digital_write_pins[100];
 extern uint8_t g_mock_arduino_digital_write_val[100];
 extern int g_mock_arduino_digital_write_count;
 
-extern int g_mock_arduino_analog_read_return;
+extern int g_mock_arduino_analog_read_return[100];
 
 extern uint8_t g_mock_mcp_can_check_receive_return;
 extern uint32_t g_mock_mcp_can_read_msg_buf_id;
@@ -43,7 +43,7 @@ BEFORE()
     memset(&g_mock_arduino_digital_write_pins, 0, sizeof(g_mock_arduino_digital_write_pins));
     memset(&g_mock_arduino_digital_write_val, 0, sizeof(g_mock_arduino_digital_write_val));
 
-    g_mock_arduino_analog_read_return = INT_MAX;
+    memset(&g_mock_arduino_analog_read_return, 0, sizeof(g_mock_arduino_analog_read_return));
 
     g_mock_mcp_can_check_receive_return = UINT8_MAX;
     g_mock_mcp_can_read_msg_buf_id = UINT32_MAX;
@@ -78,7 +78,7 @@ GIVEN("^the accelerator position sensors have a reading of (.*)$")
 {
     REGEX_PARAM(int, sensor_val);
 
-    g_mock_arduino_analog_read_return = sensor_val;
+    g_mock_arduino_analog_read_return[0] = sensor_val;
 }
 
 
@@ -87,7 +87,7 @@ GIVEN("^the operator has applied (.*) to the accelerator$")
 
     REGEX_PARAM(int, brake_sensor_val);
 
-    g_mock_arduino_analog_read_return = brake_sensor_val;
+    g_mock_arduino_analog_read_return[0] = brake_sensor_val;
 
     check_for_operator_override();
 }
