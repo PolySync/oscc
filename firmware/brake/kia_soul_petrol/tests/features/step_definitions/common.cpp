@@ -22,7 +22,7 @@ extern uint8_t g_mock_arduino_digital_write_pins[100];
 extern uint8_t g_mock_arduino_digital_write_val[100];
 extern int g_mock_arduino_digital_write_count;
 
-extern int g_mock_arduino_analog_read_return;
+extern int g_mock_arduino_analog_read_return[100];
 extern int g_mock_arduino_analog_write_count;
 extern uint8_t g_mock_arduino_analog_write_pins[100];
 extern int g_mock_arduino_analog_write_val[100];
@@ -45,7 +45,7 @@ BEFORE()
     memset(&g_mock_arduino_digital_write_pins, 0, sizeof(g_mock_arduino_digital_write_pins));
     memset(&g_mock_arduino_digital_write_val, 0, sizeof(g_mock_arduino_digital_write_val));
 
-    g_mock_arduino_analog_read_return = INT_MAX;
+    g_mock_arduino_analog_read_return[0] = INT_MAX;
     g_mock_arduino_analog_write_count = 0;
     memset(&g_mock_arduino_analog_write_pins, 0, sizeof(g_mock_arduino_analog_write_pins));
     memset(&g_mock_arduino_analog_write_val, 0, sizeof(g_mock_arduino_analog_write_val));

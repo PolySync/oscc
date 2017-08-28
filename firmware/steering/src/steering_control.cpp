@@ -25,9 +25,13 @@
  */
 #define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
-
 static void read_torque_sensor(
     steering_torque_s * value );
+
+static float exponential_moving_average(
+    const float alpha,
+    const float input,
+    const float average );
 
 
 void check_for_operator_override( void )
@@ -39,8 +43,9 @@ void check_for_operator_override( void )
 
         read_torque_sensor( &torque );
 
-        if ( (abs(torque.high) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC)
-            || (abs(torque.low) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC) )
+        float diff = (float)torque.high - (float)torque.low;
+
+        if( abs(diff) > TORQUE_DIFFERENCE_THRESHOLD)
         {
             disable_control( );
 
@@ -170,12 +175,39 @@ void disable_control( void )
     }
 }
 
+static float exponential_moving_average(
+    const float alpha,
+    const float input,
+    const float average )
+{
+    return ( (alpha * input) + ((1.0 - alpha) * average) );
+}
+
 static void read_torque_sensor(
     steering_torque_s * value )
 {
+    steering_torque_s unfiltered_torque;
+
     cli();
-    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH );
-    value->low = analogRead( PIN_TORQUE_SENSOR_LOW );
+    unfiltered_torque.high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
+    unfiltered_torque.low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
+
+    const float filter_alpha = 0.01;
+    static float filtered_torque_high = 0.0;
+    static float filtered_torque_low = 0.0;
+
+    filtered_torque_high = exponential_moving_average(
+        filter_alpha,
+        unfiltered_torque.high,
+        filtered_torque_high);
+
+    filtered_torque_low = exponential_moving_average(
+        filter_alpha,
+        unfiltered_torque.low,
+        filtered_torque_low);
+
+    value->high = filtered_torque_high;
+    value->low = filtered_torque_low;
 }
 

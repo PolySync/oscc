@@ -20,7 +20,7 @@ extern "C" {
     pub static mut g_mock_mcp_can_send_msg_buf_ext: u8;
     pub static mut g_mock_mcp_can_send_msg_buf_len: u8;
     pub static mut g_mock_mcp_can_send_msg_buf_buf: *mut u8;
-    pub static mut g_mock_arduino_analog_read_return: isize;
+    pub static mut g_mock_arduino_analog_read_return: [isize; 100usize];
     pub static mut g_mock_dac_output_a: u16;
     pub static mut g_mock_dac_output_b: u16;
     pub static mut g_steering_control_state: steering_control_state_s;
@@ -249,15 +249,16 @@ fn check_valid_can_frame() {
 
 // the steering firmware should be able to correctly and consistently
 // detect operator overrides, disable on reciept, and send a fault report
-fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
+fn prop_check_operator_override(analog_read_spoof_high: i16, analog_read_spoof_low: i16) -> TestResult {
     unsafe {
         g_steering_control_state.enabled = true;
         g_steering_control_state.operator_override = false;
-        g_mock_arduino_analog_read_return = analog_read_spoof as isize;
+        g_mock_arduino_analog_read_return[0] = analog_read_spoof_high as isize;
+        g_mock_arduino_analog_read_return[1] = analog_read_spoof_low as isize;
 
         check_for_operator_override();
 
-        if analog_read_spoof >= (OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC as u16) {
+        if (analog_read_spoof_high - analog_read_spoof_low) >= (TORQUE_DIFFERENCE_THRESHOLD as i16) {
             TestResult::from_bool(g_steering_control_state.operator_override == true && g_steering_control_state.enabled == false &&
             g_mock_mcp_can_send_msg_buf_id == OSCC_FAULT_REPORT_CAN_ID)
         } else {
@@ -270,8 +271,7 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
 fn check_operator_override() {
     QuickCheck::new()
         .tests(1000)
-        .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
-        .quickcheck(prop_check_operator_override as fn(u16) -> TestResult)
+        .quickcheck(prop_check_operator_override as fn(i16, i16) -> TestResult)
 }
 
 /// the steering firmware should set disable itself when it recieves a
