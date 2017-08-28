@@ -21,7 +21,7 @@
 
 #define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
-static int can_socket;
+static int can_socket = -1;
 
 static oscc_brake_command_s brake_cmd;
 static oscc_throttle_command_s throttle_cmd;
@@ -66,11 +66,14 @@ oscc_result_t oscc_close( unsigned int channel )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-    int result = close( can_socket );
-
-    if ( result > 0 )
+    if( can_socket > 0 )
     {
-        ret = OSCC_OK;
+        int result = close( can_socket );
+
+        if ( result > 0 )
+        {
+            ret = OSCC_OK;
+        }
     }
 
     return ret;
@@ -344,63 +347,66 @@ static void oscc_update_status( )
 {
     struct can_frame rx_frame;
 
-    int result = read( can_socket, &rx_frame, CAN_MTU );
-
-    while ( result > 0 )
+    if ( can_socket > 0 )
     {
-        if ( (rx_frame.data[0] == OSCC_MAGIC_BYTE_0)
-            && (rx_frame.data[1] = OSCC_MAGIC_BYTE_1) )
+        int result = read( can_socket, &rx_frame, CAN_MTU );
+
+        while ( result > 0 )
         {
-            if ( rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID )
+            if ( (rx_frame.data[0] == OSCC_MAGIC_BYTE_0)
+                && (rx_frame.data[1] = OSCC_MAGIC_BYTE_1) )
             {
-                oscc_steering_report_s *steering_report =
-                    (oscc_steering_report_s *)rx_frame.data;
-
-                if ( steering_report_callback != NULL )
+                if ( rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID )
                 {
-                    steering_report_callback( steering_report );
+                    oscc_steering_report_s *steering_report =
+                        (oscc_steering_report_s *)rx_frame.data;
+
+                    if ( steering_report_callback != NULL )
+                    {
+                        steering_report_callback( steering_report );
+                    }
+                }
+                else if ( rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID )
+                {
+                    oscc_throttle_report_s *throttle_report =
+                        ( oscc_throttle_report_s *)rx_frame.data;
+
+                    if ( throttle_report_callback != NULL )
+                    {
+                        throttle_report_callback( throttle_report );
+                    }
+                }
+                else if ( rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID )
+                {
+                    oscc_brake_report_s *brake_report =
+                        ( oscc_brake_report_s *)rx_frame.data;
+
+                    if ( brake_report_callback != NULL )
+                    {
+                        brake_report_callback( brake_report );
+                    }
+                }
+                else if ( rx_frame.can_id == OSCC_FAULT_REPORT_CAN_ID )
+                {
+                    oscc_fault_report_s *fault_report =
+                        ( oscc_fault_report_s *)rx_frame.data;
+
+                    if ( fault_report_callback != NULL )
+                    {
+                        fault_report_callback( fault_report );
+                    }
                 }
             }
-            else if ( rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID )
+            else
             {
-                oscc_throttle_report_s *throttle_report =
-                    ( oscc_throttle_report_s *)rx_frame.data;
-
-                if ( throttle_report_callback != NULL )
+                if ( obd_frame_callback != NULL )
                 {
-                    throttle_report_callback( throttle_report );
+                    obd_frame_callback( &rx_frame );
                 }
             }
-            else if ( rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID )
-            {
-                oscc_brake_report_s *brake_report =
-                    ( oscc_brake_report_s *)rx_frame.data;
 
-                if ( brake_report_callback != NULL )
-                {
-                    brake_report_callback( brake_report );
-                }
-            }
-            else if ( rx_frame.can_id == OSCC_FAULT_REPORT_CAN_ID )
-            {
-                oscc_fault_report_s *fault_report =
-                    ( oscc_fault_report_s *)rx_frame.data;
-
-                if ( fault_report_callback != NULL )
-                {
-                    fault_report_callback( fault_report );
-                }
-            }
+            result = read( can_socket, &rx_frame, CAN_MTU );
         }
-        else
-        {
-            if ( obd_frame_callback != NULL )
-            {
-                obd_frame_callback( &rx_frame );
-            }
-        }
-
-        result = read( can_socket, &rx_frame, CAN_MTU );
     }
 }
 
@@ -408,17 +414,20 @@ static oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-    struct can_frame tx_frame;
-
-    tx_frame.can_id = id;
-    tx_frame.can_dlc = dlc;
-    memcpy( tx_frame.data, msg, dlc);
-
-    int result = write( can_socket, &tx_frame, sizeof(tx_frame ));
-
-    if ( result > 0 )
+    if ( can_socket > 0 )
     {
-        ret = OSCC_OK;
+        struct can_frame tx_frame;
+
+        tx_frame.can_id = id;
+        tx_frame.can_dlc = dlc;
+        memcpy( tx_frame.data, msg, dlc);
+
+        int result = write( can_socket, &tx_frame, sizeof(tx_frame ));
+
+        if ( result > 0 )
+        {
+            ret = OSCC_OK;
+        }
     }
 
     return ret;
@@ -501,13 +510,6 @@ static oscc_result_t oscc_init_can( const char *can_channel )
 
     if ( ret != OSCC_ERROR )
     {
-        can_socket = s;
-
-        ret = OSCC_OK;
-    }
-
-    if ( ret != OSCC_ERROR )
-    {
         status = oscc_async_enable( s );
 
         if ( status != OSCC_OK )
@@ -515,6 +517,31 @@ static oscc_result_t oscc_init_can( const char *can_channel )
             printf( "async enable failed\n" );
 
             ret = OSCC_ERROR;
+        }
+    }
+
+    if ( ret != OSCC_ERROR )
+    {
+        /* all prior checks will pass even if a valid interface has not been
+           set up - attempt to write an empty CAN frame to the interface to see
+           if it is valid */
+        struct can_frame tx_frame;
+
+        tx_frame.can_id = 0;
+        tx_frame.can_dlc = 8;
+        memset( tx_frame.data, 0, sizeof(tx_frame.data) );
+
+        int bytes_written = write( s, &tx_frame, sizeof(tx_frame) );
+
+        if ( bytes_written < 0 )
+        {
+            printf( "failed to write test frame to %s\n", can_channel );
+
+            ret = OSCC_ERROR;
+        }
+        else
+        {
+            can_socket = s;
         }
     }
 
