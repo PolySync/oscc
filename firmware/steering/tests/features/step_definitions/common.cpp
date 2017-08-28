@@ -19,7 +19,7 @@ using namespace cgreen;
 extern uint8_t g_mock_arduino_digital_write_pin;
 extern uint8_t g_mock_arduino_digital_write_val;
 
-extern int g_mock_arduino_analog_read_return;
+extern int g_mock_arduino_analog_read_return[100];
 
 extern uint8_t g_mock_mcp_can_check_receive_return;
 extern uint32_t g_mock_mcp_can_read_msg_buf_id;
@@ -41,7 +41,8 @@ BEFORE()
     g_mock_arduino_digital_write_pin = UINT8_MAX;
     g_mock_arduino_digital_write_val = UINT8_MAX;
 
-    g_mock_arduino_analog_read_return = INT_MAX;
+    g_mock_arduino_analog_read_return[0] = INT_MAX;
+    g_mock_arduino_analog_read_return[1] = INT_MAX;
 
     g_mock_mcp_can_check_receive_return = UINT8_MAX;
     g_mock_mcp_can_read_msg_buf_id = UINT32_MAX;
@@ -76,7 +77,8 @@ GIVEN("^the torque sensors have a reading of (.*)$")
 {
     REGEX_PARAM(int, sensor_val);
 
-    g_mock_arduino_analog_read_return = sensor_val;
+    g_mock_arduino_analog_read_return[0] = sensor_val;
+    g_mock_arduino_analog_read_return[1] = sensor_val;
 }
 
 
@@ -84,7 +86,8 @@ GIVEN("^the operator has applied (.*) to the steering wheel$")
 {
     REGEX_PARAM(int, steering_sensor_val);
 
-    g_mock_arduino_analog_read_return = steering_sensor_val;
+    g_mock_arduino_analog_read_return[0] = steering_sensor_val;
+    g_mock_arduino_analog_read_return[1] = steering_sensor_val;
 
     check_for_operator_override();
 }
