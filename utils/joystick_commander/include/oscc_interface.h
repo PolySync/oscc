@@ -27,14 +27,27 @@ typedef struct
 
 typedef struct
 {
+    // chassis 1
+    uint16_t steering_wheel_angle;
+    uint16_t brake_pressure;
+    bool left_turn_signal;
+    bool right_turn_signal;
+    bool brake_lights;
+
+    // chassis 2
+    int16_t wheel_speed_front_left; /* Speed of front left wheel. */
+    int16_t wheel_speed_front_right; /* Speed of front right wheel. */
+    int16_t wheel_speed_rear_left; /* Speed of rear left wheel. */
+    int16_t wheel_speed_rear_right; /* Speed of rear right wheel. */
+
+    // chassis 3    
     uint16_t engine_rpm;
     uint8_t engine_temperature;
-    uint8_t turn_signal;
     uint8_t gear_position;
     uint8_t vehicle_speed;
     uint8_t accelerator_pedal_position;
     uint8_t fuel_level;
-} oscc_vehicle_status_data_s;
+} oscc_vehicle_status_s;
 
 /**
  * @brief Initialize the OSCC interface - This call must occur
@@ -201,7 +214,7 @@ int oscc_interface_command_steering( int angle, unsigned int rate );
  */
 int oscc_interface_update_status( oscc_status_s * status );
 
-int oscc_interface_read_vehicle_status_data(oscc_vehicle_status_data_s* vehicle_status_data);
+int oscc_interface_read_vehicle_status(oscc_vehicle_status_s* vehicle_status);
 
 int oscc_init_can(int channel);
 

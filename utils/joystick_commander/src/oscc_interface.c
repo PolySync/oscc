@@ -11,13 +11,14 @@
 #include <canlib.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 
 #include "brake_can_protocol.h"
+#include "chassis_state_can_protocol.h"
 #include "macros.h"
 #include "oscc_interface.h"
 #include "steering_can_protocol.h"
 #include "throttle_can_protocol.h"
-#include "chassis_state_can_protocol.h"
 
 // *****************************************************
 // static global types/macros
@@ -42,6 +43,10 @@ typedef struct {
     oscc_command_brake_data_s brake_cmd;
     oscc_command_throttle_data_s throttle_cmd;
     oscc_command_steering_data_s steering_cmd;
+
+    oscc_report_chassis_state_1_data_s chassis_state_1_data;
+    oscc_report_chassis_state_2_data_s chassis_state_2_data;
+    oscc_report_chassis_state_3_data_s chassis_state_3_data;
 
     canHandle can_handle;
     int can_channel;
@@ -202,17 +207,54 @@ static void oscc_interface_check_for_obd_timeout(oscc_status_s* status,
 }
 
 static void oscc_interface_parse_vehicle_state_info(
-    oscc_vehicle_status_data_s* vehicle_status_data, long can_id,
-    unsigned char* buffer) {
-        if (can_id == OSCC_REPORT_CHASSIS_STATE_3_CAN_ID) {
-            oscc_report_chassis_state_3_data_s* chassis_state_3_data = (oscc_report_chassis_state_3_data_s*) buffer;
-            vehicle_status_data->engine_rpm = chassis_state_3_data->engine_rpm;
-            vehicle_status_data->engine_temperature = chassis_state_3_data->engine_temp;
-            vehicle_status_data->gear_position = chassis_state_3_data->gear_position;
-            vehicle_status_data->vehicle_speed = chassis_state_3_data->vehicle_speed;
-            vehicle_status_data->accelerator_pedal_position = chassis_state_3_data->accelerator_pedal_position;
+    oscc_vehicle_status_s* vehicle_status, long can_id, unsigned char* buffer) {
+    if (oscc != NULL) {
+        if (can_id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID) {
+            oscc_report_chassis_state_1_data_s* chassis_state_1_data =
+                (oscc_report_chassis_state_1_data_s*)buffer;
+            memcpy(&oscc->chassis_state_1_data, chassis_state_1_data,
+                   sizeof(oscc_report_chassis_state_1_data_s));
 
+            vehicle_status->left_turn_signal = oscc->chassis_state_1_data.flags & OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON;
+            vehicle_status->right_turn_signal = oscc->chassis_state_1_data.flags & OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON;
+            vehicle_status->brake_lights = oscc->chassis_state_1_data.flags & OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON;
+            vehicle_status->steering_wheel_angle =
+                oscc->chassis_state_1_data.steering_wheel_angle;
+            vehicle_status->brake_pressure =
+                oscc->chassis_state_1_data.brake_pressure;
+
+        } else if (can_id == OSCC_REPORT_CHASSIS_STATE_2_CAN_ID) {
+            oscc_report_chassis_state_2_data_s* chassis_state_2_data =
+                (oscc_report_chassis_state_2_data_s*)buffer;
+            memcpy(&oscc->chassis_state_2_data, chassis_state_2_data,
+                   sizeof(oscc_report_chassis_state_2_data_s));
+
+            vehicle_status->wheel_speed_front_left =
+                oscc->chassis_state_2_data.wheel_speed_front_left;
+            vehicle_status->wheel_speed_front_right =
+                oscc->chassis_state_2_data.wheel_speed_front_right;
+            vehicle_status->wheel_speed_rear_left =
+                oscc->chassis_state_2_data.wheel_speed_rear_left;
+            vehicle_status->wheel_speed_rear_right =
+                oscc->chassis_state_2_data.wheel_speed_rear_right;
+
+        } else if (can_id == OSCC_REPORT_CHASSIS_STATE_3_CAN_ID) {
+            oscc_report_chassis_state_3_data_s* chassis_state_3_data =
+                (oscc_report_chassis_state_3_data_s*)buffer;
+            memcpy(&oscc->chassis_state_3_data, chassis_state_3_data,
+                   sizeof(oscc_report_chassis_state_3_data_s));
+
+            vehicle_status->engine_rpm = oscc->chassis_state_3_data.engine_rpm;
+            vehicle_status->engine_temperature =
+                oscc->chassis_state_3_data.engine_temp;
+            vehicle_status->gear_position =
+                oscc->chassis_state_3_data.gear_position;
+            vehicle_status->vehicle_speed =
+                oscc->chassis_state_3_data.vehicle_speed;
+            vehicle_status->accelerator_pedal_position =
+                oscc->chassis_state_3_data.accelerator_pedal_position;
         }
+    }
 }
 
 // *****************************************************
@@ -533,8 +575,7 @@ int oscc_interface_update_status(oscc_status_s* status) {
     return return_code;
 }
 
-int oscc_interface_read_vehicle_status_data(
-    oscc_vehicle_status_data_s* vehicle_status_data) {
+int oscc_interface_read_vehicle_status(oscc_vehicle_status_s* vehicle_status) {
     int return_code = ERROR;
 
     if (oscc != NULL) {
@@ -549,7 +590,7 @@ int oscc_interface_read_vehicle_status_data(
 
         if (can_status == canOK) {
             return_code = NOERR;
-            oscc_interface_parse_vehicle_state_info(vehicle_status_data, can_id,
+            oscc_interface_parse_vehicle_state_info(vehicle_status, can_id,
                                                     buffer);
         } else if ((can_status == canERR_NOMSG) ||
                    (can_status == canERR_TIMEOUT)) {
