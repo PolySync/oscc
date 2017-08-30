@@ -90,6 +90,24 @@
  */
 #define OSCC_REPORT_CHASSIS_STATE_2_PUBLISH_INTERVAL_IN_MSEC (50)
 
+/*
+ * @brief Chassis State 3 report message (CAN frame) ID.
+ *
+ */
+#define OSCC_REPORT_CHASSIS_STATE_3_CAN_ID (0x212)
+
+/*
+ * @brief Chassis State 3 report message (CAN frame) length.
+ *
+ */
+#define OSCC_REPORT_CHASSIS_STATE_3_CAN_DLC (8)
+
+/*
+ * @brief Chassis State 3 report message publishing interval. [milliseconds]
+ *
+ */
+#define OSCC_REPORT_CHASSIS_STATE_3_PUBLISH_INTERVAL_IN_MSEC (50)
+
 
 /**
  * @brief Chassis State 1 report message data.
@@ -99,7 +117,7 @@
  */
 typedef struct
 {
-    uint8_t flags; /* Stauts flags. */
+    uint8_t flags; /* Status flags. */
 
     uint8_t reserved; /* Reserved. */
 
@@ -163,6 +181,45 @@ typedef struct
 
     oscc_report_chassis_state_2_data_s data; /* CAN frame data. */
 } oscc_report_chassis_state_2_s;
+
+/**
+ * @brief Chassis State 3 report message data.
+ *
+ * Message size (CAN frame DLC): \ref OSCC_REPORT_CHASSIS_STATE_3_CAN_DLC
+ *
+ */
+typedef struct
+{
+    int8_t engine_temp; /* Engine Temp. */
+
+    int16_t engine_rpm; /* Engine RPM. */
+
+    int8_t gear_position; /* Gear Position. */
+
+    int8_t vehicle_speed; /* Vehicle Speed. */
+
+    int8_t accelerator_pedal_position; /* Accelerator Pedal Position. */
+
+    uint16_t reserved; /* Reserved. */
+} oscc_report_chassis_state_3_data_s;
+
+
+/**
+ * @brief Chassis State 3 report message.
+ *
+ * CAN frame ID: \ref OSCC_REPORT_CHASSIS_STATE_3_CAN_ID
+ *
+ */
+typedef struct
+{
+    uint32_t id; /* CAN frame ID. */
+
+    uint8_t dlc; /* CAN frame data length. */
+
+    uint32_t timestamp; /* Timestamp when report was put on the bus. */
+
+    oscc_report_chassis_state_3_data_s data; /* CAN frame data. */
+} oscc_report_chassis_state_3_s;
 
 
 #endif /* _OSCC_CHASSIS_STATE_CAN_PROTOCOL_H_ */

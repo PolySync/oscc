@@ -33,11 +33,16 @@ extern INT8U *g_mock_mcp_can_send_msg_buf_buf;
 extern oscc_report_heartbeat_s g_tx_heartbeat;
 extern oscc_report_chassis_state_1_s g_tx_chassis_state_1;
 extern oscc_report_chassis_state_2_s g_tx_chassis_state_2;
+extern oscc_report_chassis_state_3_s g_tx_chassis_state_2;
 
 extern uint32_t g_obd_steering_wheel_angle_rx_timestamp;
 extern uint32_t g_obd_wheel_speed_rx_timestamp;
 extern uint32_t g_obd_brake_pressure_rx_timestamp;
 extern uint32_t g_obd_turn_signal_rx_timestamp;
+extern uint32_t g_obd_accelerator_pedal_position_rx_timestamp;
+extern uint32_t g_obd_engine_rpm_temp_rx_timestamp;
+extern uint32_t g_obd_vehicle_speed_rx_timestamp;
+extern uint32_t g_obd_gear_position_rx_timestamp;
 
 
 // return to known state before every scenario
@@ -71,10 +76,20 @@ BEFORE()
         0,
         sizeof(g_tx_chassis_state_2));
 
+    memset(
+        &g_tx_chassis_state_3,
+        0,
+        sizeof(g_tx_chassis_state_3));
+
     g_obd_steering_wheel_angle_rx_timestamp = 0;
     g_obd_wheel_speed_rx_timestamp = 0;
     g_obd_brake_pressure_rx_timestamp = 0;
-    uint32_t g_obd_turn_signal_rx_timestamp = 0;
+    g_obd_turn_signal_rx_timestamp = 0;
+    g_obd_engine_rpm_temp_rx_timestamp = 0;
+    g_obd_vehicle_speed_rx_timestamp = 0;
+    g_obd_gear_position_rx_timestamp = 0;
+    g_obd_accelerator_pedal_position_rx_timestamp = 0;
+
 }
 
 
@@ -287,4 +302,74 @@ THEN("^the brake signal flag should be (.*)$")
     }
 }
 
+THEN("^the vehicle speed heartbeat warning should be (.*)$")
+{
+    REGEX_PARAM(std::string, action);
 
+    if(action == "set")
+    {
+        assert_that(
+            g_tx_heartbeat.data.warning_register & KIA_SOUL_OBD_VEHICLE_SPEED_WARNING_BIT,
+            is_equal_to(KIA_SOUL_OBD_VEHICLE_SPEED_WARNING_BIT));
+    }
+    else if(action == "cleared")
+    {
+        assert_that(
+            g_tx_heartbeat.data.warning_register & KIA_SOUL_OBD_VEHICLE_SPEED_WARNING_BIT,
+            is_not_equal_to(KIA_SOUL_OBD_VEHICLE_SPEED_WARNING_BIT));
+    }
+}
+
+THEN("^the gear position heartbeat warning should be (.*)$")
+{
+    REGEX_PARAM(std::string, action);
+
+    if(action == "set")
+    {
+        assert_that(
+            g_tx_heartbeat.data.warning_register & KIA_SOUL_OBD_GEAR_POSITION_WARNING_BIT,
+            is_equal_to(KIA_SOUL_OBD_GEAR_POSITION_WARNING_BIT));
+    }
+    else if(action == "cleared")
+    {
+        assert_that(
+            g_tx_heartbeat.data.warning_register & KIA_SOUL_OBD_GEAR_POSITION_WARNING_BIT,
+            is_not_equal_to(KIA_SOUL_OBD_GEAR_POSITION_WARNING_BIT));
+    }
+}
+
+THEN("^the accelerator pedal position heartbeat warning should be (.*)$")
+{
+    REGEX_PARAM(std::string, action);
+
+    if(action == "set")
+    {
+        assert_that(
+            g_tx_heartbeat.data.warning_register & KIA_SOUL_OBD_ACCELERATOR_POSITION_WARNING_BIT,
+            is_equal_to(KIA_SOUL_OBD_ACCELERATOR_POSITION_WARNING_BIT));
+    }
+    else if(action == "cleared")
+    {
+        assert_that(
+            g_tx_heartbeat.data.warning_register & KIA_SOUL_OBD_ACCELERATOR_POSITION_WARNING_BIT,
+            is_not_equal_to(KIA_SOUL_OBD_ACCELERATOR_POSITION_WARNING_BIT));
+    }
+}
+
+THEN("^the engine rpm/temp heartbeat warning should be (.*)$")
+{
+    REGEX_PARAM(std::string, action);
+
+    if(action == "set")
+    {
+        assert_that(
+            g_tx_heartbeat.data.warning_register & KIA_SOUL_OBD_ENGINE_RPM_TEMP_WARNING_BIT,
+            is_equal_to(KIA_SOUL_OBD_ENGINE_RPM_TEMP_WARNING_BIT));
+    }
+    else if(action == "cleared")
+    {
+        assert_that(
+            g_tx_heartbeat.data.warning_register & KIA_SOUL_OBD_ENGINE_RPM_TEMP_WARNING_BIT,
+            is_not_equal_to(KIA_SOUL_OBD_ENGINE_RPM_TEMP_WARNING_BIT));
+    }
+}

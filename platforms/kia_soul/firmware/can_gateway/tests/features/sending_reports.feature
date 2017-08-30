@@ -21,3 +21,8 @@ Feature: Sending reports
     When the time since the last Chassis State 2 report publishing exceeds the interval
 
     Then a Chassis State 2 report should be published to the control CAN bus
+
+  Scenario: Chassis State 3 report published after an interval
+    When the time since the last Chassis State 3 report publishing exceeds the interval
+
+    Then a Chassis State 3 report should be published to the control CAN bus

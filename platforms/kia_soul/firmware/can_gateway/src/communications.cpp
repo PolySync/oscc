@@ -21,6 +21,8 @@ static void publish_chassis_state_1_report( void );
 
 static void publish_chassis_state_2_report( void );
 
+static void publish_chassis_state_3_report( void );
+
 static void process_obd_steering_wheel_angle(
     const uint8_t * const data );
 
@@ -57,6 +59,12 @@ void publish_reports( void )
     if( delta >= OSCC_REPORT_CHASSIS_STATE_2_PUBLISH_INTERVAL_IN_MSEC )
     {
         publish_chassis_state_2_report( );
+    }
+
+    delta = get_time_delta( g_tx_chassis_state_3.timestamp, GET_TIMESTAMP_MS() );
+    if( delta >= OSCC_REPORT_CHASSIS_STATE_3_PUBLISH_INTERVAL_IN_MSEC )
+    {
+        publish_chassis_state_3_report();
     }
 }
 
@@ -110,6 +118,46 @@ void check_for_obd_timeout( void )
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON );
         CLEAR_CHASSIS_1_FLAG( OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON );
+    }
+
+    timeout = is_timeout(
+            g_obd_vehicle_speed_rx_timestamp,
+            GET_TIMESTAMP_MS(),
+            KIA_SOUL_OBD_VEHICLE_SPEED_RX_WARN_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_VEHICLE_SPEED_WARNING_BIT );
+    }
+
+    timeout = is_timeout(
+            g_obd_gear_position_rx_timestamp,
+            GET_TIMESTAMP_MS(),
+            KIA_SOUL_OBD_GEAR_POSITION_RX_WARN_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_GEAR_POSITION_WARNING_BIT );
+    }
+
+    timeout = is_timeout(
+            g_obd_engine_rpm_temp_rx_timestamp,
+            GET_TIMESTAMP_MS(),
+            KIA_SOUL_OBD_ENGINE_RPM_TEMP_RX_WARN_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_ENGINE_RPM_TEMP_WARNING_BIT );
+    }
+
+    timeout = is_timeout(
+            g_obd_accelerator_pedal_position_rx_timestamp,
+            GET_TIMESTAMP_MS(),
+            KIA_SOUL_OBD_ACCELERATOR_POSITION_RX_WARN_TIMEOUT_IN_MSEC);
+
+    if( timeout == true )
+    {
+        SET_HEARTBEAT_WARNING( KIA_SOUL_OBD_ACCELERATOR_POSITION_WARNING_BIT );
     }
 }
 
@@ -170,6 +218,20 @@ static void publish_chassis_state_2_report( void )
             (uint8_t *) &g_tx_chassis_state_2.data );
 
     g_tx_chassis_state_2.timestamp = GET_TIMESTAMP_MS();
+}
+
+static void publish_chassis_state_3_report( void )
+{
+    g_tx_chassis_state_3.id = OSCC_REPORT_CHASSIS_STATE_3_CAN_ID;
+    g_tx_chassis_state_3.dlc = OSCC_REPORT_CHASSIS_STATE_3_CAN_DLC;
+
+    g_control_can.sendMsgBuf(
+            g_tx_chassis_state_3.id,
+            CAN_STANDARD,
+            g_tx_chassis_state_3.dlc,
+            (uint8_t *) &g_tx_chassis_state_3.data );
+
+    g_tx_chassis_state_3.timestamp = GET_TIMESTAMP_MS();
 }
 
 
@@ -258,6 +320,63 @@ static void process_obd_turn_signal(
     }
 }
 
+static void process_obd_vehicle_speed(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        kia_soul_obd_vehicle_speed_data_s * vehicle_speed_data =
+            (kia_soul_obd_vehicle_speed_data_s *) data;
+
+        CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_VEHICLE_SPEED_WARNING_BIT );
+        g_tx_chassis_state_3.data.vehicle_speed = vehicle_speed_data->vehicle_speed;
+        g_obd_vehicle_speed_rx_timestamp = GET_TIMESTAMP_MS( );
+    }
+}
+
+static void process_obd_engine_rpm_temp(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        kia_soul_obd_engine_rpm_temp_data_s * engine_rpm_temp_data =
+            (kia_soul_obd_engine_rpm_temp_data_s *) data;
+
+        CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_ENGINE_RPM_TEMP_WARNING_BIT );
+        g_tx_chassis_state_3.data.engine_rpm = engine_rpm_temp_data->engine_rpm;
+        g_tx_chassis_state_3.data.engine_temp = engine_rpm_temp_data->engine_temp;
+        g_obd_engine_rpm_temp_rx_timestamp = GET_TIMESTAMP_MS( );
+    }
+}
+
+static void process_obd_gear_position(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        kia_soul_obd_gear_position_data_s * gear_position_data =
+            (kia_soul_obd_gear_position_data_s *) data;
+
+        CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_GEAR_POSITION_WARNING_BIT );
+        g_tx_chassis_state_3.data.gear_position = gear_position_data->gear_position;
+        g_obd_gear_position_rx_timestamp = GET_TIMESTAMP_MS( );
+    }
+}
+
+static void process_obd_accelerator_pedal_position(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        kia_soul_obd_accelerator_pedal_position_data_s * accelerator_pedal_position_data =
+            (kia_soul_obd_accelerator_pedal_position_data_s *) data;
+
+        CLEAR_HEARTBEAT_WARNING( KIA_SOUL_OBD_ACCELERATOR_POSITION_WARNING_BIT );
+        g_tx_chassis_state_3.data.accelerator_pedal_position = accelerator_pedal_position_data->accelerator_pedal_position;
+        g_obd_accelerator_pedal_position_rx_timestamp = GET_TIMESTAMP_MS( );
+    }
+}
+
 
 static void process_rx_frame(
     const can_frame_s * const rx_frame )
@@ -279,6 +398,22 @@ static void process_rx_frame(
         else if( rx_frame->id == KIA_SOUL_OBD_TURN_SIGNAL_CAN_ID )
         {
             process_obd_turn_signal( rx_frame->data );
+        }
+        else if( rx_frame->id == KIA_SOUL_OBD_VEHICLE_SPEED_CAN_ID )
+        {
+            process_obd_vehicle_speed( rx_frame->data );
+        }
+        else if( rx_frame->id == KIA_SOUL_OBD_ENGINE_RPM_TEMP_CAN_ID )
+        {
+            process_obd_engine_rpm_temp( rx_frame->data );
+        }
+        else if( rx_frame->id == KIA_SOUL_OBD_GEAR_POSITION_CAN_ID )
+        {
+            process_obd_gear_position( rx_frame->data );
+        }
+        else if( rx_frame->id == KIA_SOUL_OBD_ACCELERATOR_POSITION_CAN_ID )
+        {
+            process_obd_accelerator_pedal_position( rx_frame->data );
         }
     }
 }

@@ -101,6 +101,103 @@
  */
 #define KIA_SOUL_OBD_TURN_SIGNAL_FLAG_RIGHT_TURN (0x0A)
 
+/*
+ * @brief ID of the Kia Soul's OBD vehicle speed CAN frame.
+ *
+ */
+#define KIA_SOUL_OBD_VEHICLE_SPEED_CAN_ID (0x440)
+
+/*
+ * @brief Amount of time between vehicle speed CAN frames considered to
+ *        be a timeout.
+ *
+ */
+#define KIA_SOUL_OBD_VEHICLE_SPEED_RX_WARN_TIMEOUT_IN_MSEC (50)
+
+/*
+ * @brief Bit in heartbeat warning register corresponding to vehicle speed.
+ *
+ */
+#define KIA_SOUL_OBD_VEHICLE_SPEED_WARNING_BIT (0x0010)
+
+/*
+ * @brief Engine RPM & Temperature
+ *
+ */
+#define KIA_SOUL_OBD_ENGINE_RPM_TEMP_CAN_ID (0xA0)
+
+/*
+ * @brief Engine RPM & Temperature
+ *
+ */
+#define KIA_SOUL_OBD_ENGINE_RPM_TEMP_RX_WARN_TIMEOUT_IN_MSEC (500)
+
+/*
+ * @brief Engine RPM & Temperature
+ *
+ */
+#define KIA_SOUL_OBD_ENGINE_RPM_TEMP_WARNING_BIT (0x0020)
+
+/*
+ * @brief Gear position
+ *
+ */
+#define KIA_SOUL_OBD_GEAR_POSITION_CAN_ID (0x51A)
+
+/*
+ * @brief Gear position
+ *
+ */
+#define KIA_SOUL_OBD_GEAR_POSITION_RX_WARN_TIMEOUT_IN_MSEC (50)
+
+/*
+ * @brief Gear position
+ *
+ */
+#define KIA_SOUL_OBD_GEAR_POSITION_WARNING_BIT (0x0040)
+
+/*
+ * @brief Gear position
+ *
+ */
+#define KIA_SOUL_OBD_GEAR_POSITION_PARK (0x03)
+
+/*
+ * @brief Gear position
+ *
+ */
+#define KIA_SOUL_OBD_GEAR_POSITION_REVERSE (0x05)
+
+/*
+ * @brief Gear position
+ *
+ */
+#define KIA_SOUL_OBD_GEAR_POSITION_NEUTRAL (0x09)
+
+/*
+ * @brief Gear position
+ *
+ */
+#define KIA_SOUL_OBD_GEAR_POSITION_DRIVE (0x0B)
+
+/*
+ * @brief Accelerator Pedal Position
+ *
+ */
+#define KIA_SOUL_OBD_ACCELERATOR_POSITION_CAN_ID (0x80)
+
+/*
+ * @brief Accelerator Pedal Position
+ *
+ */
+#define KIA_SOUL_OBD_ACCELERATOR_POSITION_RX_WARN_TIMEOUT_IN_MSEC (50)
+
+/*
+ * @brief Accelerator Pedal Position
+ *
+ */
+#define KIA_SOUL_OBD_ACCELERATOR_POSITION_WARNING_BIT (0x0080)
+
 
 /**
  * @brief Steering wheel angle message data.
@@ -233,5 +330,64 @@ typedef struct
     kia_soul_obd_turn_signal_data_s data; /* CAN frame data. */
 } kia_soul_obd_turn_signal_s;
 
+typedef struct 
+{
+    uint8_t reserved_0;
+    uint8_t engine_temp;
+    uint16_t engine_rpm;
+    uint32_t reserved_1;
+} kia_soul_obd_engine_rpm_temp_data_s;
+
+typedef struct 
+{
+    uint32_t timestamp;
+    kia_soul_obd_engine_rpm_temp_data_s data;
+} kia_soul_obd_engine_rpm_temp_s;
+
+typedef struct
+{
+    uint8_t reserved_0;
+    uint8_t gear_position;
+    uint16_t reserved_1;
+    uint16_t reserved_2;
+    uint16_t reserved_3;
+} kia_soul_obd_gear_position_data_s;
+
+typedef struct 
+{
+    uint32_t timestamp;
+    kia_soul_obd_gear_position_data_s data;
+} kia_soul_obd_gear_position_s;
+
+typedef struct
+{
+    uint16_t reserved_0;
+    uint8_t vehicle_speed;
+    uint8_t reserved_1;
+    uint16_t reserved_2;
+    uint16_t reserved_3;
+} kia_soul_obd_vehicle_speed_data_s;
+
+typedef struct
+{
+    uint32_t timestamp;
+    kia_soul_obd_vehicle_speed_data_s data;
+} kia_soul_obd_vehicle_speed_s;
+
+
+typedef struct
+{
+    uint8_t accelerator_pedal_position;
+    uint8_t reserved_0;
+    uint16_t reserved_1;
+    uint16_t reserved_2;
+    uint16_t reserved_3;
+} kia_soul_obd_accelerator_pedal_position_data_s;
+
+typedef struct
+{
+    uint32_t timestamp;
+    kia_soul_obd_accelerator_pedal_position_data_s data;
+} kia_soul_obd_accelerator_pedal_position_s;
 
 #endif

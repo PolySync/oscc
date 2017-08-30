@@ -25,6 +25,16 @@ typedef struct
     bool obd_timeout_steering;
 } oscc_status_s;
 
+typedef struct
+{
+    uint16_t engine_rpm;
+    uint8_t engine_temperature;
+    uint8_t turn_signal;
+    uint8_t gear_position;
+    uint8_t vehicle_speed;
+    uint8_t accelerator_pedal_position;
+    uint8_t fuel_level;
+} oscc_vehicle_status_data_s;
 
 /**
  * @brief Initialize the OSCC interface - This call must occur
@@ -190,6 +200,10 @@ int oscc_interface_command_steering( int angle, unsigned int rate );
  *
  */
 int oscc_interface_update_status( oscc_status_s * status );
+
+int oscc_interface_read_vehicle_status_data(oscc_vehicle_status_data_s* vehicle_status_data);
+
+int oscc_init_can(int channel);
 
 #endif /* OSCC_INTERFACE_H */
 
