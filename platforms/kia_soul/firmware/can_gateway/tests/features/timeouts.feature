@@ -42,17 +42,17 @@ Feature: Timeouts
     Then the vehicle speed heartbeat warning should be set
 
   Scenario: Engine Report timeout
-    When the time since the last received Engine report exceeds the timeout
+    When the time since the last received engine report exceeds the timeout
 
-    Then the Engine Report heartbeat warning should be set
+    Then the engine report heartbeat warning should be set
 
   Scenario: Gear Position timeout
-    When the time since the last received Gear Position report exceeds the timeout
+    When the time since the last received gear position report exceeds the timeout
 
-    Then the Gear Position Report heartbeat warning should be set
+    Then the gear position heartbeat warning should be set
 
   Scenario: Accelerator Pedal Position timeout
-    When the time since the last received Accelerator Pedal Position report exceeds the timeout
+    When the time since the last received accelerator pedal position report exceeds the timeout
 
-    Then the Accelerator Pedal Position Report heartbeat warning should be set
+    Then the accelerator pedal position heartbeat warning should be set
 

@@ -71,24 +71,25 @@ Feature: Receiving reports
         |  left  |  set      |  cleared   |  cleared   |
         |  right |  cleared  |  set       |  cleared   |
 
-  Scenario Outline: Engine RPM sent from Vehicle.
-    When an engine report is sent from the vehicle with the RPM <rpm>, Temperature <temp>
+  Scenario Outline: Engine report sent from vehicle.
+    When an engine report is sent from the vehicle with the rpm <rpm> and temperature <temp>
 
-    Then the Engine RPM/Temp heartbeat warning should be cleared
-    And the Engine RPM should be <rpm>
-    And the Engine Temperature should <temp>
+    Then the engine report heartbeat warning should be cleared
+    Then the Chassis State 3 engine rpm is <rpm> and temperature is <temp>
+    Then the last received engine report timestamp should be set
 
     Examples:
-        | rpm | temperature | 
+        | rpm |  temp       | 
         | 0   |  80         | 
         | 100 |  100        | 
         | 500 |  120        | 
 
-  Scenario Outline: Vehicle Speed sent from Vehicle.
-    When an Vehicle Speed is sent from the vehicle with the Vehicle Speed <speed>
+  Scenario Outline: Vehicle speed sent from vehicle.
+    When a vehicle speed report is sent from the vehicle with the vehicle speed <speed>
 
-    Then the Vehicle Speed heartbeat warning should be cleared
-    And the vehicle speed should be <speed>
+    Then the vehicle speed heartbeat warning should be cleared
+    Then the Chassis State 3 vehicle speed field should be set to <speed>
+    Then the last received vehicle speed timestamp should be set
 
     Examples:
         | speed |  
@@ -96,25 +97,27 @@ Feature: Receiving reports
         | 100   | 
         | 150   | 
 
-  Scenario Outline: Gear Position sent from Vehicle.
-    When an Gear Position is sent from the vehicle with the Gear Position <pos>
+  Scenario Outline: Gear position sent from vehicle.
+    When a gear position report is sent from the vehicle with the gear position <pos>
 
-    Then the Gear Position heartbeat warning should be cleared
-    And the gear position should be set
+    Then the gear position heartbeat warning should be cleared
+    Then the Chassis State 3 gear position field should be set to <pos>
+    Then the last received gear position timestamp should be set
 
     Examples:
-        | pos  |  value
-        | 3    |   P
-        | 5    |   R
-        | 9    |   N
-        | 11   |   D
+        | pos  |
+        | 3    |
+        | 5    |
+        | 9    |
+        | 11   |
 
 
-  Scenario Outline: Accelerator Pedal Position sent from Vehicle.
-    When an Accelerator Pedal is sent from the vehicle with the Accelerator Pedal Position <pos>
+  Scenario Outline: Accelerator pedal position sent from vehicle.
+    When an accelerator pedal position report is sent from the vehicle with the position <pos>
 
-    Then the Accelerator Pedal Position heartbeat warning should be cleared
-    And the accelerator pedal position should be set
+    Then the accelerator pedal position heartbeat warning should be cleared
+    Then the Chassis State 3 accelerator pedal position field should be set to <pos>
+    Then the last received accelerator pedal position timestamp should be set
 
     Examples:
         | pos   |  

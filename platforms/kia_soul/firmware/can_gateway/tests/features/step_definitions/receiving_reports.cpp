@@ -155,40 +155,7 @@ THEN("^the last received turn signal timestamp should be set$")
         is_equal_to(g_mock_arduino_millis_return));
 }
 
-WHEN("^a vehicle speed report is sent from the vehicle with the vehicle speed (.*)$")
-{
-    REGEX_PARAM(int, speed);
-
-    kia_soul_obd_vehicle_speed_data_s * vehicle_speed_data =
-        (kia_soul_obd_vehicle_speed_data_s *) g_mock_mcp_can_read_msg_buf_buf;
-
-    vehicle_speed_data->vehicle_speed = speed;
-
-    g_mock_mcp_can_read_msg_buf_id = KIA_SOUL_OBD_VEHICLE_SPEED_CAN_ID;
-    g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
-
-    check_for_incoming_message();
-}
-
-
-THEN("^the Chassis State 3 vehicle speed fields should be set to (.*)$")
-{
-    REGEX_PARAM(int, speed);
-
-    assert_that(
-        g_tx_chassis_state_3.data.vehicle_speed,
-        is_equal_to(speed));
-}
-
-
-THEN("^the last received vehicle speed timestamp should be set$")
-{
-    assert_that(
-        g_obd_vehicle_speed_rx_timestamp,
-        is_equal_to(g_mock_arduino_millis_return));
-}
-
-WHEN("^a engine rpm and temp report is sent from the vehicle with the rpm and temp (\d*) (\d*)$")
+WHEN("^an engine report is sent from the vehicle with the rpm (\\d+) and temperature (\\d+)$")
 {
     REGEX_PARAM(int, rpm);
     REGEX_PARAM(int, temp);
@@ -206,7 +173,7 @@ WHEN("^a engine rpm and temp report is sent from the vehicle with the rpm and te
 }
 
 
-THEN("^the Chassis State 3 engine rpm and temp fields should be set to (\d*) (\d*)$")
+THEN("^the Chassis State 3 engine rpm is (\\d+) and temperature is (\\d+)$")
 {
     REGEX_PARAM(int, rpm);
     REGEX_PARAM(int, temp);
@@ -221,14 +188,45 @@ THEN("^the Chassis State 3 engine rpm and temp fields should be set to (\d*) (\d
 }
 
 
-THEN("^the last received engine rpm and temp timestamp should be set$")
+THEN("^the last received engine report timestamp should be set$")
 {
     assert_that(
         g_obd_engine_rpm_temp_rx_timestamp,
         is_equal_to(g_mock_arduino_millis_return));
 }
 
-WHEN("^a gear position report is sent from the vehicle with the gear position (.*)$")
+WHEN("^a vehicle speed report is sent from the vehicle with the vehicle speed (.*)$")
+{
+    REGEX_PARAM(int, speed);
+
+    kia_soul_obd_vehicle_speed_data_s * vehicle_speed_data =
+        (kia_soul_obd_vehicle_speed_data_s *) g_mock_mcp_can_read_msg_buf_buf;
+
+    vehicle_speed_data->vehicle_speed = speed;
+
+    g_mock_mcp_can_read_msg_buf_id = KIA_SOUL_OBD_VEHICLE_SPEED_CAN_ID;
+    g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
+
+    check_for_incoming_message();
+}
+
+THEN("^the Chassis State 3 vehicle speed field should be set to (.*)$")
+{
+    REGEX_PARAM(int, speed);
+
+    assert_that(
+        g_tx_chassis_state_3.data.vehicle_speed,
+        is_equal_to(speed));
+}
+
+THEN("^the last received vehicle speed timestamp should be set$")
+{
+    assert_that(
+        g_obd_vehicle_speed_rx_timestamp,
+        is_equal_to(g_mock_arduino_millis_return));
+}
+
+WHEN("^a gear position report is sent from the vehicle with the gear position (\\d+)$")
 {
     REGEX_PARAM(int, pos);
 
@@ -244,7 +242,7 @@ WHEN("^a gear position report is sent from the vehicle with the gear position (.
 }
 
 
-THEN("^the Chassis State 3 gear position fields should be set to (.*)$")
+THEN("^the Chassis State 3 gear position field should be set to (\\d+)$")
 {
     REGEX_PARAM(int, pos);
 

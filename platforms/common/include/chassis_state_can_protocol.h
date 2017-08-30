@@ -190,15 +190,15 @@ typedef struct
  */
 typedef struct
 {
-    int8_t engine_temp; /* Engine Temp. */
+    uint8_t engine_temp; /* Engine Temp. */
 
-    int16_t engine_rpm; /* Engine RPM. */
+    uint16_t engine_rpm; /* Engine RPM. */
 
-    int8_t gear_position; /* Gear Position. */
+    uint8_t gear_position; /* Gear Position. */
 
-    int8_t vehicle_speed; /* Vehicle Speed. */
+    uint8_t vehicle_speed; /* Vehicle Speed. */
 
-    int8_t accelerator_pedal_position; /* Accelerator Pedal Position. */
+    uint8_t accelerator_pedal_position; /* Accelerator Pedal Position. */
 
     uint16_t reserved; /* Reserved. */
 } oscc_report_chassis_state_3_data_s;
