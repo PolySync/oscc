@@ -121,15 +121,20 @@ static int update_gateway_state()
     const can_frame_s * const chassis_state2_frame =
             get_can_msg_array_index_reference( OSCC_REPORT_CHASSIS_STATE_2_CAN_ID );
 
+    const can_frame_s * const chassis_state3_frame =
+            get_can_msg_array_index_reference( OSCC_REPORT_CHASSIS_STATE_3_CAN_ID );
+
     if( heartbeat_msg_frame != NULL ||
             chassis_state1_frame != NULL ||
-            chassis_state2_frame != NULL )
+            chassis_state2_frame != NULL ||
+            chassis_state3_frame != NULL )
     {
         ret = analyze_gateway_state(
                 &system_state.gateway_module_state,
                 heartbeat_msg_frame,
                 chassis_state1_frame,
-                chassis_state2_frame );
+                chassis_state2_frame,
+                chassis_state3_frame );
     }
 
     return ret;

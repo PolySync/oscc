@@ -44,7 +44,8 @@ int analyze_gateway_state(
         gateway_module_state_s * const state,
         const can_frame_s * const heartbeat_msg_frame,
         const can_frame_s * const chassis_state1_frame,
-        const can_frame_s * const chassis_state2_frame );
+        const can_frame_s * const chassis_state2_frame,
+        const can_frame_s * const chassis_state3_frame );
 
 
 

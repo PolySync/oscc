@@ -61,6 +61,17 @@ static int analyze_chassis_state2_frame(
     return module_state;
 }
 
+static int analyze_chassis_state3_frame(
+        gateway_module_state_s * const state,
+        const oscc_report_chassis_state_3_data_s * const chassis_state3 )
+{
+    int module_state = STATE_OK;
+
+    // TODO: do accelerator position, gear position, etc.
+
+    return module_state;
+}
+
 
 
 
@@ -74,7 +85,8 @@ int analyze_gateway_state(
         gateway_module_state_s * const state,
         const can_frame_s * const heartbeat_msg_frame,
         const can_frame_s * const chassis_state1_frame,
-        const can_frame_s * const chassis_state2_frame )
+        const can_frame_s * const chassis_state2_frame,
+        const can_frame_s * const chassis_state3_frame )
 {
     int ret = NOERR;
 
@@ -92,6 +104,11 @@ int analyze_gateway_state(
             state,
             (oscc_report_chassis_state_2_data_s*)
                     chassis_state2_frame->frame_contents.buffer );
+
+    analyze_chassis_state3_frame(
+            state,
+            (oscc_report_chassis_state_3_data_s*)
+                    chassis_state3_frame->frame_contents.buffer );
 
     return ret;
 }
