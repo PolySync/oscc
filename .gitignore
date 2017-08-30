@@ -7,3 +7,6 @@
 **/tests/**/Cargo.lock
 **/tests/**/common/
 **/tests/**/target/
+build
+CMakeFiles
+CMakeCache.txt
