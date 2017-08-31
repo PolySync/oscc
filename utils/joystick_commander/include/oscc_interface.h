@@ -28,8 +28,8 @@ typedef struct
 typedef struct
 {
     // chassis 1
-    uint16_t steering_wheel_angle;
-    uint16_t brake_pressure;
+    int16_t steering_wheel_angle;
+    int16_t brake_pressure;
     bool left_turn_signal;
     bool right_turn_signal;
     bool brake_lights;
