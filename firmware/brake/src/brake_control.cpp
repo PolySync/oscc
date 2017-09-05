@@ -39,15 +39,19 @@ static void pump_startup_check( void );
 
 void set_accumulator_solenoid_duty_cycle( const uint16_t duty_cycle )
 {
+    cli();
     analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_LEFT, duty_cycle );
     analogWrite( PIN_ACCUMULATOR_SOLENOID_FRONT_RIGHT, duty_cycle );
+    sei();
 }
 
 
 void set_release_solenoid_duty_cycle( const uint16_t duty_cycle )
 {
+    cli();
     analogWrite( PIN_RELEASE_SOLENOID_FRONT_LEFT, duty_cycle );
     analogWrite( PIN_RELEASE_SOLENOID_FRONT_RIGHT, duty_cycle );
+    sei();
 }
 
 
@@ -479,7 +483,9 @@ static void pump_startup_check( void )
     accumulator_turn_pump_on();
     delay(250);
 
+    cli();
     int motor_check = analogRead( PIN_ACCUMULATOR_PUMP_MOTOR_CHECK );
+    sei();
 
     // should not be 0 if the pump is on
     if( motor_check == 0 )
