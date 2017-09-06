@@ -382,7 +382,7 @@ typedef struct
             + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
- * @brief Value of torque sensor difference that indicates likely operator 
+ * @brief Value of torque sensor difference that indicates likely operator
  *        override.
  *
  */
