@@ -23,10 +23,6 @@
 
 static int can_socket = -1;
 
-static oscc_brake_command_s brake_cmd;
-static oscc_throttle_command_s throttle_cmd;
-static oscc_steering_command_s steering_cmd;
-
 static void (*steering_report_callback)(oscc_steering_report_s *report);
 static void (*brake_report_callback)(oscc_brake_report_s *report);
 static void (*throttle_report_callback)(oscc_throttle_report_s *report);
@@ -43,7 +39,6 @@ static oscc_result_t oscc_disable_brakes( void );
 static oscc_result_t oscc_disable_throttle( void );
 static oscc_result_t oscc_disable_steering( void );
 static void oscc_update_status( );
-static void oscc_init_commands( void );
 
 oscc_result_t oscc_open( unsigned int channel )
 {
@@ -56,8 +51,6 @@ oscc_result_t oscc_open( unsigned int channel )
     printf( "Opening CAN channel: %s\n", buffer );
 
     ret = oscc_init_can( buffer );
-
-    oscc_init_commands( );
 
     return ret;
 }
@@ -117,6 +110,13 @@ oscc_result_t oscc_publish_brake_position( double brake_position )
 {
     oscc_result_t ret = OSCC_ERROR;
 
+    oscc_brake_command_s brake_cmd =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
+
+
     const double clamped_position = (double) CONSTRAIN (
             brake_position * MAXIMUM_BRAKE_COMMAND,
             MINIMUM_BRAKE_COMMAND,
@@ -135,6 +135,13 @@ oscc_result_t oscc_publish_brake_position( double brake_position )
 oscc_result_t oscc_publish_throttle_position( double throttle_position )
 {
     oscc_result_t ret = OSCC_ERROR;
+
+    oscc_throttle_command_s throttle_cmd =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
+
 
     const double clamped_position = CONSTRAIN(
         throttle_position,
@@ -175,6 +182,13 @@ oscc_result_t oscc_publish_throttle_position( double throttle_position )
 oscc_result_t oscc_publish_steering_torque( double torque )
 {
     oscc_result_t ret = OSCC_ERROR;
+
+    oscc_steering_command_s steering_cmd =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
+
 
     const double clamped_torque = CONSTRAIN(
         torque * MAXIMUM_TORQUE_COMMAND,
@@ -588,16 +602,4 @@ static oscc_result_t oscc_init_can( const char *can_channel )
     }
 
     return ret;
-}
-
-static void oscc_init_commands( void )
-{
-    brake_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    brake_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
-
-    throttle_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    throttle_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
-
-    steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
 }
