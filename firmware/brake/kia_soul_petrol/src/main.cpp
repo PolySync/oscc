@@ -28,7 +28,7 @@ int main( void )
 
     start_timers( );
 
-    DEBUG_PRINTLN( "initialization complete" );
+    DEBUG_PRINTLN( "init complete" );
 
     while( true )
     {
