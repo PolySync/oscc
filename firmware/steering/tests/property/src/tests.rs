@@ -258,7 +258,7 @@ fn prop_check_operator_override(analog_read_spoof_high: i16, analog_read_spoof_l
 
         check_for_operator_override();
 
-        if (analog_read_spoof_high - analog_read_spoof_low) >= (TORQUE_DIFFERENCE_THRESHOLD as i16) {
+        if (analog_read_spoof_high - analog_read_spoof_low) >= (TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD as i16) {
             TestResult::from_bool(g_steering_control_state.operator_override == true && g_steering_control_state.enabled == false &&
             g_mock_mcp_can_send_msg_buf_id == OSCC_FAULT_REPORT_CAN_ID)
         } else {
