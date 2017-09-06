@@ -50,7 +50,7 @@ fn main() {
         .whitelisted_var("OSCC_FAULT_REPORT_CAN_ID")
         .whitelisted_var("PIN_TORQUE_SENSOR_HIGH")
         .whitelisted_var("PIN_TORQUE_SENSOR_LOW")
-        .whitelisted_var("TORQUE_DIFFERENCE_THRESHOLD")
+        .whitelisted_var("TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD")
         .whitelisted_var("STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN")
         .whitelisted_var("STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX")
         .whitelisted_var("STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN")
