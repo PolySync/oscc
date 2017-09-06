@@ -44,21 +44,21 @@ void check_for_operator_override( void )
 
         read_torque_sensor( &torque );
 
-        uint16_t unfiltered_diff = abs((int)torque.high - (int)torque.low);
+        uint16_t unfiltered_diff = abs( ( int )torque.high - ( int )torque.low );
 
         const float filter_alpha = 0.01;
 
-        if (filtered_diff == 0)
+        if ( filtered_diff == 0 )
         {
             filtered_diff = unfiltered_diff;
         }
 
         filtered_diff = exponential_moving_average(
-        filter_alpha,
-        unfiltered_diff,
-        filtered_diff);
+            filter_alpha,
+            unfiltered_diff,
+            filtered_diff);
 
-        if( abs(filtered_diff) > TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD)
+        if( abs( filtered_diff ) > TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD )
         {
             disable_control( );
 
