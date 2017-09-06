@@ -345,7 +345,7 @@ typedef struct
  * @brief Minimum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.40 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.0 )
 
 /*
  * @brief Maximum allowed voltage for the low spoof signal voltage. [volts]
@@ -357,7 +357,7 @@ typedef struct
  * @brief Minimum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.80 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.0 )
 
 /**
  * @brief Maximum allowed voltage for the high spoof signal voltage. [volts]
@@ -370,7 +370,7 @@ typedef struct
  *
  * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 328 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 0 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
@@ -384,7 +384,7 @@ typedef struct
  *
  * Equal to \ref THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 656 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 0 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
