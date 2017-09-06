@@ -22,6 +22,24 @@ extern "C" {
     pub static mut g_mock_arduino_analog_read_return: isize;
 }
 
+impl Arbitrary for oscc_brake_enable_s {
+    fn arbitrary<G: Gen>(g: &mut G) -> oscc_brake_enable_s {
+        oscc_brake_enable_s {
+            magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
+            reserved: [u8::arbitrary(g); 6],
+        }
+    }
+}
+
+impl Arbitrary for oscc_brake_disable_s {
+    fn arbitrary<G: Gen>(g: &mut G) -> oscc_brake_disable_s {
+        oscc_brake_disable_s {
+            magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
+            reserved: [u8::arbitrary(g); 6],
+        }
+    }
+}
+
 impl Arbitrary for oscc_brake_report_s {
     fn arbitrary<G: Gen>(g: &mut G) -> oscc_brake_report_s {
         oscc_brake_report_s {
@@ -29,7 +47,7 @@ impl Arbitrary for oscc_brake_report_s {
             enabled: u8::arbitrary(g),
             operator_override: u8::arbitrary(g),
             dtcs: u8::arbitrary(g),
-            reserved: [u8::arbitrary(g); 3]
+            reserved: [u8::arbitrary(g); 3],
         }
     }
 }
@@ -39,8 +57,7 @@ impl Arbitrary for oscc_brake_command_s {
         oscc_brake_command_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
             pedal_command: u16::arbitrary(g),
-            enable: u8::arbitrary(g),
-            reserved: [u8::arbitrary(g); 3]
+            reserved: [u8::arbitrary(g); 4],
         }
     }
 }
@@ -52,7 +69,7 @@ impl Arbitrary for can_frame_s {
             id: u32::arbitrary(g),
             dlc: u8::arbitrary(g),
             timestamp: u32::arbitrary(g),
-            data: [u8::arbitrary(g); 8]
+            data: [u8::arbitrary(g); 8],
         }
     }
 }
@@ -107,18 +124,40 @@ fn check_accel_pos_validity() {
         .quickcheck(prop_no_invalid_targets as fn(oscc_brake_command_s) -> TestResult)
 }
 
-/// the throttle firmware should set the control state as disabled
-/// upon reciept of a valid command throttle message telling it to disable
-fn prop_process_disable_command(mut brake_command_msg: oscc_brake_command_s) -> TestResult {
+/// the brake firmware should set the control state as enabled
+/// upon reciept of a valid enable brake message telling it to enable
+fn prop_process_enable_command(brake_enable_msg: oscc_brake_enable_s) -> TestResult {
     unsafe {
-        brake_command_msg.enable = 0u8;
-
         g_brake_control_state.enabled = false;
         g_brake_control_state.operator_override = false;
 
-        g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_COMMAND_CAN_ID;
-        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(brake_command_msg);
+        g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_ENABLE_CAN_ID;
         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(brake_enable_msg);
+
+        check_for_incoming_message();
+
+        TestResult::from_bool(g_brake_control_state.enabled == true)
+    }
+}
+
+#[test]
+fn check_process_enable_command() {
+    QuickCheck::new()
+        .tests(1000)
+        .quickcheck(prop_process_enable_command as fn(oscc_brake_enable_s) -> TestResult)
+}
+
+/// the brake firmware should set the control state as disabled
+/// upon reciept of a valid disable brake message telling it to disable
+fn prop_process_disable_command(brake_disable_msg: oscc_brake_disable_s) -> TestResult {
+    unsafe {
+        g_brake_control_state.enabled = true;
+        g_brake_control_state.operator_override = false;
+
+        g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_DISABLE_CAN_ID;
+        g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(brake_disable_msg);
 
         check_for_incoming_message();
 
@@ -130,5 +169,5 @@ fn prop_process_disable_command(mut brake_command_msg: oscc_brake_command_s) -> 
 fn check_process_disable_command() {
     QuickCheck::new()
         .tests(1000)
-        .quickcheck(prop_process_disable_command as fn(oscc_brake_command_s) -> TestResult)
+        .quickcheck(prop_process_disable_command as fn(oscc_brake_disable_s) -> TestResult)
 }

@@ -99,7 +99,15 @@ static void process_rx_frame(
         if( (frame->data[0] == OSCC_MAGIC_BYTE_0)
              && (frame->data[1] == OSCC_MAGIC_BYTE_1) )
         {
-            if( frame->id == OSCC_THROTTLE_COMMAND_CAN_ID )
+            if ( frame->id == OSCC_THROTTLE_ENABLE_CAN_ID )
+            {
+                enable_control( );
+            }
+            else if ( frame->id == OSCC_THROTTLE_DISABLE_CAN_ID )
+            {
+                disable_control( );
+            }
+            else if( frame->id == OSCC_THROTTLE_COMMAND_CAN_ID )
             {
                 process_throttle_command( frame->data );
             }
@@ -120,18 +128,9 @@ static void process_throttle_command(
         const oscc_throttle_command_s * const throttle_command =
                 (oscc_throttle_command_s *) data;
 
-        if( throttle_command->enable == true )
-        {
-            enable_control( );
-
-            update_throttle(
-                throttle_command->spoof_value_high,
-                throttle_command->spoof_value_low );
-        }
-        else
-        {
-            disable_control( );
-        }
+        update_throttle(
+            throttle_command->spoof_value_high,
+            throttle_command->spoof_value_low );
 
         g_throttle_command_timeout = false;
     }

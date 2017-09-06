@@ -25,15 +25,14 @@ GIVEN("^the right brake sensor reads (.*)$")
 
 WHEN("^an enable brake command is received$")
 {
-    g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_COMMAND_CAN_ID;
+    g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_ENABLE_CAN_ID;
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
 
-    oscc_brake_command_s * brake_command =
-        (oscc_brake_command_s *) g_mock_mcp_can_read_msg_buf_buf;
+    oscc_brake_enable_s * brake_enable =
+        (oscc_brake_enable_s *) g_mock_mcp_can_read_msg_buf_buf;
 
-    brake_command->magic[0] = OSCC_MAGIC_BYTE_0;
-    brake_command->magic[1] = OSCC_MAGIC_BYTE_1;
-    brake_command->enable = 1;
+    brake_enable->magic[0] = OSCC_MAGIC_BYTE_0;
+    brake_enable->magic[1] = OSCC_MAGIC_BYTE_1;
 
     check_for_incoming_message();
 }
@@ -41,15 +40,14 @@ WHEN("^an enable brake command is received$")
 
 WHEN("^a disable brake command is received$")
 {
-    g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_COMMAND_CAN_ID;
+    g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_DISABLE_CAN_ID;
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
 
-    oscc_brake_command_s * brake_command =
-        (oscc_brake_command_s *) g_mock_mcp_can_read_msg_buf_buf;
+    oscc_brake_disable_s * brake_disable =
+        (oscc_brake_disable_s *) g_mock_mcp_can_read_msg_buf_buf;
 
-    brake_command->magic[0] = OSCC_MAGIC_BYTE_0;
-    brake_command->magic[1] = OSCC_MAGIC_BYTE_1;
-    brake_command->enable = 0;
+    brake_disable->magic[0] = OSCC_MAGIC_BYTE_0;
+    brake_disable->magic[1] = OSCC_MAGIC_BYTE_1;
 
     check_for_incoming_message();
 }
@@ -82,7 +80,6 @@ WHEN("^the brake pedal command (.*) is received$")
 
     brake_command->magic[0] = OSCC_MAGIC_BYTE_0;
     brake_command->magic[1] = OSCC_MAGIC_BYTE_1;
-    brake_command->enable = 1;
     brake_command->pedal_command = command;
 
     pid_zeroize( &g_pid, BRAKE_PID_WINDUP_GUARD );

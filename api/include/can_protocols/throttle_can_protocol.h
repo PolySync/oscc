@@ -14,6 +14,18 @@
 
 
 /*
+ * @brief Throttle enable message (CAN frame) ID.
+ *
+ */
+ #define OSCC_THROTTLE_ENABLE_CAN_ID (0x52)
+
+ /*
+  * @brief Throttle disable message (CAN frame) ID.
+  *
+  */
+ #define OSCC_THROTTLE_DISABLE_CAN_ID (0x53)
+
+/*
  * @brief Throttle command message (CAN frame) ID.
  *
  */
@@ -51,6 +63,37 @@
 #pragma pack(push)
 #pragma pack(1)
 
+/**
+ * @brief Throttle enable message.
+ *
+ * CAN frame ID: \ref OSCC_THROTTLE_ENABLE_CAN_ID
+ *
+ */
+ typedef struct
+ {
+     uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                          Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                          Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+
+     uint8_t reserved[6]; /*!< Reserved. */
+ } oscc_throttle_enable_s;
+
+
+ /**
+  * @brief Throttle disable message.
+  *
+  * CAN frame ID: \ref OSCC_THROTTLE_DISABLE_CAN_ID
+  *
+  */
+  typedef struct
+  {
+      uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                           Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                           Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+
+      uint8_t reserved[6]; /*!< Reserved. */
+  } oscc_throttle_disable_s;
+
 
 /**
  * @brief Throttle command message.
@@ -67,10 +110,6 @@ typedef struct
     uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
-
-    uint8_t enable; /*!< Command to enable or disable throttle control.
-                     * Zero value means disable.
-                     * Non-zero value means enable. */
 
     uint8_t reserved; /*!< Reserved. */
 } oscc_throttle_command_s;

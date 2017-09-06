@@ -14,6 +14,18 @@
 
 
 /*
+ * @brief Brake enable message (CAN frame) ID.
+ *
+ */
+#define OSCC_BRAKE_ENABLE_CAN_ID (0x50)
+
+/*
+ * @brief Brake disable message (CAN frame) ID.
+ *
+ */
+#define OSCC_BRAKE_DISABLE_CAN_ID (0x51)
+
+/*
  * @brief Brake command message (CAN frame) ID.
  *
  */
@@ -48,6 +60,38 @@
 #pragma pack(1)
 
 /**
+ * @brief Brake enable message.
+ *
+ * CAN frame ID: \ref OSCC_BRAKE_ENABLE_CAN_ID
+ *
+ */
+ typedef struct
+ {
+     uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                          Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                          Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+
+     uint8_t reserved[6]; /*!< Reserved. */
+ } oscc_brake_enable_s;
+
+
+ /**
+  * @brief Brake disable message.
+  *
+  * CAN frame ID: \ref OSCC_BRAKE_DISABLE_CAN_ID
+  *
+  */
+  typedef struct
+  {
+      uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                           Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                           Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+
+      uint8_t reserved[6]; /*!< Reserved. */
+  } oscc_brake_disable_s;
+
+
+/**
  * @brief Brake command message data.
  *
  * CAN frame ID: \ref OSCC_BRAKE_COMMAND_CAN_ID
@@ -61,11 +105,7 @@ typedef struct
 
     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
-    uint8_t enable; /*!< Command to enable or disable steering control.
-                     * Zero value means disable.
-                     * Non-zero value means enable. */
-
-    uint8_t reserved[3]; /*!< Reserved. */
+    uint8_t reserved[4]; /*!< Reserved. */
 } oscc_brake_command_s;
 
 
