@@ -33,6 +33,7 @@ static float exponential_moving_average(
     const float input,
     const float average );
 
+static uint16_t filtered_diff = 0;
 
 void check_for_operator_override( void )
 {
@@ -43,9 +44,21 @@ void check_for_operator_override( void )
 
         read_torque_sensor( &torque );
 
-        float diff = (float)torque.high - (float)torque.low;
+        uint16_t unfiltered_diff = abs((int)torque.high - (int)torque.low);
 
-        if( abs(diff) > TORQUE_DIFFERENCE_THRESHOLD)
+        const float filter_alpha = 0.01;
+
+        if (filtered_diff == 0)
+        {
+            filtered_diff = unfiltered_diff;
+        }
+
+        filtered_diff = exponential_moving_average(
+        filter_alpha,
+        unfiltered_diff,
+        filtered_diff);
+
+        if( abs(filtered_diff) > TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD)
         {
             disable_control( );
 
@@ -171,6 +184,8 @@ void disable_control( void )
 
         g_steering_control_state.enabled = false;
 
+        filtered_diff = 0;
+
         DEBUG_PRINTLN( "Control disabled" );
     }
 }
@@ -186,28 +201,9 @@ static float exponential_moving_average(
 static void read_torque_sensor(
     steering_torque_s * value )
 {
-    steering_torque_s unfiltered_torque;
-
     cli();
-    unfiltered_torque.high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
-    unfiltered_torque.low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
+    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
+    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
-
-    const float filter_alpha = 0.01;
-    static float filtered_torque_high = 0.0;
-    static float filtered_torque_low = 0.0;
-
-    filtered_torque_high = exponential_moving_average(
-        filter_alpha,
-        unfiltered_torque.high,
-        filtered_torque_high);
-
-    filtered_torque_low = exponential_moving_average(
-        filter_alpha,
-        unfiltered_torque.low,
-        filtered_torque_low);
-
-    value->high = filtered_torque_high;
-    value->low = filtered_torque_low;
 }
 
