@@ -9,33 +9,21 @@ Although we currently support only the 2014 or later Kia Soul (w/ Kia Soul EV & 
 
 Our [Wiki](https://github.com/PolySync/OSCC/wiki) is in the process of being updated to reflect the new changes, but contains a bunch of valuable information to help you get started in understanding the details of the system.
 
+# Versions
 
-## Repository Contents
+New versions of the API and the firmware are released periodically as new features are added and bugs are
+fixed. **It is of vital importance that you update whenever there is a new version so that you can be certain
+you are not using a version with known safety issues.**
 
-* **api** - Software API, so your program can seamlessly talk to our modules.
-* **firmware** - Arduino libraries and firmware for the OSCC modules.
-* **hardware** - PCB schematics and board designs for control modules.
+There are three versions to be aware of:
 
+* **Sensor Interface Board (throttle and steering):** the version is printed on the front of the shield
 
-## Boards
+* **Actuator Control Board (brakes):** the version is printed on the front of the shield
 
-The sensor interface and actuator control board schematics and design files are located in the
-`hardware/boards` directory. If you don't have the time or fabrication resources, the boards can be
-purchased as a kit from the [OSCC website](http://oscc.io).
+* **API and Firmware:** a single version is shared by both and listed in the [Releases section](https://github.com/PolySync/oscc/releases) of the repository.
 
-Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://macrofab.com/) for
-help designing and manufacturing the custom boards.
-
-## Compatibility
-
-Your hardware version is printed on the front of the OSCC shield.
-
-### Kia Soul (2014-2017)
-
-There are two types of OSCC boards used:
-
-* Sensor Interface - used for throttle and steering
-* Actuator Control - used for brakes
+The following table can be used to ensure that you use the appropriate firmware version with your boards:
 
 |                        | Board Version | Firmware Version |
 | ---------------------- | ------------- | ---------------- |
@@ -43,7 +31,22 @@ There are two types of OSCC boards used:
 | Actuator Control       | >= 1.2.0      | >= 1.0.0         |
 |                        | < 1.2.0 __*__ | >= 1.0.1         |
 
-__*__ *Later versions of the actuator control board utilize new pins to perform additional safety checks on startup. To use the new firmware on older models, please see additional instructions in the [build](#brake-startup-test) section.*
+__*__ *Later versions of the Actuator Control Board utilize new pins to perform additional safety checks on startup. To use the new firmware on older boards, please see additional instructions in the [build](#brake-startup-test) section.*
+
+# Repository Contents
+
+* **api** - Software API, so your program can seamlessly talk to our modules.
+* **firmware** - Arduino libraries and firmware for the OSCC modules.
+* **hardware** - PCB schematics and board designs for control modules.
+
+# Boards
+
+The sensor interface and actuator control board schematics and design files are located in the
+`hardware/boards` directory. If you don't have the time or fabrication resources, the boards can be
+purchased as a kit from the [OSCC website](http://oscc.io).
+
+Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://macrofab.com/) for
+help designing and manufacturing the custom boards.
 
 # Building and Uploading Firmware
 
