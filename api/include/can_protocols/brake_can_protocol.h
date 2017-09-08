@@ -63,8 +63,8 @@ typedef struct
     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
     uint8_t enable; /*!< Command to enable or disable steering control.
-                    * Zero value means disable.
-                    * Non-zero value means enable. */
+                     * Zero value means disable.
+                     * Non-zero value means enable. */
 
     uint8_t reserved[3]; /*!< Reserved. */
 #elif defined(KIA_SOUL_EV)
@@ -73,8 +73,8 @@ typedef struct
     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
 
     uint8_t enable; /*!< Command to enable or disable steering control.
-                    * Zero value means disable.
-                    * Non-zero value means enable. */
+                     * Zero value means disable.
+                     * Non-zero value means enable. */
 
     uint8_t reserved; /*!< Reserved. */
 #endif
