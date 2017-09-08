@@ -5,7 +5,7 @@ use std::env;
 use std::path::Path;
 
 fn main() {
-    gcc::Config::new()
+    gcc::Build::new()
         .flag("-w")
         .define("KIA_SOUL", Some("ON"))
         .include("include")
@@ -50,8 +50,9 @@ fn main() {
         .whitelisted_var("OSCC_STEERING_COMMAND_CAN_ID")
         .whitelisted_var("OSCC_STEERING_COMMAND_CAN_DLC")
         .whitelisted_var("OSCC_FAULT_REPORT_CAN_ID")
-        .whitelisted_var("OSCC_STEERING_REPORT_PUBLISH_INTERVAL_IN_MSEC")
-        .whitelisted_var("OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC")
+        .whitelisted_var("PIN_TORQUE_SENSOR_HIGH")
+        .whitelisted_var("PIN_TORQUE_SENSOR_LOW")
+        .whitelisted_var("TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD")
         .whitelisted_var("STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN")
         .whitelisted_var("STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX")
         .whitelisted_var("STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN")

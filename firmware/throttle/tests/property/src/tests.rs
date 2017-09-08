@@ -20,7 +20,7 @@ extern "C" {
     pub static mut g_mock_mcp_can_send_msg_buf_ext: u8;
     pub static mut g_mock_mcp_can_send_msg_buf_len: u8;
     pub static mut g_mock_mcp_can_send_msg_buf_buf: *mut u8;
-    pub static mut g_mock_arduino_analog_read_return: isize;
+    pub static mut g_mock_arduino_analog_read_return: [isize; 8usize];
     pub static mut g_mock_dac_output_a: u16;
     pub static mut g_mock_dac_output_b: u16;
     pub static mut g_throttle_control_state: throttle_control_state_s;
@@ -264,7 +264,8 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
     unsafe {
         g_throttle_control_state.enabled = true;
         g_throttle_control_state.operator_override = false;
-        g_mock_arduino_analog_read_return = analog_read_spoof as isize;
+        g_mock_arduino_analog_read_return[0] = analog_read_spoof as isize;
+        g_mock_arduino_analog_read_return[1] = analog_read_spoof as isize;
 
         check_for_operator_override();
 
@@ -282,7 +283,6 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
 fn check_operator_override() {
     QuickCheck::new()
         .tests(1000)
-        .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
         .quickcheck(prop_check_operator_override as fn(u16) -> TestResult)
 }
 
