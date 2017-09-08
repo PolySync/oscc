@@ -9,15 +9,40 @@ Although we currently support only the 2014 or later Kia Soul (w/ Kia Soul EV & 
 
 Our [Wiki](https://github.com/PolySync/OSCC/wiki) is in the process of being updated to reflect the new changes, but contains a bunch of valuable information to help you get started in understanding the details of the system.
 
+# Versions
 
-## Repository Contents
+New versions of the API and the firmware are released periodically as new features are added and bugs are
+fixed. **It is of vital importance that you update whenever there is a new version so that you can be certain
+you are not using a version with known safety issues.**
+
+There are four versions to be aware of:
+
+* **Sensor Interface Board (throttle and steering):** the version is printed on the front of the shield
+
+* **Vehicle Control Module (EV brakes):** the version is printed on the front of the shield
+
+* **Actuator Control Board (petrol brakes):** the version is printed on the front of the shield
+
+* **API and Firmware:** a single version is shared by both and listed in the [Releases section](https://github.com/PolySync/oscc/releases) of the repository.
+
+The following table can be used to ensure that you use the appropriate firmware version with your boards:
+
+|                        | Board Version | Firmware Version |
+| ---------------------- | ------------- | ---------------- |
+| Sensor Interface       | >= 1.0.0      | >= 1.0.0         |
+| Vehicle Control        | 0.1.0         | >= 1.1.0         |
+| Actuator Control       | >= 1.2.0      | >= 1.0.0         |
+|                        | < 1.2.0 __*__ | >= 1.0.1         |
+
+__*__ *Later versions of the Actuator Control Board utilize new pins to perform additional safety checks on startup. To use the new firmware on older boards, please see additional instructions in the [build](#brake-startup-test) section.*
+
+# Repository Contents
 
 * **api** - Software API, so your program can seamlessly talk to our modules.
 * **firmware** - Arduino libraries and firmware for the OSCC modules.
 * **hardware** - PCB schematics and board designs for control modules.
 
-
-## Boards
+# Boards
 
 The sensor interface and actuator control board schematics and design files are located in the
 `hardware/boards` directory. If you don't have the time or fabrication resources, the boards can be
@@ -25,35 +50,6 @@ purchased as a kit from the [OSCC website](http://oscc.io).
 
 Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://macrofab.com/) for
 help designing and manufacturing the custom boards.
-
-## Compatibility
-
-Your hardware version is printed on the front of the OSCC shield.
-
-### Kia Soul (2014-2017)
-
-#### Steering (Sensor Interface Board)
-| Board Version | Firmware Version |
-| ------------- | ---------------- |
-| >= 1.0.0      | >= 1.0.0         |
-
-#### CAN Gateway (Sensor Interface Board)
-| Board Version | Firmware Version |
-| ------------- | ---------------- |
-| >= 1.0.0      | >= 1.0.0         |
-
-#### Throttle (Sensor Interface Board)
-| Board Version | Firmware Version |
-| ------------- | ---------------- |
-| >= 1.0.0      | >= 1.0.0         |
-
-#### Brake (Actuator Control Board)
-| Board Version | Firmware Version |
-| ------------- | ---------------- |
-| 1.0.0 - 1.0.1 | >= 1.0.1 __*__       |
-| >= 1.0.0      | >= 1.0.0         |
-
-__*__ *Later versions of the actuator control board utilize new pins to perform additional safety checks on startup. To use the new firmware on older models, please see additional instructions in the [build](#startup-test) section.*
 
 # Building and Uploading Firmware
 
@@ -68,7 +64,7 @@ You must have Arduino Core and CMake (version 2.8 or greater) installed on
 your machine.
 
 ```
-sudo apt install arduino-core cmake
+sudo apt install arduino-core build-essential cmake
 ```
 
 OSCC uses CMake to avoid some of the limitations of the Arduino IDE. Using this method you can build
@@ -86,7 +82,7 @@ mkdir build
 cd build
 ```
 
-To generate Makefiles, tell CMake which platform to build firmware for. For example, if you want to build
+To generate Makefiles, tell `cmake` which platform to build firmware for. For example, if you want to build
 firmware for the Kia Soul:
 
 ```
@@ -101,7 +97,9 @@ enabled, use the following instead:
 cmake .. -DKIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release
 ```
 
-<a name="startup-test"></a>*For older (< 1.1.0) versions of the actuator control board, you need to set an additional flag using `cmake .. -DKIA_SOUL=ON -DBRAKE_STARTUP_TEST=OFF` to disable startup tests that are not compatible with the previous board design.*
+<a name="brake-startup-test"></a>
+**NOTE:**
+> For older (< 1.2.0) versions of the actuator control board, you need to set an additional flag using `cmake .. -DKIA_SOUL=ON -DBRAKE_STARTUP_TEST=OFF` to disable startup tests that are not compatible with the previous board design.
 
 This will generate the necessary files for building.
 
@@ -116,7 +114,7 @@ If you'd like to build only a specific module, you can provide a target name to
 
 ```
 make brake
-make gateway
+make can-gateway
 make steering
 make throttle
 ```
@@ -128,7 +126,7 @@ an Arduino with a USB cable, your machine assigns a serial device to it with the
 path `/dev/ttyACM#` where `#` is a digit starting at 0 and increasing by one with
 each additional Arduino connected.
 
-You can upload firmware to a single module or to all modules. By default, CMake
+You can upload firmware to a single module or to all modules. By default, `cmake`
 is configured to expect each module to be `/dev/ttyACM0`, so if you connect a
 single module to your machine, you can flash it without changing anything:
 
@@ -137,7 +135,7 @@ make throttle-upload
 ```
 
 However, if you want to flash all modules, you need to change the ports in
-CMake for each module to match what they are on your machine. The easiest way
+`cmake` for each module to match what they are on your machine. The easiest way
 is to connect each module in alphabetical order (brake, CAN gateway, steering,
 throttle) so that they are assigned `/dev/ttyACM0` through `/dev/ttyACM3` in
 a known order. You can then change the ports during the `cmake ..` step:
@@ -170,7 +168,7 @@ you can get it with the following command:
 sudo apt install screen
 ```
 
-You need to enable debug mode with `-DDEBUG=ON` and tell CMake what serial port
+You need to enable debug mode with `-DDEBUG=ON` and tell `cmake` what serial port
 the module you want to monitor is connected to
 (see [section on uploading](#uploading-the-firmware) for details on the default
 ports for each module). The default baud rate is `115200` but you can change it:
@@ -197,14 +195,94 @@ connection.
 Be aware that using serial printing can affect the timing of the firmware. You may experience
 strange behavior while printing that does not occur otherwise.
 
+# Controlling Your Vehicle - an Example Application
 
-## Tests
+Now that all your Arduino modules are properly setup, it is time to start sending control commands.
+We've created an example application, joystick commander, that uses the OSCC API to interface with the firmware, allowing you to send commands using a game controller and receive reports from the on-board OBD-II CAN. These commands are converted into CAN messages, which the OSCC API sends to the respective Arduino modules and are used to actuate the vehicle.
+
+[OSCC Joystick Commander](https://github.com/PolySync/oscc-joystick-commander)
+
+# OSCC API
+
+**Open and close CAN channel to OSCC Control CAN.**
+
+```c
+oscc_result_t oscc_open( uint channel );
+oscc_result_t oscc_close( uint channel );
+```
+
+These methods are the start and end points of using the OSCC API in your application. ```oscc_open``` will open a socket connection
+on the specified CAN channel, enabling it to quickly receive reports from and send commands to the firmware modules.
+When you are ready to terminate your application, ```oscc_close``` can terminate the connection.
+
+**Enable and disable all OSCC modules.**
+
+```c
+oscc_result_t oscc_enable( void );
+oscc_result_t oscc_disable( void );
+```
+
+After you have initialized your CAN connection to the firmware modules, these methods can be used to enable or disable the system. This
+allows your application to choose when to enable sending commands to the firmware. Although you can only send commands when the system is
+enabled, you can receive reports at any time.
+
+**Publish control command to the corresponding module.**
+
+```c
+oscc_result_t publish_brake_position( double normalized_position );
+oscc_result_t publish_steering_torque( double normalized_torque );
+oscc_result_t publish_throttle_position( double normalized_position );
+```
+
+These commands will forward a double value, *[0.0, 1.0]*, to the specified firmware module. The API will construct the appropriate values
+to send spoof commands into the vehicle ECU's to achieve the desired state. The API also contains safety checks to ensure no invalid values
+can be written onto the hardware.
+
+**Register callback function to handle OSCC report and OBD messages.**
+
+```c
+oscc_result_t subscribe_to_brake_reports( void(*callback)(oscc_brake_report_s *report) );
+oscc_result_t subscribe_to_steering_reports( void(*callback)(oscc_steering_report_s *report) );
+oscc_result_t subscribe_to_throttle_reports( void(*callback)(oscc_throttle_report_s *report) );
+oscc_result_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *report) );
+oscc_result_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame) );
+```
+
+In order to receive reports from the modules, your application will need to register a callback handler with the OSCC API.
+When the appropriate report for your callback function is received from the API's socket connection, it will then forward the
+report to your software.
+
+In addition to OSCC specific reports, it will also forward any non-OSCC reports to any callback function registered with
+```subscribe_to_obd_messages```. This can be used to view CAN frames received from the vehicle's OBD-II CAN channel. If you know
+the corresponding CAN frame's id, you can parse reports sent from the car.
+
+# Tests
 
 There are two types of tests available: unit and property-based.
 
+## Test Dependencies
+
+The unit tests and property-based tests each have their own set of dependencies
+required to run the tests.
+
+For the unit tests you must have **Cucumber 2.0.0** and its dependency **Boost** installed:
+
+```
+sudo apt install ruby-dev libboost-dev
+sudo gem install cucumber -v 2.0.0
+```
+
+For the property-based tests you must have **Rust**, its build manager **Cargo**, and **libclang**:
+
+```
+sudo apt install rustc cargo clang libclang-dev
+```
+
+## Running Tests
+
 Building and running the tests is similar to the firmware itself, but you must instead tell
-CMake to build the tests instead of the firmware with the `-DTESTS=ON` flag. We also pass
-the `-DCMAKE_BUILD_TYPE=Release` flag so that CMake will disable debug symbols and enable
+`cmake` to build the tests instead of the firmware with the `-DTESTS=ON` flag. We also pass
+the `-DCMAKE_BUILD_TYPE=Release` flag so that `cmake` will disable debug symbols and enable
 optimizations, good things to do when running tests to ensure nothing breaks with
 optimizations. Lastly, you must tell the tests which vehicle header to use for
 the tests (e.g., `-DKIA_SOUL=ON`).
@@ -218,22 +296,18 @@ cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release -DKIA_SOUL=ON
 
 ### Unit Tests
 
-Each module has a suite of unit tests that use **Cucumber** with **Cgreen**. There are prebuilt
-64-bit Linux versions in `firmware/common/testing/framework`. Boost is required for Cucumber-CPP
-and has been statically linked into `libcucumber-cpp.a`. If you need to build your own versions
-you can use the provided script `build_test_framework.sh` which will install the Boost dependencies
-(needed for building), clone the needed repositories with specific hashes, build the Cgreen and
-Cucumber-CPP libraries, and place static Boost in the Cucumber-CPP library. The built will be placed
-in an `oscc_test_framework` directory in the directory that you ran the script from. You can then copy
-`oscc_test_framework/cucumber-cpp` and `oscc_test_framework/cgreen` to
-`firmware/common/testing/framework`.
+Each module has a suite of unit tests that use **Cucumber** with **Cgreen**. There are pre-built
+64-bit Linux versions in `firmware/common/testing/framework`.
 
-You must have **Cucumber** installed to run the tests:
+Boost is required for Cucumber-CPP and has been statically linked into `libcucumber-cpp.a`.
+If you need to build your own versions you can use the provided script `build_test_framework.sh`
+which will install the Boost dependencies (needed for building), clone the needed
+repositories with specific hashes, build the Cgreen and Cucumber-CPP libraries,
+and place static Boost in the Cucumber-CPP library.
 
-```
-sudo apt install ruby-dev
-sudo gem install cucumber -v 2.0.0
-```
+The built libraries will be placed in an `oscc_test_framework` directory in the
+directory that you ran the script from. You can then copy `oscc_test_framework/cucumber-cpp`
+and `oscc_test_framework/cgreen` to `firmware/common/testing/framework`.
 
 We can run all of the unit tests available:
 
@@ -275,14 +349,10 @@ Feature: Receiving commands
       | 1024       | 4096      | 4096      |
 ```
 
-## Property-Based Tests
+### Property-Based Tests
 
 The throttle, steering, and brake modules, along with the PID controller library, also contain a series of
 property-based tests.
-
-These tests use [QuickCheck for Rust](http://burntsushi.net/rustdoc/quickcheck/), so **Rust** and **Cargo**
-need to be [installed](https://www.rust-lang.org/en-US/install.html) in order to run them locally.
-
 
 We can run all of the property-based tests available:
 
@@ -319,102 +389,13 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
-### Run All Tests
+### All Tests
 
-Finally, you can run all available tests:
+Finally, as a convenience you can run all available tests:
 
 ```
 make run-all-tests
 ```
-
-
-## Easier CMake Configuration
-
-If you have a lot of `-D` commands to pass to CMake (e.g., configuring the serial
-port and baud rates of all of the modules), you can instead configure with a GUI
-using `cmake-gui`:
-
-```
-sudo apt install cmake-gui
-```
-
-Then use `cmake-gui` where you would normally use `cmake`:
-
-```
-cd firmware
-mkdir build
-cd build
-cmake-gui ..
-```
-
-The GUI will open and you can change all of the options you would normally need
-to pass on the command line. First, press the `Configure` button and then press
-`Finish` on the dialog that opens. In the main window you'll see a list of
-options that you can change that would normally be configured on the command line
-with `-D` commands. When you're done, click `Configure` again and then click
-the `Generate` button. You can then close `cmake-gui` and run any `make` commands
-like you normally would.
-
-# Controlling Your Vehicle - an Example Application
-
-Now that all your Arduino modules are properly setup, it is time to start sending control commands.
-We've created an example application, joystick commander, that uses the OSCC API to interface with the firmware, allowing you to send commands using a game controller and receive reports from the on-board OBD-II CAN. These commands are converted into CAN messages, which the OSCC API sends to the respective Arduino modules and are used to actuate the vehicle.
-
-[OSCC Joystick Commander](https://github.com/PolySync/oscc-joystick-commander)
-
-# OSCC API
-
-**Use provided CAN channel to open and close communications to CAN bus connected to the OSCC modules.**
-
-```c
-oscc_result_t oscc_open( uint channel )
-oscc_result_t oscc_close( uint )
-```
-
-These methods are the start and end points of using the OSCC API in your application. ```oscc_open``` will open a socket connection
-on the specified CAN channel, enabling it to quickly receive reports from and send commands to the firmware modules.
-When you are ready to terminate your application, ```oscc_close``` can terminate the connection.
-
-**Send enable or disable commands to all OSCC modules.**
-
-```c
-oscc_result_t oscc_enable( void )
-oscc_result_t oscc_disable( void )
-```
-
-After you have initialized your CAN connection to the firmware modules, these methods can be used to enable or disable the system. This
-allows your application to choose when to enable sending commands to the firmware. Although you can only send commands when the system is
-enabled, you can receive reports at any time.
-
-**Publish message with requested normalized value to the corresponding module.**
-
-```c
-oscc_result_t publish_brake_position( double normalized_position )
-oscc_result_t publish_steering_torque( double normalized_torque )
-oscc_result_t publish_throttle_position( double normalized_position )
-```
-
-These commands will forward a double value, *[0.0, 1.0]*, to the specified firmware module. The API will construct the appropriate values
-to send spoof commands into the vehicle ECU's to achieve the desired state. The API also contains safety checks to ensure no invalid values
-can be written onto the hardware.
-
-**Register callback function to be called when OBD message received from vehicle.**
-
-```c
-oscc_result_t subscribe_to_brake_reports( void(*callback)(oscc_brake_report_s *report)  )
-oscc_result_t subscribe_to_steering_reports( void(*callback)(oscc_steering_report_s *report) )
-oscc_result_t subscribe_to_throttle_reports( void(*callback)(oscc_throttle_report_s *report) )
-oscc_result_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *report) )
-oscc_result_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame) )
-```
-
-In order to receive reports from the modules, your application will need to register a callback handler with the OSCC API.
-When the appropriate report for your callback function is received from the API's socket connection, it will then forward the
-report to your software.
-
-In addition to OSCC specific reports, it will also forward any non-OSCC reports to any callback function registered with
-```subscribe_to_obd_messages```. This can be used to view CAN frames received from the vehicle's OBD-II CAN channel. If you know
-the corresponding CAN frame's id, you can parse reports sent from the car.
 
 # Additional Vehicles & Contributing
 
@@ -422,7 +403,7 @@ OSCC currently has information regarding the Kia Soul PS (2014-2016), but we wan
 repository is structured to facilitate including more vehicles as more is learned about them.
 
 In order to include information related to a new vehicle's specification, follow the format defined in ```api/include/vehicles/kia_soul.h``` and
-add a CMake option to choose your new header when compiling the API.
+add a `cmake` option to choose your new header when compiling the API.
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
