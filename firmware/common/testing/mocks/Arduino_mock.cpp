@@ -9,7 +9,7 @@ unsigned long g_mock_arduino_millis_return;
 unsigned long g_mock_arduino_micros_return;
 uint8_t g_mock_arduino_digital_write_pin;
 uint8_t g_mock_arduino_digital_write_val;
-int g_mock_arduino_analog_read_return;
+int g_mock_arduino_analog_read_return[100];
 uint8_t g_mock_arduino_analog_write_pins[100];
 int g_mock_arduino_analog_write_val[100];
 int g_mock_arduino_analog_write_count;
@@ -39,7 +39,7 @@ void digitalWrite(uint8_t pin, uint8_t val)
 
 int analogRead(uint8_t pin)
 {
-    return g_mock_arduino_analog_read_return;
+    return g_mock_arduino_analog_read_return[pin];
 }
 
 void analogWrite(uint8_t pin, int val)

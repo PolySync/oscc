@@ -281,13 +281,13 @@ typedef struct
  * @brief Minimum allowable torque value.
  *
  */
-#define MINIMUM_TORQUE_COMMAND ( -10.0 )
+#define MINIMUM_TORQUE_COMMAND ( -12.8 )
 
 /*
  * @brief Maximum allowable torque value.
  *
  */
-#define MAXIMUM_TORQUE_COMMAND ( 10.0 )
+#define MAXIMUM_TORQUE_COMMAND ( 12.7 )
 
 /*
  * @brief Minimum allowable steering DAC output. [volts]
@@ -345,25 +345,25 @@ typedef struct
  * @brief Scalar value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.17 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.135 )
 
 /*
  * @brief Offset value for the low spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.40 )
+#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.39 )
 
 /*
  * @brief Scalar value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.16 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE ( -0.145 )
 
 /*
  * @brief Offset value for the high spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.5 )
+#define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.42 )
 
 /*
  * @brief Minimum allowed value for the high spoof signal value.
@@ -382,11 +382,11 @@ typedef struct
             + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
- * @brief Value of the torque sensor that indicates operator override.
- *        [degrees/microsecond]
+ * @brief Value of torque sensor difference that indicates likely operator 
+ *        override.
  *
  */
-#define OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC ( 750 )
+#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
 
 
 
