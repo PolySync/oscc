@@ -114,7 +114,7 @@ If you'd like to build only a specific module, you can provide a target name to
 
 ```
 make brake
-make gateway
+make can-gateway
 make steering
 make throttle
 ```
