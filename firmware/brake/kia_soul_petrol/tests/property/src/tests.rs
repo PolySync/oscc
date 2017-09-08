@@ -144,7 +144,7 @@ fn prop_process_enable_command(brake_enable_msg: oscc_brake_enable_s) -> TestRes
 #[test]
 fn check_process_enable_command() {
     QuickCheck::new()
-        .tests(1000)
+        .tests(25)
         .quickcheck(prop_process_enable_command as fn(oscc_brake_enable_s) -> TestResult)
 }
 
@@ -168,6 +168,6 @@ fn prop_process_disable_command(brake_disable_msg: oscc_brake_disable_s) -> Test
 #[test]
 fn check_process_disable_command() {
     QuickCheck::new()
-        .tests(1000)
+        .tests(25)
         .quickcheck(prop_process_disable_command as fn(oscc_brake_disable_s) -> TestResult)
 }
