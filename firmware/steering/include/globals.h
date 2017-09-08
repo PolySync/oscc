@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _KIA_SOUL_STEERING_GLOBALS_H_
-#define _KIA_SOUL_STEERING_GLOBALS_H_
+#ifndef _OSCC_STEERING_GLOBALS_H_
+#define _OSCC_STEERING_GLOBALS_H_
 
 
 #include "DAC_MCP49xx.h"

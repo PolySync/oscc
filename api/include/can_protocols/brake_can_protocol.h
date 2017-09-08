@@ -59,6 +59,7 @@ typedef struct
                          Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                          Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
+#if defined(KIA_SOUL)
     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
     uint8_t enable; /*!< Command to enable or disable steering control.
@@ -66,6 +67,17 @@ typedef struct
                      * Non-zero value means enable. */
 
     uint8_t reserved[3]; /*!< Reserved. */
+#elif defined(KIA_SOUL_EV)
+    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
+
+    uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
+
+    uint8_t enable; /*!< Command to enable or disable steering control.
+                     * Zero value means disable.
+                     * Non-zero value means enable. */
+
+    uint8_t reserved; /*!< Reserved. */
+#endif
 } oscc_brake_command_s;
 
 
