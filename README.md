@@ -15,11 +15,13 @@ New versions of the API and the firmware are released periodically as new featur
 fixed. **It is of vital importance that you update whenever there is a new version so that you can be certain
 you are not using a version with known safety issues.**
 
-There are three versions to be aware of:
+There are four versions to be aware of:
 
 * **Sensor Interface Board (throttle and steering):** the version is printed on the front of the shield
 
-* **Actuator Control Board (brakes):** the version is printed on the front of the shield
+* **Vehicle Control Module (EV brakes):** the version is printed on the front of the shield
+
+* **Actuator Control Board (petrol brakes):** the version is printed on the front of the shield
 
 * **API and Firmware:** a single version is shared by both and listed in the [Releases section](https://github.com/PolySync/oscc/releases) of the repository.
 
@@ -28,6 +30,7 @@ The following table can be used to ensure that you use the appropriate firmware 
 |                        | Board Version | Firmware Version |
 | ---------------------- | ------------- | ---------------- |
 | Sensor Interface       | >= 1.0.0      | >= 1.0.0         |
+| Vehicle Control        | 0.1.0         | >= 1.1.0         |
 | Actuator Control       | >= 1.2.0      | >= 1.0.0         |
 |                        | < 1.2.0 __*__ | >= 1.0.1         |
 
