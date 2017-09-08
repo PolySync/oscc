@@ -65,30 +65,30 @@
  * CAN frame ID: \ref OSCC_BRAKE_ENABLE_CAN_ID
  *
  */
- typedef struct
- {
-     uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
-                          Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                          Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+typedef struct
+{
+    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-     uint8_t reserved[6]; /*!< Reserved. */
- } oscc_brake_enable_s;
+    uint8_t reserved[6]; /*!< Reserved. */
+} oscc_brake_enable_s;
 
 
- /**
+/**
   * @brief Brake disable message.
   *
   * CAN frame ID: \ref OSCC_BRAKE_DISABLE_CAN_ID
   *
   */
-  typedef struct
-  {
-      uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
-                           Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                           Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+typedef struct
+{
+    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-      uint8_t reserved[6]; /*!< Reserved. */
-  } oscc_brake_disable_s;
+    uint8_t reserved[6]; /*!< Reserved. */
+} oscc_brake_disable_s;
 
 
 /**
@@ -97,24 +97,24 @@
  * CAN frame ID: \ref OSCC_BRAKE_COMMAND_CAN_ID
  *
  */
- typedef struct
- {
-     uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
-                          Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                          Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+typedef struct
+{
+    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
- #if defined(KIA_SOUL)
-     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
+#if defined(KIA_SOUL)
+    uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
-     uint8_t reserved[4]; /*!< Reserved. */
- #elif defined(KIA_SOUL_EV)
-     uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
+    uint8_t reserved[4]; /*!< Reserved. */
+#elif defined(KIA_SOUL_EV)
+    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
-     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
+    uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
 
-     uint8_t reserved[2]; /*!< Reserved. */
- #endif
- } oscc_brake_command_s;
+    uint8_t reserved[2]; /*!< Reserved. */
+#endif
+} oscc_brake_command_s;
 
 
 /**
