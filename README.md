@@ -241,7 +241,7 @@ can be written onto the hardware.
 **Register callback function to handle OSCC report and OBD messages.**
 
 ```c
-oscc_result_t subscribe_to_brake_reports( void(*callback)(oscc_brake_report_s *report)  );
+oscc_result_t subscribe_to_brake_reports( void(*callback)(oscc_brake_report_s *report) );
 oscc_result_t subscribe_to_steering_reports( void(*callback)(oscc_steering_report_s *report) );
 oscc_result_t subscribe_to_throttle_reports( void(*callback)(oscc_throttle_report_s *report) );
 oscc_result_t subscribe_to_fault_reports( void(*callback)(oscc_fault_report_s *report) );
