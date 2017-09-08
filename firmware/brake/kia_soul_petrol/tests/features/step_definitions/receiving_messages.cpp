@@ -12,7 +12,6 @@ GIVEN("^the left brake sensor reads (.*)$")
     REGEX_PARAM(int, sensor_val);
 
     g_mock_arduino_analog_read_return[14] = sensor_val;
-    g_mock_arduino_analog_read_return[14] = sensor_val;
 }
 
 
@@ -20,7 +19,6 @@ GIVEN("^the right brake sensor reads (.*)$")
 {
     REGEX_PARAM(int, sensor_val);
 
-    g_mock_arduino_analog_read_return[13] = sensor_val;
     g_mock_arduino_analog_read_return[13] = sensor_val;
 }
 
