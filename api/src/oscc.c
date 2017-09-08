@@ -428,6 +428,10 @@ static oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
         {
             ret = OSCC_OK;
         }
+        else
+        {
+            printf( "Could not write to socket: %s\n", strerror(errno) );
+        }
     }
 
     return ret;
@@ -535,7 +539,7 @@ static oscc_result_t oscc_init_can( const char *can_channel )
 
         if ( bytes_written < 0 )
         {
-            printf( "failed to write test frame to %s\n", can_channel );
+            printf( "Failed to write test frame to %s: %s\n", can_channel, strerror(errno) );
 
             ret = OSCC_ERROR;
         }
