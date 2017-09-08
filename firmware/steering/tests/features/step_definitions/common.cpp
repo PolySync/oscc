@@ -16,10 +16,11 @@
 using namespace cgreen;
 
 
-extern uint8_t g_mock_arduino_digital_write_pin;
-extern uint8_t g_mock_arduino_digital_write_val;
+extern uint8_t g_mock_arduino_digital_write_pins[100];
+extern uint8_t g_mock_arduino_digital_write_val[100];
+extern int g_mock_arduino_digital_write_count;
 
-extern int g_mock_arduino_analog_read_return;
+extern int g_mock_arduino_analog_read_return[100];
 
 extern uint8_t g_mock_mcp_can_check_receive_return;
 extern uint32_t g_mock_mcp_can_read_msg_buf_id;
@@ -38,10 +39,12 @@ extern volatile steering_control_state_s g_steering_control_state;
 // return to known state before every scenario
 BEFORE()
 {
-    g_mock_arduino_digital_write_pin = UINT8_MAX;
-    g_mock_arduino_digital_write_val = UINT8_MAX;
+    g_mock_arduino_digital_write_count = 0;
+    memset(&g_mock_arduino_digital_write_pins, 0, sizeof(g_mock_arduino_digital_write_pins));
+    memset(&g_mock_arduino_digital_write_val, 0, sizeof(g_mock_arduino_digital_write_val));
 
-    g_mock_arduino_analog_read_return = INT_MAX;
+    g_mock_arduino_analog_read_return[0] = INT_MAX;
+    g_mock_arduino_analog_read_return[1] = INT_MAX;
 
     g_mock_mcp_can_check_receive_return = UINT8_MAX;
     g_mock_mcp_can_read_msg_buf_id = UINT32_MAX;
@@ -76,7 +79,8 @@ GIVEN("^the torque sensors have a reading of (.*)$")
 {
     REGEX_PARAM(int, sensor_val);
 
-    g_mock_arduino_analog_read_return = sensor_val;
+    g_mock_arduino_analog_read_return[0] = sensor_val;
+    g_mock_arduino_analog_read_return[1] = sensor_val;
 }
 
 
@@ -84,7 +88,8 @@ GIVEN("^the operator has applied (.*) to the steering wheel$")
 {
     REGEX_PARAM(int, steering_sensor_val);
 
-    g_mock_arduino_analog_read_return = steering_sensor_val;
+    g_mock_arduino_analog_read_return[0] = steering_sensor_val;
+    g_mock_arduino_analog_read_return[1] = steering_sensor_val;
 
     check_for_operator_override();
 }
@@ -97,11 +102,11 @@ THEN("^control should be enabled$")
         is_equal_to(1));
 
     assert_that(
-        g_mock_arduino_digital_write_pin,
+        g_mock_arduino_digital_write_pins[0],
         is_equal_to(PIN_SPOOF_ENABLE));
 
     assert_that(
-        g_mock_arduino_digital_write_val,
+        g_mock_arduino_digital_write_val[0],
         is_equal_to(HIGH));
 }
 
@@ -113,11 +118,11 @@ THEN("^control should be disabled$")
         is_equal_to(0));
 
     assert_that(
-        g_mock_arduino_digital_write_pin,
+        g_mock_arduino_digital_write_pins[0],
         is_equal_to(PIN_SPOOF_ENABLE));
 
     assert_that(
-        g_mock_arduino_digital_write_val,
+        g_mock_arduino_digital_write_val[0],
         is_equal_to(LOW));
 }
 
