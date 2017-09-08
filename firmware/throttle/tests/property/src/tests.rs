@@ -62,7 +62,7 @@ impl Arbitrary for oscc_throttle_command_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
             spoof_value_low: u16::arbitrary(g),
             spoof_value_high: u16::arbitrary(g),
-            reserved: u8::arbitrary(g),
+            reserved: [u8::arbitrary(g); 2],
         }
     }
 }
