@@ -111,7 +111,7 @@ typedef struct
 
     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
 
-    uint8_t reserved; /*!< Reserved. */
+    uint8_t reserved[2]; /*!< Reserved. */
 } oscc_throttle_command_s;
 
 
