@@ -99,7 +99,7 @@
  */
 typedef struct
 {
-    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
                          Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                          Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
@@ -119,7 +119,7 @@ typedef struct
  */
 typedef struct
 {
-    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
                          Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                          Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
@@ -132,7 +132,7 @@ typedef struct
                                 * Non-zero value means an operator has physically overridden
                                 * the system. */
 
-    uint8_t dtcs; /* Bitfield of DTCs present in the module. */
+    uint8_t dtcs; /*!< Bitfield of DTCs present in the module. */
 
     uint8_t reserved[3]; /*!< Reserved. */
 } oscc_steering_report_s;
