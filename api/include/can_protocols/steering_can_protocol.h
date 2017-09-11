@@ -14,6 +14,18 @@
 
 
 /*
+ * @brief Steering enable message (CAN frame) ID.
+ *
+ */
+#define OSCC_STEERING_ENABLE_CAN_ID (0x54)
+
+/*
+ * @brief Steering disable message (CAN frame) ID.
+ *
+ */
+#define OSCC_STEERING_DISABLE_CAN_ID (0x55)
+
+/*
  * @brief Steering command message (CAN frame) ID.
  *
  */
@@ -48,6 +60,38 @@
 #pragma pack(1)
 
 /**
+ * @brief Steering enable message.
+ *
+ * CAN frame ID: \ref OSCC_STEERING_ENABLE_CAN_ID
+ *
+ */
+typedef struct
+{
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+
+     uint8_t reserved[6]; /*!< Reserved. */
+} oscc_steering_enable_s;
+
+
+/**
+ * @brief Steering disable message.
+ *
+ * CAN frame ID: \ref OSCC_STEERING_DISABLE_CAN_ID
+ *
+ */
+typedef struct
+{
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+
+    uint8_t reserved[6]; /*!< Reserved. */
+} oscc_steering_disable_s;
+
+
+/**
  * @brief Steering command message data.
  *
  * CAN frame ID: \ref OSCC_STEERING_COMMAND_CAN_ID
@@ -56,18 +100,14 @@
 typedef struct
 {
     uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
 
-    uint8_t enable;    /*!< Command to enable or disable steering control.
-                         * Zero value means disable.
-                         * Non-zero value means enable. */
-
-    uint8_t reserved; /*!< Reserved. */
+    uint8_t reserved[2]; /*!< Reserved. */
 } oscc_steering_command_s;
 
 
@@ -80,8 +120,8 @@ typedef struct
 typedef struct
 {
     uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint8_t enabled; /*!< Steering controls enabled state.
                       * Zero value means disabled (commands are ignored).

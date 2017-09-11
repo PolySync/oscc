@@ -99,13 +99,21 @@ static void process_rx_frame(
         if( (frame->data[0] == OSCC_MAGIC_BYTE_0)
              && (frame->data[1] == OSCC_MAGIC_BYTE_1) )
         {
-            if( frame->id == OSCC_BRAKE_COMMAND_CAN_ID )
+            if ( frame->id == OSCC_BRAKE_ENABLE_CAN_ID )
+            {
+                enable_control( );
+            }
+            else if ( frame->id == OSCC_BRAKE_DISABLE_CAN_ID )
+            {
+                disable_control( );
+            }
+            else if ( frame->id == OSCC_BRAKE_COMMAND_CAN_ID )
             {
                 process_brake_command( frame->data );
             }
             else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
             {
-                process_fault_report( frame-> data );
+                process_fault_report( frame->data );
             }
         }
     }
@@ -120,18 +128,9 @@ static void process_brake_command(
         const oscc_brake_command_s * const brake_command =
                 (oscc_brake_command_s *) data;
 
-        if( brake_command->enable == true )
-        {
-            enable_control( );
-
-            update_brake(
-                brake_command->spoof_value_high,
-                brake_command->spoof_value_low );
-        }
-        else
-        {
-            disable_control( );
-        }
+        update_brake(
+            brake_command->spoof_value_high,
+            brake_command->spoof_value_low );
 
         g_brake_command_timeout = false;
     }

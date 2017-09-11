@@ -99,7 +99,15 @@ static void process_rx_frame(
         if( (frame->data[0] == OSCC_MAGIC_BYTE_0)
              && (frame->data[1] == OSCC_MAGIC_BYTE_1) )
         {
-            if ( frame->id == OSCC_STEERING_COMMAND_CAN_ID )
+            if ( frame->id == OSCC_STEERING_ENABLE_CAN_ID )
+            {
+                enable_control( );
+            }
+            else if ( frame->id == OSCC_STEERING_DISABLE_CAN_ID )
+            {
+                disable_control( );
+            }
+            else if ( frame->id == OSCC_STEERING_COMMAND_CAN_ID )
             {
                 process_steering_command( frame->data );
             }
@@ -120,18 +128,9 @@ static void process_steering_command(
         const oscc_steering_command_s * const steering_command =
                 (oscc_steering_command_s *) data;
 
-        if ( steering_command->enable == true )
-        {
-            enable_control( );
-
-            update_steering(
-                steering_command->spoof_value_high,
-                steering_command->spoof_value_low );
-        }
-        else
-        {
-            disable_control( );
-        }
+        update_steering(
+            steering_command->spoof_value_high,
+            steering_command->spoof_value_low );
 
         g_steering_command_timeout = false;
     }

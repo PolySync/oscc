@@ -18,32 +18,11 @@
 #include "vehicles.h"
 #include "dtc.h"
 #include "oscc.h"
+#include "internal/oscc.h"
 
-#define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
 static int can_socket = -1;
 
-static oscc_brake_command_s brake_cmd;
-static oscc_throttle_command_s throttle_cmd;
-static oscc_steering_command_s steering_cmd;
-
-static void (*steering_report_callback)(oscc_steering_report_s *report);
-static void (*brake_report_callback)(oscc_brake_report_s *report);
-static void (*throttle_report_callback)(oscc_throttle_report_s *report);
-static void (*fault_report_callback)(oscc_fault_report_s *report);
-static void (*obd_frame_callback)(struct can_frame *frame);
-
-static oscc_result_t oscc_init_can( const char *can_channel );
-static oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc );
-static oscc_result_t oscc_async_enable( int socket );
-static oscc_result_t oscc_enable_brakes( void );
-static oscc_result_t oscc_enable_throttle( void );
-static oscc_result_t oscc_enable_steering( void );
-static oscc_result_t oscc_disable_brakes( void );
-static oscc_result_t oscc_disable_throttle( void );
-static oscc_result_t oscc_disable_steering( void );
-static void oscc_update_status( );
-static void oscc_init_commands( void );
 
 oscc_result_t oscc_open( unsigned int channel )
 {
@@ -56,8 +35,6 @@ oscc_result_t oscc_open( unsigned int channel )
     printf( "Opening CAN channel: %s\n", buffer );
 
     ret = oscc_init_can( buffer );
-
-    oscc_init_commands( );
 
     return ret;
 }
@@ -117,6 +94,12 @@ oscc_result_t oscc_publish_brake_position( double brake_position )
 {
     oscc_result_t ret = OSCC_ERROR;
 
+    oscc_brake_command_s brake_cmd =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
+
 #if defined(KIA_SOUL)
     const double clamped_position = (double) CONSTRAIN (
             brake_position * MAXIMUM_BRAKE_COMMAND,
@@ -167,6 +150,13 @@ oscc_result_t oscc_publish_throttle_position( double throttle_position )
 {
     oscc_result_t ret = OSCC_ERROR;
 
+    oscc_throttle_command_s throttle_cmd =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
+
+
     const double clamped_position = CONSTRAIN(
         throttle_position,
         MINIMUM_THROTTLE_COMMAND,
@@ -206,6 +196,13 @@ oscc_result_t oscc_publish_throttle_position( double throttle_position )
 oscc_result_t oscc_publish_steering_torque( double torque )
 {
     oscc_result_t ret = OSCC_ERROR;
+
+    oscc_steering_command_s steering_cmd =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
+
 
     const double clamped_torque = CONSTRAIN(
         torque * MAXIMUM_TORQUE_COMMAND,
@@ -308,73 +305,119 @@ oscc_result_t oscc_subscribe_to_obd_messages( void (*callback)(struct can_frame 
     return ret;
 }
 
-static oscc_result_t oscc_enable_brakes( void )
+
+
+
+/* Internal */
+oscc_result_t oscc_enable_brakes( void )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-    brake_cmd.enable = 1;
+    oscc_brake_enable_s brake_enable =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
 
-    ret = oscc_publish_brake_position( 0 );
+    ret = oscc_can_write(
+        OSCC_BRAKE_ENABLE_CAN_ID,
+        (void *) &brake_enable,
+        sizeof( brake_enable ) );
 
     return ret;
 }
 
-static oscc_result_t oscc_enable_throttle( void )
+oscc_result_t oscc_enable_throttle( void )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-    throttle_cmd.enable = 1;
+    oscc_throttle_enable_s throttle_enable =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
 
-    ret = oscc_publish_throttle_position( 0 );
+    ret = oscc_can_write(
+        OSCC_THROTTLE_ENABLE_CAN_ID,
+        (void *) &throttle_enable,
+        sizeof( throttle_enable ) );
 
     return ret;
 }
 
-static oscc_result_t oscc_enable_steering( void )
+oscc_result_t oscc_enable_steering( void )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-    steering_cmd.enable = 1;
+    oscc_steering_enable_s steering_enable =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
 
-    ret = oscc_publish_steering_torque( 0 );
+    ret = oscc_can_write(
+        OSCC_STEERING_ENABLE_CAN_ID,
+        (void *) &steering_enable,
+        sizeof( steering_enable ) );
 
     return ret;
 }
 
-static oscc_result_t oscc_disable_brakes( void )
+oscc_result_t oscc_disable_brakes( void )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-    brake_cmd.enable = 0;
+    oscc_brake_disable_s brake_disable =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
 
-    ret = oscc_publish_brake_position( 0 );
+    ret = oscc_can_write(
+        OSCC_BRAKE_DISABLE_CAN_ID,
+        (void *) &brake_disable,
+        sizeof( brake_disable ) );
 
     return ret;
 }
 
-static oscc_result_t oscc_disable_throttle( void )
+oscc_result_t oscc_disable_throttle( void )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-    throttle_cmd.enable = 0;
+    oscc_throttle_disable_s throttle_disable =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
 
-    ret = oscc_publish_throttle_position( 0 );
+    ret = oscc_can_write(
+        OSCC_THROTTLE_DISABLE_CAN_ID,
+        (void *) &throttle_disable,
+        sizeof( throttle_disable ) );
 
     return ret;
 }
 
-static oscc_result_t oscc_disable_steering( void )
+oscc_result_t oscc_disable_steering( void )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-    steering_cmd.enable = 0;
+    oscc_steering_disable_s steering_disable =
+    {
+        .magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0,
+        .magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1
+    };
 
-    ret = oscc_publish_steering_torque( 0 );
+    ret = oscc_can_write(
+        OSCC_STEERING_DISABLE_CAN_ID,
+        (void *) &steering_disable,
+        sizeof( steering_disable ) );
 
     return ret;
 }
 
-static void oscc_update_status( )
+void oscc_update_status( )
 {
     struct can_frame rx_frame;
 
@@ -441,7 +484,7 @@ static void oscc_update_status( )
     }
 }
 
-static oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
+oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
 {
     oscc_result_t ret = OSCC_ERROR;
 
@@ -451,9 +494,9 @@ static oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
 
         tx_frame.can_id = id;
         tx_frame.can_dlc = dlc;
-        memcpy( tx_frame.data, msg, dlc);
+        memcpy( tx_frame.data, msg, dlc );
 
-        int result = write( can_socket, &tx_frame, sizeof(tx_frame ));
+        int result = write( can_socket, &tx_frame, sizeof(tx_frame) );
 
         if ( result > 0 )
         {
@@ -468,28 +511,28 @@ static oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
     return ret;
 }
 
-static oscc_result_t oscc_async_enable( int socket )
+oscc_result_t oscc_async_enable( int socket )
 {
     oscc_result_t ret = OSCC_ERROR;
 
-   ret = fcntl( socket, F_SETOWN, getpid( ) );
+    ret = fcntl( socket, F_SETOWN, getpid( ) );
 
-   if ( ret < 0 )
-   {
-       printf( "set own failed\n" );
-   }
+    if ( ret < 0 )
+    {
+        printf( "set own failed\n" );
+    }
 
-   ret = fcntl( socket, F_SETFL, FASYNC | O_NONBLOCK );
+    ret = fcntl( socket, F_SETFL, FASYNC | O_NONBLOCK );
 
-   if ( ret < 0 )
-   {
-       printf( "set async failed\n" );
-   }
+    if ( ret < 0 )
+    {
+        printf( "set async failed\n" );
+    }
 
     return ret;
 }
 
-static oscc_result_t oscc_init_can( const char *can_channel )
+oscc_result_t oscc_init_can( const char *can_channel )
 {
     int ret = OSCC_OK;
 
@@ -581,16 +624,4 @@ static oscc_result_t oscc_init_can( const char *can_channel )
     }
 
     return ret;
-}
-
-static void oscc_init_commands( void )
-{
-    brake_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    brake_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
-
-    throttle_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    throttle_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
-
-    steering_cmd.magic[0] = ( uint8_t ) OSCC_MAGIC_BYTE_0;
-    steering_cmd.magic[1] = ( uint8_t ) OSCC_MAGIC_BYTE_1;
 }

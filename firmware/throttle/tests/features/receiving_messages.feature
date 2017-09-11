@@ -46,7 +46,7 @@ Feature: Receiving commands
       |  1500  |  1638  |
       |  1000  |  1638  |
       |  656   |  1638  |
-      |  656   |  1638  |
+      |  573   |  1638  |
 
 
   Scenario Outline: Spoof value sent from application outside valid range
@@ -59,7 +59,7 @@ Feature: Receiving commands
 
     Examples:
       | high  | low   | high_clamped | low_clamped |
-      |  4000 |  0    | 3358         |  0          |
+      |  4000 |  0    | 3358         |  245        |
       |  3500 |  500  | 3358         |  500        |
-      |  500  |  3500 | 500          |  1638       |
-      |  0    |  4000 | 0            |  1638       |
+      |  580  |  3500 | 580          |  1638       |
+      |  500  |  4000 | 573          |  1638       |
