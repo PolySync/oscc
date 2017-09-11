@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_CAN_GATEWAY_GLOBALS_H_
-#define _OSCC_KIA_SOUL_CAN_GATEWAY_GLOBALS_H_
+#ifndef _OSCC_CAN_GATEWAY_GLOBALS_H_
+#define _OSCC_CAN_GATEWAY_GLOBALS_H_
 
 
 #include "mcp_can.h"
@@ -38,4 +38,4 @@
 #endif
 
 
-#endif /* _OSCC_KIA_SOUL_CAN_GATEWAY_GLOBALS_H_ */
+#endif /* _OSCC_CAN_GATEWAY_GLOBALS_H_ */
