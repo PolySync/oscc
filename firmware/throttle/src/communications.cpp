@@ -73,7 +73,7 @@ void check_for_controller_command_timeout( void )
 
             publish_fault_report( );
 
-            DEBUG_PRINTLN( "Timeout waiting for controller command" );
+            DEBUG_PRINTLN( "Timeout - controller command" );
         }
     }
 }
@@ -148,6 +148,7 @@ static void process_fault_report(
 
         disable_control( );
 
-        DEBUG_PRINTLN( "Fault report received" );
+        DEBUG_PRINT( "Fault report received from: " );
+        DEBUG_PRINTLN( fault_report->fault_origin_id );
     }
 }

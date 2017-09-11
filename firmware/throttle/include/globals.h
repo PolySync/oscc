@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_THROTTLE_GLOBALS_H_
-#define _OSCC_KIA_SOUL_THROTTLE_GLOBALS_H_
+#ifndef _OSCC_THROTTLE_GLOBALS_H_
+#define _OSCC_THROTTLE_GLOBALS_H_
 
 
 #include "DAC_MCP49xx.h"
@@ -76,4 +76,4 @@ EXTERN volatile bool g_throttle_command_timeout;
 EXTERN volatile throttle_control_state_s g_throttle_control_state;
 
 
-#endif /* _OSCC_KIA_SOUL_THROTTLE_GLOBALS_H_ */
+#endif /* _OSCC_THROTTLE_GLOBALS_H_ */

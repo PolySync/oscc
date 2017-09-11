@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_THROTTLE_INIT_H_
-#define _OSCC_KIA_SOUL_THROTTLE_INIT_H_
+#ifndef _OSCC_THROTTLE_INIT_H_
+#define _OSCC_THROTTLE_INIT_H_
 
 
 // ****************************************************************************
@@ -48,4 +48,4 @@ void init_devices( void );
 void init_communication_interfaces( void );
 
 
-#endif /* _OSCC_KIA_SOUL_THROTTLE_INIT_H_ */
+#endif /* _OSCC_THROTTLE_INIT_H_ */
