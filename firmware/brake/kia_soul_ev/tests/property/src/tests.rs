@@ -26,6 +26,24 @@ extern "C" {
     pub static mut g_brake_control_state: brake_control_state_s;
 }
 
+impl Arbitrary for oscc_brake_enable_s {
+    fn arbitrary<G: Gen>(g: &mut G) -> oscc_brake_enable_s {
+        oscc_brake_enable_s {
+            magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
+            reserved: [u8::arbitrary(g); 6],
+        }
+    }
+}
+
+impl Arbitrary for oscc_brake_disable_s {
+    fn arbitrary<G: Gen>(g: &mut G) -> oscc_brake_disable_s {
+        oscc_brake_disable_s {
+            magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
+            reserved: [u8::arbitrary(g); 6],
+        }
+    }
+}
+
 impl Arbitrary for oscc_brake_report_s {
     fn arbitrary<G: Gen>(g: &mut G) -> oscc_brake_report_s {
         oscc_brake_report_s {
@@ -44,12 +62,10 @@ impl Arbitrary for oscc_brake_command_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
             spoof_value_low: u16::arbitrary(g),
             spoof_value_high: u16::arbitrary(g),
-            enable: u8::arbitrary(g),
-            reserved: u8::arbitrary(g)
+            reserved: [u8::arbitrary(g); 2]
         }
     }
 }
-
 
 impl Arbitrary for can_frame_s {
     fn arbitrary<G: Gen>(g: &mut G) -> can_frame_s {
@@ -85,8 +101,7 @@ fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, enabled: bool, oper
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_brake_control_state.enabled ==
-                              enabled &&
+        TestResult::from_bool(g_brake_control_state.enabled == enabled &&
                               g_brake_control_state.operator_override == operator_override &&
                               g_brake_control_state.dtcs == dtcs &&
                               g_mock_dac_output_a == dac_a &&
@@ -103,17 +118,15 @@ fn check_message_type_validity() {
 }
 
 /// the brake firmware should set the control state as enabled
-/// upon reciept of a valid command brake message telling it to enable
-fn prop_process_enable_command(mut brake_command_msg: oscc_brake_command_s) -> TestResult {
+/// upon receipt of a valid enable brake message telling it to enable
+fn prop_process_enable_command(brake_enable_msg: oscc_brake_enable_s) -> TestResult {
     unsafe {
-        brake_command_msg.enable = 1u8;
-
         g_brake_control_state.enabled = false;
         g_brake_control_state.operator_override = false;
 
-        g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_COMMAND_CAN_ID;
+        g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_ENABLE_CAN_ID;
         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
-        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(brake_command_msg);
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(brake_enable_msg);
 
         check_for_incoming_message();
 
@@ -125,18 +138,19 @@ fn prop_process_enable_command(mut brake_command_msg: oscc_brake_command_s) -> T
 fn check_process_enable_command() {
     QuickCheck::new()
         .tests(1000)
-        .quickcheck(prop_process_enable_command as fn(oscc_brake_command_s) -> TestResult)
+        .quickcheck(prop_process_enable_command as fn(oscc_brake_enable_s) -> TestResult)
 }
 
 /// the brake firmware should set the control state as disabled
-/// upon reciept of a valid command brake message telling it to disable
-fn prop_process_disable_command(mut brake_command_msg: oscc_brake_command_s) -> TestResult {
+/// upon receipt of a valid disable brake message telling it to disable
+fn prop_process_disable_command(brake_disable_msg: oscc_brake_disable_s) -> TestResult {
     unsafe {
-        brake_command_msg.enable = 0u8;
+        g_brake_control_state.enabled = true;
+        g_brake_control_state.operator_override = false;
 
-        g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_COMMAND_CAN_ID;
-        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(brake_command_msg);
+        g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_DISABLE_CAN_ID;
         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
+        g_mock_mcp_can_read_msg_buf_buf = std::mem::transmute(brake_disable_msg);
 
         check_for_incoming_message();
 
@@ -148,15 +162,18 @@ fn prop_process_disable_command(mut brake_command_msg: oscc_brake_command_s) -> 
 fn check_process_disable_command() {
     QuickCheck::new()
         .tests(1000)
-        .quickcheck(prop_process_disable_command as fn(oscc_brake_command_s) -> TestResult)
+        .quickcheck(prop_process_disable_command as fn(oscc_brake_disable_s) -> TestResult)
 }
 
 /// the brake firmware should send requested spoof values
-/// upon recieving a brake command message
+/// upon receiving a brake command message
 fn prop_output_accurate_spoofs(mut brake_command_msg: oscc_brake_command_s) -> TestResult {
-    brake_command_msg.enable = 1u8;
-    brake_command_msg.spoof_value_low = rand::thread_rng().gen_range(BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16, BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16);
-    brake_command_msg.spoof_value_high = rand::thread_rng().gen_range(BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16, BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16);
+    brake_command_msg.spoof_value_low =
+        rand::thread_rng().gen_range(BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16,
+                                     BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16);
+    brake_command_msg.spoof_value_high =
+        rand::thread_rng().gen_range(BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16,
+                                     BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16);
     unsafe {
         g_brake_control_state.enabled = true;
 
@@ -166,9 +183,8 @@ fn prop_output_accurate_spoofs(mut brake_command_msg: oscc_brake_command_s) -> T
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_mock_dac_output_b ==                                brake_command_msg.spoof_value_low &&
-            g_mock_dac_output_a ==
-            brake_command_msg.spoof_value_high )
+        TestResult::from_bool(g_mock_dac_output_b == brake_command_msg.spoof_value_low &&
+                              g_mock_dac_output_a == brake_command_msg.spoof_value_high)
     }
 }
 
@@ -181,19 +197,13 @@ fn check_output_accurate_spoofs() {
 }
 
 /// the brake firmware should constrain requested spoof values
-/// upon recieving a brake command message
-fn prop_output_constrained_spoofs(mut brake_command_msg: oscc_brake_command_s) -> TestResult {
-    brake_command_msg.enable = 1u8;
+/// upon receiving a brake command message
+fn prop_output_constrained_spoofs(brake_command_msg: oscc_brake_command_s) -> TestResult {
     unsafe {
-        if (brake_command_msg.spoof_value_low >=
-            BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-            brake_command_msg.spoof_value_low <=
-            BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16) ||
-            (brake_command_msg.spoof_value_high >=
-            BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-            brake_command_msg.spoof_value_high <=
-            BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16)
-        {
+        if (brake_command_msg.spoof_value_low >= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
+            brake_command_msg.spoof_value_low <= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16) ||
+           (brake_command_msg.spoof_value_high >= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
+            brake_command_msg.spoof_value_high <= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16) {
             return TestResult::discard();
         }
 
@@ -205,11 +215,10 @@ fn prop_output_constrained_spoofs(mut brake_command_msg: oscc_brake_command_s) -
 
         check_for_incoming_message();
 
-        TestResult::from_bool(
-            g_mock_dac_output_a >= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-            g_mock_dac_output_a <= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16 &&
-            g_mock_dac_output_b >= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-            g_mock_dac_output_b <= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16)
+        TestResult::from_bool(g_mock_dac_output_a >= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
+                              g_mock_dac_output_a <= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16 &&
+                              g_mock_dac_output_b >= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
+                              g_mock_dac_output_b <= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16)
     }
 }
 
@@ -222,10 +231,7 @@ fn check_output_constrained_spoofs() {
 }
 
 /// the brake firmware should create only valid CAN frames
-fn prop_send_valid_can_fields(enabled: bool,
-                              operator_override: bool,
-                              dtcs: u8)
-                              -> TestResult {
+fn prop_send_valid_can_fields(enabled: bool, operator_override: bool, dtcs: u8) -> TestResult {
     unsafe {
         g_brake_control_state.operator_override = operator_override;
         g_brake_control_state.enabled = enabled;
@@ -235,8 +241,9 @@ fn prop_send_valid_can_fields(enabled: bool,
 
         let brake_report_msg = g_mock_mcp_can_send_msg_buf_buf as *mut oscc_brake_report_s;
 
-        TestResult::from_bool((*brake_report_msg).enabled == enabled as u8 &&(*brake_report_msg).operator_override == operator_override as u8 &&
-        (*brake_report_msg).dtcs == dtcs)
+        TestResult::from_bool((*brake_report_msg).enabled == enabled as u8 &&
+                              (*brake_report_msg).operator_override == operator_override as u8 &&
+                              (*brake_report_msg).dtcs == dtcs)
     }
 }
 
@@ -249,7 +256,7 @@ fn check_valid_can_frame() {
 }
 
 // the brake firmware should be able to correctly and consistently
-// detect operator overrides, disable on reciept, and send a fault report
+// detect operator overrides, disable on receipt, and send a fault report
 fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
     unsafe {
         g_brake_control_state.enabled = true;
@@ -260,8 +267,9 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
         check_for_operator_override();
 
         if analog_read_spoof >= (BRAKE_PEDAL_OVERRIDE_THRESHOLD as u16) {
-            TestResult::from_bool(g_brake_control_state.operator_override == true && g_brake_control_state.enabled == false &&
-            g_mock_mcp_can_send_msg_buf_id == OSCC_FAULT_REPORT_CAN_ID)
+            TestResult::from_bool(g_brake_control_state.operator_override == true &&
+                                  g_brake_control_state.enabled == false &&
+                                  g_mock_mcp_can_send_msg_buf_id == OSCC_FAULT_REPORT_CAN_ID)
         } else {
             TestResult::from_bool(g_brake_control_state.operator_override == false)
         }
@@ -275,7 +283,7 @@ fn check_operator_override() {
         .quickcheck(prop_check_operator_override as fn(u16) -> TestResult)
 }
 
-/// the brake firmware should set disable itself when it recieves a
+/// the brake firmware should set disable itself when it receives a
 /// fault report from any other module
 fn prop_process_fault_command(enabled: bool, operator_override: bool) -> TestResult {
     unsafe {
