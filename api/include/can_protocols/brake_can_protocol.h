@@ -67,25 +67,25 @@
  */
 typedef struct
 {
-    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint8_t reserved[6]; /*!< Reserved. */
 } oscc_brake_enable_s;
 
 
 /**
-  * @brief Brake disable message.
-  *
-  * CAN frame ID: \ref OSCC_BRAKE_DISABLE_CAN_ID
-  *
-  */
+ * @brief Brake disable message.
+ *
+ * CAN frame ID: \ref OSCC_BRAKE_DISABLE_CAN_ID
+ *
+ */
 typedef struct
 {
-    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint8_t reserved[6]; /*!< Reserved. */
 } oscc_brake_disable_s;
@@ -100,8 +100,8 @@ typedef struct
 typedef struct
 {
     uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
 #if defined(KIA_SOUL)
     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
@@ -126,8 +126,8 @@ typedef struct
 typedef struct
 {
     uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint8_t enabled; /*!< Braking controls enabled state.
                       * Zero value means disabled (commands are ignored).

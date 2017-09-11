@@ -17,13 +17,13 @@
  * @brief Throttle enable message (CAN frame) ID.
  *
  */
- #define OSCC_THROTTLE_ENABLE_CAN_ID (0x52)
+#define OSCC_THROTTLE_ENABLE_CAN_ID (0x52)
 
- /*
-  * @brief Throttle disable message (CAN frame) ID.
-  *
-  */
- #define OSCC_THROTTLE_DISABLE_CAN_ID (0x53)
+/*
+ * @brief Throttle disable message (CAN frame) ID.
+ *
+ */
+#define OSCC_THROTTLE_DISABLE_CAN_ID (0x53)
 
 /*
  * @brief Throttle command message (CAN frame) ID.
@@ -71,25 +71,25 @@
  */
 typedef struct
 {
-    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint8_t reserved[6]; /*!< Reserved. */
 } oscc_throttle_enable_s;
 
 
- /**
-  * @brief Throttle disable message.
-  *
-  * CAN frame ID: \ref OSCC_THROTTLE_DISABLE_CAN_ID
-  *
-  */
+/**
+ * @brief Throttle disable message.
+ *
+ * CAN frame ID: \ref OSCC_THROTTLE_DISABLE_CAN_ID
+ *
+ */
 typedef struct
 {
-    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint8_t reserved[6]; /*!< Reserved. */
 } oscc_throttle_disable_s;
@@ -104,8 +104,8 @@ typedef struct
 typedef struct
 {
     uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
@@ -124,8 +124,8 @@ typedef struct
 typedef struct
 {
     uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
     uint8_t enabled; /*!< Throttle controls enabled state.
                       * Zero value means disabled (commands are ignored).
