@@ -15,13 +15,14 @@ fn main() {
 
     let out_dir = env::var("OUT_DIR").unwrap();
 
-    let _ = bindgen::builder()
+    let _ = bindgen::Builder::default()
         .header("include/wrapper.hpp")
+        .rust_target(bindgen::RustTarget::Stable_1_0)
         .generate_comments(false)
         .layout_tests(false)
         .clang_arg("-DKIA_SOUL=ON")
         .clang_arg("-I../../include")
-        .whitelisted_type("oscc_result_t")
+        .whitelisted_type("oscc_steering_command_s")
         .generate()
         .unwrap()
         .write_to_file(Path::new(&out_dir).join("oscc_test.rs"))

@@ -6,48 +6,95 @@
 #![allow(unused_imports)]
 include!(concat!(env!("OUT_DIR"), "/oscc_test.rs"));
 
-// extern crate quickcheck;
-// extern crate rand;
+extern crate quickcheck;
+extern crate rand;
+extern crate socketcan;
 
-// use quickcheck::{QuickCheck, TestResult, Arbitrary, Gen, StdGen};
-// use rand::Rng;
+use quickcheck::{QuickCheck, TestResult, Arbitrary, Gen, StdGen};
+use rand::Rng;
+use socketcan::{CANSocket, CANFrame, ShouldRetry};
+use std::os::unix::io::AsRawFd;
+use std::time::Duration;
 
-// /// the steering firmware should not attempt processing any messages
-// /// that are not steering or fault commands
-// /// this means that none of the steering control state would
-// /// change, nor would it output any values onto the DAC.
-// fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, enabled: bool, operator_override: bool, dtcs: u8) -> TestResult {
-//     if rx_can_msg.id == OSCC_STEERING_COMMAND_CAN_ID || 
-//        rx_can_msg.id == OSCC_FAULT_REPORT_CAN_ID
-//     {
-//         return TestResult::discard();
-//     }
+extern "C" {
+    pub static mut can_socket: i32;
+    pub fn oscc_enable() -> i32;
+    pub fn oscc_open(channel: u16) -> i32;
+    pub fn oscc_publish_steering_torque(val: f32) -> i32;
+}
+
+#[test]
+fn test() {
+    let socket = CANSocket::open("vcan0").unwrap();
+    socket.set_nonblocking(true);
+    socket.set_read_timeout(Duration::new(1, 0));
+
+    unsafe { oscc_open(0); }
+
+    // unsafe{ can_socket = socket.as_raw_fd(); }
+    unsafe { oscc_enable(); }
+
+    // let socket = CANSocket::
+
+    // let mut buff: [u8; 8] = [0; 8];
+
+    // buff[1] = 187;
+
+    // let frame = CANFrame::new(15, &buff, false, false);
+
+    // let ret = socket.write_frame(&frame.unwrap());
+
+    let mut ret2 = socket.read_frame();
+    while ret2.should_retry()
+    {
+        ret2 = socket.read_frame();
+        unsafe{ oscc_publish_steering_torque(0.5); }
+        println!("{:?}", ret2);
+    }
+    println!("Id: {}", ret2.unwrap().id());
+    
+    ret2 = socket.read_frame();
+
+    while ret2.should_retry()
+    {
+        ret2 = socket.read_frame();
+        unsafe{ oscc_publish_steering_torque(0.5); }
+        println!("{:?}", ret2);
+    }
+    println!("Id: {}", ret2.unwrap().id());
+
+        ret2 = socket.read_frame();
+
+    while ret2.should_retry()
+    {
+        ret2 = socket.read_frame();
+        unsafe{ oscc_publish_steering_torque(0.5); }
+        println!("{:?}", ret2);
+    }
+    println!("Id: {}", ret2.unwrap().id());
+
+        ret2 = socket.read_frame();
+
+    while ret2.should_retry()
+    {
+        ret2 = socket.read_frame();
+        unsafe{ oscc_publish_steering_torque(0.5); }
+        println!("{:?}", ret2);
+    }
+    println!("Id: {}", ret2.unwrap().id());
+}
+
+// ///The API should never output spoof voltages outside of the valid range
+// fn prop_only_spoof_within_valid_steering_range() -> TestResult {
 //     unsafe {
-//         let dac_a = g_mock_dac_output_a;
-//         let dac_b = g_mock_dac_output_b;
-//         g_steering_control_state.enabled = enabled;
-//         g_steering_control_state.operator_override = operator_override;
-//         g_steering_control_state.dtcs = dtcs;
-
-//         g_mock_mcp_can_read_msg_buf_id = rx_can_msg.id;
-//         g_mock_mcp_can_read_msg_buf_buf = rx_can_msg.data;
-//         g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL as u8;
-
-//         check_for_incoming_message();
-
-//         TestResult::from_bool(g_steering_control_state.enabled ==
-//                               enabled &&
-//                               g_steering_control_state.operator_override == operator_override &&
-//                               g_steering_control_state.dtcs == dtcs &&
-//                               g_mock_dac_output_a == dac_a &&
-//                               g_mock_dac_output_b == dac_b)
+//         TestResult::from_bool(true == true)
 //     }
 // }
 
 // #[test]
 // fn check_message_type_validity() {
 //     QuickCheck::new()
-//         .tests(1000)
-//         .gen(StdGen::new(rand::thread_rng(), u32::max_value() as usize))
-//         .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, bool, bool, u8) -> TestResult)
+//         .tests(1)
+//         // .gen(StdGen::new(rand::thread_rng(), u32::max_value() as usize))
+//         .quickcheck(prop_only_spoof_within_valid_steering_range as fn() -> TestResult)
 // }
