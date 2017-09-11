@@ -494,9 +494,9 @@ oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
 
         tx_frame.can_id = id;
         tx_frame.can_dlc = dlc;
-        memcpy( tx_frame.data, msg, dlc);
+        memcpy( tx_frame.data, msg, dlc );
 
-        int result = write( can_socket, &tx_frame, sizeof(tx_frame ));
+        int result = write( can_socket, &tx_frame, sizeof(tx_frame) );
 
         if ( result > 0 )
         {
