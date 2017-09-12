@@ -19,7 +19,6 @@ node('arduino') {
     }
     stage('OSCC API Tests') {
       parallel 'OSCC API property-based tests': {
-        sh 'rustup --version'
         sh 'cd api/tests && mkdir build && cd build && cmake .. && make run-api-property-tests'
         echo 'OSCC API Property Based Tests Complete!'
       }
