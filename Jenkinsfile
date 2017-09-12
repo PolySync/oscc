@@ -18,7 +18,7 @@ node('arduino') {
       echo 'Build Complete!'
     }
     stage('OSCC API Tests') {
-      parallel 'OSCC API property-based tests': {
+      'OSCC API property-based tests': {
         sh 'cd api/tests && mkdir build && cd build && cmake .. && make run-api-property-tests'
         echo 'OSCC API Property Based Tests Complete!'
       }
