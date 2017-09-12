@@ -35,7 +35,6 @@ fn open_oscc() {
 }
 
 fn close_oscc() {
-    // initialize oscc socket on vcan0
     unsafe { oscc_close(0); }
 }
 
@@ -58,15 +57,19 @@ fn prop_enable_all_modules() -> TestResult {
 
     unsafe { oscc_enable() };
 
-    let mut ids = Vec::new();
+    let mut actual = Vec::new();
 
     for i in 0..3 {
-        ids.push(socket.read_frame().unwrap().id());
+        actual.push(socket.read_frame().unwrap().id());
     }
 
-    std::mem::drop(socket);
+    actual.sort();
 
-    TestResult::from_bool(ids.sort() == [OSCC_THROTTLE_ENABLE_CAN_ID, OSCC_STEERING_ENABLE_CAN_ID, OSCC_BRAKE_ENABLE_CAN_ID].sort())
+    let mut expected = [OSCC_THROTTLE_ENABLE_CAN_ID, OSCC_STEERING_ENABLE_CAN_ID, OSCC_BRAKE_ENABLE_CAN_ID];
+
+    expected.sort();
+
+    TestResult::from_bool(actual == expected)
 }
 
 #[test]
@@ -88,13 +91,19 @@ fn prop_disable_all_modules() -> TestResult {
 
     unsafe { oscc_disable() };
 
-    let mut ids = Vec::new();
+    let mut actual = Vec::new();
 
     for i in 0..3 {
-        ids.push(socket.read_frame().unwrap().id());
+        actual.push(socket.read_frame().unwrap().id());
     }
 
-    TestResult::from_bool(ids.sort() == [OSCC_THROTTLE_DISABLE_CAN_ID, OSCC_STEERING_DISABLE_CAN_ID, OSCC_BRAKE_DISABLE_CAN_ID].sort())
+    actual.sort();
+
+    let mut expected = [OSCC_THROTTLE_DISABLE_CAN_ID, OSCC_STEERING_DISABLE_CAN_ID, OSCC_BRAKE_DISABLE_CAN_ID];
+
+    expected.sort();
+
+    TestResult::from_bool(actual == expected)
 }
 
 #[test]
