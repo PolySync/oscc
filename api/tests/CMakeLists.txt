@@ -6,7 +6,7 @@ add_custom_target(
     chmod +x ../initialize_vcan.sh && 
     ./../initialize_vcan.sh && 
     $ENV{HOME}/.cargo/bin/rustup override set 1.17.0 &&
-    cargo test -- --test-threads=1 &&
+    cargo test -- --test-threads=1 ;
     $ENV{HOME}/.cargo/bin/rustup override unset &&
     sudo ip link set vcan0 down &&
     sudo rmmod vcan
