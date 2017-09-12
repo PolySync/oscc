@@ -10,6 +10,7 @@ fn main() {
         .define("KIA_SOUL", Some("ON"))
         .include("include")
         .include("../../include")
+        .include("../../src")
         .file("../../src/oscc.c")
         .compile("liboscc_test.a");
 
@@ -22,7 +23,14 @@ fn main() {
         .layout_tests(false)
         .clang_arg("-DKIA_SOUL=ON")
         .clang_arg("-I../../include")
+        .clang_arg("-I../../src")
         .whitelisted_type("oscc_steering_command_s")
+        .whitelisted_var("OSCC_THROTTLE_ENABLE_CAN_ID")
+        .whitelisted_var("OSCC_STEERING_ENABLE_CAN_ID")
+        .whitelisted_var("OSCC_BRAKE_ENABLE_CAN_ID")
+        .whitelisted_var("OSCC_THROTTLE_DISABLE_CAN_ID")
+        .whitelisted_var("OSCC_STEERING_DISABLE_CAN_ID")
+        .whitelisted_var("OSCC_BRAKE_DISABLE_CAN_ID")
         .generate()
         .unwrap()
         .write_to_file(Path::new(&out_dir).join("oscc_test.rs"))
