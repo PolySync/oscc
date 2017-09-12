@@ -18,7 +18,7 @@ fn main() {
 
     let _ = bindgen::Builder::default()
         .header("include/wrapper.hpp")
-        .rust_target(bindgen::RustTarget::Stable_1_0)
+        .rust_target(bindgen::RustTarget::Stable_1_19)
         .generate_comments(false)
         .layout_tests(false)
         .clang_arg("-DKIA_SOUL=ON")
