@@ -19,7 +19,8 @@ node('arduino') {
     }
     stage('OSCC API Tests') {
       parallel 'OSCC API property-based tests': {
-        sh 'cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh && mkdir build && cd build && cmake .. && make run-api-property-tests'
+        sh 'rustup --version'
+        sh 'cd api/tests && mkdir build && cd build && cmake .. && make run-api-property-tests'
         echo 'OSCC API Property Based Tests Complete!'
       }
       echo 'OSCC API Tests Complete!'
