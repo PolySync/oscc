@@ -18,7 +18,11 @@ node('arduino') {
       echo 'Build Complete!'
     }
     stage('OSCC API Tests') {
+      sh 'cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh'
+      sh 'cd api/tests/property && $HOME/.cargo/bin/rustup override set 1.17.0'
       sh 'cd api/tests && mkdir build && cd build && cmake .. && make run-api-property-tests'
+      sh 'cd api/tests/property && $HOME/.cargo/bin/rustup override unset'
+      sh 'sudo ip link set vcan0 down && sudo rmmod vcan'
       echo 'OSCC API Tests Complete!'
     }
     stage('Kia Soul Petrol Tests') {
