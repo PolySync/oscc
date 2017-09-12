@@ -17,6 +17,10 @@ node('arduino') {
       }
       echo 'Build Complete!'
     }
+    stage('OSCC API Tests') {
+      sh 'cd api/tests && mkdir build && cd build && cmake .. && make run-api-property-tests'
+      echo 'OSCC API Property Based Tests Complete!'
+    }
     stage('Kia Soul Petrol Tests') {
       parallel 'kia soul petrol unit tests': {
         sh 'cd firmware && mkdir build_kia_soul_petrol_unit_tests && cd build_kia_soul_petrol_unit_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-unit-tests'
