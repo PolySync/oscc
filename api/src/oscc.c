@@ -519,14 +519,14 @@ oscc_result_t oscc_async_enable( int socket )
 
     if ( ret < 0 )
     {
-        printf( "set own failed\n" );
+        printf( "Setting owner process of socket failed: %s\n", strerror(errno) );
     }
 
     ret = fcntl( socket, F_SETFL, FASYNC | O_NONBLOCK );
 
     if ( ret < 0 )
     {
-        printf( "set async failed\n" );
+        printf( "Setting nonblocking asynchronous socket I/O failed: %s\n", strerror(errno) );
     }
 
     return ret;
@@ -537,6 +537,10 @@ oscc_result_t oscc_init_can( const char *can_channel )
     int ret = OSCC_OK;
 
     struct sigaction sig;
+
+    memset(&sig, 0, sizeof(sig));
+    sigemptyset(&sig.sa_mask);
+    sig.sa_flags = SA_RESTART;
     sig.sa_handler = oscc_update_status;
     sigaction( SIGIO, &sig, NULL );
 
@@ -544,7 +548,7 @@ oscc_result_t oscc_init_can( const char *can_channel )
 
     if ( s < 0 )
     {
-        printf( "opening can socket failed\n" );
+        printf( "Opening CAN socket failed: %s\n", strerror(errno) );
 
         ret = OSCC_ERROR;
     }
@@ -561,7 +565,7 @@ oscc_result_t oscc_init_can( const char *can_channel )
 
         if ( status < 0 )
         {
-            printf( "finding can index failed\n" );
+            printf( "Finding CAN index failed: %s\n", strerror(errno) );
 
             ret = OSCC_ERROR;
         }
@@ -580,7 +584,7 @@ oscc_result_t oscc_init_can( const char *can_channel )
 
         if ( status < 0 )
         {
-            printf( "socket binding failed\n" );
+            printf( "Socket binding failed: %s\n", strerror(errno) );
 
             ret = OSCC_ERROR;
         }
@@ -592,7 +596,7 @@ oscc_result_t oscc_init_can( const char *can_channel )
 
         if ( status != OSCC_OK )
         {
-            printf( "async enable failed\n" );
+            printf( "Enabling asynchronous socket I/O failed\n" );
 
             ret = OSCC_ERROR;
         }
