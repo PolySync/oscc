@@ -24,7 +24,6 @@ extern "C" {
     pub fn oscc_disable() -> i32;
     pub fn oscc_init_can(channel: *const c_char) -> i32;
     pub fn oscc_close(channel: i32) -> i32;
-    pub fn oscc_publish_steering_torque(val: f32) -> i32;
 }
 
 fn open_oscc() {
@@ -38,6 +37,12 @@ fn close_oscc() {
     unsafe { oscc_close(0); }
 }
 
+fn skip_enable_frames(socket: &CANSocket) {
+    socket.read_frame();
+    socket.read_frame();
+    socket.read_frame();
+}
+
 fn init_socket() -> CANSocket {
     // initialize our PBT socket on the vcan0
     let socket = CANSocket::open("vcan0").unwrap();
@@ -48,6 +53,22 @@ fn init_socket() -> CANSocket {
     socket.read_frame();
 
     socket
+}
+
+fn get_throttle_command_msg_from_buf( buffer: &[u8 ]) -> oscc_throttle_command_s {
+    let data_ptr: *const u8 = buffer.as_ptr();
+
+    let throttle_command_ptr: *const oscc_throttle_command_s = data_ptr as *const _;
+
+    unsafe { *throttle_command_ptr as oscc_throttle_command_s }
+}
+
+fn get_steering_command_msg_from_buf( buffer: &[u8 ]) -> oscc_steering_command_s {
+    let data_ptr: *const u8 = buffer.as_ptr();
+
+    let steering_command_ptr: *const oscc_steering_command_s = data_ptr as *const _;
+
+    unsafe { *steering_command_ptr as oscc_steering_command_s }
 }
 
 
@@ -118,3 +139,39 @@ fn check_disable_all_modules() {
 
     ret
 }
+
+/// The API should properly calculate throttle spoofs
+fn prop_valid_throttle_spoofs(throttle_position: f64) -> TestResult {
+    let socket = init_socket();
+
+    unsafe { oscc_enable() };
+
+    skip_enable_frames(&socket);
+
+    // send some command
+    unsafe { oscc_publish_throttle_position(throttle_position.abs()); }
+
+    // read from can frame
+    // need to add error checking and discard result if socket is busy
+    let frame = socket.read_frame().unwrap();
+
+    let throttle_command_msg = get_throttle_command_msg_from_buf( frame.data() );
+
+    TestResult::from_bool(frame.id() == OSCC_THROTTLE_COMMAND_CAN_ID)
+}
+
+#[test]
+fn check_valid_throttle_spoofs() {
+    open_oscc();
+
+    let ret = QuickCheck::new()
+        .tests(1000)
+        .gen(StdGen::new(rand::thread_rng(), 1 as usize))
+        .quickcheck(prop_valid_throttle_spoofs as fn(f64) -> TestResult);
+
+    close_oscc();
+
+    ret
+}
+
+// test subscribe commands
