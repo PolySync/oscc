@@ -540,6 +540,7 @@ oscc_result_t oscc_init_can( const char *can_channel )
 
     memset(&sig, 0, sizeof(sig));
     sigemptyset(&sig.sa_mask);
+    sig.sa_flags = SA_RESTART;
     sig.sa_handler = oscc_update_status;
     sigaction( SIGIO, &sig, NULL );
 
