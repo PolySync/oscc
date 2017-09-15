@@ -3,7 +3,7 @@ name = "oscc-api-pb-tests"
 version = "0.0.1"
 authors = ["Katie Cleary <kcleary@polysync.io>"]
 build = "build.rs"
-description = "The manifest file for the OSCC API property-based tests. To run the tests, run the command 'cargo test -- --test-threads=1'"
+description = "The manifest file for the OSCC API property-based tests. To run the ev brake tests, run the command 'cargo test -- --test-threads=1 --skip \"petrol\"'. To run the petrol brake tests, run the command 'cargo test -- --test-threads=1 --skip \"ev\"'."
 
 [dependencies]
 quickcheck = "0.4.1"

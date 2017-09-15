@@ -52,8 +52,41 @@ add_custom_target(
     COMMAND
     api-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_SOURCE_DIR}/features )
 
+add_executable(
+    api-vehicle-test
+    vehicle-features/step_definitions/test.cpp)
+
+target_link_libraries(
+    api-vehicle-test
+    PRIVATE
+    api
+    ${CMAKE_SOURCE_DIR}/../../firmware/common/testing/framework/cucumber-cpp/lib/libcucumber-cpp.a
+    ${CMAKE_SOURCE_DIR}/../../firmware/common/testing/framework/cgreen/lib/libcgreen.so)
+
+target_include_directories(
+    api-vehicle-test
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/../include
+    ${CMAKE_SOURCE_DIR}/../../firmware/common/testing/framework/cucumber-cpp/include
+    ${CMAKE_SOURCE_DIR}/../../firmware/common/testing/framework/cgreen/include)
+
+add_custom_target(
+    run-api-vehicle-tests
+    DEPENDS
+    api-vehicle-test
+    COMMAND
+    api-vehicle-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_SOURCE_DIR}/vehicle-features )
+
+if(KIA_SOUL)
 add_custom_target(
     run-api-property-tests
     COMMAND
-    cargo test -- --test-threads=1 ;
+    cargo test -- --test-threads=1 --skip "ev" ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/property)
+elseif(KIA_SOUL_EV)
+add_custom_target(
+    run-api-property-tests
+    COMMAND
+    cargo test -- --test-threads=1 --skip "petrol" ;
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/property)
+endif()
