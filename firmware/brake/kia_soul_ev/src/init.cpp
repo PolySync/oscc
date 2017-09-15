@@ -5,14 +5,14 @@
 
 
 #include <Arduino.h>
-#include "oscc_serial.h"
-#include "oscc_can.h"
-#include "can_protocols/brake_can_protocol.h"
-#include "debug.h"
 
-#include "globals.h"
+#include "can_protocols/brake_can_protocol.h"
 #include "communications.h"
+#include "debug.h"
+#include "globals.h"
 #include "init.h"
+#include "oscc_can.h"
+#include "oscc_serial.h"
 
 
 void init_globals( void )

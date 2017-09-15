@@ -4,14 +4,15 @@
  */
 
 
-#include "mcp_can.h"
-#include "oscc_can.h"
+#include <stdint.h>
+
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
-#include "debug.h"
-
-#include "globals.h"
 #include "communications.h"
+#include "debug.h"
+#include "globals.h"
+#include "mcp_can.h"
+#include "oscc_can.h"
 #include "throttle_control.h"
 
 

@@ -1,5 +1,5 @@
 /**
- * @file serial.h
+ * @file oscc_serial.h
  * @brief Serial interface.
  *
  */

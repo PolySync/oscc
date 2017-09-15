@@ -11,7 +11,6 @@
 
 #include "DAC_MCP49xx.h"
 #include "mcp_can.h"
-
 #include "throttle_control.h"
 
 

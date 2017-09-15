@@ -5,19 +5,19 @@
 
 
 #include <Arduino.h>
-#include "oscc_serial.h"
-#include "oscc_can.h"
-#include "debug.h"
-#include "oscc_timer.h"
-#include "can_protocols/brake_can_protocol.h"
-#include "vehicles.h"
 
+#include "accumulator.h"
+#include "brake_control.h"
+#include "can_protocols/brake_can_protocol.h"
+#include "communications.h"
+#include "debug.h"
 #include "globals.h"
 #include "init.h"
-#include "communications.h"
-#include "accumulator.h"
 #include "master_cylinder.h"
-#include "brake_control.h"
+#include "oscc_can.h"
+#include "oscc_serial.h"
+#include "oscc_timer.h"
+#include "vehicles.h"
 
 
 void init_globals( void )

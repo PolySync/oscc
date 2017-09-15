@@ -6,15 +6,15 @@
 
 #include <Arduino.h>
 #include <stdint.h>
-#include "debug.h"
-#include "oscc_dac.h"
-#include "can_protocols/throttle_can_protocol.h"
-#include "dtc.h"
-#include "vehicles.h"
 
+#include "can_protocols/throttle_can_protocol.h"
 #include "communications.h"
-#include "throttle_control.h"
+#include "debug.h"
+#include "dtc.h"
 #include "globals.h"
+#include "oscc_dac.h"
+#include "throttle_control.h"
+#include "vehicles.h"
 
 
 /*

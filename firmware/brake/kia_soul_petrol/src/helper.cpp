@@ -4,12 +4,9 @@
  */
 
 
-#include <stdint.h>
-#include <stdlib.h>
-#include "vehicles.h"
-
 #include "globals.h"
 #include "helper.h"
+#include "vehicles.h"
 
 
 float interpolate(

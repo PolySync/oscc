@@ -1,6 +1,6 @@
 /**
- * @file helper.h
- * @brief Helper functions.
+ * @file oscc_dac.h
+ * @brief OSCC DAC interface.
  *
  */
 
@@ -10,6 +10,7 @@
 
 
 #include "DAC_MCP49xx.h"
+
 
 /*
  * @brief Number of bits to shift to go from a 10-bit value to a 12-bit value.
