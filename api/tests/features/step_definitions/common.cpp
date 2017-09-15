@@ -1,8 +1,11 @@
 #include <cgreen/cgreen.h>
 #include <cgreen/mocks.h>
 #include <cucumber-cpp/autodetect.hpp>
-// #include <sys/timeb.h>
-// #include <unistd.h>
+
+extern "C"
+{
+    #include "oscc.h"
+}
 
 using namespace cgreen;
 
@@ -13,16 +16,27 @@ BEFORE()
 }
 
 
-GIVEN("^throttle control is enabled$")
+GIVEN("^the oscc connection has been opened$")
 {
+    ret = oscc_open(0);
+    oscc_sleep();
+    assert_that(ret, is_equal_to(OSCC_OK));
 }
 
-
-THEN("^control should be enabled$")
+WHEN("^an enable command is recieved$")
 {
-    assert_that(1, is_equal_to(1));
+    ret = OSCC_ERROR;
+    ret = oscc_enable();
 }
 
-WHEN("^the operator applies to the accelerator$")
+THEN("^no error should be reported$")
 {
+    assert_that(ret, is_equal_to(OSCC_OK));
+}
+
+THEN("^the modules should be enabled$")
+{
+    send_empty_commands();
+    oscc_sleep();
+    // assert that OSCC sends proper can messages to enable.
 }
