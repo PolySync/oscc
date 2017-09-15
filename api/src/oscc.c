@@ -454,6 +454,7 @@ oscc_result_t oscc_disable_steering( void )
 void oscc_update_status( )
 {
     struct can_frame rx_frame;
+    memset( &rx_frame, 0, sizeof(rx_frame) );
 
     if ( can_socket != -1 )
     {
@@ -527,6 +528,7 @@ oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
     {
         struct can_frame tx_frame;
 
+        memset( &tx_frame, 0, sizeof(tx_frame) );
         tx_frame.can_id = id;
         tx_frame.can_dlc = dlc;
         memcpy( tx_frame.data, msg, dlc );
@@ -588,8 +590,8 @@ oscc_result_t oscc_init_can( const char *can_channel )
 
     struct sigaction sig;
 
-    memset(&sig, 0, sizeof(sig));
-    sigemptyset(&sig.sa_mask);
+    memset( &sig, 0, sizeof(sig) );
+    sigemptyset( &sig.sa_mask );
     sig.sa_flags = SA_RESTART;
     sig.sa_handler = oscc_update_status;
     sigaction( SIGIO, &sig, NULL );
@@ -607,6 +609,7 @@ oscc_result_t oscc_init_can( const char *can_channel )
 
 
     struct ifreq ifr;
+    memset( &ifr, 0, sizeof(ifr) );
 
     if ( result == OSCC_OK )
     {
@@ -627,6 +630,7 @@ oscc_result_t oscc_init_can( const char *can_channel )
     {
         struct sockaddr_can can_address;
 
+        memset( &can_address, 0, sizeof(can_address) );
         can_address.can_family = AF_CAN;
         can_address.can_ifindex = ifr.ifr_ifindex;
 
@@ -663,9 +667,9 @@ oscc_result_t oscc_init_can( const char *can_channel )
            if it is valid */
         struct can_frame tx_frame;
 
+        memset( &tx_frame, 0, sizeof(tx_frame) );
         tx_frame.can_id = 0;
         tx_frame.can_dlc = 8;
-        memset( tx_frame.data, 0, sizeof(tx_frame.data) );
 
         int bytes_written = write( sock, &tx_frame, sizeof(tx_frame) );
 
