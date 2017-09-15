@@ -62,6 +62,10 @@ void check_for_operator_override( void )
         {
             disable_control( );
 
+            DTC_SET(
+                g_steering_control_state.dtcs,
+                OSCC_STEERING_DTC_OPERATOR_OVERRIDE );
+
             publish_fault_report( );
 
             g_steering_control_state.operator_override = true;
@@ -97,11 +101,11 @@ void check_for_sensor_faults( void )
             {
                 disable_control( );
 
-                publish_fault_report( );
-
                 DTC_SET(
                     g_steering_control_state.dtcs,
                     OSCC_STEERING_DTC_INVALID_SENSOR_VAL );
+
+                publish_fault_report( );
 
                 DEBUG_PRINTLN( "Bad value read from torque sensor" );
             }

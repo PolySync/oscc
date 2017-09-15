@@ -31,13 +31,11 @@
  */
 #define OSCC_THROTTLE_COMMAND_CAN_ID (0x62)
 
-
 /*
  * @brief Throttle report message (CAN frame) ID.
  *
  */
 #define OSCC_THROTTLE_REPORT_CAN_ID (0x63)
-
 
 /*
  * @brief Throttle report message (CAN frame) length.
@@ -45,19 +43,23 @@
  */
 #define OSCC_THROTTLE_REPORT_CAN_DLC (8)
 
-
 /*
  * @brief Throttle report message publishing frequency. [Hz]
  *
  */
 #define OSCC_REPORT_THROTTLE_PUBLISH_FREQ_IN_HZ (50)
 
-
 /*
  * @brief Throttle DTC bitfield position indicating an invalid sensor value.
  *
  */
 #define OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL (0x0)
+
+/*
+ * @brief Throttle DTC bitfield position indicating an operator override.
+ *
+ */
+ #define OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE (0x1)
 
 
 #pragma pack(push)

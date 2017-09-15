@@ -55,6 +55,12 @@
  */
 #define OSCC_STEERING_DTC_INVALID_SENSOR_VAL (0x0)
 
+/*
+ * @brief Steering DTC bitfield position indicating an operator override.
+ *
+ */
+#define OSCC_STEERING_DTC_OPERATOR_OVERRIDE (0x1)
+
 
 #pragma pack(push)
 #pragma pack(1)

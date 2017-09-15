@@ -52,6 +52,7 @@ void publish_fault_report( void )
     fault_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
     fault_report.magic[1] = (uint8_t) OSCC_MAGIC_BYTE_1;
     fault_report.fault_origin_id = FAULT_ORIGIN_STEERING;
+    fault_report.dtcs = g_steering_control_state.dtcs;
 
     cli();
     g_control_can.sendMsgBuf(
