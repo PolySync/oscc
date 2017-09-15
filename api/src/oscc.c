@@ -11,14 +11,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "can_protocols/brake_can_protocol.h"
-#include "can_protocols/fault_can_protocol.h"
-#include "can_protocols/steering_can_protocol.h"
-#include "can_protocols/throttle_can_protocol.h"
-#include "dtc.h"
 #include "oscc.h"
 #include "internal/oscc.h"
-#include "vehicles.h"
 
 
 static int can_socket = -1;
