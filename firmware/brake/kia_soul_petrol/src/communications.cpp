@@ -148,6 +148,8 @@ static void process_fault_report(
         disable_control( );
 
         DEBUG_PRINT( "Fault report received from: " );
-        DEBUG_PRINTLN( fault_report->fault_origin_id );
+        DEBUG_PRINT( fault_report->fault_origin_id );
+        DEBUG_PRINT( "  DTCs: ");
+        DEBUG_PRINTLN( fault_report->dtcs );
     }
 }
