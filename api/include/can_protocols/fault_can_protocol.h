@@ -50,7 +50,9 @@ typedef struct
 
     uint32_t fault_origin_id; /*!< ID of the module that is sending out the fault. */
 
-    uint8_t reserved[2]; /*!< Reserved */
+    uint8_t dtcs; /*!< DTC bitfield of the module that is sending out the fault. */
+
+    uint8_t reserved; /*!< Reserved */
 } oscc_fault_report_s;
 
 #pragma pack(pop)

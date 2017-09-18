@@ -45,6 +45,10 @@ void check_for_operator_override( void )
         {
             disable_control( );
 
+            DTC_SET(
+                g_brake_control_state.dtcs,
+                OSCC_BRAKE_DTC_OPERATOR_OVERRIDE );
+
             publish_fault_report( );
 
             g_brake_control_state.operator_override = true;
@@ -53,6 +57,10 @@ void check_for_operator_override( void )
         }
         else
         {
+            DTC_CLEAR(
+                g_brake_control_state.dtcs,
+                OSCC_BRAKE_DTC_OPERATOR_OVERRIDE );
+
             g_brake_control_state.operator_override = false;
         }
     }
@@ -80,11 +88,11 @@ void check_for_sensor_faults( void )
             {
                 disable_control( );
 
-                publish_fault_report( );
-
                 DTC_SET(
                     g_brake_control_state.dtcs,
                     OSCC_BRAKE_DTC_INVALID_SENSOR_VAL );
+
+                publish_fault_report( );
 
                 DEBUG_PRINTLN( "Bad value read from brake pedal position sensor" );
             }
