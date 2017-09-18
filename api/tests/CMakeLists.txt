@@ -81,12 +81,12 @@ if(KIA_SOUL)
 add_custom_target(
     run-api-property-tests
     COMMAND
-    cargo test -- --test-threads=1 --skip "ev" ;
+    cargo test --features "kia-soul" -- --test-threads=1 --nocapture ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/property)
 elseif(KIA_SOUL_EV)
 add_custom_target(
     run-api-property-tests
     COMMAND
-    cargo test -- --test-threads=1 --skip "petrol" ;
+    cargo test --features "kia-soul-ev" -- --test-threads=1 --nocapture ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/property)
 endif()
