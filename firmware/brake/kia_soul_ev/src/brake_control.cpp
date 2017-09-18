@@ -57,6 +57,10 @@ void check_for_operator_override( void )
         }
         else
         {
+            DTC_CLEAR(
+                g_brake_control_state.dtcs,
+                OSCC_BRAKE_DTC_OPERATOR_OVERRIDE );
+
             g_brake_control_state.operator_override = false;
         }
     }

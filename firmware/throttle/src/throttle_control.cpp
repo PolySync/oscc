@@ -57,6 +57,10 @@ void check_for_operator_override( void )
         }
         else
         {
+            DTC_CLEAR(
+                g_throttle_control_state.dtcs,
+                OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE );
+
             g_throttle_control_state.operator_override = false;
         }
     }
