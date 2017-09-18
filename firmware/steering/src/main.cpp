@@ -31,6 +31,8 @@ int main( void )
     {
         check_for_incoming_message( );
 
+#ifdef STEERING_OVERRIDE
         check_for_operator_override( );
+#endif
     }
 }
