@@ -4,6 +4,8 @@
  */
 
 
+#include <stdlib.h>
+
 #include "globals.h"
 #include "helper.h"
 #include "vehicles.h"
