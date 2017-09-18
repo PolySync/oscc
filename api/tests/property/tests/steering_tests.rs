@@ -12,19 +12,17 @@ extern crate socketcan;
 
 extern crate oscc_tests;
 
-mod common;
-
 use quickcheck::{QuickCheck, TestResult, StdGen};
 
 fn calculate_torque_spoofs( torque_command: f64 ) -> ( u16, u16 ) {
-    let scaled_torque = common::constrain(torque_command * MAXIMUM_TORQUE_COMMAND, MINIMUM_TORQUE_COMMAND, MAXIMUM_TORQUE_COMMAND);
+    let scaled_torque = oscc_tests::constrain(torque_command * MAXIMUM_TORQUE_COMMAND, MINIMUM_TORQUE_COMMAND, MAXIMUM_TORQUE_COMMAND);
 
     let mut high_spoof = (TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_SCALE * scaled_torque) + TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET;
     let mut low_spoof = (TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * scaled_torque) + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET;
 
-    high_spoof = common::constrain(high_spoof, STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN, STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX);
+    high_spoof = oscc_tests::constrain(high_spoof, STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN, STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX);
 
-    low_spoof = common::constrain(low_spoof, STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN, STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MAX);
+    low_spoof = oscc_tests::constrain(low_spoof, STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN, STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MAX);
 
     ((high_spoof  * STEPS_PER_VOLT) as u16, (low_spoof * STEPS_PER_VOLT) as u16)
 }
@@ -39,11 +37,11 @@ fn get_steering_command_msg_from_buf( buffer: &[u8 ]) -> oscc_steering_command_s
 
 /// The API should properly calculate torque spoofs for valid range
 fn prop_valid_torque_spoofs(steering_torque: f64) -> TestResult {
-    let socket = common::init_socket();
+    let socket = oscc_tests::init_socket();
 
     unsafe { oscc_enable() };
 
-    common::skip_enable_frames(&socket);
+    oscc_tests::skip_enable_frames(&socket);
 
     // send some command
     unsafe { oscc_publish_steering_torque(steering_torque); }
@@ -66,14 +64,14 @@ fn prop_valid_torque_spoofs(steering_torque: f64) -> TestResult {
 
 #[test]
 fn check_valid_torque_spoofs() {
-    common::open_oscc();
+    oscc_tests::open_oscc();
 
     let ret = QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), 1 as usize))
         .quickcheck(prop_valid_torque_spoofs as fn(f64) -> TestResult);
 
-    common::close_oscc();
+    oscc_tests::close_oscc();
 
     ret
 }
@@ -81,11 +79,11 @@ fn check_valid_torque_spoofs() {
 /// For any valid steering input, the API should never send a spoof value 
 /// outside of the valid range
 fn prop_constrain_steering_spoofs(steering_command: f64) -> TestResult {
-    let socket = common::init_socket();
+    let socket = oscc_tests::init_socket();
 
     unsafe { oscc_enable() };
 
-    common::skip_enable_frames(&socket);
+    oscc_tests::skip_enable_frames(&socket);
 
     // send some command
     unsafe { oscc_publish_steering_torque(steering_command); }
@@ -112,14 +110,14 @@ fn prop_constrain_steering_spoofs(steering_command: f64) -> TestResult {
 #[test]
 #[ignore]
 fn check_constrain_steering_spoofs() {
-    common::open_oscc();
+    oscc_tests::open_oscc();
 
     let ret = QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), std::f64::MAX as usize))
         .quickcheck(prop_constrain_steering_spoofs as fn(f64) -> TestResult);
 
-    common::close_oscc();
+    oscc_tests::close_oscc();
 
     ret
 }

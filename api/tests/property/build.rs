@@ -3,17 +3,20 @@ extern crate bindgen;
 
 use std::env;
 use std::path::Path;
+use std::string::String;
 
-fn main() {
+fn gcc_builder(target_vehicle: &str) {
     gcc::Build::new()
         .flag("-w")
-        .define("KIA_SOUL", Some("ON"))
+        .define(target_vehicle, Some("ON"))
         .include("include")
         .include("../../include")
         .include("../../src")
         .file("../../src/oscc.c")
         .compile("liboscc_test.a");
+}
 
+fn bindgen_builder(target_vehicle: &str) {
     let out_dir = env::var("OUT_DIR").unwrap();
 
     let _ = bindgen::Builder::default()
@@ -22,7 +25,7 @@ fn main() {
         .generate_comments(false)
         .layout_tests(false)
         .trust_clang_mangling(false)
-        .clang_arg("-DKIA_SOUL=ON")
+        .clang_arg(target_vehicle)
         .clang_arg("-I../../include")
         .clang_arg("-I../../src")
         .whitelisted_type("oscc_[a-z]+_[a-z]+_s")
@@ -41,4 +44,22 @@ fn main() {
         .unwrap()
         .write_to_file(Path::new(&out_dir).join("oscc_test.rs"))
         .expect("Unable to generate bindings");
+}
+
+fn main() {
+    match env::var("CARGO_FEATURE_KIA_SOUL") {
+        Err(_) => println!("kia soul not selected"), 
+        Ok(_) => {
+            gcc_builder("KIA_SOUL");
+            bindgen_builder("-DKIA_SOUL=ON")
+        }
+    }
+
+    match env::var("CARGO_FEATURE_KIA_SOUL_EV") {
+        Err(_) => println!("kia soul ev not selected"), 
+        Ok(_) => {
+            gcc_builder("KIA_SOUL_EV");
+            bindgen_builder("-DKIA_SOUL_EV=ON")
+        }
+    }
 }

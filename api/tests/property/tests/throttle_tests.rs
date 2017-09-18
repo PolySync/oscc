@@ -12,8 +12,6 @@ extern crate socketcan;
 
 extern crate oscc_tests;
 
-mod common;
-
 use quickcheck::{QuickCheck, TestResult, StdGen};
 
 fn calculate_throttle_spoofs( throttle_command: f64 ) -> ( u16, u16 ) {
@@ -32,11 +30,11 @@ fn get_throttle_command_msg_from_buf( buffer: &[u8 ]) -> oscc_throttle_command_s
 
 /// The API should properly calculate throttle spoofs for valid range
 fn prop_valid_throttle_spoofs(throttle_position: f64) -> TestResult {
-    let socket = common::init_socket();
+    let socket = oscc_tests::init_socket();
 
     unsafe { oscc_enable() };
 
-    common::skip_enable_frames(&socket);
+    oscc_tests::skip_enable_frames(&socket);
 
     // send some command
     unsafe { oscc_publish_throttle_position(throttle_position.abs()); }
@@ -59,14 +57,14 @@ fn prop_valid_throttle_spoofs(throttle_position: f64) -> TestResult {
 
 #[test]
 fn check_valid_throttle_spoofs() {
-    common::open_oscc();
+    oscc_tests::open_oscc();
 
     let ret = QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), 1 as usize))
         .quickcheck(prop_valid_throttle_spoofs as fn(f64) -> TestResult);
 
-    common::close_oscc();
+    oscc_tests::close_oscc();
 
     ret
 }
@@ -74,14 +72,14 @@ fn check_valid_throttle_spoofs() {
 /// For any valid throttle input, the API should never send a spoof value 
 /// outside of the valid range
 fn prop_constrain_throttle_spoofs(throttle_position: f64) -> TestResult {
-    let socket = common::init_socket();
+    let socket = oscc_tests::init_socket();
 
     unsafe { oscc_enable() };
 
-    common::skip_enable_frames(&socket);
+    oscc_tests::skip_enable_frames(&socket);
 
     // send some command
-    unsafe { oscc_publish_throttle_position(throttle_position.abs()); }
+    unsafe { oscc_publish_throttle_position(throttle_position); }
 
     // read from can frame
     let frame_result = socket.read_frame();
@@ -100,14 +98,14 @@ fn prop_constrain_throttle_spoofs(throttle_position: f64) -> TestResult {
 
 #[test]
 fn check_constrain_throttle_spoofs() {
-    common::open_oscc();
+    oscc_tests::open_oscc();
 
     let ret = QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), std::f64::MAX as usize))
         .quickcheck(prop_constrain_throttle_spoofs as fn(f64) -> TestResult);
 
-    common::close_oscc();
+    oscc_tests::close_oscc();
 
     ret
 }

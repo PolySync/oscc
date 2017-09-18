@@ -12,13 +12,11 @@ extern crate socketcan;
 
 extern crate oscc_tests;
 
-mod common;
-
 use quickcheck::{QuickCheck, TestResult, StdGen};
 
 /// The API should send enable CAN frames to all modules when enable is called
 fn prop_enable_all_modules() -> TestResult {
-    let socket = common::init_socket();
+    let socket = oscc_tests::init_socket();
 
     unsafe { oscc_enable() };
 
@@ -43,20 +41,20 @@ fn prop_enable_all_modules() -> TestResult {
 
 #[test]
 fn check_enable_all_modules() {
-    common::open_oscc();
+    oscc_tests::open_oscc();
 
     let ret = QuickCheck::new()
         .tests(1000)
         .quickcheck(prop_enable_all_modules as fn() -> TestResult);
     
-    common::close_oscc();
+    oscc_tests::close_oscc();
     
     ret
 }
 
 /// The API should send disable CAN frames to all modules when disable is called
 fn prop_disable_all_modules() -> TestResult {
-    let socket = common::init_socket();
+    let socket = oscc_tests::init_socket();
 
     unsafe { oscc_disable() };
 
@@ -81,13 +79,13 @@ fn prop_disable_all_modules() -> TestResult {
 
 #[test]
 fn check_disable_all_modules() {
-    common::open_oscc();
+    oscc_tests::open_oscc();
 
     let ret = QuickCheck::new()
         .tests(1000)
         .quickcheck(prop_disable_all_modules as fn() -> TestResult);
 
-    common::close_oscc();
+    oscc_tests::close_oscc();
 
     ret
 }
