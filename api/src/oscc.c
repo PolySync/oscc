@@ -25,7 +25,7 @@ oscc_result_t oscc_open( unsigned int channel )
 
     char can_string_buffer[16];
 
-    snprintf( can_string_buffer, 16, "can%1u", channel );
+    snprintf( can_string_buffer, 16, "can%u", channel );
 
     printf( "Opening CAN channel: %s\n", can_string_buffer );
 
