@@ -92,7 +92,7 @@ cmake .. -DKIA_SOUL=ON
 **While all OSCC modules have operator override detection enabled by default, attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button. To disable operator override for the steering module, pass an additional flag to the CMake build step.**
 
 ```
-cmake .. -DKIA_SOUL=ON **-DSTEERING_OVERRIDE=OFF**
+cmake .. -DKIA_SOUL=ON -DSTEERING_OVERRIDE=OFF
 ```
 
 If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file. 
