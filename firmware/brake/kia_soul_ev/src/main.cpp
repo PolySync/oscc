@@ -5,12 +5,12 @@
 
 
 #include "arduino_init.h"
+#include "brake_control.h"
+#include "communications.h"
 #include "debug.h"
-
 #include "init.h"
 #include "timers.h"
-#include "communications.h"
-#include "brake_control.h"
+
 
 int main( void )
 {

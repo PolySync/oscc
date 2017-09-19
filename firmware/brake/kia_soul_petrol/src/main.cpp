@@ -4,14 +4,13 @@
  */
 
 
-#include "arduino_init.h"
-
-#include "debug.h"
 #include "accumulator.h"
+#include "arduino_init.h"
 #include "brake_control.h"
 #include "communications.h"
-#include "timers.h"
+#include "debug.h"
 #include "init.h"
+#include "timers.h"
 
 
 int main( void )

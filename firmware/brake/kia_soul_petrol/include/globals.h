@@ -9,10 +9,9 @@
 #define _OSCC_BRAKE_GLOBALS_H_
 
 
+#include "brake_control.h"
 #include "mcp_can.h"
 #include "oscc_pid.h"
-
-#include "brake_control.h"
 
 
 /*

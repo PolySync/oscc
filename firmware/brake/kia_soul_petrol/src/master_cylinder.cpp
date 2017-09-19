@@ -5,8 +5,8 @@
 
 
 #include <Arduino.h>
-#include "debug.h"
 
+#include "debug.h"
 #include "globals.h"
 #include "helper.h"
 #include "master_cylinder.h"

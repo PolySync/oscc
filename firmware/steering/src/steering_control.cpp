@@ -5,17 +5,17 @@
 
 
 #include <Arduino.h>
-#include <stdlib.h>
 #include <stdint.h>
-#include "debug.h"
-#include "oscc_dac.h"
-#include "can_protocols/steering_can_protocol.h"
-#include "dtc.h"
-#include "vehicles.h"
+#include <stdlib.h>
 
+#include "can_protocols/steering_can_protocol.h"
 #include "communications.h"
-#include "steering_control.h"
+#include "debug.h"
+#include "dtc.h"
 #include "globals.h"
+#include "oscc_dac.h"
+#include "steering_control.h"
+#include "vehicles.h"
 
 
 /*
@@ -25,6 +25,7 @@
  */
 #define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
+
 static void read_torque_sensor(
     steering_torque_s * value );
 
@@ -33,7 +34,9 @@ static float exponential_moving_average(
     const float input,
     const float average );
 
+
 static uint16_t filtered_diff = 0;
+
 
 void check_for_operator_override( void )
 {

@@ -4,15 +4,17 @@
  */
 
 
-#include "mcp_can.h"
+#include <Arduino.h>
+#include <stdint.h>
+
+#include "brake_control.h"
 #include "can_protocols/brake_can_protocol.h"
 #include "can_protocols/fault_can_protocol.h"
-#include "oscc_can.h"
-#include "debug.h"
-
-#include "globals.h"
 #include "communications.h"
-#include "brake_control.h"
+#include "debug.h"
+#include "globals.h"
+#include "mcp_can.h"
+#include "oscc_can.h"
 
 
 static void process_rx_frame(

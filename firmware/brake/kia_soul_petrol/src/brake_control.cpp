@@ -4,18 +4,20 @@
  */
 
 
-#include "debug.h"
-#include "oscc_pid.h"
-#include "dtc.h"
-#include "can_protocols/brake_can_protocol.h"
-#include "vehicles.h"
+#include <Arduino.h>
+#include <stdint.h>
 
-#include "globals.h"
 #include "accumulator.h"
 #include "brake_control.h"
+#include "can_protocols/brake_can_protocol.h"
 #include "communications.h"
-#include "master_cylinder.h"
+#include "debug.h"
+#include "dtc.h"
+#include "globals.h"
 #include "helper.h"
+#include "master_cylinder.h"
+#include "oscc_pid.h"
+#include "vehicles.h"
 
 
 /*

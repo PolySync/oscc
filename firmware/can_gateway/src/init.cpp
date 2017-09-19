@@ -4,12 +4,11 @@
  */
 
 
-#include "oscc_serial.h"
-#include "oscc_can.h"
 #include "debug.h"
-
 #include "globals.h"
 #include "init.h"
+#include "oscc_can.h"
+#include "oscc_serial.h"
 
 
 void init_communication_interfaces( void )

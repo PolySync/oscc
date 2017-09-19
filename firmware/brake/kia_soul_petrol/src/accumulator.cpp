@@ -5,12 +5,12 @@
 
 
 #include <Arduino.h>
-#include "vehicles.h"
 
-#include "globals.h"
 #include "accumulator.h"
-#include "helper.h"
 #include "debug.h"
+#include "globals.h"
+#include "helper.h"
+#include "vehicles.h"
 
 
 void accumulator_init( void )

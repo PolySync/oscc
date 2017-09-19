@@ -6,15 +6,15 @@
 
 #include <Arduino.h>
 #include <stdint.h>
-#include "debug.h"
-#include "oscc_dac.h"
-#include "can_protocols/brake_can_protocol.h"
-#include "dtc.h"
-#include "vehicles.h"
 
-#include "communications.h"
+#include "can_protocols/brake_can_protocol.h"
 #include "brake_control.h"
+#include "communications.h"
+#include "debug.h"
+#include "dtc.h"
 #include "globals.h"
+#include "oscc_dac.h"
+#include "vehicles.h"
 
 
 /*
