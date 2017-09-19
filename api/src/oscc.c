@@ -634,9 +634,10 @@ oscc_result_t oscc_init_can( const char *can_channel )
         can_address.can_family = AF_CAN;
         can_address.can_ifindex = ifr.ifr_ifindex;
 
-        ret = bind( sock,
-                      (struct sockaddr *)&can_address,
-                      sizeof(can_address) );
+        ret = bind(
+            sock,
+            (struct sockaddr *) &can_address,
+            sizeof(can_address) );
 
         if ( ret < 0 )
         {
