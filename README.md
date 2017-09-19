@@ -215,6 +215,11 @@ These methods are the start and end points of using the OSCC API in your applica
 on the specified CAN channel, enabling it to quickly receive reports from and send commands to the firmware modules.
 When you are ready to terminate your application, ```oscc_close``` can terminate the connection.
 
+**NOTE:**
+> The OSCC API catches the SIGIO signal which is asserted when a CAN frame is received on the CAN socket, and sets up a SIGIO signal handler
+> to forward valid CAN messages to your application. If you have a section of code that is susceptible to conflicts with interrupts,
+> you should temporarily block the SIGIO signal for the duration of that section and unblock it afterward.
+
 **Enable and disable all OSCC modules.**
 
 ```c
@@ -234,9 +239,14 @@ oscc_result_t publish_steering_torque( double normalized_torque );
 oscc_result_t publish_throttle_position( double normalized_position );
 ```
 
-These commands will forward a double value, *[0.0, 1.0]*, to the specified firmware module. The API will construct the appropriate values
-to send spoof commands into the vehicle ECU's to achieve the desired state. The API also contains safety checks to ensure no invalid values
-can be written onto the hardware.
+These commands will forward a double value to the specified firmware module. The double values are [0.0, 1.0] for brake and throttle,
+and [-1.0, 1.0] for steering where -1.0 is counterclockwise and 1.0 is clockwise. The API will construct the appropriate values to send
+as spoofed voltages to the vehicle to achieve the desired state. The API also contains safety checks to ensure no voltages outside of
+the vehicle's expected range are sent.
+
+**NOTE:**
+> Each of these functions must be called at least once every 200ms to prevent the modules from detecting a loss of communication to the
+> controlling computer (at which point they would disable themselves).
 
 **Register callback function to handle OSCC report and OBD messages.**
 
