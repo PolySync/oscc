@@ -386,7 +386,7 @@ typedef struct
  *        override.
  *
  */
-#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1900 )
+#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
 
 
 

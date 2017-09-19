@@ -61,7 +61,7 @@ else()
     option(KIA_SOUL "Build firmware for the petrol Kia Soul" OFF)
     option(KIA_SOUL_EV "Build firmware for the Kia Soul EV" OFF)
     option(BRAKE_STARTUP_TEST "Enable brake startup sensor tests" ON)
-    option(STEERING_OVERRIDE "Enable steering override" OFF)
+    option(STEERING_OVERRIDE "Enable steering override" ON)
 
     set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
     set(SERIAL_BAUD_BRAKE "115200" CACHE STRING "Serial baud rate of the brake module")
@@ -95,7 +95,7 @@ else()
 
     if(STEERING_OVERRIDE)
         add_definitions(-DSTEERING_OVERRIDE)
-        message(WARNING "Steering override is enabled. Attempting to grab the steering wheel while the torque motor is being actuated could potentially result in injury. As such, the preffered method of operator override for steering is to utilize the brake or E-stop.")
+        message(WARNING "Steering override is enabled. This is an experimental feature! Attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button.")
     endif()
 
     add_subdirectory(brake)

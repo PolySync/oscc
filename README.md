@@ -89,6 +89,17 @@ firmware for the Kia Soul:
 cmake .. -DKIA_SOUL=ON
 ```
 
+**While all OSCC modules have operator override detection enabled by default, attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button. To disable operator override for the steering module, pass an additional flag to the CMake build step.**
+
+```
+cmake .. -DKIA_SOUL=ON **-DSTEERING_OVERRIDE=OFF**
+```
+
+If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file. 
+
+* Lowering this value will make the steering module more sensitive to operator override, but will result in false positives around high-torque areas, such as the mechanical limits of the steering rack or when quickly and rapidly changing direction.
+* Increasing this value will result in fewer false positives, but will make it more difficult to manually override the wheel.
+
 By default, your firmware will have debug symbols which is good for debugging but increases
 the size of the firmware significantly. To compile without debug symbols and optimizations
 enabled, use the following instead:
