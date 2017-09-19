@@ -63,6 +63,20 @@ typedef struct
  */
 int oscc_interface_init( int channel );
 
+/**
+ * @brief Initialize the OSCC interface - This call must occur
+ *        first in order to use the interface at all.  If this
+ *        call does not come first, all other calls will return
+ *        ERROR.
+ *
+ * @param [in] channel - for now, the CAN channel to use when
+ *        communicating with the OSCC modules
+ *
+ * @return ERROR or NOERR
+ *
+ */
+int oscc_interface_init_no_defaults( int channel );
+
 
 /**
  * @brief Close the OSCC interface

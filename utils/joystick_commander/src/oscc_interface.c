@@ -208,7 +208,6 @@ static void oscc_interface_check_for_obd_timeout(oscc_status_s* status,
 
 static void oscc_interface_parse_vehicle_state_info(
     oscc_vehicle_status_s* vehicle_status, long can_id, unsigned char* buffer) {
-    
     // printf("CAN ID: %lx\n", can_id);
     if (can_id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID) {
         oscc_report_chassis_state_1_data_s* chassis_state_1_data =
@@ -313,6 +312,16 @@ int oscc_interface_init(int channel) {
     if (return_code == NOERR) {
         oscc = &oscc_interface_data;
     }
+    return (return_code);
+}
+
+int oscc_interface_init_no_defaults(int channel) {
+    int return_code = oscc_init_can(channel);
+
+    if (return_code == NOERR) {
+        oscc = &oscc_interface_data;
+    }
+
     return (return_code);
 }
 
@@ -583,7 +592,6 @@ int oscc_interface_update_status(oscc_status_s* status) {
 
 int oscc_interface_read_vehicle_status(oscc_vehicle_status_s* vehicle_status) {
     int return_code = ERROR;
-
     if (oscc != NULL) {
         long can_id;
         unsigned int msg_dlc;
