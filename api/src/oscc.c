@@ -148,7 +148,7 @@ oscc_result_t oscc_publish_brake_position( double brake_position )
     result = oscc_can_write(
         OSCC_BRAKE_COMMAND_CAN_ID,
         (void *) &brake_cmd,
-        sizeof( brake_cmd ) );
+        sizeof(brake_cmd) );
 
 
     return result;
@@ -196,8 +196,8 @@ oscc_result_t oscc_publish_throttle_position( double throttle_position )
 
     result = oscc_can_write(
         OSCC_THROTTLE_COMMAND_CAN_ID,
-        (void *)&throttle_cmd,
-        sizeof(throttle_cmd));
+        (void *) &throttle_cmd,
+        sizeof(throttle_cmd) );
 
 
     return result;
@@ -245,8 +245,8 @@ oscc_result_t oscc_publish_steering_torque( double torque )
 
     result = oscc_can_write(
         OSCC_STEERING_COMMAND_CAN_ID,
-        (void *)&steering_cmd,
-        sizeof(steering_cmd));
+        (void *) &steering_cmd,
+        sizeof(steering_cmd) );
 
 
     return result;
@@ -636,7 +636,7 @@ oscc_result_t oscc_init_can( const char *can_channel )
 
         ret = bind( sock,
                       (struct sockaddr *)&can_address,
-                      sizeof(can_address));
+                      sizeof(can_address) );
 
         if ( ret < 0 )
         {
