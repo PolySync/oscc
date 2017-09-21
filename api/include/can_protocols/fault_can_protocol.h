@@ -44,13 +44,15 @@ typedef enum
  */
 typedef struct
 {
-    uint8_t magic[2]; /* Magic number identifying CAN frame as from OSCC.
-                         Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
-                         Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
+    uint8_t magic[2]; /*!< Magic number identifying CAN frame as from OSCC.
+                       *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
+                       *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-    uint32_t fault_origin_id; /* ID of the module that is sending out the fault. */
+    uint32_t fault_origin_id; /*!< ID of the module that is sending out the fault. */
 
-    uint8_t reserved[2]; /* Reserved */
+    uint8_t dtcs; /*!< DTC bitfield of the module that is sending out the fault. */
+
+    uint8_t reserved; /*!< Reserved */
 } oscc_fault_report_s;
 
 #pragma pack(pop)

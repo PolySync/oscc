@@ -4,12 +4,11 @@
  */
 
 
+#include "communications.h"
+#include "globals.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
 #include "vehicles.h"
-
-#include "globals.h"
-#include "communications.h"
 
 
 void republish_obd_frames_to_control_can_bus( void )

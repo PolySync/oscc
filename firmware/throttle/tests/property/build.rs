@@ -23,6 +23,7 @@ fn main() {
         .file("../../src/communications.cpp")
         .file("../../src/throttle_control.cpp")
         .file("../../src/globals.cpp")
+        .cpp(true)
         .compile("libthrottle_test.a");
 
     let out_dir = env::var("OUT_DIR").unwrap();
@@ -42,6 +43,8 @@ fn main() {
         .whitelisted_function("check_for_operator_override")
         .whitelisted_var("OSCC_MAGIC_BYTE_0")
         .whitelisted_var("OSCC_MAGIC_BYTE_1")
+        .whitelisted_var("OSCC_THROTTLE_ENABLE_CAN_ID")
+        .whitelisted_var("OSCC_THROTTLE_DISABLE_CAN_ID")
         .whitelisted_var("OSCC_THROTTLE_REPORT_CAN_ID")
         .whitelisted_var("OSCC_THROTTLE_REPORT_CAN_DLC")
         .whitelisted_var("OSCC_THROTTLE_COMMAND_CAN_ID")
@@ -55,6 +58,8 @@ fn main() {
         .whitelisted_var("THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX")
         .whitelisted_var("THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN")
         .whitelisted_var("THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX")
+        .whitelisted_type("oscc_throttle_enable_s")
+        .whitelisted_type("oscc_throttle_disable_s")
         .whitelisted_type("oscc_throttle_report_s")
         .whitelisted_type("oscc_throttle_command_s")
         .whitelisted_type("can_frame_s")

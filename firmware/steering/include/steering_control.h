@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_STEERING_CONTROL_H_
-#define _OSCC_KIA_SOUL_STEERING_CONTROL_H_
+#ifndef _OSCC_STEERING_CONTROL_H_
+#define _OSCC_STEERING_CONTROL_H_
 
 
 #include <stdint.h>
@@ -112,4 +112,4 @@ void enable_control( void );
 void disable_control( void );
 
 
-#endif /* _OSCC_KIA_SOUL_STEERING_CONTROL_H_ */
+#endif /* _OSCC_STEERING_CONTROL_H_ */

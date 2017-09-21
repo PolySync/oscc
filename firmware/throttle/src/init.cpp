@@ -5,21 +5,21 @@
 
 
 #include <Arduino.h>
-#include "oscc_serial.h"
-#include "oscc_can.h"
-#include "can_protocols/throttle_can_protocol.h"
-#include "debug.h"
 
-#include "globals.h"
+#include "can_protocols/throttle_can_protocol.h"
 #include "communications.h"
+#include "debug.h"
+#include "globals.h"
 #include "init.h"
+#include "oscc_can.h"
+#include "oscc_serial.h"
 
 
 void init_globals( void )
 {
-   g_throttle_control_state.enabled = false;
-   g_throttle_control_state.operator_override = false;
-   g_throttle_control_state.dtcs = 0;
+    g_throttle_control_state.enabled = false;
+    g_throttle_control_state.operator_override = false;
+    g_throttle_control_state.dtcs = 0;
 
     g_throttle_command_timeout = false;
 }

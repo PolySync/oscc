@@ -5,17 +5,17 @@
 
 
 #include <Arduino.h>
-#include <stdlib.h>
 #include <stdint.h>
-#include "debug.h"
-#include "oscc_dac.h"
-#include "can_protocols/steering_can_protocol.h"
-#include "dtc.h"
-#include "vehicles.h"
+#include <stdlib.h>
 
+#include "can_protocols/steering_can_protocol.h"
 #include "communications.h"
-#include "steering_control.h"
+#include "debug.h"
+#include "dtc.h"
 #include "globals.h"
+#include "oscc_dac.h"
+#include "steering_control.h"
+#include "vehicles.h"
 
 
 /*
@@ -29,6 +29,14 @@
 static void read_torque_sensor(
     steering_torque_s * value );
 
+static float exponential_moving_average(
+    const float alpha,
+    const float input,
+    const float average );
+
+
+static uint16_t filtered_diff = 0;
+
 
 void check_for_operator_override( void )
 {
@@ -39,10 +47,27 @@ void check_for_operator_override( void )
 
         read_torque_sensor( &torque );
 
-        if ( (abs(torque.high) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC)
-            || (abs(torque.low) >= OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC) )
+        uint16_t unfiltered_diff = abs( ( int )torque.high - ( int )torque.low );
+
+        const float filter_alpha = 0.01;
+
+        if ( filtered_diff == 0 )
+        {
+            filtered_diff = unfiltered_diff;
+        }
+
+        filtered_diff = exponential_moving_average(
+            filter_alpha,
+            unfiltered_diff,
+            filtered_diff);
+
+        if( abs( filtered_diff ) > TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD )
         {
             disable_control( );
+
+            DTC_SET(
+                g_steering_control_state.dtcs,
+                OSCC_STEERING_DTC_OPERATOR_OVERRIDE );
 
             publish_fault_report( );
 
@@ -52,6 +77,10 @@ void check_for_operator_override( void )
         }
         else
         {
+            DTC_CLEAR(
+                g_steering_control_state.dtcs,
+                OSCC_STEERING_DTC_OPERATOR_OVERRIDE );
+
             g_steering_control_state.operator_override = false;
         }
     }
@@ -79,11 +108,11 @@ void check_for_sensor_faults( void )
             {
                 disable_control( );
 
-                publish_fault_report( );
-
                 DTC_SET(
                     g_steering_control_state.dtcs,
                     OSCC_STEERING_DTC_INVALID_SENSOR_VAL );
+
+                publish_fault_report( );
 
                 DEBUG_PRINTLN( "Bad value read from torque sensor" );
             }
@@ -109,14 +138,14 @@ void update_steering(
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
-                STEERING_SPOOF_SIGNAL_MIN,
-                STEERING_SPOOF_SIGNAL_MAX );
+                STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+                STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX );
 
         uint16_t spoof_low =
             constrain(
                 spoof_command_low,
-                STEERING_SPOOF_SIGNAL_MIN,
-                STEERING_SPOOF_SIGNAL_MAX );
+                STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
+                STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
         cli();
         g_dac.outputA( spoof_high );
@@ -142,6 +171,7 @@ void enable_control( void )
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
         sei();
 
+        g_steering_command_timeout = false;
         g_steering_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
@@ -164,18 +194,29 @@ void disable_control( void )
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
         sei();
 
+        g_steering_command_timeout = false;
         g_steering_control_state.enabled = false;
+
+        filtered_diff = 0;
 
         DEBUG_PRINTLN( "Control disabled" );
     }
+}
+
+static float exponential_moving_average(
+    const float alpha,
+    const float input,
+    const float average )
+{
+    return ( (alpha * input) + ((1.0 - alpha) * average) );
 }
 
 static void read_torque_sensor(
     steering_torque_s * value )
 {
     cli();
-    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH );
-    value->low = analogRead( PIN_TORQUE_SENSOR_LOW );
+    value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
+    value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
 }
 

@@ -1,8 +1,13 @@
+/**
+ * @file oscc_can.cpp
+ *
+ */
+
+
 #include <string.h>
 
-#include "mcp_can.h"
 #include "debug.h"
-
+#include "mcp_can.h"
 #include "oscc_can.h"
 
 
@@ -24,18 +29,18 @@ can_status_t check_for_rx_frame( MCP_CAN &can, can_frame_s * const frame )
 
     if( frame != NULL )
     {
+        memset( frame, 0, sizeof(*frame) );
+
         cli();
 
-        if( can.checkReceive( ) == CAN_MSGAVAIL )
+        int got_message = can.readMsgBufID(
+                ( uint32_t* ) &frame->id,
+                ( uint8_t* ) &frame->dlc,
+                ( uint8_t* ) frame->data );
+
+        if( got_message == CAN_OK )
         {
-            memset( frame, 0, sizeof(*frame) );
-
             frame->timestamp = millis( );
-
-            can.readMsgBufID(
-                    ( uint32_t* ) &frame->id,
-                    ( uint8_t* ) &frame->dlc,
-                    ( uint8_t* ) frame->data );
 
             ret = CAN_RX_FRAME_AVAILABLE;
         }

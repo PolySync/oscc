@@ -5,7 +5,7 @@ use std::env;
 use std::path::Path;
 
 fn main() {
-    gcc::Config::new()
+    gcc::Build::new()
         .flag("-w")
         .define("KIA_SOUL", Some("ON"))
         .include("include")
@@ -23,6 +23,7 @@ fn main() {
         .file("../../src/communications.cpp")
         .file("../../src/steering_control.cpp")
         .file("../../src/globals.cpp")
+        .cpp(true)
         .compile("libsteering_test.a");
 
     let out_dir = env::var("OUT_DIR").unwrap();
@@ -42,17 +43,24 @@ fn main() {
         .whitelisted_function("check_for_operator_override")
         .whitelisted_var("OSCC_MAGIC_BYTE_0")
         .whitelisted_var("OSCC_MAGIC_BYTE_1")
+        .whitelisted_var("OSCC_STEERING_ENABLE_CAN_ID")
+        .whitelisted_var("OSCC_STEERING_DISABLE_CAN_ID")
         .whitelisted_var("OSCC_STEERING_REPORT_CAN_ID")
         .whitelisted_var("OSCC_STEERING_REPORT_CAN_DLC")
         .whitelisted_var("OSCC_STEERING_COMMAND_CAN_ID")
         .whitelisted_var("OSCC_STEERING_COMMAND_CAN_DLC")
         .whitelisted_var("OSCC_FAULT_REPORT_CAN_ID")
-        .whitelisted_var("OSCC_STEERING_REPORT_PUBLISH_INTERVAL_IN_MSEC")
-        .whitelisted_var("OVERRIDE_WHEEL_THRESHOLD_IN_DEGREES_PER_USEC")
-        .whitelisted_var("STEERING_SPOOF_SIGNAL_MIN")
-        .whitelisted_var("STEERING_SPOOF_SIGNAL_MAX")
+        .whitelisted_var("PIN_TORQUE_SENSOR_HIGH")
+        .whitelisted_var("PIN_TORQUE_SENSOR_LOW")
+        .whitelisted_var("TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD")
+        .whitelisted_var("STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN")
+        .whitelisted_var("STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX")
+        .whitelisted_var("STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN")
+        .whitelisted_var("STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX")
         .whitelisted_var("CAN_STANDARD")
         .whitelisted_var("CAN_MSGAVAIL")
+        .whitelisted_type("oscc_steering_enable_s")
+        .whitelisted_type("oscc_steering_disable_s")
         .whitelisted_type("oscc_steering_report_s")
         .whitelisted_type("oscc_steering_command_s")
         .whitelisted_type("can_frame_s")
