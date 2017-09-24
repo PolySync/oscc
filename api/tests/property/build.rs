@@ -3,7 +3,6 @@ extern crate bindgen;
 
 use std::env;
 use std::path::Path;
-use std::string::String;
 
 fn gcc_builder(target_vehicle: &str) {
     gcc::Build::new()

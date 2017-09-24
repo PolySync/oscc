@@ -26,7 +26,7 @@ fn get_brake_command_msg_from_buf( buffer: &[u8 ]) -> oscc_brake_command_s {
 mod brake_tests {
     use super::*;
 
-    /// The API should properly calculate torque spoofs for valid range
+    /// The API should properly calculate brake command within valid range
     pub fn prop_valid_brake_spoofs(pedal_command: f64) -> TestResult {
         let socket = oscc_tests::init_socket();
 
@@ -34,10 +34,8 @@ mod brake_tests {
 
         oscc_tests::skip_enable_frames(&socket);
 
-        // send some command
         unsafe { oscc_publish_brake_position(pedal_command.abs()); }
 
-        // read from can frame
         let frame_result = socket.read_frame();
         match frame_result {
             Err(why) => TestResult::discard(),
@@ -51,7 +49,7 @@ mod brake_tests {
         }
     }
 
-    /// For any valid steering input, the API should never send a spoof value 
+    /// For any valid steering input, the API should never send a command value 
     /// outside of the valid range
     pub fn prop_constrain_brake_spoofs(pedal_command: f64) -> TestResult {
         let socket = oscc_tests::init_socket();
@@ -60,10 +58,8 @@ mod brake_tests {
 
         oscc_tests::skip_enable_frames(&socket);
 
-        // send some command
         unsafe { oscc_publish_brake_position(pedal_command.abs()); }
 
-        // read from can frame
         let frame_result = socket.read_frame();
         match frame_result {
             Err(why) => TestResult::discard(),
@@ -82,7 +78,6 @@ mod brake_tests {
 mod brake_tests {
     use super::*;
 
-    /// The API should properly calculate torque spoofs for valid range
     fn calculate_ev_brake_spoofs( brake_command: f64 ) -> ( u16, u16 ) {
         let high_spoof = brake_command * (BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) + BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN;
         let low_spoof = brake_command * (BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) + BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN;
@@ -97,10 +92,8 @@ mod brake_tests {
 
         oscc_tests::skip_enable_frames(&socket);
 
-        // send some command
         unsafe { oscc_publish_brake_position(pedal_command.abs()); }
 
-        // read from can frame
         let frame_result = socket.read_frame();
         match frame_result {
             Err(why) => TestResult::discard(),
@@ -125,10 +118,8 @@ mod brake_tests {
 
         oscc_tests::skip_enable_frames(&socket);
 
-        // send some command
         unsafe { oscc_publish_brake_position(pedal_command.abs()); }
 
-        // read from can frame
         let frame_result = socket.read_frame();
         match frame_result {
             Err(why) => TestResult::discard(),
