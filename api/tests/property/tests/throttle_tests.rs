@@ -28,6 +28,32 @@ fn get_throttle_command_msg_from_buf( buffer: &[u8 ]) -> oscc_throttle_command_s
     unsafe { *throttle_command_ptr as oscc_throttle_command_s }
 }
 
+unsafe extern "C" fn throttle_report_callback(report: *mut oscc_throttle_report_s) {
+    println!("recieved a throttle report!");
+}
+
+/// The API should correctly register valid callback functions
+fn prop_throttle_report_callback() -> TestResult {
+    let socket = oscc_tests::init_socket();
+
+    let ret = unsafe { oscc_subscribe_to_throttle_reports(Some(throttle_report_callback)) };
+
+    TestResult::from_bool(ret == oscc_result_t::OSCC_OK)
+}
+
+#[test]
+fn check_throttle_report_callback() {
+    oscc_tests::open_oscc();
+
+    let ret = QuickCheck::new()
+        .tests(1000)
+        .quickcheck(prop_throttle_report_callback as fn() -> TestResult);
+    
+    oscc_tests::close_oscc();
+    
+    ret
+}
+
 /// The API should properly calculate throttle spoofs for valid range
 fn prop_valid_throttle_spoofs(throttle_position: f64) -> TestResult {
     let socket = oscc_tests::init_socket();

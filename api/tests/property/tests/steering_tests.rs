@@ -35,6 +35,32 @@ fn get_steering_command_msg_from_buf( buffer: &[u8 ]) -> oscc_steering_command_s
     unsafe { *steering_command_ptr as oscc_steering_command_s }
 }
 
+unsafe extern "C" fn steering_report_callback(report: *mut oscc_steering_report_s) {
+    println!("recieved a steering report!");
+}
+
+/// The API should correctly register valid callback functions
+fn prop_steering_report_callback() -> TestResult {
+    let socket = oscc_tests::init_socket();
+
+    let ret = unsafe { oscc_subscribe_to_steering_reports(Some(steering_report_callback)) };
+
+    TestResult::from_bool(ret == oscc_result_t::OSCC_OK)
+}
+
+#[test]
+fn check_steering_report_callback() {
+    oscc_tests::open_oscc();
+
+    let ret = QuickCheck::new()
+        .tests(1000)
+        .quickcheck(prop_steering_report_callback as fn() -> TestResult);
+    
+    oscc_tests::close_oscc();
+    
+    ret
+}
+
 /// The API should properly calculate torque spoofs for valid range
 fn prop_valid_torque_spoofs(steering_torque: f64) -> TestResult {
     let socket = oscc_tests::init_socket();
