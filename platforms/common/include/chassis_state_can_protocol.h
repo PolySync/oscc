@@ -108,6 +108,7 @@
  */
 #define OSCC_REPORT_CHASSIS_STATE_3_PUBLISH_INTERVAL_IN_MSEC (50)
 
+#pragma pack(push, 1)
 
 /**
  * @brief Chassis State 1 report message data.
@@ -221,5 +222,6 @@ typedef struct
     oscc_report_chassis_state_3_data_s data; /* CAN frame data. */
 } oscc_report_chassis_state_3_s;
 
+#pragma pack(pop)
 
 #endif /* _OSCC_CHASSIS_STATE_CAN_PROTOCOL_H_ */
