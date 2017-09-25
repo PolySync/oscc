@@ -81,12 +81,12 @@ if(KIA_SOUL)
 add_custom_target(
     run-api-property-tests
     COMMAND
-    cargo test --manifest-path "property/Cargo.toml" --features "kia-soul" -- --test-threads=1 ;
+    $ENV{HOME}/.cargo/bin/rustup show && cargo test --manifest-path "property/Cargo.toml" --features "kia-soul" -- --test-threads=1 ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 elseif(KIA_SOUL_EV)
 add_custom_target(
     run-api-property-tests
     COMMAND
-    cargo test --manifest-path "property/Cargo.toml" --features "kia-soul-ev" -- --test-threads=1 ;
+    $ENV{HOME}/.cargo/bin/rustup show && cargo test --manifest-path "property/Cargo.toml" --features "kia-soul-ev" -- --test-threads=1 ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
