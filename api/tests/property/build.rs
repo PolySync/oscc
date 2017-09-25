@@ -33,6 +33,7 @@ fn bindgen_builder(target_vehicle: &str) {
         .whitelisted_var("TORQUE_SPOOF_[A-Z]+_SIGNAL_CALIBRATION_CURVE_[A-Z]+")
         .whitelisted_var("[A-Z]+_SPOOF_[A-Z]+_SIGNAL_[A-Z]+_[A-Z]+")
         .whitelisted_var("STEPS_PER_VOLT")
+        .whitelisted_var("OSCC_MAGIC_BYTE_[0|1]")
         .whitelisted_function("oscc_publish_[a-z]+_[a-z]+")
         .whitelisted_function("oscc_subscribe_to_[a-z]+_[a-z]+")
         .whitelisted_function("oscc_[a-z]+")

@@ -12,7 +12,9 @@ extern crate socketcan;
 
 extern crate oscc_tests;
 
+use socketcan::CANFrame;
 use quickcheck::{QuickCheck, TestResult, StdGen};
+use std::{thread, time};
 
 fn calculate_torque_spoofs( torque_command: f64 ) -> ( u16, u16 ) {
     let scaled_torque = oscc_tests::constrain(torque_command * MAXIMUM_TORQUE_COMMAND, MINIMUM_TORQUE_COMMAND, MAXIMUM_TORQUE_COMMAND);
@@ -35,15 +37,28 @@ fn get_steering_command_msg_from_buf( buffer: &[u8 ]) -> oscc_steering_command_s
     unsafe { *steering_command_ptr as oscc_steering_command_s }
 }
 
-unsafe extern "C" fn steering_report_callback(report: *mut oscc_steering_report_s) {
-    println!("recieved a steering report!");
+mod callbacks {
+    use super::*;
+
+    static mut STEERING_REPORT_RECIEVED: bool = false;
+
+    pub unsafe extern "C" fn steering_report_callback(report: *mut oscc_steering_report_s) {
+            STEERING_REPORT_RECIEVED = true;
+    }
+
+    pub fn recieved_steering_report() -> bool {
+        let ret = unsafe { STEERING_REPORT_RECIEVED };
+        // reset value
+        unsafe { STEERING_REPORT_RECIEVED = false; }
+        ret
+    }
 }
 
 /// The API should correctly register valid callback functions
 fn prop_steering_report_callback() -> TestResult {
     let socket = oscc_tests::init_socket();
 
-    let ret = unsafe { oscc_subscribe_to_steering_reports(Some(steering_report_callback)) };
+    let ret = unsafe { oscc_subscribe_to_steering_reports(Some(callbacks::steering_report_callback)) };
 
     TestResult::from_bool(ret == oscc_result_t::OSCC_OK)
 }
@@ -55,6 +70,34 @@ fn check_steering_report_callback() {
     let ret = QuickCheck::new()
         .tests(1000)
         .quickcheck(prop_steering_report_callback as fn() -> TestResult);
+    
+    oscc_tests::close_oscc();
+    
+    ret
+}
+
+/// The API should correctly register valid callback functions
+fn prop_steering_report_callback_triggered() -> TestResult {
+    let socket = oscc_tests::init_socket();
+
+    let ret = unsafe { oscc_subscribe_to_steering_reports(Some(callbacks::steering_report_callback)) };
+
+    let report: [u8; 2] = [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8];
+
+    socket.write_frame_insist(&CANFrame::new(OSCC_STEERING_REPORT_CAN_ID, &report, false, false).unwrap());
+ 
+    thread::sleep(time::Duration::from_millis(10));
+
+    TestResult::from_bool(callbacks::recieved_steering_report() == true)
+}
+
+#[test]
+fn check_steering_report_callback_triggered() {
+    oscc_tests::open_oscc();
+
+    let ret = QuickCheck::new()
+        .tests(10)
+        .quickcheck(prop_steering_report_callback_triggered as fn() -> TestResult);
     
     oscc_tests::close_oscc();
     

@@ -12,7 +12,9 @@ extern crate socketcan;
 
 extern crate oscc_tests;
 
+use socketcan::CANFrame;
 use quickcheck::{QuickCheck, TestResult, StdGen};
+use std::{thread, time};
 
 fn get_brake_command_msg_from_buf( buffer: &[u8 ]) -> oscc_brake_command_s {
     let data_ptr: *const u8 = buffer.as_ptr();
@@ -22,15 +24,28 @@ fn get_brake_command_msg_from_buf( buffer: &[u8 ]) -> oscc_brake_command_s {
     unsafe { *brake_command_ptr as oscc_brake_command_s }
 }
 
-unsafe extern "C" fn brake_report_callback(report: *mut oscc_brake_report_s) {
-    println!("recieved a brake report!");
+mod callbacks {
+    use super::*;
+
+    static mut BRAKE_REPORT_RECIEVED: bool = false;
+
+    pub unsafe extern "C" fn brake_report_callback(report: *mut oscc_brake_report_s) {
+            BRAKE_REPORT_RECIEVED = true;
+    }
+
+    pub fn recieved_brake_report() -> bool {
+        let ret = unsafe { BRAKE_REPORT_RECIEVED };
+        // reset value
+        unsafe { BRAKE_REPORT_RECIEVED = false; }
+        ret
+    }
 }
 
 /// The API should correctly register valid callback functions
 fn prop_brake_report_callback() -> TestResult {
     let socket = oscc_tests::init_socket();
 
-    let ret = unsafe { oscc_subscribe_to_brake_reports(Some(brake_report_callback)) };
+    let ret = unsafe { oscc_subscribe_to_brake_reports(Some(callbacks::brake_report_callback)) };
 
     TestResult::from_bool(ret == oscc_result_t::OSCC_OK)
 }
@@ -42,6 +57,34 @@ fn check_brake_report_callback() {
     let ret = QuickCheck::new()
         .tests(1000)
         .quickcheck(prop_brake_report_callback as fn() -> TestResult);
+    
+    oscc_tests::close_oscc();
+    
+    ret
+}
+
+/// The API should correctly register valid callback functions
+fn prop_brake_report_callback_triggered() -> TestResult {
+    let socket = oscc_tests::init_socket();
+
+    let ret = unsafe { oscc_subscribe_to_brake_reports(Some(callbacks::brake_report_callback)) };
+
+    let report: [u8; 2] = [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8];
+
+    socket.write_frame_insist(&CANFrame::new(OSCC_BRAKE_REPORT_CAN_ID, &report, false, false).unwrap());
+ 
+    thread::sleep(time::Duration::from_millis(10));
+
+    TestResult::from_bool(callbacks::recieved_brake_report() == true)
+}
+
+#[test]
+fn check_brake_report_callback_triggered() {
+    oscc_tests::open_oscc();
+
+    let ret = QuickCheck::new()
+        .tests(10)
+        .quickcheck(prop_brake_report_callback_triggered as fn() -> TestResult);
     
     oscc_tests::close_oscc();
     
