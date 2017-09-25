@@ -25,6 +25,7 @@ node('arduino') {
         sh 'cd firmware && mkdir build_kia_soul_petrol_property_tests && cd build_kia_soul_petrol_property_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
+        sh 'echo $CARGO_HOME'
         sh '$HOME/.cargo/bin/rustup default 1.17.0 && cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh'
         sh 'cd api/tests && mkdir build_kia_soul_ev_property_tests && cd build_kia_soul_ev_property_tests &&  cmake .. -DKIA_SOUL=ON && make run-api-property-tests || $HOME/.cargo/bin/rustup default 1.16.0'
         sh '$HOME/.cargo/bin/rustup default 1.16.0'
@@ -41,6 +42,7 @@ node('arduino') {
         sh 'cd firmware && mkdir build_kia_soul_ev_property_tests && cd build_kia_soul_ev_property_tests && cmake .. -DKIA_SOUL_EV=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
+        sh 'echo $CARGO_HOME'
         sh '$HOME/.cargo/bin/rustup default 1.17.0 && cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh'
         sh 'cd api/tests && mkdir build_kia_soul_ev_property_tests && cd build_kia_soul_ev_property_tests && cmake .. -DKIA_SOUL_EV=ON && make run-api-property-tests || $HOME/.cargo/bin/rustup default 1.16.0'
         sh '$HOME/.cargo/bin/rustup default 1.16.0'
