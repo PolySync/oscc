@@ -81,12 +81,12 @@ if(KIA_SOUL)
 add_custom_target(
     run-api-property-tests
     COMMAND
-    cargo +1.17.0 test --features "kia-soul" -- --test-threads=1 --nocapture ;
+    $ENV{HOME}/.cargo/bin/rustup override set 1.17.0 && cargo test --features "kia-soul" -- --test-threads=1 --nocapture ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/property)
 elseif(KIA_SOUL_EV)
 add_custom_target(
     run-api-property-tests
     COMMAND
-    cargo +1.17.0 test --features "kia-soul-ev" -- --test-threads=1 --nocapture ;
+    $ENV{HOME}/.cargo/bin/rustup override set 1.17.0 && cargo test --features "kia-soul-ev" -- --test-threads=1 --nocapture ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/property)
 endif()
