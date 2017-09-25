@@ -680,13 +680,6 @@ int oscc_interface_read_vehicle_status_from_bus(
             return_code = NOERR;
             oscc_interface_parse_vehicle_state_info(
                 vehicle_status, can_id, msg_dlc, msg_flag, tstamp, buffer);
-            if (can_id == 0x212) {
-                printf("BUFFER: ");
-                for (int i = 0; i < msg_dlc; i++) {
-                    printf("0x%02X ", buffer[i]);
-                }
-                printf("\n");
-            }
         } else if ((can_status == canERR_NOMSG) ||
                    (can_status == canERR_TIMEOUT)) {
             // Do nothing
