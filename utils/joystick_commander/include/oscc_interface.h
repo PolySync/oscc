@@ -228,7 +228,12 @@ int oscc_interface_command_steering( int angle, unsigned int rate );
  */
 int oscc_interface_update_status( oscc_status_s * status );
 
-int oscc_interface_read_vehicle_status(oscc_vehicle_status_s* vehicle_status);
+int oscc_interface_read_vehicle_status_from_bus(oscc_vehicle_status_s* vehicle_status);
+
+/* Internal data structures are not thread safe and not protected by any semaphores
+   This function can potentially return invalid or partially read data.
+*/
+int oscc_interface_read_vehicle_status_from_mem(oscc_vehicle_status_s* vehicle_status);
 
 int oscc_init_can(int channel);
 

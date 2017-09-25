@@ -48,6 +48,15 @@ typedef struct {
     int can_channel;
 } oscc_interface_data_s;
 
+typedef struct {
+    oscc_report_chassis_state_1_s chassis_state_1;
+    oscc_report_chassis_state_2_s chassis_state_2;
+    oscc_report_chassis_state_3_s chassis_state_3;
+
+    canHandle can_handle;
+    int can_channel;
+} oscc_interface_status_data_s;
+
 // restore alignment
 #pragma pack(pop)
 
@@ -57,6 +66,8 @@ typedef struct {
 
 static oscc_interface_data_s oscc_interface_data;
 static oscc_interface_data_s* oscc = NULL;
+static oscc_interface_status_data_s oscc_interface_status_data;
+static oscc_interface_status_data_s* oscc_status = NULL;
 
 // *****************************************************
 // static definitions
@@ -204,16 +215,15 @@ static void oscc_interface_check_for_obd_timeout(oscc_status_s* status,
 
 void print_chassis_state_1(
     oscc_report_chassis_state_1_data_s* chassis_state_1_data) {
-    printf(
-        "left: %u, right: %u, brk_lts: %u, st_angle: %d, brk_p: %d\n",
-        chassis_state_1_data->flags &
-                   OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON,
-        chassis_state_1_data->flags &
-                   OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON,
-        chassis_state_1_data->flags &
-                   OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON,
-        chassis_state_1_data->steering_wheel_angle,
-        chassis_state_1_data->brake_pressure);
+    printf("left: %u, right: %u, brk_lts: %u, st_angle: %d, brk_p: %d\n",
+           chassis_state_1_data->flags &
+               OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON,
+           chassis_state_1_data->flags &
+               OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_RIGHT_TURN_SIGNAL_ON,
+           chassis_state_1_data->flags &
+               OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON,
+           chassis_state_1_data->steering_wheel_angle,
+           chassis_state_1_data->brake_pressure);
 }
 
 void print_chassis_state_2(
@@ -227,23 +237,19 @@ void print_chassis_state_2(
 
 void print_chassis_state_3(
     oscc_report_chassis_state_3_data_s* chassis_state_3_data) {
-    // printf("RPM: %d, Temp: %d, Gear: %d, Speed: %d, Acc: %d\n",
-    // (unsigned)chassis_state_3_data->engine_rpm,
-    // (unsigned)chassis_state_3_data->engine_temp,
-    // (unsigned)chassis_state_3_data->gear_position,
-    // (unsigned)chassis_state_3_data->vehicle_speed,
-    // (unsigned)chassis_state_3_data->accelerator_pedal_position);
-
-    printf("Gear: 0x%02X\n", chassis_state_3_data->gear_position);
+    printf("RPM: %u, Temp: %u, Gear: %u, Speed: %u, Acc: %u\n",
+           chassis_state_3_data->engine_rpm, chassis_state_3_data->engine_temp,
+           chassis_state_3_data->gear_position,
+           chassis_state_3_data->vehicle_speed,
+           chassis_state_3_data->accelerator_pedal_position);
 }
 
-static void oscc_interface_parse_vehicle_state_info(
-    oscc_vehicle_status_s* vehicle_status, long can_id, unsigned char* buffer) {
-    // printf("CAN ID: %lx\n", can_id);
-    if (can_id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID) {
-        oscc_report_chassis_state_1_data_s* chassis_state_1_data =
-            (oscc_report_chassis_state_1_data_s*)buffer;
-        // print_chassis_state_1(chassis_state_1_data);
+void fill_vehicle_status_fields_from_chassis_messages(
+    oscc_vehicle_status_s* vehicle_status,
+    oscc_report_chassis_state_1_data_s* chassis_state_1_data,
+    oscc_report_chassis_state_2_data_s* chassis_state_2_data,
+    oscc_report_chassis_state_3_data_s* chassis_state_3_data) {
+    if (chassis_state_1_data != NULL) {
         vehicle_status->left_turn_signal =
             chassis_state_1_data->flags &
             OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_LEFT_TURN_SIGNAL_ON;
@@ -255,13 +261,10 @@ static void oscc_interface_parse_vehicle_state_info(
             OSCC_REPORT_CHASSIS_STATE_1_FLAGS_BIT_BRAKE_SIGNAL_ON;
         vehicle_status->steering_wheel_angle =
             chassis_state_1_data->steering_wheel_angle;
-        vehicle_status->brake_pressure =
-            chassis_state_1_data->brake_pressure;
+        vehicle_status->brake_pressure = chassis_state_1_data->brake_pressure;
+    }
 
-    } else if (can_id == OSCC_REPORT_CHASSIS_STATE_2_CAN_ID) {
-        oscc_report_chassis_state_2_data_s* chassis_state_2_data =
-            (oscc_report_chassis_state_2_data_s*)buffer;
-        // print_chassis_state_2(chassis_state_2_data);
+    if (chassis_state_2_data != NULL) {
         vehicle_status->wheel_speed_front_left =
             chassis_state_2_data->wheel_speed_front_left;
         vehicle_status->wheel_speed_front_right =
@@ -270,31 +273,61 @@ static void oscc_interface_parse_vehicle_state_info(
             chassis_state_2_data->wheel_speed_rear_left;
         vehicle_status->wheel_speed_rear_right =
             chassis_state_2_data->wheel_speed_rear_right;
+    }
+
+    if (chassis_state_3_data != NULL) {
+        vehicle_status->engine_rpm = chassis_state_3_data->engine_rpm;
+        vehicle_status->engine_temperature = chassis_state_3_data->engine_temp;
+        vehicle_status->gear_position = chassis_state_3_data->gear_position;
+        vehicle_status->vehicle_speed = chassis_state_3_data->vehicle_speed;
+        vehicle_status->accelerator_pedal_position =
+            chassis_state_3_data->accelerator_pedal_position;
+    }
+}
+
+static void oscc_interface_parse_vehicle_state_info(
+    oscc_vehicle_status_s* vehicle_status, long can_id, unsigned int msg_dlc,
+    unsigned int msg_flag, unsigned int tstamp, unsigned char* buffer) {
+    if (can_id == OSCC_REPORT_CHASSIS_STATE_1_CAN_ID) {
+        oscc_report_chassis_state_1_data_s* chassis_state_1_data =
+            (oscc_report_chassis_state_1_data_s*)buffer;
+
+        oscc_status->chassis_state_1.id = (uint32_t)can_id;
+        oscc_status->chassis_state_1.dlc = (uint8_t)msg_dlc;
+        oscc_status->chassis_state_1.timestamp = (uint32_t)tstamp;
+
+        memcpy(&oscc_status->chassis_state_1.data, chassis_state_1_data,
+               sizeof(oscc_report_chassis_state_1_data_s));
+
+        fill_vehicle_status_fields_from_chassis_messages(
+            vehicle_status, chassis_state_1_data, NULL, NULL);
+
+    } else if (can_id == OSCC_REPORT_CHASSIS_STATE_2_CAN_ID) {
+        oscc_report_chassis_state_2_data_s* chassis_state_2_data =
+            (oscc_report_chassis_state_2_data_s*)buffer;
+
+        oscc_status->chassis_state_2.id = (uint32_t)can_id;
+        oscc_status->chassis_state_2.dlc = (uint8_t)msg_dlc;
+        oscc_status->chassis_state_2.timestamp = (uint32_t)tstamp;
+
+        memcpy(&oscc_status->chassis_state_2.data, chassis_state_2_data,
+               sizeof(oscc_report_chassis_state_2_data_s));
+
+        fill_vehicle_status_fields_from_chassis_messages(
+            vehicle_status, NULL, chassis_state_2_data, NULL);
 
     } else if (can_id == OSCC_REPORT_CHASSIS_STATE_3_CAN_ID) {
         oscc_report_chassis_state_3_data_s* chassis_state_3_data =
             (oscc_report_chassis_state_3_data_s*)buffer;
-        // memcpy(&oscc->chassis_state_3_data, chassis_state_3_data,
-        //        sizeof(oscc_report_chassis_state_3_data_s));
-        // printf("CAN: 0x%lx\n", can_id);
-        printf ("Buffer[3]: %u\n", buffer[3]);
-        unsigned char* bingo = (unsigned char*) chassis_state_3_data;
-        printf("BINGO : ");
-        for (int i = 0 ; i < 8; i ++ ) {
-            printf("0x%02X ", bingo[i]);   
-        }
-        printf("\n");
-        print_chassis_state_3(chassis_state_3_data);
-        printf("Gear: 0x%02X\n", chassis_state_3_data->gear_position);
-        printf("off : 0x%02lX\n", (unsigned char*)&chassis_state_3_data->accelerator_pedal_position - (unsigned char*)chassis_state_3_data);
-        printf("size : 0x%02lX\n", sizeof(oscc_report_chassis_state_3_data_s));
-        vehicle_status->engine_rpm = chassis_state_3_data->engine_rpm;
-        vehicle_status->engine_temperature = chassis_state_3_data->engine_temp;
-        vehicle_status->gear_position = buffer[3];
-        vehicle_status->vehicle_speed = chassis_state_3_data->vehicle_speed;
-        vehicle_status->accelerator_pedal_position =
-            chassis_state_3_data->accelerator_pedal_position;
-        printf("VSG : 0x%02X\n", vehicle_status->gear_position);
+
+        oscc_status->chassis_state_3.id = (uint32_t)can_id;
+        oscc_status->chassis_state_3.dlc = (uint8_t)msg_dlc;
+        oscc_status->chassis_state_3.timestamp = (uint32_t)tstamp;
+        memcpy(&oscc_status->chassis_state_3.data, chassis_state_3_data,
+               sizeof(oscc_report_chassis_state_3_data_s));
+
+        fill_vehicle_status_fields_from_chassis_messages(
+            vehicle_status, NULL, NULL, chassis_state_3_data);
     }
 }
 
@@ -347,7 +380,9 @@ int oscc_interface_init(int channel) {
 
     if (return_code == NOERR) {
         oscc = &oscc_interface_data;
+        oscc_status = &oscc_interface_status_data;
     }
+
     return (return_code);
 }
 
@@ -356,6 +391,7 @@ int oscc_interface_init_no_defaults(int channel) {
 
     if (return_code == NOERR) {
         oscc = &oscc_interface_data;
+        oscc_status = &oscc_interface_status_data;
     }
 
     return (return_code);
@@ -626,7 +662,8 @@ int oscc_interface_update_status(oscc_status_s* status) {
     return return_code;
 }
 
-int oscc_interface_read_vehicle_status(oscc_vehicle_status_s* vehicle_status) {
+int oscc_interface_read_vehicle_status_from_bus(
+    oscc_vehicle_status_s* vehicle_status) {
     int return_code = ERROR;
 
     if (oscc != NULL) {
@@ -641,13 +678,12 @@ int oscc_interface_read_vehicle_status(oscc_vehicle_status_s* vehicle_status) {
 
         if (can_status == canOK) {
             return_code = NOERR;
-            oscc_interface_parse_vehicle_state_info(vehicle_status, can_id,
-                                                    buffer);
+            oscc_interface_parse_vehicle_state_info(
+                vehicle_status, can_id, msg_dlc, msg_flag, tstamp, buffer);
             if (can_id == 0x212) {
-                printf ("BUFFER: ");
-                for (int i = 0 ; i < msg_dlc; i ++ ) {
+                printf("BUFFER: ");
+                for (int i = 0; i < msg_dlc; i++) {
                     printf("0x%02X ", buffer[i]);
-                    
                 }
                 printf("\n");
             }
@@ -659,5 +695,18 @@ int oscc_interface_read_vehicle_status(oscc_vehicle_status_s* vehicle_status) {
             return_code = ERROR;
         }
     }
+    return return_code;
+}
+
+int oscc_interface_read_vehicle_status_from_mem(
+    oscc_vehicle_status_s* vehicle_status) {
+    int return_code = ERROR;
+    if (oscc_status != NULL) {
+        fill_vehicle_status_fields_from_chassis_messages(
+            vehicle_status, &oscc_status->chassis_state_1.data,
+            &oscc_status->chassis_state_2.data,
+            &oscc_status->chassis_state_3.data);
+    }
+
     return return_code;
 }
