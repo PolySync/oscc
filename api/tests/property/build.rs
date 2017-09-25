@@ -20,7 +20,6 @@ fn bindgen_builder(target_vehicle: &str) {
 
     let _ = bindgen::Builder::default()
         .header("include/wrapper.h")
-        .rust_target(bindgen::RustTarget::Stable_1_0)
         .generate_comments(false)
         .layout_tests(false)
         .trust_clang_mangling(false)
