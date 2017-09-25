@@ -11,12 +11,7 @@ extern crate rand;
 extern crate socketcan;
 
 use socketcan::CANSocket;
-use std::time::Duration;
 use std::ffi::CString;
-
-extern "C" {
-    pub static mut can_socket: i32;
-}
 
 pub fn constrain(value: f64, min: f64, max: f64) -> f64 {
     if value < min {
@@ -56,7 +51,6 @@ pub fn init_socket() -> CANSocket {
         Err(why) => panic!("{:?}", why),
         Ok(socket) => {
             socket.set_nonblocking(true);
-            socket.set_read_timeout(Duration::new(1, 0));
 
             // get rid of initial empty frame
             socket.read_frame();
