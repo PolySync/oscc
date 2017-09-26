@@ -26,7 +26,7 @@ node('arduino') {
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         sh '''
-          ls ~/.multirust
+          rm -rf ~/.multirust
           PATH=$PATH:~/.cargo/bin
           rustup default 1.16.0
           sudo ip link set vcan0 down && sudo rmmod vcan
@@ -57,7 +57,7 @@ node('arduino') {
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         sh '''
-          ls ~/.multirust
+          rm -rf ~/.multirust
           PATH=$PATH:~/.cargo/bin
           rustup default 1.16.0
           sudo ip link set vcan0 down && sudo rmmod vcan
