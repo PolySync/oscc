@@ -27,6 +27,8 @@ node('arduino') {
       }, 'kia soul petrol api property-based tests': {
         sh '''
           PATH=$PATH:~/.cargo/bin
+          rustup default 1.16.0
+          sudo ip link set vcan0 down && sudo rmmod vcan
           rustup show
           rustup default stable
           rustup --version
@@ -55,6 +57,8 @@ node('arduino') {
       }, 'kia soul ev api property-based tests': {
         sh '''
           PATH=$PATH:~/.cargo/bin
+          rustup default 1.16.0
+          sudo ip link set vcan0 down && sudo rmmod vcan
           rustup show
           rustup default stable
           rustup --version
