@@ -26,7 +26,7 @@ node('arduino') {
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         sh '''
-          ll -la ~ | grep rust
+          ll -la ~
           which rustup
           which rustc
           which cargo
@@ -54,7 +54,7 @@ node('arduino') {
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         sh '''
-          ll -la ~ | grep rust
+          ll -la ~
           which rustup
           which rustc
           which cargo
