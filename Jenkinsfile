@@ -29,7 +29,8 @@ node('arduino') {
           sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
           cd property
-          cargo +1.17.0 test --features "kia-soul" -- --test-threads=1
+          rustup run 1.17.0 bash
+          cargo test --features "kia-soul" -- --test-threads=1
           sudo ip link set vcan0 down && sudo rmmod vcan
         '''
         echo 'Kia Soul Petrol API Property-Based Tests Complete!'
@@ -48,7 +49,8 @@ node('arduino') {
           sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
           cd property
-          cargo +1.17.0 test --features "kia-soul-ev" -- --test-threads=1
+          rustup run 1.17.0 bash
+          cargo test --features "kia-soul-ev" -- --test-threads=1
           sudo ip link set vcan0 down && sudo rmmod vcan
         '''
         echo 'Kia Soul EV API Property-Based Tests Complete!'
