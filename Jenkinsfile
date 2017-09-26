@@ -26,16 +26,10 @@ node('arduino') {
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         sh '''
-          rm -f ~/.multirust
-          export PATH=$PATH:$HOME/.cargo/bin
-          $HOME/.cargo/bin/rustup default 1.17.0
           sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
-          mkdir build_kia_soul_petrol_property_tests
-          cd build_kia_soul_petrol_property_tests
-          cmake .. -DKIA_SOUL=ON
-          make run-api-property-tests
-          $HOME/.cargo/bin/rustup default 1.16.0
+          cd property
+          cargo +1.17.0 test --features "kia-soul" -- --test-threads=1
           sudo ip link set vcan0 down && sudo rmmod vcan
         '''
         echo 'Kia Soul Petrol API Property-Based Tests Complete!'
@@ -51,16 +45,10 @@ node('arduino') {
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         sh '''
-          rm -f ~/.multirust
-          export PATH=$PATH:$HOME/.cargo/bin
-          $HOME/.cargo/bin/rustup default 1.17.0
           sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
-          mkdir build_kia_soul_ev_property_tests
-          cd build_kia_soul_ev_property_tests
-          cmake .. -DKIA_SOUL_EV=ON
-          make run-api-property-tests
-          $HOME/.cargo/bin/rustup default 1.16.0
+          cd property
+          cargo +1.17.0 test --features "kia-soul-ev" -- --test-threads=1
           sudo ip link set vcan0 down && sudo rmmod vcan
         '''
         echo 'Kia Soul EV API Property-Based Tests Complete!'
