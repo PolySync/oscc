@@ -29,6 +29,7 @@ node('arduino') {
           PATH=$PATH:~/.cargo/bin
           rustup show
           rustup default stable
+          rustup --version
           cargo --version
           rustc --version
           rustup show
@@ -56,6 +57,7 @@ node('arduino') {
           PATH=$PATH:~/.cargo/bin
           rustup show
           rustup default stable
+          rustup --version
           cargo --version
           rustc --version
           rustup show
