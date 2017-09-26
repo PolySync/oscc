@@ -80,13 +80,11 @@ add_custom_target(
 if(KIA_SOUL)
 add_custom_target(
     run-api-property-tests
-    COMMAND
-    rustup show && rustup --version && cargo --version && rustc --version && cargo test --features "kia-soul" -- --test-threads=1 ;
+    COMMAND cargo +1.17.0 test --features "kia-soul" -- --test-threads=1 ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/property)
 elseif(KIA_SOUL_EV)
 add_custom_target(
     run-api-property-tests
-    COMMAND
-    rustup show && rustup --version && cargo --version && rustc --version && cargo test --features "kia-soul-ev" -- --test-threads=1 ;
+    COMMAND cargo +1.17.0 test --features "kia-soul-ev" -- --test-threads=1 ;
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/property)
 endif()
