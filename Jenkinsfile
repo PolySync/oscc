@@ -30,6 +30,7 @@ node('arduino') {
           PATH=$PATH:~/.cargo/bin
           echo $PATH
           rustup --version
+          which rustup
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
           mkdir build_kia_soul_petrol_property_tests
           cd build_kia_soul_petrol_property_tests
@@ -54,6 +55,7 @@ node('arduino') {
           PATH=$PATH:~/.cargo/bin
           echo $PATH
           rustup --version
+          which rustup
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
           mkdir build_kia_soul_ev_property_tests
           cd build_kia_soul_ev_property_tests
