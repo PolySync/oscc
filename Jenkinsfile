@@ -26,10 +26,8 @@ node('arduino') {
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         sh '''
-          rustup show
-          multirust show
-          rustup --version
-          multirust --version
+          rustup show || multirust show
+          rustup --version || multirust --version
           rustc --version
           cargo --version
           sudo ip link set vcan0 down && sudo rmmod vcan
@@ -53,10 +51,8 @@ node('arduino') {
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         sh '''
-          rustup show
-          multirust show
-          rustup --version
-          multirust --version
+          rustup show || multirust show
+          rustup --version || multirust --version
           rustc --version
           cargo --version
           sudo ip link set vcan0 down && sudo rmmod vcan
