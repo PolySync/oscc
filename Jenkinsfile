@@ -26,10 +26,13 @@ node('arduino') {
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         sh '''
+          export PATH=$PATH:$HOME/.cargo/bin
           ls -la ~
           ls -la ~/.cargo/bin
+          which rustup
           which rustc
           which cargo
+          rustup --version
           rustc --version
           cargo --version
           sudo ip link set vcan0 down && sudo rmmod vcan
@@ -53,10 +56,13 @@ node('arduino') {
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         sh '''
+          export PATH=$PATH:$HOME/.cargo/bin
           ls -la ~
           ls -la ~/.cargo/bin
+          which rustup
           which rustc
           which cargo
+          rustup --version
           rustc --version
           cargo --version
           sudo ip link set vcan0 down && sudo rmmod vcan
