@@ -28,7 +28,14 @@ node('arduino') {
         sh '''
           rm -rf ~/.multirust
           PATH=$PATH:~/.cargo/bin
+          rustup update
+          rustup --version
+          cargo --version
+          rustc --version
           rustup default 1.16.0
+          rustup --version
+          cargo --version
+          rustc --version
           sudo ip link set vcan0 down && sudo rmmod vcan
           rustup show
           rustup override set 1.17.0
@@ -42,6 +49,9 @@ node('arduino') {
           cmake .. -DKIA_SOUL=ON
           make run-api-property-tests
           rustup override unset
+          rustup --version
+          cargo --version
+          rustc --version
           sudo ip link set vcan0 down && sudo rmmod vcan
         '''
         echo 'Kia Soul Petrol API Property-Based Tests Complete!'
@@ -59,7 +69,14 @@ node('arduino') {
         sh '''
           rm -rf ~/.multirust
           PATH=$PATH:~/.cargo/bin
+          rustup update
+          rustup --version
+          cargo --version
+          rustc --version
           rustup default 1.16.0
+          rustup --version
+          cargo --version
+          rustc --version
           sudo ip link set vcan0 down && sudo rmmod vcan
           rustup show
           rustup override set 1.17.0
@@ -73,6 +90,9 @@ node('arduino') {
           cmake .. -DKIA_SOUL_EV=ON
           make run-api-property-tests
           rustup override unset
+          rustup --version
+          cargo --version
+          rustc --version
           sudo ip link set vcan0 down && sudo rmmod vcan
         '''
         echo 'Kia Soul EV API Property-Based Tests Complete!'
