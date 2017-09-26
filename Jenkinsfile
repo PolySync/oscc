@@ -31,7 +31,7 @@ node('arduino') {
           rustup default 1.16.0
           sudo ip link set vcan0 down && sudo rmmod vcan
           rustup show
-          rustup default 1.17.0
+          rustup override set 1.17.0
           rustup --version
           cargo --version
           rustc --version
@@ -41,7 +41,7 @@ node('arduino') {
           cd build_kia_soul_petrol_property_tests
           cmake .. -DKIA_SOUL=ON
           make run-api-property-tests
-          rustup default 1.16.0
+          rustup override unset
           sudo ip link set vcan0 down && sudo rmmod vcan
         '''
         echo 'Kia Soul Petrol API Property-Based Tests Complete!'
@@ -62,7 +62,7 @@ node('arduino') {
           rustup default 1.16.0
           sudo ip link set vcan0 down && sudo rmmod vcan
           rustup show
-          rustup default 1.17.0
+          rustup override set 1.17.0
           rustup --version
           cargo --version
           rustc --version
@@ -72,7 +72,7 @@ node('arduino') {
           cd build_kia_soul_ev_property_tests
           cmake .. -DKIA_SOUL_EV=ON
           make run-api-property-tests
-          rustup default 1.16.0
+          rustup override unset
           sudo ip link set vcan0 down && sudo rmmod vcan
         '''
         echo 'Kia Soul EV API Property-Based Tests Complete!'
