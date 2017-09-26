@@ -30,7 +30,6 @@ node('arduino') {
           ls -la ~/.cargo/bin
           which rustc
           which cargo
-          which multirust
           rustc --version
           cargo --version
           sudo ip link set vcan0 down && sudo rmmod vcan
@@ -58,7 +57,6 @@ node('arduino') {
           ls -la ~/.cargo/bin
           which rustc
           which cargo
-          which multirust
           rustc --version
           cargo --version
           sudo ip link set vcan0 down && sudo rmmod vcan
