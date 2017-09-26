@@ -26,6 +26,8 @@ node('arduino') {
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         sh '''
+          ls -la ~
+          rm ~/.multirust
           export PATH=$PATH:$HOME/.cargo/bin
           ls -la ~
           ls -la ~/.cargo/bin
@@ -56,6 +58,8 @@ node('arduino') {
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         sh '''
+          ls -la ~
+          rm ~/.multirust
           export PATH=$PATH:$HOME/.cargo/bin
           ls -la ~
           ls -la ~/.cargo/bin
