@@ -30,7 +30,7 @@ node('arduino') {
           rustup default 1.16.0
           sudo ip link set vcan0 down && sudo rmmod vcan
           rustup show
-          rustup default stable
+          rustup default 1.17.0
           rustup --version
           cargo --version
           rustc --version
@@ -60,7 +60,7 @@ node('arduino') {
           rustup default 1.16.0
           sudo ip link set vcan0 down && sudo rmmod vcan
           rustup show
-          rustup default stable
+          rustup default 1.17.0
           rustup --version
           cargo --version
           rustc --version
