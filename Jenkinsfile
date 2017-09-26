@@ -26,12 +26,13 @@ node('arduino') {
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         sh '''
+          $HOME/.cargo/bin/rustup run 1.17.0 bash
           sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
           cd property
-          $HOME/.cargo/bin/rustup run 1.17.0 bash
           cargo test --features "kia-soul" -- --test-threads=1
           sudo ip link set vcan0 down && sudo rmmod vcan
+          exit
         '''
         echo 'Kia Soul Petrol API Property-Based Tests Complete!'
       }
@@ -46,12 +47,13 @@ node('arduino') {
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         sh '''
+          $HOME/.cargo/bin/rustup run 1.17.0 bash
           sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
           cd property
-          $HOME/.cargo/bin/rustup run 1.17.0 bash
           cargo test --features "kia-soul-ev" -- --test-threads=1
           sudo ip link set vcan0 down && sudo rmmod vcan
+          exit
         '''
         echo 'Kia Soul EV API Property-Based Tests Complete!'
       }
