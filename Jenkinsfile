@@ -27,7 +27,7 @@ node('arduino') {
       }, 'kia soul petrol api property-based tests': {
         sh '''
           ls -la ~
-          which rustup
+          ls -la ~/.cargo/bin
           which rustc
           which cargo
           which multirust
@@ -55,7 +55,7 @@ node('arduino') {
       }, 'kia soul ev api property-based tests': {
         sh '''
           ls -la ~
-          which rustup
+          ls -la ~/.cargo/bin
           which rustc
           which cargo
           which multirust
