@@ -29,8 +29,10 @@ node('arduino') {
           $HOME/.cargo/bin/rustup run 1.17.0 bash
           sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
-          cd property
-          cargo test --features "kia-soul" -- --test-threads=1
+          mkdir build_kia_soul_property_tests
+          cd build_kia_soul_property_tests
+          cmake .. -DKIA_SOUL=ON
+          make run-api-property-tests
           sudo ip link set vcan0 down && sudo rmmod vcan
           exit
         '''
@@ -50,8 +52,10 @@ node('arduino') {
           $HOME/.cargo/bin/rustup run 1.17.0 bash
           sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
-          cd property
-          cargo test --features "kia-soul-ev" -- --test-threads=1
+          mkdir build_kia_soul_ev_property_tests
+          cd build_kia_soul_ev_property_tests
+          cmake .. -DKIA_SOUL_EV=ON
+          make run-api-property-tests
           sudo ip link set vcan0 down && sudo rmmod vcan
           exit
         '''
