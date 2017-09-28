@@ -7,7 +7,6 @@
 include!(concat!(env!("OUT_DIR"), "/oscc_test.rs"));
 
 extern crate quickcheck;
-extern crate rand;
 extern crate socketcan;
 
 extern crate oscc_tests;
@@ -119,13 +118,12 @@ fn check_obd_message_callback() {
 }
 
 /// The API should correctly register valid callback functions
-fn prop_obd_message_callback_triggered() -> TestResult {
+fn prop_obd_message_callback_triggered(frame_id: u8) -> TestResult {
     let socket = oscc_tests::init_socket();
 
     let ret = unsafe { oscc_subscribe_to_obd_messages(Some(callbacks::obd_message_callback)) };
 
-// should randomize id
-    socket.write_frame_insist(&CANFrame::new(0x220, &[0], false, false).unwrap());
+    socket.write_frame_insist(&CANFrame::new(frame_id as u32, &[0], false, false).unwrap());
  
     thread::sleep(time::Duration::from_millis(10));
 
@@ -138,7 +136,7 @@ fn check_obd_message_callback_triggered() {
 
     let ret = QuickCheck::new()
         .tests(10)
-        .quickcheck(prop_obd_message_callback_triggered as fn() -> TestResult);
+        .quickcheck(prop_obd_message_callback_triggered as fn(u8) -> TestResult);
     
     oscc_tests::close_oscc();
     

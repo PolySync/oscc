@@ -410,6 +410,19 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 ```
 
+#### API Property-Based tests
+
+Additionally, the api contains a set of property-based tests. To run these, run CMAKE from a directory within the `api/tests` directory, passing in a flag with the vehicle you want to run the tests for. For example: 
+
+```
+cd api/tests
+mkdir build
+cd build
+cmake .. -DKIA_SOUL=ON
+```
+
+The tests can then be run using `make run-api-property-tests`. For the tests to run, you must have a vcan interface initialized. The test folder contains a script `initialize_vcan.sh` which can be used to set it up automatically.
+
 ### All Tests
 
 Finally, as a convenience you can run all available tests:
