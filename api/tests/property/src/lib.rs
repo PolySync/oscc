@@ -6,8 +6,6 @@
 
 include!(concat!(env!("OUT_DIR"), "/oscc_test.rs"));
 
-extern crate quickcheck;
-extern crate rand;
 extern crate socketcan;
 
 use socketcan::CANSocket;

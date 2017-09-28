@@ -26,7 +26,6 @@ node('arduino') {
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         sh '''
-          sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
           mkdir build_kia_soul_property_tests
           cd build_kia_soul_property_tests
@@ -47,7 +46,6 @@ node('arduino') {
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         sh '''
-          sudo ip link set vcan0 down && sudo rmmod vcan
           cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
           mkdir build_kia_soul_ev_property_tests
           cd build_kia_soul_ev_property_tests
