@@ -167,8 +167,6 @@ fn prop_constrain_steering_spoofs(steering_command: f64) -> TestResult {
             let spoof_high = steering_command_msg.spoof_value_high as u32;
             let spoof_low = steering_command_msg.spoof_value_low as u32;
 
-            // fails on 1 w high-min of 737 -- need to constrain from API possibly
-
             TestResult::from_bool( 
                 (spoof_high <= STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX) && 
                 (spoof_high >= STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN) && (spoof_low <= STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX) && (spoof_low >= STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN))
@@ -177,7 +175,6 @@ fn prop_constrain_steering_spoofs(steering_command: f64) -> TestResult {
 }
 
 #[test]
-#[ignore]
 fn check_constrain_steering_spoofs() {
     oscc_tests::open_oscc();
 
