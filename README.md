@@ -295,8 +295,10 @@ sudo gem install cucumber -v 2.0.0
 
 For the property-based tests you must have **Rust**, its build manager **Cargo**, and **libclang**:
 
+[Rust installation guide](https://www.rust-lang.org/en-US/install.html)
+
 ```
-sudo apt install rustc cargo clang libclang-dev
+sudo apt install clang libclang-dev
 ```
 
 ## Running Tests
