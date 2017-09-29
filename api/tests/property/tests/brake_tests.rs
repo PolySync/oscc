@@ -148,8 +148,9 @@ mod brake_tests {
     use super::*;
 
     fn calculate_ev_brake_spoofs( brake_command: f64 ) -> ( u16, u16 ) {
-        let high_spoof = brake_command * (BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) + BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN;
-        let low_spoof = brake_command * (BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) + BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN;
+        let clamped_command = oscc_tests::constrain(brake_command, MINIMUM_BRAKE_COMMAND, MAXIMUM_BRAKE_COMMAND);
+        let high_spoof = clamped_command * (BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) + BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN;
+        let low_spoof = clamped_command * (BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) + BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN;
         ((high_spoof  * STEPS_PER_VOLT) as u16, (low_spoof * STEPS_PER_VOLT) as u16)
     }
 
