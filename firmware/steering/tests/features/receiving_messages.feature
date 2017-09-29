@@ -39,11 +39,11 @@ Feature: Receiving commands
 
     Examples:
       | high  | low    |
-      |  3440 |  656  |
+      |  3440 |  655   |
       |  2500 |  1500  |
       |  2000 |  2000  |
       |  1500 |  2500  |
-      |  738  |  3358  |
+      |  737  |  3358  |
 
 
   Scenario Outline: Spoof value sent from application outside valid range
