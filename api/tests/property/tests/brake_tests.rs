@@ -103,7 +103,7 @@ mod brake_tests {
 
         oscc_tests::skip_enable_frames(&socket);
 
-        unsafe { oscc_publish_brake_position(pedal_command.abs()); }
+        unsafe { oscc_publish_brake_position(pedal_command); }
 
         let frame_result = socket.read_frame();
         match frame_result {
@@ -111,7 +111,7 @@ mod brake_tests {
             Ok(frame) => {
                 let brake_command_msg = get_brake_command_msg_from_buf( frame.data() );
 
-                let scaled_pedal_command = oscc_tests::constrain(pedal_command.abs() * (MAXIMUM_BRAKE_COMMAND as f64), MINIMUM_BRAKE_COMMAND as f64, MAXIMUM_BRAKE_COMMAND as f64);
+                let scaled_pedal_command = oscc_tests::constrain(pedal_command * (MAXIMUM_BRAKE_COMMAND as f64), MINIMUM_BRAKE_COMMAND as f64, MAXIMUM_BRAKE_COMMAND as f64);
 
                 TestResult::from_bool(brake_command_msg.pedal_command == scaled_pedal_command as u16)
             }
@@ -127,7 +127,7 @@ mod brake_tests {
 
         oscc_tests::skip_enable_frames(&socket);
 
-        unsafe { oscc_publish_brake_position(pedal_command.abs()); }
+        unsafe { oscc_publish_brake_position(pedal_command); }
 
         let frame_result = socket.read_frame();
         match frame_result {
@@ -161,7 +161,7 @@ mod brake_tests {
 
         oscc_tests::skip_enable_frames(&socket);
 
-        unsafe { oscc_publish_brake_position(pedal_command.abs()); }
+        unsafe { oscc_publish_brake_position(pedal_command); }
 
         let frame_result = socket.read_frame();
         match frame_result {
@@ -171,7 +171,7 @@ mod brake_tests {
 
                 let actual_spoofs = (brake_command_msg.spoof_value_high, brake_command_msg.spoof_value_low);
 
-                let expected_spoofs = calculate_ev_brake_spoofs(pedal_command.abs());
+                let expected_spoofs = calculate_ev_brake_spoofs(pedal_command);
 
                 TestResult::from_bool(actual_spoofs == expected_spoofs)
             }
@@ -187,7 +187,7 @@ mod brake_tests {
 
         oscc_tests::skip_enable_frames(&socket);
 
-        unsafe { oscc_publish_brake_position(pedal_command.abs()); }
+        unsafe { oscc_publish_brake_position(pedal_command); }
 
         let frame_result = socket.read_frame();
         match frame_result {

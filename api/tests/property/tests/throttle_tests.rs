@@ -17,12 +17,14 @@ use quickcheck::{QuickCheck, TestResult, StdGen};
 use std::{thread, time};
 
 fn calculate_throttle_spoofs( throttle_command: f64 ) -> ( u16, u16 ) {
-    let high_spoof = throttle_command * (THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) + THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN;
-    let low_spoof = throttle_command * (THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) + THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN;
+    let clamped_position = oscc_tests::constrain(throttle_command,
+    MINIMUM_THROTTLE_COMMAND, MAXIMUM_THROTTLE_COMMAND);
+    let high_spoof = clamped_position * (THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) + THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN;
+    let low_spoof = clamped_position * (THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) + THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN;
     ((high_spoof  * STEPS_PER_VOLT) as u16, (low_spoof * STEPS_PER_VOLT) as u16)
 }
 
-fn get_throttle_command_msg_from_buf( buffer: &[u8 ]) -> oscc_throttle_command_s {
+fn get_throttle_command_msg_from_buf( buffer: &[u8]) -> oscc_throttle_command_s {
     let data_ptr: *const u8 = buffer.as_ptr();
 
     let throttle_command_ptr: *const oscc_throttle_command_s = data_ptr as *const _;
@@ -106,7 +108,7 @@ fn prop_valid_throttle_spoofs(throttle_position: f64) -> TestResult {
     oscc_tests::skip_enable_frames(&socket);
 
     // send some command
-    unsafe { oscc_publish_throttle_position(throttle_position.abs()); }
+    unsafe { oscc_publish_throttle_position(throttle_position); }
 
     // read from can frame
     let frame_result = socket.read_frame();
@@ -117,7 +119,7 @@ fn prop_valid_throttle_spoofs(throttle_position: f64) -> TestResult {
 
             let actual_spoofs = (throttle_command_msg.spoof_value_high, throttle_command_msg.spoof_value_low);
 
-            let expected_spoofs = calculate_throttle_spoofs(throttle_position.abs());
+            let expected_spoofs = calculate_throttle_spoofs(throttle_position);
 
             TestResult::from_bool(actual_spoofs == expected_spoofs)   
         }
