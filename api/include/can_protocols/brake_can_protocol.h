@@ -113,7 +113,7 @@ typedef struct
     uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
 
     uint8_t reserved[4]; /*!< Reserved. */
-#elif defined(KIA_SOUL_EV)
+#elif defined(KIA_SOUL_EV) || defined(KIA_SOUL_NIRO)
     uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
     uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
