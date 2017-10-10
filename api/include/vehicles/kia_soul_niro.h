@@ -122,53 +122,53 @@ typedef struct
  * @brief Minimum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.39 )
+#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.279 )
 
 /*
  * @brief Maximum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 2.10 )
+#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 1.386 )
 
 /**
  * @brief Minimum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.76 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.609 )
 
 /**
  * @brief Maximum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 4.20 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 2.880 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 320 )
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 229 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1720 )
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1135 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 623 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 499 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3440 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2359 )
 
 /*
  * @brief Calculation to convert a brake position to a low spoof voltage.
@@ -190,7 +190,7 @@ typedef struct
  * @brief Value of the accelerator position that indicates operator override. [steps]
  *
  */
-#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130 )
+#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 150 )
 
 /*
  * @brief Minimum value of the low spoof signal that activates the brake lights. [steps]
@@ -345,53 +345,53 @@ typedef struct
  * @brief Minimum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.32 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.380 )
 
 /*
  * @brief Maximum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 1.38 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 2.104 )
 
 /**
  * @brief Minimum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.71 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.757 )
 
 /**
  * @brief Maximum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 2.80 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 4.207 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 263 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 311 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1130 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1724 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 582 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 620 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2293 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3446 )
 
 /*
  * @brief Calculation to convert a throttle position to a low spoof voltage.
