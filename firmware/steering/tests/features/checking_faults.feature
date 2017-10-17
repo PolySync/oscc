@@ -1,6 +1,6 @@
 # language: en
 
-Feature: Checking for fauls
+Feature: Checking for faults
 
   If the module encounters a fault condition, it should disable control and
   publish a fault report.

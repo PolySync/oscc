@@ -5,8 +5,8 @@
  */
 
 
-#ifndef _OSCC_KIA_SOUL_CAN_GATEWAY_COMMUNICATIONS_H_
-#define _OSCC_KIA_SOUL_CAN_GATEWAY_COMMUNICATIONS_H_
+#ifndef _OSCC_CAN_GATEWAY_COMMUNICATIONS_H_
+#define _OSCC_CAN_GATEWAY_COMMUNICATIONS_H_
 
 
 #include "globals.h"
@@ -39,4 +39,4 @@ void check_for_module_reports( void );
 void republish_obd_frames_to_control_can_bus( void );
 
 
-#endif /* _OSCC_KIA_SOUL_CAN_GATEWAY_COMMUNICATIONS_H_ */
+#endif /* _OSCC_CAN_GATEWAY_COMMUNICATIONS_H_ */

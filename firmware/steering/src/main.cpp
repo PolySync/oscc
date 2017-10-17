@@ -5,12 +5,11 @@
 
 
 #include "arduino_init.h"
-#include "debug.h"
-
-#include "init.h"
-#include "timers.h"
 #include "communications.h"
+#include "debug.h"
+#include "init.h"
 #include "steering_control.h"
+#include "timers.h"
 
 
 int main( void )
@@ -31,6 +30,8 @@ int main( void )
     {
         check_for_incoming_message( );
 
+#ifdef STEERING_OVERRIDE
         check_for_operator_override( );
+#endif
     }
 }

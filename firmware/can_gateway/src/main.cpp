@@ -5,11 +5,10 @@
 
 
 #include <avr/wdt.h>
-#include "arduino_init.h"
-#include "debug.h"
 
-#include "globals.h"
+#include "arduino_init.h"
 #include "communications.h"
+#include "debug.h"
 #include "init.h"
 #include "timer.h"
 

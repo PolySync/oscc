@@ -4,13 +4,12 @@
  */
 
 
+#include "communications.h"
 #include "dtc.h"
+#include "globals.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
 #include "vehicles.h"
-
-#include "globals.h"
-#include "communications.h"
 
 
 static void parse_brake_report( uint8_t *data );

@@ -1,5 +1,3 @@
-
-
 if(TESTS)
     cmake_minimum_required(VERSION 2.8)
 
@@ -11,9 +9,14 @@ if(TESTS)
 
     if(KIA_SOUL)
         add_definitions(-DKIA_SOUL)
+        add_subdirectory(brake/kia_soul_petrol/tests)
+    elseif(KIA_SOUL_EV)
+        add_definitions(-DKIA_SOUL_EV)
+        add_subdirectory(brake/kia_soul_ev/tests)
+    else()
+        message(FATAL_ERROR "No platform selected - no firmware will be tested")
     endif()
 
-    add_subdirectory(brake/tests)
     add_subdirectory(can_gateway/tests)
     add_subdirectory(steering/tests)
     add_subdirectory(throttle/tests)
@@ -55,8 +58,10 @@ else()
     set(CMAKE_CXX_FLAGS "-std=gnu++11 -Os")
 
     option(DEBUG "Enable debug mode" OFF)
-    option(KIA_SOUL "Build firmware for Kia Soul" OFF)
+    option(KIA_SOUL "Build firmware for the petrol Kia Soul" OFF)
+    option(KIA_SOUL_EV "Build firmware for the Kia Soul EV" OFF)
     option(BRAKE_STARTUP_TEST "Enable brake startup sensor tests" ON)
+    option(STEERING_OVERRIDE "Enable steering override" ON)
 
     set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
     set(SERIAL_BAUD_BRAKE "115200" CACHE STRING "Serial baud rate of the brake module")
@@ -76,14 +81,21 @@ else()
 
     if(KIA_SOUL)
         add_definitions(-DKIA_SOUL)
+    elseif(KIA_SOUL_EV)
+        add_definitions(-DKIA_SOUL_EV)
     else()
-        message(WARNING "No platform selected - no firmware will be built")
+        message(FATAL_ERROR "No platform selected - no firmware will be built")
     endif()
 
-    if(BRAKE_STARTUP_TEST)
+    if(KIA_SOUL AND BRAKE_STARTUP_TEST)
         add_definitions(-DBRAKE_STARTUP_TEST)
-    else()
+    elseif(KIA_SOUL AND NOT BRAKE_STARTUP_TEST)
         message(WARNING "Brake sensor startup tests disabled")
+    endif()
+
+    if(STEERING_OVERRIDE)
+        add_definitions(-DSTEERING_OVERRIDE)
+        message(WARNING "Steering override is enabled. This is an experimental feature! Attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button.")
     endif()
 
     add_subdirectory(brake)

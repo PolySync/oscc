@@ -4,14 +4,15 @@
  */
 
 
-#include "mcp_can.h"
-#include "oscc_can.h"
+#include <stdint.h>
+
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
-#include "debug.h"
-
-#include "globals.h"
 #include "communications.h"
+#include "debug.h"
+#include "globals.h"
+#include "mcp_can.h"
+#include "oscc_can.h"
 #include "throttle_control.h"
 
 
@@ -52,6 +53,7 @@ void publish_fault_report( void )
     fault_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
     fault_report.magic[1] = (uint8_t) OSCC_MAGIC_BYTE_1;
     fault_report.fault_origin_id = FAULT_ORIGIN_THROTTLE;
+    fault_report.dtcs = g_throttle_control_state.dtcs;
 
     cli();
     g_control_can.sendMsgBuf(
@@ -73,7 +75,7 @@ void check_for_controller_command_timeout( void )
 
             publish_fault_report( );
 
-            DEBUG_PRINTLN( "Timeout waiting for controller command" );
+            DEBUG_PRINTLN( "Timeout - controller command" );
         }
     }
 }
@@ -99,7 +101,15 @@ static void process_rx_frame(
         if( (frame->data[0] == OSCC_MAGIC_BYTE_0)
              && (frame->data[1] == OSCC_MAGIC_BYTE_1) )
         {
-            if( frame->id == OSCC_THROTTLE_COMMAND_CAN_ID )
+            if ( frame->id == OSCC_THROTTLE_ENABLE_CAN_ID )
+            {
+                enable_control( );
+            }
+            else if ( frame->id == OSCC_THROTTLE_DISABLE_CAN_ID )
+            {
+                disable_control( );
+            }
+            else if( frame->id == OSCC_THROTTLE_COMMAND_CAN_ID )
             {
                 process_throttle_command( frame->data );
             }
@@ -120,18 +130,9 @@ static void process_throttle_command(
         const oscc_throttle_command_s * const throttle_command =
                 (oscc_throttle_command_s *) data;
 
-        if( throttle_command->enable == true )
-        {
-            enable_control( );
-
-            update_throttle(
-                throttle_command->spoof_value_high,
-                throttle_command->spoof_value_low );
-        }
-        else
-        {
-            disable_control( );
-        }
+        update_throttle(
+            throttle_command->spoof_value_high,
+            throttle_command->spoof_value_low );
 
         g_throttle_command_timeout = false;
     }
@@ -148,6 +149,9 @@ static void process_fault_report(
 
         disable_control( );
 
-        DEBUG_PRINTLN( "Fault report received" );
+        DEBUG_PRINT( "Fault report received from: " );
+        DEBUG_PRINT( fault_report->fault_origin_id );
+        DEBUG_PRINT( "  DTCs: ");
+        DEBUG_PRINTLN( fault_report->dtcs );
     }
 }

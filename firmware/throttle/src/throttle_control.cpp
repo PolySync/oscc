@@ -6,15 +6,15 @@
 
 #include <Arduino.h>
 #include <stdint.h>
-#include "debug.h"
-#include "oscc_dac.h"
-#include "can_protocols/throttle_can_protocol.h"
-#include "dtc.h"
-#include "vehicles.h"
 
+#include "can_protocols/throttle_can_protocol.h"
 #include "communications.h"
-#include "throttle_control.h"
+#include "debug.h"
+#include "dtc.h"
 #include "globals.h"
+#include "oscc_dac.h"
+#include "throttle_control.h"
+#include "vehicles.h"
 
 
 /*
@@ -45,6 +45,10 @@ void check_for_operator_override( void )
         {
             disable_control( );
 
+            DTC_SET(
+                g_throttle_control_state.dtcs,
+                OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE );
+
             publish_fault_report( );
 
             g_throttle_control_state.operator_override = true;
@@ -53,6 +57,10 @@ void check_for_operator_override( void )
         }
         else
         {
+            DTC_CLEAR(
+                g_throttle_control_state.dtcs,
+                OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE );
+
             g_throttle_control_state.operator_override = false;
         }
     }
@@ -80,11 +88,11 @@ void check_for_sensor_faults( void )
             {
                 disable_control( );
 
-                publish_fault_report( );
-
                 DTC_SET(
                     g_throttle_control_state.dtcs,
                     OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
+
+                publish_fault_report( );
 
                 DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
             }
@@ -143,6 +151,7 @@ void enable_control( void )
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
         sei();
 
+        g_throttle_command_timeout = false;
         g_throttle_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
@@ -165,6 +174,7 @@ void disable_control( void )
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
         sei();
 
+        g_throttle_command_timeout = false;
         g_throttle_control_state.enabled = false;
 
         DEBUG_PRINTLN( "Control disabled" );
