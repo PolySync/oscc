@@ -28,64 +28,16 @@
 #define PIN_CONTROL_CAN_CHIP_SELECT ( 10 )
 
 /*
- * @brief SPI SCLK pin to display.
- *
- */
-#define PIN_DISPLAY_SCLK ( 13 )
-
-/*
- * @brief SPI MOSI pin to display.
- *
- */
-#define PIN_DISPLAY_MOSI ( 11 )
-
-/*
  * @brief SPI CS pin to display.
  *
  */
-#define PIN_DISPLAY_CS ( 7 )
-
-/*
- * @brief Reset pin to display.
- *
- */
-#define PIN_DISPLAY_RESET ( 6 )
-
-/*
- * @brief DC pin to display.
- *
- */
-#define PIN_DISPLAY_DC ( 5 )
-
-/*
- * @brief Pin of display button.
- *
- */
-#define PIN_DISPLAY_BUTTON ( 4 )
-
-/*
- * @brief Pin of good (green) display LED.
- *
- */
-#define PIN_DISPLAY_LED_GOOD ( 8 )
-
-/*
- * @brief Pin of warning (yellow) display LED.
- *
- */
-#define PIN_DISPLAY_LED_WARNING ( 3 )
-
-/*
- * @brief Pin of error (red) display LED.
- *
- */
-#define PIN_DISPLAY_LED_ERROR ( 2 )
+#define PIN_DISPLAY_CHIP_SELECT ( 8 )
 
 
 #ifdef GLOBAL_DEFINED
     MCP_CAN g_obd_can( PIN_OBD_CAN_CHIP_SELECT );
     MCP_CAN g_control_can( PIN_CONTROL_CAN_CHIP_SELECT );
-    SSD1325 g_display( PIN_DISPLAY_MOSI, PIN_DISPLAY_SCLK, PIN_DISPLAY_DC, PIN_DISPLAY_RESET, PIN_DISPLAY_CS );
+    SSD1325 g_display( PIN_DISPLAY_CHIP_SELECT );
 
     #define EXTERN
 #else

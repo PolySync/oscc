@@ -29,8 +29,8 @@ All text above, and the splash screen must be included in any redistribution
 
 #include "gfx.h"
 
-#ifndef adagfx_swap
-#define adagfx_swap(a, b) { uint8_t t = a; a = b; b = t; }
+#ifndef gfx_swap
+#define gfx_swap(a, b) { uint8_t t = a; a = b; b = t; }
 #endif
 
 #define BLACK 0
@@ -71,23 +71,26 @@ All text above, and the splash screen must be included in any redistribution
 #define SSD1325_COPY 0x25
 
 class SSD1325 : public GFX {
- public:
-  SSD1325(int8_t SID, int8_t SCLK, int8_t DC, int8_t RST, int8_t CS) : GFX(128,64), sid(SID), sclk(SCLK), dc(DC), rst(RST), cs(CS) {}
+    public:
+        SSD1325(int8_t CS) : GFX(128,64), cs(CS) {}
 
-  void begin(void);
-  void eraseBuffer(void);
-  void sendBuffer(void);
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
+        void begin(void);
+        void eraseBuffer(void);
+        void sendBuffer(void);
+        void drawPixel(int16_t x, int16_t y, uint16_t color);
+        bool readButton(void);
+        void enableRedLed(void);
+        void enableYellowLed(void);
+        void enableGreenLed(void);
 
- private:
-  int8_t sid;
-  int8_t sclk;
-  int8_t dc;
-  int8_t rst;
-  int8_t cs;
+    private:
+        int8_t cs;
+        uint8_t shift_register_data;
 
-  void startSendCommand(void);
-  void stopSendCommand(void);
-  void startSendData(void);
-  void stopSendData(void);
+        void setDC(uint8_t value);
+        void setRes(uint8_t value);
+        void startSendCommand(void);
+        void stopSendCommand(void);
+        void startSendData(void);
+        void stopSendData(void);
 };

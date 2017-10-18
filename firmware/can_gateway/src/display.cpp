@@ -113,21 +113,11 @@ static void print_throttle_dtcs( void );
 static void print_dtc( const char *type, int num );
 static void print_padded_number( const unsigned int number );
 static void read_button( void );
-static void enable_good_led( void );
-static void enable_warning_led( void );
-static void enable_error_led( void );
 
 
 void init_display( void )
 {
     cli();
-    digitalWrite(PIN_DISPLAY_LED_GOOD, LOW);
-    digitalWrite(PIN_DISPLAY_LED_WARNING, LOW);
-    digitalWrite(PIN_DISPLAY_LED_ERROR, LOW);
-
-    pinMode(PIN_DISPLAY_LED_GOOD, OUTPUT);
-    pinMode(PIN_DISPLAY_LED_WARNING, OUTPUT);
-    pinMode(PIN_DISPLAY_LED_ERROR, OUTPUT);
 
     g_display.begin();
 
@@ -168,17 +158,17 @@ static void update_leds( void )
         || (g_display_state.status_screen.steering == MODULE_STATUS_ERROR)
         || (g_display_state.status_screen.throttle == MODULE_STATUS_ERROR) )
     {
-        enable_error_led( );
+        g_display.enableRedLed( );
     }
     else if( (g_display_state.status_screen.brakes == MODULE_STATUS_UNKNOWN)
         || (g_display_state.status_screen.steering == MODULE_STATUS_UNKNOWN)
         || (g_display_state.status_screen.throttle == MODULE_STATUS_UNKNOWN) )
     {
-        enable_warning_led( );
+        g_display.enableYellowLed( );
     }
     else
     {
-        enable_good_led( );
+        g_display.enableGreenLed( );
     }
 }
 
@@ -356,35 +346,11 @@ static void print_padded_number( const unsigned int number )
 
 static void read_button( void )
 {
-    int button_val = digitalRead( PIN_DISPLAY_BUTTON );
+    bool button_val = g_display.readButton();
 
-    if( button_val == 1 )
+    if( button_val == true )
     {
         g_display_state.current_screen =
             (screen_t)((g_display_state.current_screen + 1) % SCREEN_COUNT);
     }
-}
-
-
-static void enable_good_led( void )
-{
-    digitalWrite(PIN_DISPLAY_LED_GOOD, HIGH);
-    digitalWrite(PIN_DISPLAY_LED_WARNING, LOW);
-    digitalWrite(PIN_DISPLAY_LED_ERROR, LOW);
-}
-
-
-static void enable_warning_led( void )
-{
-    digitalWrite(PIN_DISPLAY_LED_GOOD, LOW);
-    digitalWrite(PIN_DISPLAY_LED_WARNING, HIGH);
-    digitalWrite(PIN_DISPLAY_LED_ERROR, LOW);
-}
-
-
-static void enable_error_led( void )
-{
-    digitalWrite(PIN_DISPLAY_LED_GOOD, LOW);
-    digitalWrite(PIN_DISPLAY_LED_WARNING, LOW);
-    digitalWrite(PIN_DISPLAY_LED_ERROR, HIGH);
 }

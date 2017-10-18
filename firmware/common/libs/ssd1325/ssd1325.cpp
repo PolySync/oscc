@@ -22,6 +22,13 @@ All text above, and the splash screen below must be included in any redistributi
 #include "glcdfont.c"
 #include "ssd1325.h"
 
+
+// Chip select of first shift register
+#define SHIFT_REGISTER_CHIP_SELECT_1 ( 4 )
+
+// Chip select of second shift register
+#define SHIFT_REGISTER_CHIP_SELECT_2 ( 5 )
+
 // a 5x7 font table
 extern const uint8_t PROGMEM font[];
 
@@ -100,19 +107,19 @@ void SSD1325::begin(void)
     SPI.setDataMode(SPI_MODE0);
     SPI.setClockDivider(SPI_CLOCK_DIV2);
 
-    pinMode(dc, OUTPUT);
-    pinMode(rst, OUTPUT);
+    pinMode(SHIFT_REGISTER_CHIP_SELECT_1, OUTPUT);
+    pinMode(SHIFT_REGISTER_CHIP_SELECT_2, OUTPUT);
     pinMode(cs, OUTPUT);
 
-    digitalWrite(rst, HIGH);
-    // VDD (3.3V) goes high at start, lets just chill for a ms
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_2, HIGH);
+    digitalWrite(cs, HIGH);
+
+    setRes(1);
     delay(1);
-    // bring reset low
-    digitalWrite(rst, LOW);
-    // wait 10ms
+    setRes(0);
     delay(10);
-    // bring out of reset
-    digitalWrite(rst, HIGH);
+    setRes(1);
 
     delay(500);
 
@@ -206,31 +213,6 @@ void SSD1325::eraseBuffer(void)
 }
 
 
-void SSD1325::startSendCommand(void)
-{
-    digitalWrite(dc, LOW);
-    digitalWrite(cs, LOW);
-}
-
-void SSD1325::stopSendCommand(void)
-{
-    digitalWrite(cs, HIGH);
-    digitalWrite(dc, HIGH);
-}
-
-void SSD1325::startSendData(void)
-{
-    digitalWrite(dc, HIGH);
-    digitalWrite(cs, LOW);
-}
-
-void SSD1325::stopSendData(void)
-{
-    digitalWrite(cs, HIGH);
-    digitalWrite(dc, LOW);
-}
-
-
 void SSD1325::drawPixel(int16_t x, int16_t y, uint16_t color)
 {
     if ((x >= width()) || (y >= height()) || (x < 0) || (y < 0))
@@ -242,7 +224,7 @@ void SSD1325::drawPixel(int16_t x, int16_t y, uint16_t color)
     switch (getRotation())
     {
         case 1:
-            adagfx_swap(x, y);
+            gfx_swap(x, y);
             x = WIDTH - x - 1;
             break;
         case 2:
@@ -250,7 +232,7 @@ void SSD1325::drawPixel(int16_t x, int16_t y, uint16_t color)
             y = HEIGHT - y - 1;
             break;
         case 3:
-            adagfx_swap(x, y);
+            gfx_swap(x, y);
             y = HEIGHT - y - 1;
             break;
     }
@@ -264,4 +246,126 @@ void SSD1325::drawPixel(int16_t x, int16_t y, uint16_t color)
     {
         buffer[x+ (y/8)*SSD1325_LCDWIDTH] &= ~_BV((y%8));
     }
+}
+
+
+bool SSD1325::readButton()
+{
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_2, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_2, LOW);
+    delay(1);
+    digitalWrite(SCK, LOW);
+    delay(1);
+    uint8_t data = SPI.transfer(0);
+    delay(1);
+    digitalWrite(SCK, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_2, HIGH);
+    delay(1);
+
+    if (data & 0x01)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+
+void SSD1325::enableRedLed()
+{
+    shift_register_data = ((0x01 << 4) & 0x70) | (shift_register_data & ~0x70);
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
+
+void SSD1325::enableYellowLed()
+{
+    shift_register_data = ((0x02 << 4) & 0x70) | (shift_register_data & ~0x70);
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
+
+void SSD1325::enableGreenLed()
+{
+    shift_register_data = ((0x04 << 4) & 0x70) | (shift_register_data & ~0x70);
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
+
+void SSD1325::setDC(uint8_t value){
+    shift_register_data = ((value << 7) & 0x80) | (shift_register_data & ~0x80);
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
+
+void SSD1325::setRes(uint8_t value){
+    shift_register_data = ((value << 3) & 0x08) | (shift_register_data & ~0x08);
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
+
+void SSD1325::startSendCommand(void)
+{
+    setDC(0);
+    digitalWrite(cs, LOW);
+}
+
+
+void SSD1325::stopSendCommand(void)
+{
+    digitalWrite(cs, HIGH);
+    setDC(1);
+}
+
+
+void SSD1325::startSendData(void)
+{
+    setDC(1);
+    digitalWrite(cs, LOW);
+}
+
+
+void SSD1325::stopSendData(void)
+{
+    digitalWrite(cs, HIGH);
+    setDC(0);
 }
