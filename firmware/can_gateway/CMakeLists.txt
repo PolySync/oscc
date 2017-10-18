@@ -23,7 +23,7 @@ generate_arduino_firmware(
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/timer/oscc_timer.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/ssd1325/ssd1325.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/gfx/gfx.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/ssd1325/gfx/gfx.cpp
     src/main.cpp
     src/globals.cpp
     src/init.cpp
@@ -42,5 +42,5 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/timer
     ${CMAKE_SOURCE_DIR}/common/libs/ssd1325
-    ${CMAKE_SOURCE_DIR}/common/libs/gfx
+    ${CMAKE_SOURCE_DIR}/common/libs/ssd1325/gfx
     ${CMAKE_SOURCE_DIR}/../api/include)
