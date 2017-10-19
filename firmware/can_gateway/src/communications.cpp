@@ -67,6 +67,7 @@ static void parse_brake_report( uint8_t *data )
 {
     oscc_brake_report_s *report = (oscc_brake_report_s *) data;
 
+
     if ( report->enabled == 1 )
     {
         g_display_state.status_screen.brakes = MODULE_STATUS_ENABLED;
@@ -76,14 +77,29 @@ static void parse_brake_report( uint8_t *data )
         g_display_state.status_screen.brakes = MODULE_STATUS_DISABLED;
     }
 
-    if( report->dtcs != 0 )
+
+    if ( report->dtcs != 0 )
     {
         g_display_state.status_screen.brakes = MODULE_STATUS_ERROR;
+    }
 
-        if ( DTC_CHECK( report->dtcs, OSCC_BRAKE_DTC_INVALID_SENSOR_VAL ) != 0)
-        {
-            g_display_state.dtc_screen.brakes[OSCC_BRAKE_DTC_INVALID_SENSOR_VAL] = true;
-        }
+
+    if ( DTC_CHECK(report->dtcs, OSCC_BRAKE_DTC_INVALID_SENSOR_VAL) != 0 )
+    {
+        g_display_state.dtc_screen.brakes[OSCC_BRAKE_DTC_INVALID_SENSOR_VAL] = true;
+    }
+    else
+    {
+        g_display_state.dtc_screen.brakes[OSCC_BRAKE_DTC_INVALID_SENSOR_VAL] = false;
+    }
+
+    if ( DTC_CHECK(report->dtcs, OSCC_BRAKE_DTC_OPERATOR_OVERRIDE) != 0 )
+    {
+        g_display_state.dtc_screen.brakes[OSCC_BRAKE_DTC_OPERATOR_OVERRIDE] = true;
+    }
+    else
+    {
+        g_display_state.dtc_screen.brakes[OSCC_BRAKE_DTC_OPERATOR_OVERRIDE] = false;
     }
 }
 
@@ -91,6 +107,7 @@ static void parse_brake_report( uint8_t *data )
 static void parse_steering_report( uint8_t *data )
 {
     oscc_steering_report_s *report = (oscc_steering_report_s *) data;
+
 
     if ( report->enabled == 1 )
     {
@@ -101,14 +118,29 @@ static void parse_steering_report( uint8_t *data )
         g_display_state.status_screen.steering = MODULE_STATUS_DISABLED;
     }
 
-    if( report->dtcs != 0 )
+
+    if ( report->dtcs != 0 )
     {
         g_display_state.status_screen.steering = MODULE_STATUS_ERROR;
+    }
 
-        if ( DTC_CHECK( report->dtcs, OSCC_STEERING_DTC_INVALID_SENSOR_VAL ) != 0)
-        {
-            g_display_state.dtc_screen.steering[OSCC_STEERING_DTC_INVALID_SENSOR_VAL] = true;
-        }
+
+    if ( DTC_CHECK(report->dtcs, OSCC_STEERING_DTC_INVALID_SENSOR_VAL) != 0 )
+    {
+        g_display_state.dtc_screen.steering[OSCC_STEERING_DTC_INVALID_SENSOR_VAL] = true;
+    }
+    else
+    {
+        g_display_state.dtc_screen.steering[OSCC_STEERING_DTC_INVALID_SENSOR_VAL] = false;
+    }
+
+    if ( DTC_CHECK(report->dtcs, OSCC_STEERING_DTC_OPERATOR_OVERRIDE) != 0 )
+    {
+        g_display_state.dtc_screen.steering[OSCC_STEERING_DTC_OPERATOR_OVERRIDE] = true;
+    }
+    else
+    {
+        g_display_state.dtc_screen.steering[OSCC_STEERING_DTC_OPERATOR_OVERRIDE] = false;
     }
 }
 
@@ -116,6 +148,7 @@ static void parse_steering_report( uint8_t *data )
 static void parse_throttle_report( uint8_t *data )
 {
     oscc_throttle_report_s *report = (oscc_throttle_report_s *) data;
+
 
     if ( report->enabled == 1 )
     {
@@ -126,13 +159,28 @@ static void parse_throttle_report( uint8_t *data )
         g_display_state.status_screen.throttle = MODULE_STATUS_DISABLED;
     }
 
-    if( report->dtcs != 0 )
+
+    if ( report->dtcs != 0 )
     {
         g_display_state.status_screen.throttle = MODULE_STATUS_ERROR;
+    }
 
-        if ( DTC_CHECK( report->dtcs, OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL ) != 0)
-        {
-            g_display_state.dtc_screen.throttle[OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL] = true;
-        }
+
+    if ( DTC_CHECK(report->dtcs, OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL) != 0 )
+    {
+        g_display_state.dtc_screen.throttle[OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL] = true;
+    }
+    else
+    {
+        g_display_state.dtc_screen.throttle[OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL] = false;
+    }
+
+    if ( DTC_CHECK(report->dtcs, OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE) != 0 )
+    {
+        g_display_state.dtc_screen.throttle[OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE] = true;
+    }
+    else
+    {
+        g_display_state.dtc_screen.throttle[OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE] = false;
     }
 }
