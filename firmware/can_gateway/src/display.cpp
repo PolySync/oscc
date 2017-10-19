@@ -184,7 +184,7 @@ static void display_status_screen( void )
 
     g_display.setCursor( ORIGIN_X, BRAKE_STATUS_Y );
 
-    g_display.print( "BRAKES: " );
+    g_display.print( "BRAKES:   " );
     print_module_status( g_display_state.status_screen.brakes );
 
     g_display.setCursor( ORIGIN_X, STEERING_STATUS_Y );
