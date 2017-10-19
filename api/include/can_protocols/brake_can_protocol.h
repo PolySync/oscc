@@ -58,15 +58,12 @@ enum
     /* DTC bitfield position indicating an invalid sensor value. */
     OSCC_BRAKE_DTC_INVALID_SENSOR_VAL = 0,
 
+    /* DTC bitfield position indicating an operator override. */
+    OSCC_BRAKE_DTC_OPERATOR_OVERRIDE,
+
     /* Number of possible brake DTCs. */
     OSCC_BRAKE_DTC_COUNT
 };
-
-/*
- * @brief Brake DTC bitfield position indicating an operator override.
- *
- */
-#define OSCC_BRAKE_DTC_OPERATOR_OVERRIDE (0x1)
 
 
 #pragma pack(push)
