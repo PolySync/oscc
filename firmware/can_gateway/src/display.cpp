@@ -346,11 +346,16 @@ static void print_padded_number( const unsigned int number )
 
 static void read_button( void )
 {
-    bool button_val = g_display.readButton();
+    static bool button_val_last = false;
 
-    if( button_val == true )
+    bool button_val_current = g_display.readButton();
+
+    if( (button_val_current != button_val_last) // prevent multiple button presses
+        && (button_val_current == true) )
     {
         g_display_state.current_screen =
             (screen_t)((g_display_state.current_screen + 1) % SCREEN_COUNT);
     }
+
+    button_val_last = button_val_current;
 }
