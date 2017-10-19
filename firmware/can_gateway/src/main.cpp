@@ -31,6 +31,8 @@ int main( void )
     {
         wdt_reset();
 
+        check_for_module_reports( );
+
         republish_obd_frames_to_control_can_bus( );
     }
 }
