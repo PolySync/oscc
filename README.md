@@ -293,7 +293,7 @@ sudo apt install ruby-dev libboost-dev
 sudo gem install cucumber -v 2.0.0
 ```
 
-For the property-based tests you must have **Rust**, its build manager **Cargo**, and **libclang**:
+For the property-based tests you must have **Rust**, its build manager **Cargo**, its toolchain manager **rustup**, and **libclang**:
 
 [Rust installation guide](https://www.rust-lang.org/en-US/install.html)
 
@@ -424,6 +424,9 @@ cmake .. -DKIA_SOUL=ON
 ```
 
 The tests can then be run using `make run-api-property-tests`. For the tests to run, you must have a vcan interface initialized. The test folder contains a script `initialize_vcan.sh` which can be used to set it up automatically.
+
+These tests run against the 1.17.0 Rust toolchain, so it will need to be installed via **rustup** if it isn't already. 
+`rustup install 1.17.0`
 
 ### All Tests
 
