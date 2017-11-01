@@ -169,7 +169,9 @@ fn prop_constrain_steering_spoofs(steering_command: f64) -> TestResult {
 
             TestResult::from_bool( 
                 (spoof_high <= STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX) && 
-                (spoof_high >= STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN) && (spoof_low <= STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX) && (spoof_low >= STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN))
+                (spoof_high >= STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN) &&
+                (spoof_low <= STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX) &&
+                (spoof_low >= STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN))
         }
     }
 }
