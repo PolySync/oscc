@@ -200,8 +200,10 @@ mod brake_tests {
                 let spoof_low = brake_command_msg.spoof_value_low as u32;
 
                 TestResult::from_bool( 
-                    (spoof_high <= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX) && 
-                    (spoof_high >= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN) && (spoof_low <= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX) && (spoof_low >= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN))
+                    (spoof_high <= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX) &&
+                    (spoof_high >= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN) &&
+                    (spoof_low <= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX) && 
+                    (spoof_low >= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN))
             }
         }
     }
