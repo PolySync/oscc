@@ -65,22 +65,6 @@ void publish_fault_report( void )
 }
 
 
-void check_for_controller_command_timeout( void )
-{
-    if( g_throttle_control_state.enabled == true )
-    {
-        if( g_throttle_command_timeout == true )
-        {
-            disable_control( );
-
-            publish_fault_report( );
-
-            DEBUG_PRINTLN( "Timeout - controller command" );
-        }
-    }
-}
-
-
 void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;
