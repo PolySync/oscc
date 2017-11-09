@@ -209,9 +209,14 @@ strange behavior while printing that does not occur otherwise.
 # Controlling Your Vehicle - an Example Application
 
 Now that all your Arduino modules are properly setup, it is time to start sending control commands.
+
 We've created an example application, joystick commander, that uses the OSCC API to interface with the firmware, allowing you to send commands using a game controller and receive reports from the on-board OBD-II CAN. These commands are converted into CAN messages, which the OSCC API sends to the respective Arduino modules and are used to actuate the vehicle.
 
 [OSCC Joystick Commander](https://github.com/PolySync/oscc-joystick-commander)
+
+We've also created a ROS node, that uses the OSCC API to interface with the firmware from ROS messages, allowing you to send commands and receive reports in ROS.
+
+[ROSCCO](https://github.com/PolySync/roscco)
 
 # OSCC API
 
