@@ -82,8 +82,16 @@ mkdir build
 cd build
 ```
 
-To generate Makefiles, tell `cmake` which platform to build firmware for. For example, if you want to build
-firmware for the Kia Soul:
+To generate Makefiles, tell `cmake` which vehicle to build for by supplying the
+appropriate build flag:
+
+| Vehicle         | Flag             |
+| --------------- | ---------------- |
+| Kia Soul Petrol | -DKIA_SOUL=ON    |
+| Kia Soul EV     | -DKIA_SOUL_EV=ON |
+
+
+For example, if you want to build firmware for the petrol Kia Soul:
 
 ```
 cmake .. -DKIA_SOUL=ON
