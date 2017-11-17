@@ -26,12 +26,12 @@ void init_communication_interfaces( void )
     init_serial();
     #endif
 
+    DEBUG_PRINTLN( "init display");
+    init_display( );
+
     DEBUG_PRINT( "init OBD CAN - ");
     init_can( g_obd_can );
 
     DEBUG_PRINT( "init Control CAN - ");
     init_can( g_control_can );
-
-    DEBUG_PRINTLN( "init display");
-    init_display( );
 }
