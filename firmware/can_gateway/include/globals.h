@@ -37,7 +37,9 @@
 #ifdef GLOBAL_DEFINED
     MCP_CAN g_obd_can( PIN_OBD_CAN_CHIP_SELECT );
     MCP_CAN g_control_can( PIN_CONTROL_CAN_CHIP_SELECT );
-    SSD1325 g_display( PIN_DISPLAY_CHIP_SELECT );
+    #ifdef TESTS
+       SSD1325 g_display( PIN_DISPLAY_CHIP_SELECT );
+    #endif
 
     #define EXTERN
 #else
