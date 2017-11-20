@@ -82,8 +82,16 @@ mkdir build
 cd build
 ```
 
-To generate Makefiles, tell `cmake` which platform to build firmware for. For example, if you want to build
-firmware for the Kia Soul:
+To generate Makefiles, tell `cmake` which vehicle to build for by supplying the
+appropriate build flag:
+
+| Vehicle         | Flag             |
+| --------------- | ---------------- |
+| Kia Soul Petrol | -DKIA_SOUL=ON    |
+| Kia Soul EV     | -DKIA_SOUL_EV=ON |
+
+
+For example, if you want to build firmware for the petrol Kia Soul:
 
 ```
 cmake .. -DKIA_SOUL=ON
@@ -95,7 +103,7 @@ cmake .. -DKIA_SOUL=ON
 cmake .. -DKIA_SOUL=ON -DSTEERING_OVERRIDE=OFF
 ```
 
-If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file. 
+If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file.
 
 * Lowering this value will make the steering module more sensitive to operator override, but will result in false positives around high-torque areas, such as the mechanical limits of the steering rack or when quickly and rapidly changing direction.
 * Increasing this value will result in fewer false positives, but will make it more difficult to manually override the wheel.
@@ -425,7 +433,7 @@ make run-all-tests
 
 # Additional Vehicles & Contributing
 
-OSCC currently has information regarding the Kia Soul PS (2014-2016), but we want to grow! The
+OSCC currently has information regarding the Kia Soul PS (2014-2018), but we want to grow! The
 repository is structured to facilitate including more vehicles as more is learned about them.
 
 In order to include information related to a new vehicle's specification, follow the format defined in ```api/include/vehicles/kia_soul.h``` and
