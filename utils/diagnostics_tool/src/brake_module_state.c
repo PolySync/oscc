@@ -47,7 +47,7 @@ static int analyze_report_frame(
 
     state->override_triggered = brake_report->operator_override;
 
-    if( brake_report->dtcs == 1 )
+    if( brake_report->dtcs != 0 )
     {
         module_state = STATE_FAULT;
     }

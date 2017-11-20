@@ -54,7 +54,7 @@ static int analyze_report_frame(
 
     state->override_triggered = steering_report->operator_override;
 
-    if( steering_report->dtcs == 1 )
+    if( steering_report->dtcs != 0 )
     {
         module_state = STATE_FAULT;
     }
