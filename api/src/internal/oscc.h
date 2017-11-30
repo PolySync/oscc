@@ -38,24 +38,6 @@ oscc_result_t oscc_can_write(
 oscc_result_t oscc_async_enable(
     int socket );
 
-oscc_result_t oscc_enable_brakes(
-    void );
-
-oscc_result_t oscc_enable_steering(
-    void );
-
-oscc_result_t oscc_enable_throttle(
-    void );
-
-oscc_result_t oscc_disable_brakes(
-    void );
-
-oscc_result_t oscc_disable_steering(
-    void );
-
-oscc_result_t oscc_disable_throttle(
-    void );
-
 void oscc_update_status( );
 
 

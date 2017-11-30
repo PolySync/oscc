@@ -73,6 +73,78 @@ oscc_result_t oscc_disable( void );
 
 
 /**
+ * @brief Send enable command to brake module.
+ *
+ * @param [void]
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_enable_brakes(
+    void );
+
+
+/**
+ * @brief Send enable command to steering module.
+ *
+ * @param [void]
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_enable_steering(
+    void );
+
+
+/**
+ * @brief Send enable command to throttle module.
+ *
+ * @param [void]
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_enable_throttle(
+    void );
+
+
+/**
+ * @brief Send disable command to brake module.
+ *
+ * @param [void]
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_disable_brakes(
+    void );
+
+
+/**
+ * @brief Send disable command to steering module.
+ *
+ * @param [void]
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_disable_steering(
+    void );
+
+
+/**
+ * @brief Send disable command to throttle module.
+ *
+ * @param [void]
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_disable_throttle(
+    void );
+
+
+/**
  * @brief Publish message with requested brake pedal position to
  *        brake module.
  *
