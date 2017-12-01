@@ -1,0 +1,16 @@
+[package]
+name = "property-hw"
+version = "0.1.0"
+authors = ["Katie Cleary <kcleary@polysync.io>"]
+build = "build.rs"
+
+[dependencies]
+quickcheck = "0.4.1"
+rand = "0.3.15"
+
+[build-dependencies]
+bindgen = "0.30.0"
+gcc = "0.3.51"
+
+[lib]
+name = "oscc_tests"
