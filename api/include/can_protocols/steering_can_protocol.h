@@ -50,16 +50,20 @@
 #define OSCC_REPORT_STEERING_PUBLISH_FREQ_IN_HZ (50)
 
 /*
- * @brief Steering DTC bitfield position indicating an invalid sensor value.
+ * @brief Enumeration of all possible steering DTCs.
  *
  */
-#define OSCC_STEERING_DTC_INVALID_SENSOR_VAL (0x0)
+enum
+{
+    /* DTC bitfield position indicating an invalid sensor value. */
+    OSCC_STEERING_DTC_INVALID_SENSOR_VAL = 0,
 
-/*
- * @brief Steering DTC bitfield position indicating an operator override.
- *
- */
-#define OSCC_STEERING_DTC_OPERATOR_OVERRIDE (0x1)
+    /* DTC bitfield position indicating an operator override. */
+    OSCC_STEERING_DTC_OPERATOR_OVERRIDE,
+
+    /* Number of possible steering DTCs. */
+    OSCC_STEERING_DTC_COUNT
+};
 
 
 #pragma pack(push)

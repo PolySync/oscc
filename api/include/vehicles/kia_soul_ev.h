@@ -122,53 +122,53 @@ typedef struct
  * @brief Minimum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.303 )
+#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.333 )
 
 /*
  * @brief Maximum allowed voltage for the low spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 1.40 )
+#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 1.12 )
 
 /**
  * @brief Minimum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.635 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN ( 0.698 )
 
 /**
  * @brief Maximum allowed voltage for the high spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 2.87 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX ( 2.29 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 248 )
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 273 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1146 )
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 917 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 520 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 572 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 2351 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1876 )
 
 /*
  * @brief Calculation to convert a brake position to a low spoof voltage.
