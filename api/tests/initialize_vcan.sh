@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# sets up two virtual can interfaces, vcan0 and vcan1
+# sets up a virtual can interface, vcan0, for the API PBT
 
 lsmod | grep -q "vcan"
 VCAN_NOT_LOADED=$?
@@ -21,3 +21,5 @@ if [ $VCAN_NOT_EXIST -eq 1 ]; then
 else
   echo "vcan0 already exists."
 fi
+
+echo "vcan0 enabled"
