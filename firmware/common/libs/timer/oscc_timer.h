@@ -93,6 +93,54 @@
  */
 #define TIMER2_PRESCALER_1024 ( (_BV(CS22) | _BV(CS21) | _BV(CS20)) )
 
+/*
+ * @brief Maximum value that timer2 counter can contain.
+ *
+ */
+#define TIMER3_SIZE ( 255 )
+
+/*
+ * @brief Necessary bitshifts for a timer2 prescaler of 1.
+ *
+ */
+#define TIMER3_PRESCALER_1 ( (_BV(CS30)) )
+
+/*
+ * @brief Necessary bitshifts for a timer2 prescaler of 8.
+ *
+ */
+#define TIMER3_PRESCALER_8 ( (_BV(CS31)) )
+
+/*
+ * @brief Necessary bitshifts for a timer2 prescaler of 32.
+ *
+ */
+#define TIMER3_PRESCALER_32 ( (_BV(CS31) | _BV(CS30)) )
+
+/*
+ * @brief Necessary bitshifts for a timer2 prescaler of 64.
+ *
+ */
+#define TIMER3_PRESCALER_64 ( (_BV(CS32)) )
+
+/*
+ * @brief Necessary bitshifts for a timer2 prescaler of 128.
+ *
+ */
+#define TIMER3_PRESCALER_128 ( (_BV(CS32) | _BV(CS30)) )
+
+/*
+ * @brief Necessary bitshifts for a timer2 prescaler of 256.
+ *
+ */
+#define TIMER3_PRESCALER_256 ( (_BV(CS32) | _BV(CS31)) )
+
+/*
+ * @brief Necessary bitshifts for a timer2 prescaler of 1024.
+ *
+ */
+#define TIMER3_PRESCALER_1024 ( (_BV(CS32) | _BV(CS31) | _BV(CS30)) )
+
 
 // ****************************************************************************
 // Function:    timer1_init
@@ -129,6 +177,25 @@ void timer1_init(
 //
 // ****************************************************************************
 void timer2_init(
+    float frequency,
+    void (*isr)(void) );
+
+// ****************************************************************************
+// Function:    timer3_init
+//
+// Purpose:     Initializes timer3 to interrupt at a set frequency and run
+//              an ISR at the time of that interrupt.
+//
+// Notes:       timer3 is an 16-bit timer with a minimum frequency of 61Hz.
+//
+// Returns:     void
+//
+// Parameters:  [in] frequency - frequency at which to generate an interrupt [hz]
+//              [in] isr - pointer to the interrupt service routine to call on
+//                         interrupt
+//
+// ****************************************************************************
+void timer3_init(
     float frequency,
     void (*isr)(void) );
 

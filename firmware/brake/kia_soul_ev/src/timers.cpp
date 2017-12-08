@@ -27,7 +27,7 @@ static void check_for_faults( void );
 void start_timers( void )
 {
     timer1_init( FAULT_CHECK_FREQUENCY_IN_HZ, check_for_faults );
-    timer2_init( OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ, publish_brake_report );
+    timer3_init( OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ, publish_brake_report );
 }
 
 

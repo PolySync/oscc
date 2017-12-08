@@ -1,4 +1,4 @@
-set(ARDUINO_DEFAULT_BOARD uno)
+set(ARDUINO_DEFAULT_BOARD leonardo)
 
 generate_arduino_firmware(
     brake
