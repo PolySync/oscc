@@ -25,10 +25,10 @@
 
 typedef struct CanFrame
 {
-    int err_no = 0;
-    uint32_t id = 0;
-    uint8_t length = 0;
-    unsigned char *data = NULL;
+    int err_no;
+    uint32_t id;
+    uint8_t length;
+    unsigned char *data;
 } CanFrame;
 
 #ifdef USE_SOCKET_CAN
@@ -837,8 +837,9 @@ int oscc_interface_update_status(oscc_status_s* status) {
     
 int oscc_interface_read_vehicle_status_from_bus(
     oscc_vehicle_status_s* vehicle_status) {
-    #ifdef USE_CANLIB
     int return_code = ERROR;
+   
+    #ifdef USE_CANLIB
     
     if (oscc != NULL) {
         long can_id;
@@ -865,6 +866,7 @@ int oscc_interface_read_vehicle_status_from_bus(
     #endif
 
     #ifdef USE_SOCKET_CAN
+
     #endif
 
     return return_code;
