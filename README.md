@@ -82,7 +82,7 @@ mkdir build
 cd build
 ```
 
-To generate Makefiles, tell `cmake` which vehicle to build for by supplying the
+To generate Makefiles, tell `cmake` which vehicle and board to build for by supplying the
 appropriate build flag:
 
 | Vehicle         | Flag             |
@@ -90,17 +90,22 @@ appropriate build flag:
 | Kia Soul Petrol | -DKIA_SOUL=ON    |
 | Kia Soul EV     | -DKIA_SOUL_EV=ON |
 
+| Board           | Flag             |
+| --------------- | ---------------- |
+| OSCC            | -DOSCC=ON        |
+| DriveKit        | -DDRIVEKIT=ON    |
+
 
 For example, if you want to build firmware for the petrol Kia Soul:
 
 ```
-cmake .. -DKIA_SOUL=ON
+cmake .. -DKIA_SOUL=ON -DOSCC=ON
 ```
 
 **Operator Overrides: While all OSCC modules have operator override detection enabled by default, attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button. To disable operator override for the steering module, pass an additional flag to the CMake build step.**
 
 ```
-cmake .. -DKIA_SOUL=ON -DSTEERING_OVERRIDE=OFF
+cmake .. -DKIA_SOUL=ON -DOSCC=ON -DSTEERING_OVERRIDE=OFF
 ```
 
 If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file.
@@ -113,7 +118,7 @@ the size of the firmware significantly. To compile without debug symbols and opt
 enabled, use the following instead:
 
 ```
-cmake .. -DKIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release
+cmake .. -DKIA_SOUL=ON -DOSCC=ON -DCMAKE_BUILD_TYPE=Release
 ```
 
 <a name="brake-startup-test"></a>
@@ -160,7 +165,7 @@ throttle) so that they are assigned `/dev/ttyACM0` through `/dev/ttyACM3` in
 a known order. You can then change the ports during the `cmake ..` step:
 
 ```
-cmake .. -DKIA_SOUL=ON -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
+cmake .. -DKIA_SOUL=ON -DOSCC=ON -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
 ```
 
 Then you can flash all with one command:
@@ -193,7 +198,7 @@ the module you want to monitor is connected to
 ports for each module). The default baud rate is `115200` but you can change it:
 
 ```
-cmake .. -DKIA_SOUL=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
+cmake .. -DKIA_SOUL=ON -DOSCC=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
 ```
 
 You can use a module's `monitor` target to automatically run `screen`, or a
