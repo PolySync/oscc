@@ -27,7 +27,11 @@ static void check_for_faults( void );
 void start_timers( void )
 {
     timer1_init( FAULT_CHECK_FREQUENCY_IN_HZ, check_for_faults );
+#ifdef OSCC
+    timer2_init( OSCC_REPORT_THROTTLE_PUBLISH_FREQ_IN_HZ, publish_throttle_report );
+#elif DRIVEKIT
     timer3_init( OSCC_REPORT_THROTTLE_PUBLISH_FREQ_IN_HZ, publish_throttle_report );
+#endif
 }
 
 

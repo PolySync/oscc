@@ -161,6 +161,7 @@ void timer1_init(
     float frequency,
     void (*isr)(void) );
 
+#ifdef OSCC
 // ****************************************************************************
 // Function:    timer2_init
 //
@@ -180,6 +181,7 @@ void timer2_init(
     float frequency,
     void (*isr)(void) );
 
+#elif DRIVEKIT
 // ****************************************************************************
 // Function:    timer3_init
 //
@@ -198,6 +200,6 @@ void timer2_init(
 void timer3_init(
     float frequency,
     void (*isr)(void) );
-
+#endif
 
 #endif /* _OSCC_TIMER_H_ */

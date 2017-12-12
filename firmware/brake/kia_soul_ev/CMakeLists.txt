@@ -1,4 +1,10 @@
-set(ARDUINO_DEFAULT_BOARD leonardo)
+
+
+if(DRIVEKIT)
+    set(ARDUINO_DEFAULT_BOARD leonardo)
+elseif(OSCC)
+    set(ARDUINO_DEFAULT_BOARD uno)
+endif()
 
 generate_arduino_firmware(
     brake
