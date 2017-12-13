@@ -13,6 +13,10 @@
 
 void init_globals( void )
 {
+    memset(
+        &g_display_state,
+        0,
+        sizeof(g_display_state) );
 }
 
 
@@ -22,15 +26,9 @@ void init_communication_interfaces( void )
     init_serial();
     #endif
 
+    DEBUG_PRINTLN( "init display");
+    init_display( );
+
     DEBUG_PRINT( "init Control CAN - ");
     init_can( g_control_can );
-
-    DEBUG_PRINT( "init OBD CAN - ");
-    init_can( g_obd_can );
-
-    DEBUG_PRINT( "init C CAN - ");
-    init_can( g_c_can );
-
-    DEBUG_PRINT( "init D CAN - ");
-    init_can( g_d_can );
 }

@@ -15,43 +15,50 @@
 #include "display.h"
 
 
-/*
- * @brief Chip select pin of the OBD CAN IC.
- *
- */
-#define PIN_OBD_CAN_CHIP_SELECT ( 9 )
 
 /*
  * @brief Chip select pin of the Control CAN IC.
  *
  */
-#define PIN_CONTROL_CAN_CHIP_SELECT ( 10 )
+#define PIN_CONTROL_CAN_CHIP_SELECT ( 4 )
 
 /*
- * @brief SPI CS pin to display.
+ * @brief Chip select pin of the OBD CAN IC.
  *
  */
-#define PIN_DISPLAY_CHIP_SELECT ( 8 )
+#define PIN_OBD_CAN_CHIP_SELECT ( 5 )
+
+/*
+ * @brief Chip select pin of the OBD CAN IC.
+ *
+ */
+#define PIN_C_CAN_CHIP_SELECT ( 6 )
+
+/*
+ * @brief Chip select pin of the OBD CAN IC.
+ *
+ */
+#define PIN_D_CAN_CHIP_SELECT ( 7 )
+
 
 
 #ifdef GLOBAL_DEFINED
-    MCP_CAN g_obd_can( PIN_OBD_CAN_CHIP_SELECT );
     MCP_CAN g_control_can( PIN_CONTROL_CAN_CHIP_SELECT );
-    #ifndef TESTS
-       SSD1325 g_display( PIN_DISPLAY_CHIP_SELECT );
-    #endif
+    MCP_CAN g_obd_can( PIN_OBD_CAN_CHIP_SELECT );
+    MCP_CAN g_c_can( PIN_C_CAN_CHIP_SELECT );
+    MCP_CAN g_d_can( PIN_D_CAN_CHIP_SELECT );
 
     #define EXTERN
 #else
     extern MCP_CAN g_obd_can;
     extern MCP_CAN g_control_can;
-    extern SSD1325 g_display;
+    extern MCP_CAN g_c_can;
+    extern MCP_CAN g_d_can;
 
     #define EXTERN extern
 #endif
 
 
-EXTERN kia_soul_gateway_display_state_s g_display_state;
 
 
 

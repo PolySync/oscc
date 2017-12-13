@@ -22,6 +22,7 @@ if(TESTS)
     endif()
 
     add_subdirectory(can_gateway/tests)
+    add_subdirectory(display/tests)
     add_subdirectory(steering/tests)
     add_subdirectory(throttle/tests)
     add_subdirectory(common/libs/pid/tests)
@@ -31,6 +32,7 @@ if(TESTS)
         DEPENDS
         run-brake-unit-tests
         run-can-gateway-unit-tests
+        run-display-unit-tests
         run-steering-unit-tests
         run-throttle-unit-tests)
 
@@ -112,6 +114,7 @@ else()
 
     add_subdirectory(brake)
     add_subdirectory(can_gateway)
+    add_subdirectory(display)
     add_subdirectory(steering)
     add_subdirectory(throttle)
 
@@ -120,6 +123,7 @@ else()
         DEPENDS
         brake-upload
         can-gateway-upload
+        display-upload
         steering-upload
         throttle-upload)
 endif()
