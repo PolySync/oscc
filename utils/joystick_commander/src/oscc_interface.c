@@ -8,10 +8,6 @@
 *        disable and return control back to the driver.
 */
 
-#ifdef USE_CANLIB
-#include <canlib.h>
-#endif
-
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,146 +18,7 @@
 #include "oscc_interface.h"
 #include "steering_can_protocol.h"
 #include "throttle_can_protocol.h"
-
-typedef struct CanFrame
-{
-    int err_no;
-    uint32_t id;
-    uint8_t length;
-    unsigned char *data;
-} CanFrame;
-
-#ifdef USE_SOCKET_CAN
-
-#include <fcntl.h>
-#include <errno.h>
-#include <net/if.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#include <linux/can.h>
-#include <linux/can/raw.h>
-
-int can_open(const char *can_name, int* s)
-{
-    int nbytes;
-    struct sockaddr_can addr;
-    struct can_frame frame;
-    struct ifreq ifr;
-    
-    const char *ifname = can_name;
-    
-    if ((*s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
-    {
-        perror("Error while opening socket");
-        return -1;
-    }
-    
-    strcpy(ifr.ifr_name, ifname);
-    ioctl(*s, SIOCGIFINDEX, &ifr);
-    
-    addr.can_family = AF_CAN;
-    addr.can_ifindex = ifr.ifr_ifindex;
-    
-    printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
-    
-    if (bind(*s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-    {
-        perror("Error in socket bind");
-        return -2;
-    }
-    
-    int ret = fcntl(*s, F_SETOWN, getpid());
-    
-    if (ret < 0)
-    {
-        perror("Setting owner process of socket failed");
-        return -2;
-    }
-    
-    if (ret == 0)
-    {
-        ret = fcntl(*s, F_SETFL, FASYNC | O_NONBLOCK);
-        if (ret < 0)
-        {
-            perror("Setting nonblocking asynchronous socket I/O failed");
-            return -2;
-        }
-    }
-    
-    if (ret < 0)
-    {
-        return errno;
-    }
-    
-    return 0;
-}
-
-CanFrame can_read()
-{
-    can_frame rx_frame;
-    memset(&rx_frame, 0, sizeof(struct can_frame));
-    
-    int nbytes = ::read(s, &rx_frame, CAN_MTU);
-    
-    // printf("Read %d bytes\n", nbytes);
-    
-    CanFrame result;
-    
-    if (nbytes < 0)
-    {
-        result.err_no = errno;
-        return result;
-    }
-    
-    result.err_no = 0;
-    result.id = rx_frame.can_id;
-    result.length = rx_frame.can_dlc;
-    result.data = (unsigned char *)malloc(rx_frame.can_dlc);
-    memcpy(result.data, rx_frame.data, rx_frame.can_dlc);
-    
-    return result;
-}
-
-int can_write(int id, void *data, int length)
-{
-    can_frame tx_frame;
-    memset(&tx_frame, 0, sizeof(tx_frame));
-    
-    tx_frame.can_id = id;
-    tx_frame.can_dlc = length;
-    
-    memcpy(tx_frame.data, data, length);
-    
-    int nbytes = ::write(s, &tx_frame, sizeof(tx_frame));
-    
-    // printf("Wrote %d bytes\n", nbytes);
-    
-    if (nbytes == -1)
-    {
-        perror("Couldn't write to socket");
-        return errno;
-    }
-    return nbytes;
-}
-
-int can_close()
-{
-    int ret = ::close(s);
-    if (ret < 0)
-    {
-        perror("Failed to close can socket");
-        return errno;
-    }
-    return 0;
-}
-
-#endif
-
+#include "canbus.h"
 
 // *****************************************************
 // static global types/macros
@@ -186,15 +43,7 @@ typedef struct {
     oscc_command_brake_data_s brake_cmd;
     oscc_command_throttle_data_s throttle_cmd;
     oscc_command_steering_data_s steering_cmd;
-    
-    #ifdef USE_CANLIB
-    canHandle can_handle;
-    #endif
-
-    #ifdef USE_SOCKET_CAN
-    int can_socket;
-    #endif
-
+    CanBusT* canbus;
     int can_channel;
 } oscc_interface_data_s;
 
@@ -202,13 +51,7 @@ typedef struct {
     oscc_report_chassis_state_1_s chassis_state_1;
     oscc_report_chassis_state_2_s chassis_state_2;
     oscc_report_chassis_state_3_s chassis_state_3;
-    
-    #ifdef USE_CANLIB
-    canHandle can_handle;
-    #endif
-    #ifdef USE_SOCKET_CAN
-    int can_socket;
-    #endif
+    CanBusT* canbus;
     int can_channel;
 } oscc_interface_status_data_s;
 
@@ -241,22 +84,15 @@ static oscc_interface_status_data_s* oscc_status = NULL;
 //
 // *****************************************************
 static int oscc_can_write(long id, void* msg, unsigned int dlc) {
-    #ifdef USE_CANLIB
     int return_code = ERROR;
     
     if (oscc != NULL) {
-        canStatus status = canWrite(oscc->can_handle, id, msg, dlc, 0);
-        
-        if (status == canOK) {
+        int ret = can_write(oscc->canbus, id, msg, dlc);
+        if (ret != -1) {
             return_code = NOERR;
         }
     }
     return return_code;
-    #endif
-
-    #ifdef USE_SOCKET_CAN
-    // write socket can code here.
-    #endif
 }
 
 // *****************************************************
@@ -272,43 +108,14 @@ static int oscc_can_write(long id, void* msg, unsigned int dlc) {
 // *****************************************************
 
 int oscc_init_can(int channel) {
-    #ifdef USE_CANLIB
     int return_code = ERROR;
-    
-    canHandle handle = canOpenChannel(channel, canOPEN_EXCLUSIVE);
-    
-    if (handle >= 0) {
-        canBusOff(handle);
-        
-        canStatus status = canSetBusParams(handle, BAUD_500K, 0, 0, 0, 0, 0);
-        if (status == canOK) {
-            status = canSetBusOutputControl(handle, canDRIVER_NORMAL);
-            
-            if (status == canOK) {
-                status = canBusOn(handle);
-                
-                if (status == canOK) {
-                    oscc_interface_data.can_handle = handle;
-                    oscc_interface_data.can_channel = channel;
-                    return_code = NOERR;
-                } else {
-                    printf("canBusOn failed\n");
-                }
-            } else {
-                printf("canSetBusOutputControl failed\n");
-            }
-        } else {
-            printf("canSetBusParams failed\n");
-        }
-    } else {
-        printf("canOpenChannel %d failed\n", channel);
+    char can_name[255];
+    sprintf(can_name, "vcan%d", channel );
+    int ret = can_open(oscc_interface_data.canbus, can_name);
+    if(ret == 0){
+        return_code == NOERR;
     }
     return return_code;
-    #endif
-
-    #ifdef USE_SOCKET_CAN
-    // write socket can code here.
-    #endif
 }
 
 // *****************************************************
@@ -575,17 +382,10 @@ int oscc_interface_init_no_defaults(int channel) {
 //
 // *****************************************************
 void oscc_interface_close() {
-    #ifdef USE_CANLIB
     if (oscc != NULL) {
-        canWriteSync(oscc->can_handle, 1000);
-        canClose(oscc->can_handle);
+        can_close(oscc->canbus);
     }
-
     oscc = NULL;
-    #endif
-
-    #ifdef USE_SOCKET_CAN
-    #endif
 }
 
 // *****************************************************
@@ -802,73 +602,38 @@ int oscc_interface_disable() {
 //
 // *****************************************************
 int oscc_interface_update_status(oscc_status_s* status) {
-    #ifdef USE_CANLIB
     int return_code = ERROR;
     
     if (oscc != NULL) {
-        long can_id;
-        unsigned int msg_dlc;
-        unsigned int msg_flag;
-        unsigned long tstamp;
-        unsigned char buffer[8];
-        
-        canStatus can_status = canRead(oscc->can_handle, &can_id, buffer,
-            &msg_dlc, &msg_flag, &tstamp);
-            
-        if (can_status == canOK) {
+        CanFrame res = can_read(oscc->canbus);
+        if (res.err_no == 0) {
             return_code = NOERR;
-            
-            oscc_interface_check_for_operator_override(status, can_id, buffer);
-            
-            oscc_interface_check_for_obd_timeout(status, can_id, buffer);
-        } else if ((can_status == canERR_NOMSG) || (can_status == canERR_TIMEOUT)) {
-            // Do nothing
-            return_code = NOERR;
-        } else {
+            oscc_interface_check_for_operator_override(status, res.id , res.data);
+            oscc_interface_check_for_obd_timeout(status, res.id, res.data);
+        } 
+        else{
             return_code = ERROR;
         }
     }
     return return_code;
-    #endif
-
-    #ifdef USE_SOCKET_CAN
-    #endif
 }
     
 int oscc_interface_read_vehicle_status_from_bus(
     oscc_vehicle_status_s* vehicle_status) {
     int return_code = ERROR;
-   
-    #ifdef USE_CANLIB
-    
     if (oscc != NULL) {
-        long can_id;
-        unsigned int msg_dlc;
-        unsigned int msg_flag;
-        unsigned long tstamp;
-        unsigned char buffer[8];
-        
-        canStatus can_status = canRead(oscc->can_handle, &can_id, buffer,
-            &msg_dlc, &msg_flag, &tstamp);
-            
-        if (can_status == canOK) {
+        unsigned int msg_flag = 0;
+        unsigned long tstamp = 0;
+        CanFrame res = can_read(oscc->canbus);
+        if (res.err_no == 0) {
             return_code = NOERR;
             oscc_interface_parse_vehicle_state_info(
-                vehicle_status, can_id, msg_dlc, msg_flag, tstamp, buffer);
-            } else if ((can_status == canERR_NOMSG) ||
-            (can_status == canERR_TIMEOUT)) {
-                // Do nothing
-                return_code = NOERR;
-            } else {
-                return_code = ERROR;
-            }
+                vehicle_status, res.id, res.length, msg_flag, tstamp, res.data);
+        }
+        else{
+            return_code = ERROR;
+        }
     }
-    #endif
-
-    #ifdef USE_SOCKET_CAN
-
-    #endif
-
     return return_code;
 }
                 
