@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "can_protocols/fault_can_protocol.h"
+#include "can_protocols/global_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "communications.h"
 #include "debug.h"

@@ -13,6 +13,7 @@
 #include "globals.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
+// #include "oscc_eeprom.h"
 #include "throttle_control.h"
 
 
@@ -23,6 +24,12 @@ static void process_throttle_command(
     const uint8_t * const data );
 
 static void process_fault_report(
+    const uint8_t * const data );
+
+static void process_config_u16(
+    const uint8_t * const data );
+
+static void process_config_f32(
     const uint8_t * const data );
 
 
@@ -98,26 +105,36 @@ static void process_rx_frame(
 {
     if ( frame != NULL )
     {
-        if( (frame->data[0] == OSCC_MAGIC_BYTE_0)
-             && (frame->data[1] == OSCC_MAGIC_BYTE_1) )
-        {
-            if ( frame->id == OSCC_THROTTLE_ENABLE_CAN_ID )
-            {
-                enable_control( );
-            }
-            else if ( frame->id == OSCC_THROTTLE_DISABLE_CAN_ID )
-            {
-                disable_control( );
-            }
-            else if( frame->id == OSCC_THROTTLE_COMMAND_CAN_ID )
-            {
-                process_throttle_command( frame->data );
-            }
-            else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
-            {
-                process_fault_report( frame-> data );
-            }
-        }
+        Serial.println(frame->id, 16);
+
+        // if( (frame->data[0] == OSCC_MAGIC_BYTE_0)
+        //      && (frame->data[1] == OSCC_MAGIC_BYTE_1) )
+        // {
+        //     if ( frame->id == OSCC_THROTTLE_ENABLE_CAN_ID )
+        //     {
+        //         enable_control( );
+        //     }
+        //     else if ( frame->id == OSCC_THROTTLE_DISABLE_CAN_ID )
+        //     {
+        //         disable_control( );
+        //     }
+        //     else if( frame->id == OSCC_THROTTLE_COMMAND_CAN_ID )
+        //     {
+        //         process_throttle_command( frame->data );
+        //     }
+        //     else if ( frame->id == OSCC_FAULT_REPORT_CAN_ID )
+        //     {
+        //         process_fault_report( frame-> data );
+        //     }
+        //     else if ( frame->id == OSCC_CONFIG_F32_CAN_ID )
+        //     {
+        //         process_config_f32( frame->data );
+        //     }
+        //     else if ( frame->id == OSCC_CONFIG_U16_CAN_ID )
+        //     {
+        //         process_config_u16( frame->data );
+        //     }
+        // }
     }
 }
 
@@ -154,4 +171,52 @@ static void process_fault_report(
         DEBUG_PRINT( "  DTCs: ");
         DEBUG_PRINTLN( fault_report->dtcs );
     }
+}
+
+
+static void process_config_u16(
+    const uint8_t * const data )
+{
+    // if ( data != NULL )
+    // {
+    //     const oscc_config_u16_s * const config =
+    //             (oscc_config_u16_s *) data;
+
+    //     if ( (config->name == OSCC_CONFIG_U16_THROTTLE_PEDAL_OVERRIDE_THRESHOLD)
+    //         || (config->name == OSCC_CONFIG_U16_THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ) )
+    //     {
+    //         Serial.print("n  ");
+    //         Serial.print(config->name);
+    //         Serial.print(";v  ");
+    //         Serial.println(config->value);
+    //         oscc_eeprom_write_u16( config->name, config->value );
+
+    //         uint16_t val = oscc_eeprom_read_u16( config->name );
+
+    //         Serial.println(val);
+    //     }
+    // }
+}
+
+
+static void process_config_f32(
+    const uint8_t * const data )
+{
+    // if ( data != NULL )
+    // {
+    //     const oscc_config_f32_s * const config =
+    //             (oscc_config_f32_s *) data;
+
+    //     if ( (config->name == OSCC_CONFIG_F32_THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN)
+    //         || (config->name == OSCC_CONFIG_F32_THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX)
+    //         || (config->name == OSCC_CONFIG_F32_THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN)
+    //         || (config->name == OSCC_CONFIG_F32_THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX) )
+    //     {
+    //         oscc_eeprom_write_f32( config->name, config->value );
+
+    //         float val = oscc_eeprom_read_f32( config->name );
+
+    //         Serial.println(val);
+    //     }
+    // }
 }

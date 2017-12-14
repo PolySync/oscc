@@ -9,7 +9,7 @@
 
 #include "brake_control.h"
 #include "can_protocols/brake_can_protocol.h"
-#include "can_protocols/fault_can_protocol.h"
+#include "can_protocols/global_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
 #include "globals.h"
