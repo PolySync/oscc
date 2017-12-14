@@ -14,6 +14,13 @@
 
 
 /*
+ * @brief CAN ID representing the range of brake messages.
+ *
+ */
+#define OSCC_BRAKE_CAN_ID_INDEX (0x50)
+
+
+/*
  * @brief Brake enable message (CAN frame) ID.
  *
  */
@@ -29,13 +36,13 @@
  * @brief Brake command message (CAN frame) ID.
  *
  */
-#define OSCC_BRAKE_COMMAND_CAN_ID (0x60)
+#define OSCC_BRAKE_COMMAND_CAN_ID (0x52)
 
 /*
  * @brief Brake report message (CAN frame) ID.
  *
  */
-#define OSCC_BRAKE_REPORT_CAN_ID (0x61)
+#define OSCC_BRAKE_REPORT_CAN_ID (0x53)
 
 /*
  * @brief Brake report message (CAN frame) length.
