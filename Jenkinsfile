@@ -23,7 +23,7 @@ node('arduino') {
         echo 'Kia Soul Petrol Unit Tests Complete!'
       }, 'kia soul petrol property-based tests': {
         withEnv(["PATH+CARGO=$HOME/.cargo/bin"]) {
-          sh 'which rustup && cd firmware && mkdir build_kia_soul_petrol_property_tests && cd build_kia_soul_petrol_property_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
+          sh 'cd firmware && mkdir build_kia_soul_petrol_property_tests && cd build_kia_soul_petrol_property_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
           echo 'Kia Soul Petrol Property-Based Tests Complete!'
         }
       }
