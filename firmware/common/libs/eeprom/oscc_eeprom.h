@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#include "can_protocols/config_can_protocol.h"
+#include "can_protocols/global_can_protocol.h"
 
 
 // ****************************************************************************
