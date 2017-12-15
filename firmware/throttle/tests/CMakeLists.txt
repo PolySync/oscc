@@ -59,5 +59,5 @@ add_custom_target(
 add_custom_target(
     run-throttle-property-tests
     COMMAND
-    which rustup && cargo test -- --test-threads=1
+    cargo test -- --test-threads=1
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/property)
