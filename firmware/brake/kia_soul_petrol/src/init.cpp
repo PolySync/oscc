@@ -64,8 +64,8 @@ void init_communication_interfaces( void )
     init_can( g_control_can );
 
     // Filter CAN messages - accept if (CAN_ID & mask) == (filter & mask)
-    g_control_can.init_Mask(0, 0, 0x7F0); // Filter for 0x0N0 to 0x0NF
-    g_control_can.init_Mask(1, 0, 0x7FF); // Don't use second filter
-    g_control_can.init_Filt(0, 0, OSCC_BRAKE_CAN_ID_INDEX);
-    g_control_can.init_Filt(1, 0, OSCC_GLOBAL_CAN_ID_INDEX);
+    g_control_can.init_Mask( 0, 0, 0x7F0 ); // Filter for 0x0N0 to 0x0NF
+    g_control_can.init_Mask( 1, 0, 0x7FF ); // Don't use second filter
+    g_control_can.init_Filt( 0, 0, OSCC_BRAKE_CAN_ID_INDEX );
+    g_control_can.init_Filt( 1, 0, OSCC_GLOBAL_CAN_ID_INDEX );
 }
