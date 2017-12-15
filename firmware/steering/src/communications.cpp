@@ -117,8 +117,6 @@ static void process_steering_command(
         update_steering(
             steering_command->spoof_value_high,
             steering_command->spoof_value_low );
-
-        g_steering_command_timeout = false;
     }
 }
 

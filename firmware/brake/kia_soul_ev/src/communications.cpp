@@ -117,8 +117,6 @@ static void process_brake_command(
         update_brake(
             brake_command->spoof_value_high,
             brake_command->spoof_value_low );
-
-        g_brake_command_timeout = false;
     }
 }
 

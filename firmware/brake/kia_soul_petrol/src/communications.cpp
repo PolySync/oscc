@@ -117,8 +117,6 @@ static void process_brake_command(
 
         g_brake_control_state.commanded_pedal_position =
             brake_command->pedal_command;
-
-        g_brake_command_timeout = false;
     }
 }
 

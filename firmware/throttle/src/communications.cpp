@@ -117,8 +117,6 @@ static void process_throttle_command(
         update_throttle(
             throttle_command->spoof_value_high,
             throttle_command->spoof_value_low );
-
-        g_throttle_command_timeout = false;
     }
 }
 

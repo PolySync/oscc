@@ -37,7 +37,5 @@ static void check_for_faults( void )
 
     check_for_sensor_faults( );
 
-    g_steering_command_timeout = true;
-
     sei();
 }
