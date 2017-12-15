@@ -1,22 +1,29 @@
 /**
- * @file fault_can_protocol.h
- * @brief Fault CAN Protocol.
+ * @file global_can_protocol.h
+ * @brief Global CAN Protocol.
  *
  */
 
 
-#ifndef _OSCC_FAULT_CAN_PROTOCOL_H_
-#define _OSCC_FAULT_CAN_PROTOCOL_H_
+#ifndef _OSCC_GLOBAL_CAN_PROTOCOL_H_
+#define _OSCC_GLOBAL_CAN_PROTOCOL_H_
 
 
 #include <stdint.h>
 #include "magic.h"
 
+
+/*
+ * @brief CAN ID representing the range of global messages.
+ *
+ */
+#define OSCC_GLOBAL_CAN_ID_INDEX (0x90)
+
 /*
  * @brief Fault report message (CAN frame) ID.
  *
  */
-#define OSCC_FAULT_REPORT_CAN_ID (0x99)
+#define OSCC_FAULT_REPORT_CAN_ID (0x9F)
 
 /*
  * @brief Fault report message (CAN frame) length.
@@ -58,4 +65,4 @@ typedef struct
 #pragma pack(pop)
 
 
-#endif /* _OSCC_FAULT_CAN_PROTOCOL_H_ */
+#endif /* _OSCC_GLOBAL_CAN_PROTOCOL_H_ */
