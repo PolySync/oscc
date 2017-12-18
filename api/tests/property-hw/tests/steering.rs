@@ -1,10 +1,8 @@
-
 #![allow(non_camel_case_types)]
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_imports)]
 #![allow(unused_must_use)]
-
 include!(concat!(env!("OUT_DIR"), "/oscc_test.rs"));
 
 extern crate quickcheck;
@@ -12,41 +10,23 @@ extern crate rand;
 
 extern crate oscc_tests;
 
-use quickcheck::{QuickCheck, TestResult, StdGen};
-
 use std::{time, thread};
-
-mod callbacks {
-    use super::*;
-
-    static mut STEERING_ENABLED: bool = false;
-
-    pub unsafe extern "C" fn steering_report_callback(report: *mut oscc_steering_report_s) {
-            STEERING_ENABLED = (*report).enabled > 0;
-    }
-
-    pub fn steering_enabled() -> bool {
-        let ret = unsafe { STEERING_ENABLED };
-        // reset value
-        unsafe { STEERING_ENABLED = false; }
-        ret
-    }
-}
+use quickcheck::{QuickCheck, TestResult, StdGen};
 
 #[test]
 fn prop_steering_doesnt_disable() {
     fn steering_doesnt_disable( torque_command: f64 ) -> TestResult {
-        unsafe { oscc_subscribe_to_steering_reports(Some(callbacks::steering_report_callback)) };
+        oscc_tests::register_steering_callback();
 
         thread::sleep(time::Duration::new(1, 0));
 
-        assert_eq!(callbacks::steering_enabled(), true);
+        assert_eq!(oscc_tests::callbacks::steering_enabled(), true);
 
         unsafe { oscc_publish_steering_torque( torque_command ); }
 
         thread::sleep(time::Duration::new(1, 0));
 
-        TestResult::from_bool(callbacks::steering_enabled() == true)
+        TestResult::from_bool(oscc_tests::callbacks::steering_enabled() == true)
     }
     
     unsafe { oscc_open(0); }
