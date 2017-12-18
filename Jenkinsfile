@@ -22,7 +22,9 @@ node('arduino') {
         sh 'cd firmware && mkdir build_kia_soul_petrol_unit_tests && cd build_kia_soul_petrol_unit_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-unit-tests'
         echo 'Kia Soul Petrol Firmware Unit Tests Complete!'
       }, 'kia soul petrol firmware property-based tests': {
-        sh 'cd firmware && mkdir build_kia_soul_petrol_property_tests && cd build_kia_soul_petrol_property_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
+        withEnv(["PATH+CARGO=$HOME/.cargo/bin"]) {
+          sh 'rustup self update && rustup update && rustup install 1.20.0 && rustup component add rust-src && cd firmware && mkdir build_kia_soul_petrol_property_tests && cd build_kia_soul_petrol_property_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
+        }
         echo 'Kia Soul Petrol Firmware Property-Based Tests Complete!'
       }, 'kia soul petrol api property-based tests': {
         withEnv(["PATH+CARGO=$HOME/.cargo/bin"]) {
@@ -43,8 +45,10 @@ node('arduino') {
       parallel 'kia soul ev unit tests': {
         sh 'cd firmware && mkdir build_kia_soul_ev_unit_tests && cd build_kia_soul_ev_unit_tests && cmake .. -DKIA_SOUL_EV=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-unit-tests'
         echo 'Kia Soul EV Firmware Unit Tests Complete!'
-      }, 'kia soul ev property-based tests': {
-        sh 'cd firmware && mkdir build_kia_soul_ev_property_tests && cd build_kia_soul_ev_property_tests && cmake .. -DKIA_SOUL_EV=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
+      }, 'kia soul ev firmware property-based tests': {
+        withEnv(["PATH+CARGO=$HOME/.cargo/bin"]) {
+          sh 'rustup self update && rustup update && rustup install 1.20.0 && rustup component add rust-src && cd firmware && mkdir build_kia_soul_ev_property_tests && cd build_kia_soul_ev_property_tests && cmake .. -DKIA_SOUL_EV=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
+        }
         echo 'Kia Soul EV Firmware Property-Based Tests Complete!'
       }, 'kia soul ev api property-based tests': {
         withEnv(["PATH+CARGO=$HOME/.cargo/bin"]) {
