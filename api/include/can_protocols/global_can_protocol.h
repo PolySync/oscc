@@ -179,6 +179,9 @@ typedef enum
     /* Frequency at which to check for faults in the EV brake module. */
     OSCC_CONFIG_U16_BRAKE_EV_FAULT_CHECK_FREQUENCY_IN_HZ,
 
+    /* Brake report message publishing frequency. [Hz] */
+    OSCC_CONFIG_U16_BRAKE_EV_REPORT_PUBLISH_FREQ_IN_HZ,
+
     /* Minimum possible value expected to be read from the brake pressure
      * sensors when the pressure check pins (PCK1/PCK2) are asserted. */
     OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MIN,

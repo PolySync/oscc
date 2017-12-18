@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "init.h"
 #include "timers.h"
+#include "oscc_eeprom.h"
 
 
 int main( void )
@@ -21,6 +22,10 @@ int main( void )
     init_devices( );
 
     init_communication_interfaces( );
+
+    #ifdef RESET_CONFIG
+    init_config( );
+    #endif
 
     start_timers( );
 

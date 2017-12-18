@@ -171,6 +171,30 @@ typedef struct
 #define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1876 )
 
 /*
+ * @brief Value of the accelerator position that indicates operator override. [steps]
+ *
+ */
+#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130 )
+
+/*
+ * @brief Frequency at which to check for faults. [Hz]
+ *
+ */
+#define BRAKE_FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
+
+/*
+ * @brief Minimum value of the low spoof signal that activates the brake lights. [steps]
+ *
+ */
+#define BRAKE_LIGHT_SPOOF_LOW_THRESHOLD ( 300 )
+
+/*
+ * @brief Minimum value of the high spoof signal that activates the brake lights. [steps]
+ *
+ */
+#define BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD ( 600 )
+
+/*
  * @brief Calculation to convert a brake position to a low spoof voltage.
  *
  */
@@ -185,24 +209,6 @@ typedef struct
 #define BRAKE_POSITION_TO_VOLTS_HIGH( position ) ( (position) *\
     (BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) +\
     BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN  )
-
-/*
- * @brief Value of the accelerator position that indicates operator override. [steps]
- *
- */
-#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130 )
-
-/*
- * @brief Minimum value of the low spoof signal that activates the brake lights. [steps]
- *
- */
-#define BRAKE_LIGHT_SPOOF_LOW_THRESHOLD ( 300 )
-
-/*
- * @brief Minimum value of the high spoof signal that activates the brake lights. [steps]
- *
- */
-#define BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD ( 600 )
 
 
 

@@ -54,7 +54,7 @@
  * @brief Steering report message publishing frequency. [Hz]
  *
  */
-#define OSCC_REPORT_STEERING_PUBLISH_FREQ_IN_HZ (50)
+#define OSCC_STEERING_REPORT_PUBLISH_FREQ_IN_HZ (50)
 
 /*
  * @brief Enumeration of all possible steering DTCs.
