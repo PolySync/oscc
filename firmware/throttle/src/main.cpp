@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "init.h"
 #include "timers.h"
+#include "oscc_eeprom.h"
 #include "throttle_control.h"
 
 
@@ -21,6 +22,10 @@ int main( void )
     init_devices( );
 
     init_communication_interfaces( );
+
+    #ifdef RESET_CONFIG
+    init_config( );
+    #endif
 
     start_timers( );
 

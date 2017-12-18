@@ -6,19 +6,15 @@
 
 #include <Arduino.h>
 
+#include "can_protocols/global_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
+#include "vehicles.h"
 #include "communications.h"
 #include "globals.h"
+#include "oscc_eeprom.h"
 #include "oscc_timer.h"
 #include "throttle_control.h"
 #include "timers.h"
-
-
-/*
- * @brief Fault checking frequency. [Hz]
- *
- */
-#define FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
 
 
 static void check_for_faults( void );
@@ -26,8 +22,16 @@ static void check_for_faults( void );
 
 void start_timers( void )
 {
-    timer1_init( FAULT_CHECK_FREQUENCY_IN_HZ, check_for_faults );
-    timer2_init( OSCC_REPORT_THROTTLE_PUBLISH_FREQ_IN_HZ, publish_throttle_report );
+    uint16_t fault_check_frequency_in_hz =
+        oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ );
+
+    timer1_init( fault_check_frequency_in_hz, check_for_faults );
+
+
+    uint16_t report_publish_frequency_in_hz =
+        oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_REPORT_PUBLISH_FREQ_IN_HZ );
+
+    timer2_init( report_publish_frequency_in_hz, publish_throttle_report );
 }
 
 

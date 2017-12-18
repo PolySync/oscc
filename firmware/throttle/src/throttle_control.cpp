@@ -7,12 +7,14 @@
 #include <Arduino.h>
 #include <stdint.h>
 
+#include "can_protocols/global_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_eeprom.h"
 #include "throttle_control.h"
 #include "vehicles.h"
 
@@ -41,7 +43,10 @@ void check_for_operator_override( void )
         uint32_t accelerator_position_average =
             (accelerator_position.low + accelerator_position.high) / 2;
 
-        if ( accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD )
+        uint16_t throttle_pedal_override_threshold =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_PEDAL_OVERRIDE_THRESHOLD );
+
+        if ( accelerator_position_average >= throttle_pedal_override_threshold )
         {
             disable_control( );
 
@@ -115,17 +120,31 @@ void update_throttle(
 {
     if ( g_throttle_control_state.enabled == true )
     {
+        uint16_t throttle_spoof_high_signal_range_min =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN );
+
+        uint16_t throttle_spoof_high_signal_range_max =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
-                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+                throttle_spoof_high_signal_range_min,
+                throttle_spoof_high_signal_range_max );
+
+
+        uint16_t throttle_spoof_low_signal_range_min =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN );
+
+        uint16_t throttle_spoof_low_signal_range_max =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
         uint16_t spoof_low =
             constrain(
                 spoof_command_low,
-                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
-                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
+                throttle_spoof_low_signal_range_min,
+                throttle_spoof_low_signal_range_max );
+
 
         cli();
         g_dac.outputA( spoof_high );

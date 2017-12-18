@@ -13,6 +13,7 @@
 #include "globals.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
+#include "oscc_eeprom.h"
 #include "throttle_control.h"
 
 
@@ -25,6 +26,8 @@ static void process_throttle_command(
 static void process_fault_report(
     const uint8_t * const data );
 
+static void process_config_u16(
+    const uint8_t * const data );
 
 void publish_throttle_report( void )
 {
@@ -117,6 +120,10 @@ static void process_rx_frame(
             {
                 process_fault_report( frame-> data );
             }
+            else if ( frame->id == OSCC_CONFIG_U16_CAN_ID )
+            {
+                process_config_u16( frame->data );
+            }
         }
     }
 }
@@ -153,5 +160,27 @@ static void process_fault_report(
         DEBUG_PRINT( fault_report->fault_origin_id );
         DEBUG_PRINT( "  DTCs: ");
         DEBUG_PRINTLN( fault_report->dtcs );
+    }
+}
+
+
+static void process_config_u16(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        const oscc_config_u16_s * const config =
+                (oscc_config_u16_s *) data;
+
+        if ( (config->name == OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN)
+            || (config->name == OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX)
+            || (config->name == OSCC_CONFIG_U16_THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN)
+            || (config->name == OSCC_CONFIG_U16_THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX)
+            || (config->name == OSCC_CONFIG_U16_THROTTLE_PEDAL_OVERRIDE_THRESHOLD)
+            || (config->name == OSCC_CONFIG_U16_THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ)
+            || (config->name == OSCC_CONFIG_U16_THROTTLE_REPORT_PUBLISH_FREQ_IN_HZ) )
+        {
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
     }
 }

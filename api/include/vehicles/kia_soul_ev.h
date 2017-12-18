@@ -394,6 +394,18 @@ typedef struct
 #define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3358 )
 
 /*
+ * @brief Value of the accelerator position that indicates operator override. [steps]
+ *
+ */
+#define THROTTLE_PEDAL_OVERRIDE_THRESHOLD ( 185.0 )
+
+/*
+ * @brief Frequency at which to check for faults. [Hz]
+ *
+ */
+#define THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
+
+/*
  * @brief Calculation to convert a throttle position to a low spoof voltage.
  *
  */
@@ -408,19 +420,6 @@ typedef struct
 #define THROTTLE_POSITION_TO_VOLTS_HIGH( position ) ( (position) *\
     (THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) +\
     THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN  )
-
-/*
- * @brief Value of the accelerator position that indicates operator override. [steps]
- *
- */
-#define THROTTLE_PEDAL_OVERRIDE_THRESHOLD ( 185.0 )
-
-/*
- * @brief Frequency at which to check for faults. [Hz]
- *
- */
-#define THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
-
 
 
 #endif
