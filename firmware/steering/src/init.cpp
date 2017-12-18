@@ -13,7 +13,9 @@
 #include "globals.h"
 #include "init.h"
 #include "oscc_can.h"
+#include "oscc_eeprom.h"
 #include "oscc_serial.h"
+#include "vehicles.h"
 
 
 void init_globals( void )
@@ -56,4 +58,18 @@ void init_communication_interfaces( void )
     g_control_can.init_Mask( 1, 0, 0x7FF ); // Don't use second filter
     g_control_can.init_Filt( 0, 0, OSCC_STEERING_CAN_ID_INDEX );
     g_control_can.init_Filt( 1, 0, OSCC_GLOBAL_CAN_ID_INDEX );
+}
+
+
+void init_config( void )
+{
+    Serial.println( "Resetting config to defaults");
+
+    oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN, STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN );
+    oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX, STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
+    oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN, STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN );
+    oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX, STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+    oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD, STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD );
+    oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_FAULT_CHECK_FREQUENCY_IN_HZ, STEERING_FAULT_CHECK_FREQUENCY_IN_HZ );
+    oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_REPORT_PUBLISH_FREQ_IN_HZ, OSCC_REPORT_STEERING_PUBLISH_FREQ_IN_HZ );
 }

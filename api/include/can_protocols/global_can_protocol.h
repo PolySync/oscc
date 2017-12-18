@@ -203,10 +203,13 @@ typedef enum
     OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX,
 
     /* Value of steering torque sensor difference that indicates likely operator override. */
-    OSCC_CONFIG_U16_STEERING_TORQUE_OVERRIDE_THRESHOLD,
+    OSCC_CONFIG_U16_STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD,
 
     /* Frequency at which to check for faults in the steering module. */
     OSCC_CONFIG_U16_STEERING_FAULT_CHECK_FREQUENCY_IN_HZ,
+
+    /* Steering report message publishing frequency. [Hz] */
+    OSCC_CONFIG_U16_STEERING_REPORT_PUBLISH_FREQ_IN_HZ,
 
     /* Minimum allowed value for the low throttle spoof signal value. [steps] */
     OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,

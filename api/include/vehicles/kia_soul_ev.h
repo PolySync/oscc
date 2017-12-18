@@ -300,6 +300,19 @@ typedef struct
 #define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.42 )
 
 /*
+ * @brief Value of torque sensor difference that indicates likely operator
+ *        override.
+ *
+ */
+#define STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
+
+/*
+ * @brief Frequency at which to check for faults. [Hz]
+ *
+ */
+#define STEERING_FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
+
+/*
  * @brief Minimum allowed value for the high spoof signal value.
  *
  */
@@ -314,13 +327,6 @@ typedef struct
 #define STEERING_TORQUE_TO_VOLTS_LOW( torque ) (\
             ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
             + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
-
-/*
- * @brief Value of torque sensor difference that indicates likely operator
- *        override.
- *
- */
-#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
 
 
 

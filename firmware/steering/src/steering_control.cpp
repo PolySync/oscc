@@ -8,12 +8,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "can_protocols/global_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_eeprom.h"
 #include "steering_control.h"
 #include "vehicles.h"
 
@@ -61,7 +63,10 @@ void check_for_operator_override( void )
             unfiltered_diff,
             filtered_diff);
 
-        if( abs( filtered_diff ) > TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD )
+        uint16_t torque_difference_override_threshold =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD );
+
+        if( abs( filtered_diff ) > torque_difference_override_threshold )
         {
             disable_control( );
 
@@ -135,17 +140,30 @@ void update_steering(
 {
     if ( g_steering_control_state.enabled == true )
     {
+        uint16_t steering_spoof_high_signal_range_min =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN );
+
+        uint16_t steering_spoof_high_signal_range_max =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
-                STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+                steering_spoof_high_signal_range_min,
+                steering_spoof_high_signal_range_max );
+
+
+        uint16_t steering_spoof_low_signal_range_min =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN );
+
+        uint16_t steering_spoof_low_signal_range_max =
+            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
         uint16_t spoof_low =
             constrain(
                 spoof_command_low,
-                STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
-                STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
+                steering_spoof_low_signal_range_min,
+                steering_spoof_low_signal_range_max );
 
         cli();
         g_dac.outputA( spoof_high );
