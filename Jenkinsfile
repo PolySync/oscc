@@ -29,6 +29,10 @@ node('arduino') {
       }, 'kia soul petrol api property-based tests': {
         withEnv(["PATH+CARGO=$HOME/.cargo/bin"]) {
           sh '''
+            rustup self update
+            rustup update
+            rustup install 1.20.0
+            rustup component add rust-src
             cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
             mkdir build_kia_soul_property_tests
             cd build_kia_soul_property_tests
@@ -53,6 +57,10 @@ node('arduino') {
       }, 'kia soul ev api property-based tests': {
         withEnv(["PATH+CARGO=$HOME/.cargo/bin"]) {
           sh '''
+            rustup self update
+            rustup update
+            rustup install 1.20.0
+            rustup component add rust-src
             cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
             mkdir build_kia_soul_ev_property_tests
             cd build_kia_soul_ev_property_tests
