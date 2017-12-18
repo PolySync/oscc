@@ -155,8 +155,20 @@ typedef enum
  */
 typedef enum
 {
+    /* Minimum allowed value for the low brake spoof signal value. [steps] */
+    OSCC_CONFIG_U16_BRAKE_EV_SPOOF_LOW_SIGNAL_RANGE_MIN = 0,
+
+    /* Maximum allowed value for the low brake spoof signal value. [steps] */
+    OSCC_CONFIG_U16_BRAKE_EV_SPOOF_LOW_SIGNAL_RANGE_MAX,
+
+    /* Minimum allowed value for the high brake spoof signal value. [steps] */
+    OSCC_CONFIG_U16_BRAKE_EV_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+
+    /* Maximum allowed value for the high brake spoof signal value. [steps] */
+    OSCC_CONFIG_U16_BRAKE_EV_SPOOF_HIGH_SIGNAL_RANGE_MAX,
+
     /* Value of the brake pedal position sensor that indicates operator override. */
-    OSCC_CONFIG_U16_BRAKE_EV_PEDAL_OVERRIDE_THRESHOLD = 0,
+    OSCC_CONFIG_U16_BRAKE_EV_PEDAL_OVERRIDE_THRESHOLD,
 
     /* Minimum value of the low spoof signal that activates the brake lights. */
     OSCC_CONFIG_U16_BRAKE_EV_LIGHT_SPOOF_LOW_THRESHOLD,
@@ -178,17 +190,44 @@ typedef enum
     /* Frequency at which to check for faults in the petrol brake module. */
     OSCC_CONFIG_U16_BRAKE_PETROL_FAULT_CHECK_FREQUENCY_IN_HZ,
 
+    /* Minimum allowed value for the low steering spoof signal value. [steps] */
+    OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
+
+    /* Maximum allowed value for the low steering spoof signal value. [steps] */
+    OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX,
+
+    /* Minimum allowed value for the high steering spoof signal value. [steps] */
+    OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+
+    /* Maximum allowed value for the high steering spoof signal value. [steps] */
+    OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX,
+
     /* Value of steering torque sensor difference that indicates likely operator override. */
     OSCC_CONFIG_U16_STEERING_TORQUE_OVERRIDE_THRESHOLD,
 
     /* Frequency at which to check for faults in the steering module. */
     OSCC_CONFIG_U16_STEERING_FAULT_CHECK_FREQUENCY_IN_HZ,
 
+    /* Minimum allowed value for the low throttle spoof signal value. [steps] */
+    OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
+
+    /* Maximum allowed value for the low throttle spoof signal value. [steps] */
+    OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX,
+
+    /* Minimum allowed value for the high throttle spoof signal value. [steps] */
+    OSCC_CONFIG_U16_THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
+
+    /* Maximum allowed value for the high throttle spoof signal value. [steps] */
+    OSCC_CONFIG_U16_THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX,
+
     /* Value of the throttle pedal position sensor that indicates operator override. */
     OSCC_CONFIG_U16_THROTTLE_PEDAL_OVERRIDE_THRESHOLD,
 
     /* Frequency at which to check for faults in the throttle module. */
     OSCC_CONFIG_U16_THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ,
+
+    /* Throttle report message publishing frequency. [Hz] */
+    OSCC_CONFIG_U16_THROTTLE_REPORT_PUBLISH_FREQ_IN_HZ,
 
     /* Number of possible U16 configuration parameters. */
     OSCC_CONFIG_U16_COUNT
@@ -240,18 +279,6 @@ typedef enum
  */
 typedef enum
 {
-    /* Minimum allowed voltage for the low brake spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_BRAKE_EV_SPOOF_LOW_SIGNAL_VOLTAGE_MIN = 0,
-
-    /* Maximum allowed voltage for the low brake spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_BRAKE_EV_SPOOF_LOW_SIGNAL_VOLTAGE_MAX,
-
-    /* Minimum allowed voltage for the high brake spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_BRAKE_EV_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
-
-    /* Maximum allowed voltage for the high brake spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_BRAKE_EV_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX,
-
     /* Minimum accumulator pressure. */
     OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS,
 
@@ -311,30 +338,6 @@ typedef enum
 
     /* Maximum duty cycle where release solenoid has reached its stop. */
     OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MAX,
-
-    /* Minimum allowed voltage for the low steering spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN,
-
-    /* Maximum allowed voltage for the low steering spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MAX,
-
-    /* Minimum allowed voltage for the high steering spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
-
-    /* Maximum allowed voltage for the high steering spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX,
-
-    /* Minimum allowed voltage for the low throttle spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN,
-
-    /* Maximum allowed voltage for the low throttle spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX,
-
-    /* Minimum allowed voltage for the high throttle spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
-
-    /* Maximum allowed voltage for the high throttle spoof signal voltage. [volts] */
-    OSCC_CONFIG_F32_THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX,
 
     /* Number of possible F32 configuration parameters. */
     OSCC_CONFIG_F32_COUNT

@@ -413,7 +413,13 @@ typedef struct
  * @brief Value of the accelerator position that indicates operator override. [steps]
  *
  */
-#define ACCELERATOR_OVERRIDE_THRESHOLD ( 185.0 )
+#define THROTTLE_PEDAL_OVERRIDE_THRESHOLD ( 185.0 )
+
+/*
+ * @brief Frequency at which to check for faults. [Hz]
+ *
+ */
+#define THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
 
 
 
