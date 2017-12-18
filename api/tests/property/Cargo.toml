@@ -11,7 +11,7 @@ rand = "0.3.15"
 socketcan = "1.7.0"
 
 [build-dependencies]
-bindgen = "0.30.0"
+bindgen = "0.25.0"
 gcc = "0.3.51"
 
 [lib]
