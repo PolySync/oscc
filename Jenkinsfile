@@ -33,7 +33,7 @@ node('arduino') {
             rustup update
             rustup install 1.20.0
             rustup component add rust-src
-            cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
+            cd api/tests
             mkdir build_kia_soul_property_tests
             cd build_kia_soul_property_tests
             cmake .. -DKIA_SOUL=ON
@@ -61,7 +61,7 @@ node('arduino') {
             rustup update
             rustup install 1.20.0
             rustup component add rust-src
-            cd api/tests && chmod +x initialize_vcan.sh && ./initialize_vcan.sh
+            cd api/tests
             mkdir build_kia_soul_ev_property_tests
             cd build_kia_soul_ev_property_tests
             cmake .. -DKIA_SOUL_EV=ON
