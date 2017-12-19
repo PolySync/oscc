@@ -6,8 +6,10 @@
 
 #include <stdlib.h>
 
+#include "can_protocols/global_can_protocol.h"
 #include "globals.h"
 #include "helper.h"
+#include "oscc_eeprom.h"
 #include "vehicles.h"
 
 
@@ -36,13 +38,19 @@ float raw_adc_to_pressure(
     pressure *= VOLTAGE_TO_PRESSURE_SCALAR;
     pressure += VOLTAGE_TO_PRESSURE_OFFSET;
 
-    if ( pressure < BRAKE_PRESSURE_MIN_IN_DECIBARS )
+    float brake_pressure_min_in_decibars =
+        oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PRESSURE_MIN_IN_DECIBARS );
+
+    float brake_pressure_max_in_decibars =
+        oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PRESSURE_MAX_IN_DECIBARS );
+
+    if ( pressure < brake_pressure_min_in_decibars )
     {
-        pressure = BRAKE_PRESSURE_MIN_IN_DECIBARS;
+        pressure = brake_pressure_min_in_decibars;
     }
-    else if ( pressure > BRAKE_PRESSURE_MAX_IN_DECIBARS )
+    else if ( pressure > brake_pressure_max_in_decibars )
     {
-        pressure = BRAKE_PRESSURE_MAX_IN_DECIBARS;
+        pressure = brake_pressure_max_in_decibars;
     }
 
     return ( pressure );

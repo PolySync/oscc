@@ -193,6 +193,9 @@ typedef enum
     /* Frequency at which to check for faults in the petrol brake module. */
     OSCC_CONFIG_U16_BRAKE_PETROL_FAULT_CHECK_FREQUENCY_IN_HZ,
 
+    /* Brake report message publishing frequency. [Hz] */
+    OSCC_CONFIG_U16_BRAKE_PETROL_REPORT_PUBLISH_FREQ_IN_HZ,
+
     /* Minimum allowed value for the low steering spoof signal value. [steps] */
     OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
 

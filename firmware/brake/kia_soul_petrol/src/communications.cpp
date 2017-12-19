@@ -15,6 +15,7 @@
 #include "globals.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
+#include "oscc_eeprom.h"
 
 
 static void process_rx_frame(
@@ -24,6 +25,12 @@ static void process_brake_command(
     const uint8_t * const data );
 
 static void process_fault_report(
+    const uint8_t * const data );
+
+static void process_config_u16(
+    const uint8_t * const data );
+
+static void process_config_f32(
     const uint8_t * const data );
 
 
@@ -118,6 +125,14 @@ static void process_rx_frame(
             {
                 process_fault_report( frame->data );
             }
+            else if ( frame->id == OSCC_CONFIG_U16_CAN_ID )
+            {
+                process_config_u16( frame->data );
+            }
+            else if ( frame->id == OSCC_CONFIG_F32_CAN_ID )
+            {
+                process_config_f32( frame->data );
+            }
         }
     }
 }
@@ -153,5 +168,59 @@ static void process_fault_report(
         DEBUG_PRINT( fault_report->fault_origin_id );
         DEBUG_PRINT( "  DTCs: ");
         DEBUG_PRINTLN( fault_report->dtcs );
+    }
+}
+
+
+static void process_config_u16(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        const oscc_config_u16_s * const config =
+                (oscc_config_u16_s *) data;
+
+        if ( (config->name == OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MIN)
+            || (config->name == OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MAX)
+            || (config->name == OSCC_CONFIG_U16_BRAKE_PETROL_FAULT_CHECK_FREQUENCY_IN_HZ)
+            || (config->name == OSCC_CONFIG_U16_BRAKE_PETROL_REPORT_PUBLISH_FREQ_IN_HZ) )
+        {
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+    }
+}
+
+
+static void process_config_f32(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        const oscc_config_f32_s * const config =
+                (oscc_config_f32_s *) data;
+
+        if ( (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PRESSURE_MIN_IN_DECIBARS)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PRESSURE_MAX_IN_DECIBARS)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_PROPORTIONAL_GAIN)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_INTEGRAL_GAIN)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_DERIVATIVE_GAIN)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_WINDUP_GUARD)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_OUTPUT_MIN)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_OUTPUT_MAX)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_ACCUMULATOR_SOLENOID_CLAMPED_MIN)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_ACCUMULATOR_SOLENOID_CLAMPED_MAX)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_RELEASE_SOLENOID_CLAMPED_MIN)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_RELEASE_SOLENOID_CLAMPED_MAX)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MIN)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MIN)
+            || (config->name == OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MAX) )
+        {
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
     }
 }
