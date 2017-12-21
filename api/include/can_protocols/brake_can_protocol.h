@@ -50,16 +50,20 @@
 #define OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ (50)
 
 /*
- * @brief Brake DTC bitfield position indicating an invalid sensor value.
+ * @brief Enumeration of all possible brake DTCs.
  *
  */
-#define OSCC_BRAKE_DTC_INVALID_SENSOR_VAL (0x0)
+enum
+{
+    /* DTC bitfield position indicating an invalid sensor value. */
+    OSCC_BRAKE_DTC_INVALID_SENSOR_VAL = 0,
 
-/*
- * @brief Brake DTC bitfield position indicating an operator override.
- *
- */
-#define OSCC_BRAKE_DTC_OPERATOR_OVERRIDE (0x1)
+    /* DTC bitfield position indicating an operator override. */
+    OSCC_BRAKE_DTC_OPERATOR_OVERRIDE,
+
+    /* Number of possible brake DTCs. */
+    OSCC_BRAKE_DTC_COUNT
+};
 
 
 #pragma pack(push)

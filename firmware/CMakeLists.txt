@@ -3,6 +3,10 @@ if(TESTS)
 
     project(tests)
 
+    if(TESTS)
+        add_definitions(-DTESTS)
+    endif()
+
     if(DEBUG)
         add_definitions(-DDEBUG)
     endif()
