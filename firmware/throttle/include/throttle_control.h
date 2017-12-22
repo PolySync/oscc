@@ -112,4 +112,21 @@ void enable_control( void );
 void disable_control( void );
 
 
+// ****************************************************************************
+// Function:    check_accelerator_position_data
+//
+// Purpose:     Checks accerator data read from the ADCs against the known 
+//              ranges it should be within.  Counts the number of errors 
+//              observed.
+//
+// Returns:     Number of errors observed
+//
+// Parameters:  value - accelerator_position_s structure containing the values 
+//              to check
+//
+// ****************************************************************************
+uint8_t check_accelerator_position_data(
+    accelerator_position_s * const value );
+
+
 #endif /* _OSCC_THROTTLE_CONTROL_H_ */

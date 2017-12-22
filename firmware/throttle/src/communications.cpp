@@ -11,6 +11,7 @@
 #include "communications.h"
 #include "debug.h"
 #include "globals.h"
+#include "status.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
 #include "throttle_control.h"
@@ -43,6 +44,7 @@ void publish_throttle_report( void )
         OSCC_THROTTLE_REPORT_CAN_DLC,
         (uint8_t*) &throttle_report );
     sei();
+
 }
 
 
@@ -88,7 +90,9 @@ void check_for_incoming_message( void )
 
     if( ret == CAN_RX_FRAME_AVAILABLE )
     {
+	status_setRedLed(0);
         process_rx_frame( &rx_frame );
+	status_setRedLed(1);
     }
 }
 

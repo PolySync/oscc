@@ -8,6 +8,7 @@
 #include "communications.h"
 #include "debug.h"
 #include "init.h"
+#include "status.h"
 #include "timers.h"
 #include "throttle_control.h"
 
@@ -18,6 +19,8 @@ int main( void )
 
     init_globals( );
 
+    init_status( );
+
     init_devices( );
 
     init_communication_interfaces( );
@@ -25,6 +28,7 @@ int main( void )
     start_timers( );
 
     DEBUG_PRINTLN( "init complete" );
+    status_ledsOff( );
 
     while( true )
     {
