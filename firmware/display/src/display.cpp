@@ -154,22 +154,45 @@ void update_display( void )
 
 static void update_leds( void )
 {
+    static uint32_t lastToggle = 0;
+    static uint8_t toggleState = 0;
+
     if( (g_display_state.status_screen.brakes == MODULE_STATUS_ERROR)
         || (g_display_state.status_screen.steering == MODULE_STATUS_ERROR)
         || (g_display_state.status_screen.throttle == MODULE_STATUS_ERROR) )
     {
         g_display.enableRedLed( );
     }
-    else if( (g_display_state.status_screen.brakes == MODULE_STATUS_UNKNOWN)
-        || (g_display_state.status_screen.steering == MODULE_STATUS_UNKNOWN)
-        || (g_display_state.status_screen.throttle == MODULE_STATUS_UNKNOWN) )
+    else if( (g_display_state.status_screen.brakes == MODULE_STATUS_DISABLED)
+        && (g_display_state.status_screen.brakes == MODULE_STATUS_DISABLED)
+        && (g_display_state.status_screen.brakes == MODULE_STATUS_DISABLED) )
     {
-        g_display.enableYellowLed( );
+	if(toggleState)
+        {
+	    if((millis() - lastToggle) > 500)
+            {
+                g_display.enableYellowLed( );
+                lastToggle = millis();
+                toggleState = 0;
+            }
+        }
+        else
+        {
+	    if((millis() - lastToggle) > 1000)
+            {
+                g_display.disableLeds( );
+                lastToggle = millis();
+                toggleState = 1;
+            }
+        }
     }
-    else
+    else if( (g_display_state.status_screen.brakes == MODULE_STATUS_ENABLED)
+        && (g_display_state.status_screen.steering == MODULE_STATUS_ENABLED)
+        && (g_display_state.status_screen.throttle == MODULE_STATUS_ENABLED) )
     {
         g_display.enableGreenLed( );
     }
+
 }
 
 
@@ -178,7 +201,17 @@ static void display_status_screen( void )
     g_display.eraseBuffer();
 
     g_display.setCursor( ORIGIN_X, ORIGIN_Y );
-    g_display.print( "STATUS" );
+
+    if( (g_display_state.status_screen.brakes == MODULE_STATUS_DISABLED)
+        && (g_display_state.status_screen.brakes == MODULE_STATUS_DISABLED)
+        && (g_display_state.status_screen.brakes == MODULE_STATUS_DISABLED) )
+    {
+            g_display.print( "STATUS - READY" );
+    }
+    else
+    {
+        g_display.print( "STATUS" );
+    }
 
     draw_header_line( );
 

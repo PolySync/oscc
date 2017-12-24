@@ -80,8 +80,12 @@ class SSD1325 : public GFX {
         void drawPixel(int16_t x, int16_t y, uint16_t color);
         bool readButton(void);
         void enableRedLed(void);
+        void toggleRedLed(void);
         void enableYellowLed(void);
+        void toggleYellowLed(void);
         void enableGreenLed(void);
+        void toggleGreenLed(void);
+        void disableLeds(void);
 
     private:
         int8_t cs;

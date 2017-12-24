@@ -103,6 +103,7 @@ static uint8_t buffer[SSD1325_LCDHEIGHT * SSD1325_LCDWIDTH / 8] = {
 
 void SSD1325::begin(void)
 {
+
     SPI.begin();
     SPI.setDataMode(SPI_MODE0);
     SPI.setClockDivider(SPI_CLOCK_DIV2);
@@ -288,6 +289,23 @@ void SSD1325::enableRedLed()
     digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
 }
 
+void SSD1325::toggleRedLed()
+{
+    if( shift_register_data & 0x10)
+        shift_register_data =  (shift_register_data & ~0x70);
+    else 
+        shift_register_data = ((0x01 << 4) & 0x70) | (shift_register_data & ~0x70);
+
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
 
 void SSD1325::enableYellowLed()
 {
@@ -302,10 +320,58 @@ void SSD1325::enableYellowLed()
     digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
 }
 
+void SSD1325::toggleYellowLed()
+{
+    if( shift_register_data & 0x20)
+        shift_register_data =  (shift_register_data & ~0x70);
+    else 
+        shift_register_data = ((0x02 << 4) & 0x70) | (shift_register_data & ~0x70);
+
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
 
 void SSD1325::enableGreenLed()
 {
     shift_register_data = ((0x04 << 4) & 0x70) | (shift_register_data & ~0x70);
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
+void SSD1325::toggleGreenLed()
+{
+    if( shift_register_data & 0x40)
+        shift_register_data =  (shift_register_data & ~0x70);
+    else 
+        shift_register_data = ((0x04 << 4) & 0x70) | (shift_register_data & ~0x70);
+
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
+void SSD1325::disableLeds()
+{
+
+    shift_register_data =  (shift_register_data & ~0x70);
 
     digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
     delay(1);
