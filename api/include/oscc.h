@@ -25,10 +25,19 @@ typedef enum
     OSCC_WARNING
 } oscc_result_t;
 
+/**
+ * @brief Looks for available CAN channels and automaticcaly detects which
+ *        channel is OSCC control and which channel is vehicle CAN for feedback.
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_open();
 
 /**
- * @brief Use provided CAN channel to open communications
- *        to CAN bus connected to the OSCC modules.
+ * @brief Use provided CAN channel to open communications to CAN bus connected
+ *        to the OSCC modules. If CAN gateway does not forward Vehicle CAN
+ *        automatically detect if a CAN channel has Vehicle CAN available.
  *
  * @param [in] channel - CAN channel connected to OSCC modules.
  *
@@ -37,6 +46,18 @@ typedef enum
  */
 oscc_result_t oscc_open( unsigned int channel );
 
+/**
+ * @brief Initializes connection to the specified CAN channels for OSCC control
+ *        and vehicle CAN for feedback.
+ *
+ * @param [in] oscc_channel - CAN channel connected to OSCC modules.
+ * @param [in] vehicle_channel - CAN channel connected to OSCC modules.
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_open( const char * const oscc_channel,
+                         const char * const vehicle_channel );
 
 /**
  * @brief Use provided CAN channel to close communications
@@ -177,4 +198,3 @@ oscc_result_t oscc_subscribe_to_obd_messages( void( *callback )( struct can_fram
 
 
 #endif /* _OSCC_H */
-
