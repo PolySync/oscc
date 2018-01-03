@@ -30,6 +30,9 @@
 static void read_torque_sensor(
     steering_torque_s * value );
 
+static uint8_t check_torque_sensor_data(
+    steering_torque_s * const value );
+
 static float exponential_moving_average(
     const float alpha,
     const float input,

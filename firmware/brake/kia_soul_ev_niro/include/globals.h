@@ -13,7 +13,6 @@
 #include "DAC_MCP49xx.h"
 #include "mcp_can.h"
 
-
 /*
  * @brief Green LED Pin.
  *

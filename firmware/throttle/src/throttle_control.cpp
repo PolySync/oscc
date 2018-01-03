@@ -29,6 +29,9 @@
 static void read_accelerator_position_sensor(
     accelerator_position_s * const value );
 
+uint8_t check_accelerator_position_data(
+    accelerator_position_s * const value );
+
 
 void check_for_operator_override( void )
 {

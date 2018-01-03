@@ -29,6 +29,8 @@
 static void read_brake_pedal_position_sensor(
     brake_pedal_position_s * const value );
 
+static uint8_t check_brake_pedal_position_data(
+    brake_pedal_position_s * const value );
 
 void check_for_operator_override( void )
 {
