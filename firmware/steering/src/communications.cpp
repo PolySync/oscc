@@ -67,6 +67,7 @@ void publish_fault_report( void )
 
 void check_for_controller_command_timeout( void )
 {
+/*
     if( g_steering_control_state.enabled == true )
     {
         if( g_steering_command_timeout == true )
@@ -78,6 +79,7 @@ void check_for_controller_command_timeout( void )
             DEBUG_PRINTLN( "Timeout - controller command" );
         }
     }
+*/
 }
 
 

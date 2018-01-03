@@ -34,6 +34,7 @@ generate_arduino_firmware(
     src/globals.cpp
     src/init.cpp
     src/communications.cpp
+    src/status.cpp
     src/steering_control.cpp
     src/timers.cpp)
 

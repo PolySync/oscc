@@ -370,28 +370,28 @@ typedef struct
  *
  * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 311 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 250 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1724 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1850 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 620 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 550 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3446 )
+#define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3475 )
 
 /*
  * @brief Calculation to convert a throttle position to a low spoof voltage.

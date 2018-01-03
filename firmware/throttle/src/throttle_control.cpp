@@ -46,6 +46,9 @@ void check_for_operator_override( void )
         {
             disable_control( );
 
+            status_setGreenLed(0);
+            status_setRedLed(1);
+
             DTC_SET(
                 g_throttle_control_state.dtcs,
                 OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE );
@@ -79,7 +82,6 @@ void check_for_sensor_faults( void )
 
         read_accelerator_position_sensor( &accelerator_position );
 
-        // sensor pins tied to ground - a value of zero indicates disconnection
         if(check_accelerator_position_data( &accelerator_position ))
         {
             ++fault_count;
@@ -201,15 +203,17 @@ uint8_t check_accelerator_position_data(
     accelerator_position_s * const value )
 {
     uint8_t error_count = 0;
-    if( value->high > THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX)
+    if( value->high > (THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX >> 2))
         error_count++;
-    if( value-> high < THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN)
+    if( value-> high < (THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN >> 2))
         error_count++;
 
-    if( value->low > THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX)
+    if( value->low > (THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX >> 2))
         error_count++;
-    if( value->low < THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN)
+    if( value->low < (THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN >> 2))
         error_count++;
+
+    return 0;
 
     return( error_count );
 

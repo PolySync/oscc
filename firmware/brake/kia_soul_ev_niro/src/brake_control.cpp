@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "dtc.h"
 #include "globals.h"
+#include "status.h"
 #include "oscc_dac.h"
 #include "vehicles.h"
 
@@ -44,6 +45,9 @@ void check_for_operator_override( void )
         if ( brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
         {
             disable_control( );
+
+            status_setGreenLed(0);
+            status_setRedLed(1);
 
             DTC_SET(
                 g_brake_control_state.dtcs,
@@ -78,15 +82,16 @@ void check_for_sensor_faults( void )
 
         read_brake_pedal_position_sensor( &brake_pedal_position );
 
-        // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (brake_pedal_position.high == 0)
-            || (brake_pedal_position.low == 0) )
+        if(check_brake_pedal_position_data( &brake_pedal_position ))
         {
             ++fault_count;
 
             if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
             {
                 disable_control( );
+
+                status_setGreenLed(0);
+                status_setRedLed(1);
 
                 DTC_SET(
                     g_brake_control_state.dtcs,
@@ -115,6 +120,8 @@ void update_brake(
 {
     if ( g_brake_control_state.enabled == true )
     {
+        status_setGreenLed(0);
+
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
@@ -142,9 +149,11 @@ void update_brake(
         }
 
         cli();
-        g_dac.outputA( spoof_high );
-        g_dac.outputB( spoof_low );
+        g_dac.outputA( spoof_low );
+        g_dac.outputB( spoof_high );
         sei();
+
+        status_setGreenLed(1);
     }
 }
 
@@ -203,4 +212,24 @@ static void read_brake_pedal_position_sensor(
     value->high = analogRead( PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH );
     value->low = analogRead( PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
     sei();
+}
+
+uint8_t check_brake_pedal_position_data(
+    brake_pedal_position_s * const value )
+{
+    uint8_t error_count = 0;
+    if( value->high > (BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX >> 2))
+        error_count++;
+    if( value-> high < (BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN >> 2))
+        error_count++;
+
+    if( value->low > (BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX >> 2))
+        error_count++;
+    if( value->low < (BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN >> 2))
+        error_count++;
+
+    return 0;
+
+    return( error_count );
+
 }

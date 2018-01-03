@@ -15,6 +15,18 @@
 
 
 /*
+ * @brief Green LED Pin.
+ *
+ */
+#define PIN_LED_GREEN ( 17 )
+
+/*
+ * @brief Green LED Pin.
+ *
+ */
+#define PIN_LED_RED ( 30 )
+
+/*
  * @brief Chip select pin of the DAC IC.
  *
  */

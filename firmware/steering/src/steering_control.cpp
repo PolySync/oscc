@@ -14,6 +14,7 @@
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "status.h"
 #include "steering_control.h"
 #include "vehicles.h"
 
@@ -65,6 +66,9 @@ void check_for_operator_override( void )
         {
             disable_control( );
 
+            status_setGreenLed(0);
+            status_setRedLed(1);
+
             DTC_SET(
                 g_steering_control_state.dtcs,
                 OSCC_STEERING_DTC_OPERATOR_OVERRIDE );
@@ -99,14 +103,16 @@ void check_for_sensor_faults( void )
         read_torque_sensor(&torque);
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (torque.high == 0)
-            || (torque.low == 0) )
+        if(check_torque_sensor_data( &torque ))
         {
             ++fault_count;
 
             if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
             {
                 disable_control( );
+
+                status_setGreenLed(0);
+                status_setRedLed(1);
 
                 DTC_SET(
                     g_steering_control_state.dtcs,
@@ -135,6 +141,8 @@ void update_steering(
 {
     if ( g_steering_control_state.enabled == true )
     {
+        status_setGreenLed(0);
+
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
@@ -151,6 +159,8 @@ void update_steering(
         g_dac.outputA( spoof_high );
         g_dac.outputB( spoof_low );
         sei();
+
+        status_setGreenLed(1);
      }
 }
 
@@ -218,5 +228,25 @@ static void read_torque_sensor(
     value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
     value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
+}
+
+uint8_t check_torque_sensor_data(
+    steering_torque_s * const value )
+{
+    uint8_t error_count = 0;
+    if( value->high > (STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX >> 2))
+        error_count++;
+    if( value-> high < (STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN >> 2))
+        error_count++;
+
+    if( value->low > (STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX >> 2))
+        error_count++;
+    if( value->low < (STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN >> 2))
+        error_count++;
+
+    return 0;
+
+    return( error_count );
+
 }
 
