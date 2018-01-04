@@ -63,5 +63,5 @@ add_custom_target(
 add_custom_target(
     run-brake-property-tests
     COMMAND
-    cargo +1.20.0 test -- --test-threads=1
+    cargo +1.20.0 test --verbose -- --test-threads=1
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/property)

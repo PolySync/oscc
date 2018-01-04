@@ -90,7 +90,9 @@ fn prop_only_process_valid_messages(rx_can_msg: can_frame_s, current_target: f32
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_brake_control_state.commanded_pedal_position == current_target)
+        TestResult::from_bool(
+            g_brake_control_state.commanded_pedal_position == current_target,
+        )
     }
 }
 
@@ -99,7 +101,9 @@ fn check_message_type_validity() {
     QuickCheck::new()
         .tests(1000)
         .gen(StdGen::new(rand::thread_rng(), u16::max_value() as usize))
-        .quickcheck(prop_only_process_valid_messages as fn(can_frame_s, f32) -> TestResult)
+        .quickcheck(
+            prop_only_process_valid_messages as fn(can_frame_s, f32) -> TestResult,
+        )
 }
 
 /// the throttle firmware should set the commanded pedal position
@@ -112,16 +116,17 @@ fn prop_no_invalid_targets(brake_command_msg: oscc_brake_command_s) -> TestResul
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_brake_control_state.commanded_pedal_position ==
-                              brake_command_msg.pedal_command as f32)
+        TestResult::from_bool(
+            g_brake_control_state.commanded_pedal_position == brake_command_msg.pedal_command as f32,
+        )
     }
 }
 
 #[test]
 fn check_accel_pos_validity() {
-    QuickCheck::new()
-        .tests(1000)
-        .quickcheck(prop_no_invalid_targets as fn(oscc_brake_command_s) -> TestResult)
+    QuickCheck::new().tests(1000).quickcheck(
+        prop_no_invalid_targets as fn(oscc_brake_command_s) -> TestResult,
+    )
 }
 
 /// the brake firmware should set the control state as enabled
@@ -143,9 +148,9 @@ fn prop_process_enable_command(brake_enable_msg: oscc_brake_enable_s) -> TestRes
 
 #[test]
 fn check_process_enable_command() {
-    QuickCheck::new()
-        .tests(25)
-        .quickcheck(prop_process_enable_command as fn(oscc_brake_enable_s) -> TestResult)
+    QuickCheck::new().tests(25).quickcheck(
+        prop_process_enable_command as fn(oscc_brake_enable_s) -> TestResult,
+    )
 }
 
 /// the brake firmware should set the control state as disabled
@@ -167,7 +172,8 @@ fn prop_process_disable_command(brake_disable_msg: oscc_brake_disable_s) -> Test
 
 #[test]
 fn check_process_disable_command() {
-    QuickCheck::new()
-        .tests(25)
-        .quickcheck(prop_process_disable_command as fn(oscc_brake_disable_s) -> TestResult)
+    QuickCheck::new().tests(25).quickcheck(
+        prop_process_disable_command as
+            fn(oscc_brake_disable_s) -> TestResult,
+    )
 }

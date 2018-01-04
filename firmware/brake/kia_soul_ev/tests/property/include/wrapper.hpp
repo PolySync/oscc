@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "communications.h"
+#include "init.h"
 #include "brake_control.h"
 #include "oscc_can.h"
 #include "can_protocols/brake_can_protocol.h"
