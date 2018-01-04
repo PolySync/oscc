@@ -172,7 +172,7 @@ fn prop_process_disable_command(brake_disable_msg: oscc_brake_disable_s) -> Test
 
 #[test]
 fn check_process_disable_command() {
-    QuickCheck::new().tests(25).quickcheck(
+    QuickCheck::new().tests(20).quickcheck(
         prop_process_disable_command as
             fn(oscc_brake_disable_s) -> TestResult,
     )
