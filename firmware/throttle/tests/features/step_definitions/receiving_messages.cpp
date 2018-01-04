@@ -50,6 +50,7 @@ WHEN("^a command is received with spoof values (.*) and (.*)$")
 
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
     g_mock_mcp_can_read_msg_buf_id = OSCC_THROTTLE_COMMAND_CAN_ID;
+    init_config();
 
     oscc_throttle_command_s * throttle_command =
         (oscc_throttle_command_s *) g_mock_mcp_can_read_msg_buf_buf;

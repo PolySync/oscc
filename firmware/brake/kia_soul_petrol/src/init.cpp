@@ -17,7 +17,6 @@
 #include "master_cylinder.h"
 #include "oscc_can.h"
 #include "oscc_eeprom.h"
-#include "oscc_serial.h"
 #include "oscc_timer.h"
 #include "vehicles.h"
 
@@ -40,8 +39,10 @@ void init_globals( void )
 void init_devices( void )
 {
     // set the Arduino's PWM timers to 3.921 KHz, above the acoustic range
+    #ifndef TESTS
     TCCR3B = (TCCR3B & 0xF8) | 0x02; // pins 2,3,5 | timer 3
     TCCR4B = (TCCR4B & 0xF8) | 0x02; // pins 6,7,8 | timer 4
+    #endif
 
     accumulator_init( );
     master_cylinder_init( );
@@ -74,7 +75,7 @@ void init_communication_interfaces( void )
 
 void init_config( void )
 {
-    Serial.println( "Resetting config to defaults");
+    DEBUG_PRINT( "Resetting config to defaults");
 
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MIN, BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN);
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MAX, BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX );

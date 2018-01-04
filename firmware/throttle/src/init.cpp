@@ -15,7 +15,6 @@
 #include "init.h"
 #include "oscc_can.h"
 #include "oscc_eeprom.h"
-#include "oscc_serial.h"
 
 
 void init_globals( void )
@@ -63,7 +62,7 @@ void init_communication_interfaces( void )
 
 void init_config( void )
 {
-    Serial.println( "Resetting config to defaults");
+    DEBUG_PRINT( "Resetting config to defaults");
 
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN, THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN );
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX, THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );

@@ -6,12 +6,14 @@ add_library(
     ../src/communications.cpp
     ../src/globals.cpp
     ../src/steering_control.cpp
+    ../src/init.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/mcp_can_mock.cpp
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/oscc_eeprom.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/DAC_MCP49xx_mock.cpp)
 
 target_include_directories(
@@ -21,6 +23,7 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/dac
+    ${CMAKE_SOURCE_DIR}/common/libs/eeprom
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
     ${CMAKE_SOURCE_DIR}/common/testing/mocks

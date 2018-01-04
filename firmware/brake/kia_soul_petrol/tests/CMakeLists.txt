@@ -6,6 +6,7 @@ add_library(
     ../src/accumulator.cpp
     ../src/communications.cpp
     ../src/globals.cpp
+    ../src/init.cpp
     ../src/brake_control.cpp
     ../src/master_cylinder.cpp
     ../src/helper.cpp
@@ -13,6 +14,7 @@ add_library(
     ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/mcp_can_mock.cpp
+    ${CMAKE_SOURCE_DIR}/common/testing/mocks/oscc_eeprom.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/DAC_MCP49xx_mock.cpp)
 
 target_include_directories(
@@ -21,6 +23,8 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/eeprom
+    ${CMAKE_SOURCE_DIR}/common/libs/timer
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
     ${CMAKE_SOURCE_DIR}/common/testing/mocks

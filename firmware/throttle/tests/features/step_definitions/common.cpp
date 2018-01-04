@@ -12,6 +12,7 @@
 #include "can_protocols/global_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "globals.h"
+#include "init.h"
 
 using namespace cgreen;
 
