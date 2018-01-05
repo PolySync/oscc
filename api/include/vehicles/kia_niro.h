@@ -47,7 +47,13 @@
  * @brief ID of the Kia Niro's OBD brake pressure CAN frame.
  *
  */
-#define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x371 )
+#define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x220 )
+
+/*
+ * @brief ID of the Kia Niro's OBD speed CAN frame.
+ *
+ */
+#define KIA_SOUL_OBD_SPEED_CAN_ID ( 0x371 )
 
 /*
  * @brief Factor to scale OBD steering angle to degrees
@@ -101,6 +107,19 @@ typedef struct
 
     uint8_t reserved_1[2]; /* Reserved. */
 } kia_soul_obd_brake_pressure_data_s;
+
+/**
+ * @brief Speed message data.
+ *
+ */
+typedef struct
+{
+	uint8_t reserved_0[3];
+
+    int16_t vehicle_speed; /* kph */
+
+    uint8_t reserved_1[3];
+} kia_soul_obd_speed_data_s;
 
 
  /*
