@@ -90,11 +90,15 @@ appropriate build flag:
 | Kia Soul Petrol | -DKIA_SOUL=ON    |
 | Kia Soul EV     | -DKIA_SOUL_EV=ON |
 
+To configure the firmware with the provided defaults, supply the `RESET_CONFIG` flag.
+This will load the default values into the EEPROM so that they will persist across
+power cycles.
 
-For example, if you want to build firmware for the petrol Kia Soul:
+For example, if you want to build firmware for the petrol Kia Soul with default
+configuration values:
 
 ```
-cmake .. -DKIA_SOUL=ON
+cmake .. -DKIA_SOUL=ON -DRESET_CONFIG=ON
 ```
 
 **Operator Overrides: While all OSCC modules have operator override detection enabled by default, attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button. To disable operator override for the steering module, pass an additional flag to the CMake build step.**
