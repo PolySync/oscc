@@ -1,12 +1,12 @@
 /**
- * @file kia_soul_niro.h
- * @brief Kia Soul Niro specific macros.
+ * @file kia_niro.h
+ * @brief Kia Niro specific macros.
  *
  */
 
 
-#ifndef _KIA_SOUL_NIRO_PLATFORM_INFO_H_
-#define _KIA_SOUL_NIRO_PLATFORM_INFO_H_
+#ifndef _KIA_NIRO_PLATFORM_INFO_H_
+#define _KIA_NIRO_PLATFORM_INFO_H_
 
 
 #include <stdint.h>
@@ -32,22 +32,22 @@
 // ****************************************************************************
 
 /*
- * @brief ID of the Kia Soul's OBD steering wheel angle CAN frame.
+ * @brief ID of the Kia Niro's OBD steering wheel angle CAN frame.
  *
  */
 #define KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ( 0x2B0 )
 
 /*
- * @brief ID of the Kia Soul's OBD wheel speed CAN frame.
+ * @brief ID of the Kia Niro's OBD wheel speed CAN frame.
  *
  */
-#define KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ( 0x4B0 )
+#define KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ( 0x386 )
 
 /*
- * @brief ID of the Kia Soul's OBD brake pressure CAN frame.
+ * @brief ID of the Kia Niro's OBD brake pressure CAN frame.
  *
  */
-#define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x220 )
+#define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x371 )
 
 /*
  * @brief Factor to scale OBD steering angle to degrees
@@ -72,13 +72,21 @@ typedef struct
  */
 typedef struct
 {
-    int16_t wheel_speed_front_left; /* 1/50 mph */
+    uint8_t wheel_speed_front_left; /* 1/4 kph */
 
-    int16_t wheel_speed_front_right; /* 1/50 mph */
+    uint8_t reserved_0; /* Reserved. */
 
-    int16_t wheel_speed_rear_left; /* 1/50 mph */
+    uint8_t wheel_speed_front_right; /* 1/4 kph */
 
-    int16_t wheel_speed_rear_right; /* 1/50 mph */
+    uint8_t reserved_1; /* Reserved. */
+
+    uint8_t wheel_speed_rear_left; /* 1/4 kph */
+
+    uint8_t reserved_2; /* Reserved. */
+
+    uint8_t wheel_speed_rear_right; /* 1/4 kph */
+
+    uint8_t reserved_3; /* Reserved. */
 } kia_soul_obd_wheel_speed_data_s;
 
 /**
@@ -87,9 +95,11 @@ typedef struct
  */
 typedef struct
 {
+    uint8_t reserved_0[4]; /* Reserved. */
+
     int16_t master_cylinder_pressure; /* 1/10th of a bar per bit */
 
-    uint8_t reserved[6]; /* Reserved. */
+    uint8_t reserved_1[2]; /* Reserved. */
 } kia_soul_obd_brake_pressure_data_s;
 
 
