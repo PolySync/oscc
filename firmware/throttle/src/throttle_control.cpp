@@ -17,31 +17,40 @@
 #include "vehicles.h"
 
 
-/*
- * @brief Number of consecutive faults that can occur when reading the
- *        sensors before control is disabled.
- *
- */
-#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 
 static void read_accelerator_position_sensor(
     accelerator_position_s * const value );
 
 
-void check_for_operator_override( void )
+void check_for_faults( void )
 {
-    if ( g_throttle_control_state.enabled == true
-        || g_throttle_control_state.operator_override == true )
-    {
-        accelerator_position_s accelerator_position;
+    accelerator_position_s accelerator_position;
 
+    if ( ( g_throttle_control_state.enabled == true )
+        || (g_throttle_control_state.dtcs > 0) )
+    {
         read_accelerator_position_sensor( &accelerator_position );
 
         uint32_t accelerator_position_average =
             (accelerator_position.low + accelerator_position.high) / 2;
 
-        if ( accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD )
+        // sensor pins tied to ground - a value of zero indicates disconnection
+        if( (accelerator_position.high == 0)
+            || (accelerator_position.low == 0) )
+        {
+            disable_control( );
+
+            DTC_SET(
+                g_throttle_control_state.dtcs,
+                OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
+
+            publish_fault_report( );
+
+            DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
+        }
+        else if ( accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD
+          && g_throttle_control_state.operator_override == false )
         {
             disable_control( );
 
@@ -57,53 +66,12 @@ void check_for_operator_override( void )
         }
         else
         {
-            DTC_CLEAR(
-                g_throttle_control_state.dtcs,
-                OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE );
+            g_throttle_control_state.dtcs = 0;
 
-            g_throttle_control_state.operator_override = false;
-        }
-    }
-}
-
-
-void check_for_sensor_faults( void )
-{
-    if ( (g_throttle_control_state.enabled == true)
-        || DTC_CHECK(g_throttle_control_state.dtcs, OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL) )
-    {
-        static int fault_count = 0;
-
-        accelerator_position_s accelerator_position;
-
-        read_accelerator_position_sensor( &accelerator_position );
-
-        // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (accelerator_position.high == 0)
-            || (accelerator_position.low == 0) )
-        {
-            ++fault_count;
-
-            if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
+            if ( g_throttle_control_state.operator_override == true )
             {
-                disable_control( );
-
-                DTC_SET(
-                    g_throttle_control_state.dtcs,
-                    OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
-
-                publish_fault_report( );
-
-                DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
+                g_throttle_control_state.operator_override = false;
             }
-        }
-        else
-        {
-            DTC_CLEAR(
-                    g_throttle_control_state.dtcs,
-                    OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL );
-
-            fault_count = 0;
         }
     }
 }
@@ -141,6 +109,7 @@ void enable_control( void )
         && g_throttle_control_state.operator_override == false )
     {
         const uint16_t num_samples = 20;
+        //TODO: Should this be inside the cli()?!?
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
@@ -163,6 +132,7 @@ void disable_control( void )
     if( g_throttle_control_state.enabled == true )
     {
         const uint16_t num_samples = 20;
+        //TODO: Should this be inside the cli()?!?
         prevent_signal_discontinuity(
             g_dac,
             num_samples,

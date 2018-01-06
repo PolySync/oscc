@@ -8,7 +8,6 @@
 #include "communications.h"
 #include "debug.h"
 #include "init.h"
-#include "timers.h"
 #include "throttle_control.h"
 
 
@@ -22,14 +21,14 @@ int main( void )
 
     init_communication_interfaces( );
 
-    start_timers( );
-
     DEBUG_PRINTLN( "init complete" );
 
     while( true )
     {
         check_for_incoming_message( );
 
-        check_for_operator_override( );
+        check_for_faults( );
+
+        publish_throttle_report( );
     }
 }

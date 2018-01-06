@@ -9,13 +9,11 @@ generate_arduino_firmware(
     ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/timer/oscc_timer.cpp
     src/main.cpp
     src/globals.cpp
     src/brake_control.cpp
     src/communications.cpp
-    src/init.cpp
-    src/timers.cpp)
+    src/init.cpp)
 
 target_include_directories(
     brake
@@ -28,5 +26,4 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/dac
-    ${CMAKE_SOURCE_DIR}/common/libs/timer
     ${CMAKE_SOURCE_DIR}/../api/include)

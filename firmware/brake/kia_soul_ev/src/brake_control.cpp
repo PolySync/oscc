@@ -17,31 +17,39 @@
 #include "vehicles.h"
 
 
-/*
- * @brief Number of consecutive faults that can occur when reading the
- *        sensors before control is disabled.
- *
- */
-#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 
 static void read_brake_pedal_position_sensor(
     brake_pedal_position_s * const value );
 
 
-void check_for_operator_override( void )
+void check_for_faults( void )
 {
-    if ( g_brake_control_state.enabled == true
-        || g_brake_control_state.operator_override == true )
-    {
-        brake_pedal_position_s brake_pedal_position;
+    brake_pedal_position_s brake_pedal_position;
 
+    if ( (g_brake_control_state.enabled == true)
+        || (g_brake_control_state.dtcs > 0) )
+    {
         read_brake_pedal_position_sensor( &brake_pedal_position );
 
         uint32_t brake_pedal_position_average =
             (brake_pedal_position.low + brake_pedal_position.high) / 2;
 
-        if ( brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
+        // sensor pins tied to ground - a value of zero indicates disconnection
+        if( (brake_pedal_position.high == 0)
+            || (brake_pedal_position.low == 0) )
+        {
+            disable_control( );
+
+            DTC_SET(
+                g_brake_control_state.dtcs,
+                OSCC_BRAKE_DTC_INVALID_SENSOR_VAL );
+
+            publish_fault_report( );
+
+            DEBUG_PRINTLN( "Bad value read from brake pedal position sensor" );
+        }
+        else if ( brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
         {
             disable_control( );
 
@@ -57,53 +65,9 @@ void check_for_operator_override( void )
         }
         else
         {
-            DTC_CLEAR(
-                g_brake_control_state.dtcs,
-                OSCC_BRAKE_DTC_OPERATOR_OVERRIDE );
+            g_brake_control_state.dtcs = 0;
 
             g_brake_control_state.operator_override = false;
-        }
-    }
-}
-
-
-void check_for_sensor_faults( void )
-{
-    if ( (g_brake_control_state.enabled == true)
-        || DTC_CHECK(g_brake_control_state.dtcs, OSCC_BRAKE_DTC_INVALID_SENSOR_VAL) )
-    {
-        static int fault_count = 0;
-
-        brake_pedal_position_s brake_pedal_position;
-
-        read_brake_pedal_position_sensor( &brake_pedal_position );
-
-        // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (brake_pedal_position.high == 0)
-            || (brake_pedal_position.low == 0) )
-        {
-            ++fault_count;
-
-            if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
-            {
-                disable_control( );
-
-                DTC_SET(
-                    g_brake_control_state.dtcs,
-                    OSCC_BRAKE_DTC_INVALID_SENSOR_VAL );
-
-                publish_fault_report( );
-
-                DEBUG_PRINTLN( "Bad value read from brake pedal position sensor" );
-            }
-        }
-        else
-        {
-            DTC_CLEAR(
-                    g_brake_control_state.dtcs,
-                    OSCC_BRAKE_DTC_INVALID_SENSOR_VAL );
-
-            fault_count = 0;
         }
     }
 }
