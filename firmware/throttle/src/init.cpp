@@ -11,6 +11,7 @@
 #include "debug.h"
 #include "globals.h"
 #include "init.h"
+#include "oscc_timer.h"
 #include "oscc_can.h"
 #include "oscc_serial.h"
 
@@ -47,4 +48,9 @@ void init_communication_interfaces( void )
 
     DEBUG_PRINT( "init Control CAN - " );
     init_can( g_control_can );
+}
+
+void start_timers( void )
+{
+    timer1_init( OSCC_REPORT_THROTTLE_PUBLISH_FREQ_IN_HZ, publish_throttle_report );
 }

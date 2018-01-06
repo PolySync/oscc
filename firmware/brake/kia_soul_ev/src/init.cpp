@@ -13,6 +13,7 @@
 #include "init.h"
 #include "oscc_can.h"
 #include "oscc_serial.h"
+#include "oscc_timer.h"
 
 
 void init_globals( void )
@@ -49,4 +50,9 @@ void init_communication_interfaces( void )
 
     DEBUG_PRINT( "init Control CAN - " );
     init_can( g_control_can );
+}
+
+void start_timers( void )
+{
+    timer1_init( OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ, publish_brake_report );
 }

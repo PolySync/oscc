@@ -21,6 +21,8 @@ int main( void )
 
     init_communication_interfaces( );
 
+    start_timers( );
+
     DEBUG_PRINTLN( "init complete" );
 
     while( true )
@@ -28,7 +30,5 @@ int main( void )
         check_for_incoming_message( );
 
         check_for_faults( );
-
-        publish_brake_report( );
     }
 }
