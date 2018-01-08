@@ -156,7 +156,7 @@ static void obd_callback(struct can_frame * frame)
     printf("From the obd_callback, CAN ID: %x\n", frame->can_id);
 }
 ```
-Okay, we're all setup! Let get to work! Out code base is pretty small so
+Okay, we're all setup! Let get to work! Our code base is pretty small so
 we'll just stick to the `main` function
 ```
 int main
