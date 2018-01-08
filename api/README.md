@@ -20,7 +20,7 @@ for the Kia Soul Petrol instead.
 ### Using `libosccapi.so`
 Using the shared library for a project that uses the OSCC API is easy!
 The following is an example `CMakeLists.txt` for doing just that. This example
-is all you need for a projec with it's own source file, `main.c`.
+is all you need for a project with it's own source file, `main.c`.
 ```
 cmake_minimum_required(VERSION 2.8)
 project(an_example)
