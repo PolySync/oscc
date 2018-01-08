@@ -153,7 +153,7 @@ __OBD__
 ```
 static void obd_callback(struct can_frame * frame)
 {
-    printf("From the obd_callback, CAN ID: %u\n", frame->can_id);
+    printf("From the obd_callback, CAN ID: %x\n", frame->can_id);
 }
 ```
 Okay, we're all setup! Let get to work! Out code base it pretty small so
