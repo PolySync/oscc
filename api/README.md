@@ -69,7 +69,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${OSCC_INCLUDES})
 ## Using the API
 
 Let's walk through actually writing some code that uses the OSCC API, an example
-program the listens to all the information that OSCC reports. Feel free to
+program that listens to all the information that OSCC reports. Feel free to
 experiment with this code, if it's all put into a `main.c` you can use
 any of the CMakeLists.txt options above to build it.
 
@@ -156,7 +156,7 @@ static void obd_callback(struct can_frame * frame)
     printf("From the obd_callback, CAN ID: %x\n", frame->can_id);
 }
 ```
-Okay, we're all setup! Let get to work! Out code base it pretty small so
+Okay, we're all setup! Let get to work! Out code base is pretty small so
 we'll just stick to the `main` function
 ```
 int main
