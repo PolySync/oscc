@@ -3,7 +3,7 @@ Thanks for filing an OSCC issue! You're making our ecosystem a better place!
 
 Below are some templates to get you started, filling out any that are relevant
 to this issue will help us a lot! Feel free to delete any information or text
-that isn't relevant to your issue liberally.
+that isn't relevant to your issue.
 -->
 
 <!-- Questions about purchasing and pricing for OSCC boards or DriveKit?
