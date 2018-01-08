@@ -28,7 +28,8 @@ tackle it!
 <!-- How can we make it happen too? -->
 
 ### Version info
-_What's the output of running `git describe --tags` in your OSCC directory?_
+- _What's the output of running `git describe --tags` in your OSCC directory?_
+- _Is this the same version flashed onto the hardware?_
 
 ### Hardware info
 <!-- Are you using a custom board or something received from us? -->
