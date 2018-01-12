@@ -67,7 +67,7 @@ void publish_fault_report( void )
 
 void check_for_controller_command_timeout( void )
 {
-/*
+
     if( g_steering_control_state.enabled == true )
     {
         if( g_steering_command_timeout == true )
@@ -79,7 +79,7 @@ void check_for_controller_command_timeout( void )
             DEBUG_PRINTLN( "Timeout - controller command" );
         }
     }
-*/
+
 }
 
 
@@ -133,8 +133,8 @@ static void process_steering_command(
                 (oscc_steering_command_s *) data;
 
         update_steering(
-            steering_command->spoof_value_high,
-            steering_command->spoof_value_low );
+            steering_command->spoof_value_A,
+            steering_command->spoof_value_B );
 
         g_steering_command_timeout = false;
     }

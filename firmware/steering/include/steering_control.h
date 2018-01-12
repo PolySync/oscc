@@ -15,14 +15,14 @@
 /**
  * @brief Torque values.
  *
- * Contains the high and low torque values.
+ * Contains the A and B torque values.
  *
  */
 typedef struct
 {
-    uint16_t low; /* Low value of torque. */
+    uint16_t A; /* A value of torque. */
 
-    uint16_t high; /* High value of torque. */
+    uint16_t B; /* B value of torque. */
 } steering_torque_s;
 
 
@@ -77,13 +77,13 @@ void check_for_sensor_faults( void );
 //
 // Returns:     void
 //
-// Parameters:  spoof_command_high - high value of spoof command
-//              spoof_command_low - low value of spoof command
+// Parameters:  spoof_command_A - A value of spoof command
+//              spoof_command_B - B value of spoof command
 //
 // ****************************************************************************
 void update_steering(
-    uint16_t spoof_command_high,
-    uint16_t spoof_command_low );
+    uint16_t spoof_command_A,
+    uint16_t spoof_command_B );
 
 
 // *****************************************************
