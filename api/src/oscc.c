@@ -115,7 +115,7 @@ oscc_result_t oscc_publish_brake_position( double brake_position )
 
     brake_cmd.pedal_command = ( uint16_t ) BRAKE_POSITION_TO_PEDAL( clamped_position );
 
-#elif defined(KIA_SOUL_EV) || defined(KIA_SOUL_NIRO)
+#elif defined(KIA_SOUL_EV) || defined(KIA_NIRO)
     const double clamped_position = CONSTRAIN(
         brake_position,
         MINIMUM_BRAKE_COMMAND,
