@@ -155,8 +155,13 @@ typedef enum
  */
 typedef enum
 {
+
+    /* Magic number indicating whether the EEPROM hsa been initialized.
+     * If set to \ref OSCC_EEPROM_MAGIC, the EEPROM has been initialized. */
+    OSCC_CONFIG_U16_EEPROM_MAGIC = 0,
+
     /* Minimum allowed value for the low brake spoof signal value. [steps] */
-    OSCC_CONFIG_U16_BRAKE_EV_SPOOF_LOW_SIGNAL_RANGE_MIN = 0,
+    OSCC_CONFIG_U16_BRAKE_EV_SPOOF_LOW_SIGNAL_RANGE_MIN,
 
     /* Maximum allowed value for the low brake spoof signal value. [steps] */
     OSCC_CONFIG_U16_BRAKE_EV_SPOOF_LOW_SIGNAL_RANGE_MAX,

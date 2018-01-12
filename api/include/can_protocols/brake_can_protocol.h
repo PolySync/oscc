@@ -54,7 +54,7 @@
  * @brief Brake report message publishing frequency. [Hz]
  *
  */
-#define OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ (50)
+#define OSCC_BRAKE_REPORT_PUBLISH_FREQUENCY_IN_HZ (50)
 
 /*
  * @brief Enumeration of all possible brake DTCs.

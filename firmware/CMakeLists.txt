@@ -61,7 +61,6 @@ else()
     set(CMAKE_CFLAGS "-std=gnu11 -Os")
     set(CMAKE_CXX_FLAGS "-std=gnu++11 -Os")
 
-    option(RESET_CONFIG "Reset configuration to default values" OFF )
     option(DEBUG "Enable debug mode" OFF)
     option(KIA_SOUL "Build firmware for the petrol Kia Soul" OFF)
     option(KIA_SOUL_EV "Build firmware for the Kia Soul EV" OFF)
@@ -79,11 +78,6 @@ else()
 
     set(SERIAL_PORT_THROTTLE "/dev/ttyACM0" CACHE STRING "Serial port of the throttle module")
     set(SERIAL_BAUD_THROTTLE "115200" CACHE STRING "Serial baud rate of the throttle module")
-
-
-    if(RESET_CONFIG)
-        add_definitions(-DRESET_CONFIG)
-    endif()
 
     if(DEBUG)
         add_definitions(-DDEBUG)
