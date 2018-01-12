@@ -119,16 +119,16 @@ typedef struct
 #define MAXIMUM_BRAKE_COMMAND ( 1.0 )
 
 /*
- * @brief Minimum allowed voltage for the low spoof signal voltage. [volts]
+ * @brief Minimum allowed voltage for the B spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.333 )
+#define BRAKE_SPOOF_B_SIGNAL_VOLTAGE_MIN ( 0.333 )
 
 /*
- * @brief Maximum allowed voltage for the low spoof signal voltage. [volts]
+ * @brief Maximum allowed voltage for the B spoof signal voltage. [volts]
  *
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 1.12 )
+#define BRAKE_SPOOF_B_SIGNAL_VOLTAGE_MAX ( 1.12 )
 
 /**
  * @brief Minimum allowed voltage for the A spoof signal voltage. [volts]
@@ -143,40 +143,40 @@ typedef struct
 #define BRAKE_SPOOF_A_SIGNAL_VOLTAGE_MAX ( 2.29 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
- * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ * Equal to \ref BRAKE_SPOOF_B_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 273 )
+#define BRAKE_SPOOF_B_SIGNAL_RANGE_MIN ( 273 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
- * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
+ * Equal to \ref BRAKE_SPOOF_B_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 917 )
+#define BRAKE_SPOOF_B_SIGNAL_RANGE_MAX ( 917 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_A_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
 #define BRAKE_SPOOF_A_SIGNAL_RANGE_MIN ( 572 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
  * Equal to \ref BRAKE_SPOOF_A_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
 #define BRAKE_SPOOF_A_SIGNAL_RANGE_MAX ( 1876 )
 
 /*
- * @brief Calculation to convert a brake position to a low spoof voltage.
+ * @brief Calculation to convert a brake position to a B spoof voltage.
  *
  */
-#define BRAKE_POSITION_TO_VOLTS_LOW( position ) ( (position) *\
-    (BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) +\
-    BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN  )
+#define BRAKE_POSITION_TO_VOLTS_B( position ) ( (position) *\
+    (BRAKE_SPOOF_B_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_B_SIGNAL_VOLTAGE_MIN) +\
+    BRAKE_SPOOF_B_SIGNAL_VOLTAGE_MIN  )
 
 /*
  * @brief Calculation to convert a brake position to a A spoof voltage.
@@ -193,10 +193,10 @@ typedef struct
 #define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130 )
 
 /*
- * @brief Minimum value of the low spoof signal that activates the brake lights. [steps]
+ * @brief Minimum value of the B spoof signal that activates the brake lights. [steps]
  *
  */
-#define BRAKE_LIGHT_SPOOF_LOW_THRESHOLD ( 300 )
+#define BRAKE_LIGHT_SPOOF_B_THRESHOLD ( 300 )
 
 /*
  * @brief Minimum value of the A spoof signal that activates the brake lights. [steps]
@@ -227,13 +227,13 @@ typedef struct
  * @brief Minimum allowable steering DAC output. [volts]
  *
  */
-#define STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.80 )
+#define STEERING_SPOOF_B_SIGNAL_VOLTAGE_MIN ( 0.80 )
 
 /*
  * @brief Maximum allowable steering DAC output. [volts]
  *
  */
-#define STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 4.10 )
+#define STEERING_SPOOF_B_SIGNAL_VOLTAGE_MAX ( 4.10 )
 
 /*
  * @brief Minimum allowable steering DAC output. [volts]
@@ -248,44 +248,44 @@ typedef struct
 #define STEERING_SPOOF_A_SIGNAL_VOLTAGE_MAX ( 4.20 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
- * Equal to \ref STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ * Equal to \ref STEERING_SPOOF_B_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN ( 656 )
+#define STEERING_SPOOF_B_SIGNAL_RANGE_MIN ( 656 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
- * Equal to \ref STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
+ * Equal to \ref STEERING_SPOOF_B_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX ( 3358 )
+#define STEERING_SPOOF_B_SIGNAL_RANGE_MAX ( 3358 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
  * Equal to \ref STEERING_SPOOF_A_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
 #define STEERING_SPOOF_A_SIGNAL_RANGE_MIN ( 738 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
  * Equal to \ref STEERING_SPOOF_A_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
 #define STEERING_SPOOF_A_SIGNAL_RANGE_MAX ( 3440 )
 
 /*
- * @brief Scalar value for the low spoof signal taken from a calibration curve.
+ * @brief Scalar value for the B spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.135 )
+#define TORQUE_SPOOF_B_SIGNAL_CALIBRATION_CURVE_SCALE ( 0.135 )
 
 /*
- * @brief Offset value for the low spoof signal taken from a calibration curve.
+ * @brief Offset value for the B spoof signal taken from a calibration curve.
  *
  */
-#define TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.39 )
+#define TORQUE_SPOOF_B_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.39 )
 
 /*
  * @brief Scalar value for the A spoof signal taken from a calibration curve.
@@ -308,12 +308,12 @@ typedef struct
             + TORQUE_SPOOF_A_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
- * @brief Calculation to convert a steering torque to a low spoof value.
+ * @brief Calculation to convert a steering torque to a B spoof value.
  *
  */
-#define STEERING_TORQUE_TO_VOLTS_LOW( torque ) (\
-            ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
-            + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
+#define STEERING_TORQUE_TO_VOLTS_B( torque ) (\
+            ((TORQUE_SPOOF_B_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
+            + TORQUE_SPOOF_B_SIGNAL_CALIBRATION_CURVE_OFFSET))
 
 /*
  * @brief Value of torque sensor difference that indicates likely operator
@@ -342,16 +342,16 @@ typedef struct
 #define MAXIMUM_THROTTLE_COMMAND ( 1.0 )
 
 /*
- * @brief Minimum allowed voltage for the low spoof signal voltage. [volts]
+ * @brief Minimum allowed voltage for the B spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN ( 0.30 )
+#define THROTTLE_SPOOF_B_SIGNAL_VOLTAGE_MIN ( 0.30 )
 
 /*
- * @brief Maximum allowed voltage for the low spoof signal voltage. [volts]
+ * @brief Maximum allowed voltage for the B spoof signal voltage. [volts]
  *
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX ( 2.00 )
+#define THROTTLE_SPOOF_B_SIGNAL_VOLTAGE_MAX ( 2.00 )
 
 /**
  * @brief Minimum allowed voltage for the A spoof signal voltage. [volts]
@@ -366,40 +366,40 @@ typedef struct
 #define THROTTLE_SPOOF_A_SIGNAL_VOLTAGE_MAX ( 4.10 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
- * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
+ * Equal to \ref THROTTLE_SPOOF_B_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 245 )
+#define THROTTLE_SPOOF_B_SIGNAL_RANGE_MIN ( 245 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
- * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
+ * Equal to \ref THROTTLE_SPOOF_B_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1638 )
+#define THROTTLE_SPOOF_B_SIGNAL_RANGE_MAX ( 1638 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_A_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
 #define THROTTLE_SPOOF_A_SIGNAL_RANGE_MIN ( 573 )
 
 /*
- * @brief Minimum allowed value for the low spoof signal value. [steps]
+ * @brief Minimum allowed value for the B spoof signal value. [steps]
  *
  * Equal to \ref THROTTLE_SPOOF_A_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
 #define THROTTLE_SPOOF_A_SIGNAL_RANGE_MAX ( 3358 )
 
 /*
- * @brief Calculation to convert a throttle position to a low spoof voltage.
+ * @brief Calculation to convert a throttle position to a B spoof voltage.
  *
  */
-#define THROTTLE_POSITION_TO_VOLTS_LOW( position ) ( (position) *\
-    (THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN) +\
-    THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN  )
+#define THROTTLE_POSITION_TO_VOLTS_B( position ) ( (position) *\
+    (THROTTLE_SPOOF_B_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_B_SIGNAL_VOLTAGE_MIN) +\
+    THROTTLE_SPOOF_B_SIGNAL_VOLTAGE_MIN  )
 
 /*
  * @brief Calculation to convert a throttle position to a A spoof voltage.

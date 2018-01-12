@@ -113,7 +113,7 @@ typedef struct
                        *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                        *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
+    uint16_t spoof_value_B; /*!< Value to be sent on the B spoof signal. */
 
     uint16_t spoof_value_A; /*!< Value to be sent on the A spoof signal. */
 

@@ -118,7 +118,7 @@ typedef struct
 
     uint8_t reserved[4]; /*!< Reserved. */
 #elif defined(KIA_SOUL_EV) || defined(KIA_NIRO)
-    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
+    uint16_t spoof_value_B; /*!< Value to be sent on the B spoof signal. */
 
     uint16_t spoof_value_A; /*!< Value to be sent on the A spoof signal. */
 
