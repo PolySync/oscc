@@ -60,8 +60,8 @@ impl Arbitrary for oscc_brake_command_s {
     fn arbitrary<G: Gen>(g: &mut G) -> oscc_brake_command_s {
         oscc_brake_command_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
-            spoof_value_low: u16::arbitrary(g),
-            spoof_value_high: u16::arbitrary(g),
+            spoof_value_A: u16::arbitrary(g),
+            spoof_value_B: u16::arbitrary(g),
             reserved: [u8::arbitrary(g); 2]
         }
     }
@@ -168,12 +168,12 @@ fn check_process_disable_command() {
 /// the brake firmware should send requested spoof values
 /// upon receiving a brake command message
 fn prop_output_accurate_spoofs(mut brake_command_msg: oscc_brake_command_s) -> TestResult {
-    brake_command_msg.spoof_value_low =
-        rand::thread_rng().gen_range(BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16,
-                                     BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16);
-    brake_command_msg.spoof_value_high =
-        rand::thread_rng().gen_range(BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16,
-                                     BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16);
+    brake_command_msg.spoof_value_B =
+        rand::thread_rng().gen_range(BRAKE_SPOOF_B_SIGNAL_RANGE_MIN as u16,
+                                     BRAKE_SPOOF_B_SIGNAL_RANGE_MAX as u16);
+    brake_command_msg.spoof_value_A =
+        rand::thread_rng().gen_range(BRAKE_SPOOF_A_SIGNAL_RANGE_MIN as u16,
+                                     BRAKE_SPOOF_A_SIGNAL_RANGE_MAX as u16);
     unsafe {
         g_brake_control_state.enabled = true;
 
@@ -183,8 +183,8 @@ fn prop_output_accurate_spoofs(mut brake_command_msg: oscc_brake_command_s) -> T
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_mock_dac_output_b == brake_command_msg.spoof_value_low &&
-                              g_mock_dac_output_a == brake_command_msg.spoof_value_high)
+        TestResult::from_bool(g_mock_dac_output_b == brake_command_msg.spoof_value_B &&
+                              g_mock_dac_output_a == brake_command_msg.spoof_value_A)
     }
 }
 
@@ -200,10 +200,10 @@ fn check_output_accurate_spoofs() {
 /// upon receiving a brake command message
 fn prop_output_constrained_spoofs(brake_command_msg: oscc_brake_command_s) -> TestResult {
     unsafe {
-        if (brake_command_msg.spoof_value_low >= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-            brake_command_msg.spoof_value_low <= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16) ||
-           (brake_command_msg.spoof_value_high >= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-            brake_command_msg.spoof_value_high <= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16) {
+        if (brake_command_msg.spoof_value_B >= BRAKE_SPOOF_B_SIGNAL_RANGE_MIN as u16 &&
+            brake_command_msg.spoof_value_B <= BRAKE_SPOOF_B_SIGNAL_RANGE_MAX as u16) ||
+           (brake_command_msg.spoof_value_A >= BRAKE_SPOOF_A_SIGNAL_RANGE_MIN as u16 &&
+            brake_command_msg.spoof_value_A <= BRAKE_SPOOF_A_SIGNAL_RANGE_MAX as u16) {
             return TestResult::discard();
         }
 
@@ -215,10 +215,10 @@ fn prop_output_constrained_spoofs(brake_command_msg: oscc_brake_command_s) -> Te
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_mock_dac_output_a >= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-                              g_mock_dac_output_a <= BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16 &&
-                              g_mock_dac_output_b >= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-                              g_mock_dac_output_b <= BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16)
+        TestResult::from_bool(g_mock_dac_output_a >= BRAKE_SPOOF_A_SIGNAL_RANGE_MIN as u16 &&
+                              g_mock_dac_output_a <= BRAKE_SPOOF_A_SIGNAL_RANGE_MAX as u16 &&
+                              g_mock_dac_output_b >= BRAKE_SPOOF_B_SIGNAL_RANGE_MIN as u16 &&
+                              g_mock_dac_output_b <= BRAKE_SPOOF_B_SIGNAL_RANGE_MAX as u16)
     }
 }
 

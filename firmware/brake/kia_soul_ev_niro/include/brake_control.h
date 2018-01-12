@@ -15,14 +15,14 @@
 /**
  * @brief Brake pedal position values.
  *
- * Contains high and low brake pedal values.
+ * Contains A and B brake pedal values.
  *
  */
 typedef struct
 {
-    uint16_t low; /* Low value of brake pedal position. */
+    uint16_t A; /* A value of brake pedal position. */
 
-    uint16_t high; /* High value of brake pedal position. */
+    uint16_t B; /* B value of brake pedal position. */
 } brake_pedal_position_s;
 
 
@@ -77,13 +77,13 @@ void check_for_sensor_faults( void );
 //
 // Returns:     void
 //
-// Parameters:  spoof_command_high - high value of spoof command
-//              spoof_command_low - low value of spoof command
+// Parameters:  spoof_command_A - A value of spoof command
+//              spoof_command_B - B value of spoof command
 //
 // ****************************************************************************
 void update_brake(
-    uint16_t spoof_command_high,
-    uint16_t spoof_command_low );
+    uint16_t spoof_command_A,
+    uint16_t spoof_command_B );
 
 
 // ****************************************************************************

@@ -42,7 +42,7 @@ void check_for_operator_override( void )
         read_brake_pedal_position_sensor( &brake_pedal_position );
 
         uint32_t brake_pedal_position_average =
-            (brake_pedal_position.low + brake_pedal_position.high) / 2;
+            (brake_pedal_position.A + brake_pedal_position.B) / 2;
 
         if ( brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
         {
@@ -117,27 +117,27 @@ void check_for_sensor_faults( void )
 
 
 void update_brake(
-    uint16_t spoof_command_high,
-    uint16_t spoof_command_low )
+    uint16_t spoof_command_A,
+    uint16_t spoof_command_B )
 {
     if ( g_brake_control_state.enabled == true )
     {
         status_setGreenLed(0);
 
-        uint16_t spoof_high =
+        uint16_t spoof_A =
             constrain(
-                spoof_command_high,
-                BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+                spoof_command_A,
+                BRAKE_SPOOF_A_SIGNAL_RANGE_MIN,
+                BRAKE_SPOOF_A_SIGNAL_RANGE_MAX );
 
-        uint16_t spoof_low =
+        uint16_t spoof_B =
             constrain(
-                spoof_command_low,
-                BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN,
-                BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX );
+                spoof_command_B,
+                BRAKE_SPOOF_B_SIGNAL_RANGE_MIN,
+                BRAKE_SPOOF_B_SIGNAL_RANGE_MAX );
 
-        if( (spoof_high > BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD)
-            || (spoof_low > BRAKE_LIGHT_SPOOF_LOW_THRESHOLD) )
+        if( (spoof_A > BRAKE_LIGHT_SPOOF_A_THRESHOLD)
+            || (spoof_B > BRAKE_LIGHT_SPOOF_B_THRESHOLD) )
         {
             cli();
             digitalWrite(PIN_BRAKE_LIGHT_ENABLE, HIGH);
@@ -151,8 +151,8 @@ void update_brake(
         }
 
         cli();
-        g_dac.outputA( spoof_low );
-        g_dac.outputB( spoof_high );
+        g_dac.outputA( spoof_A );
+        g_dac.outputB( spoof_B );
         sei();
 
         status_setGreenLed(1);
@@ -169,8 +169,8 @@ void enable_control( void )
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
-            PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH,
-            PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_A,
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_B );
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
@@ -192,8 +192,8 @@ void disable_control( void )
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
-            PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH,
-            PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_A,
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_B );
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
@@ -211,8 +211,8 @@ static void read_brake_pedal_position_sensor(
     brake_pedal_position_s * const value )
 {
     cli();
-    value->high = analogRead( PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH );
-    value->low = analogRead( PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
+    value->A = analogRead( PIN_BRAKE_PEDAL_POSITION_SENSOR_A );
+    value->B = analogRead( PIN_BRAKE_PEDAL_POSITION_SENSOR_B );
     sei();
 }
 
@@ -220,14 +220,14 @@ uint8_t check_brake_pedal_position_data(
     brake_pedal_position_s * const value )
 {
     uint8_t error_count = 0;
-    if( value->high > (BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX >> 2))
+    if( value->A > (BRAKE_SPOOF_A_SIGNAL_RANGE_MAX >> 2))
         error_count++;
-    if( value-> high < (BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN >> 2))
+    if( value->A < (BRAKE_SPOOF_A_SIGNAL_RANGE_MIN >> 2))
         error_count++;
 
-    if( value->low > (BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX >> 2))
+    if( value->B > (BRAKE_SPOOF_B_SIGNAL_RANGE_MAX >> 2))
         error_count++;
-    if( value->low < (BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN >> 2))
+    if( value->B < (BRAKE_SPOOF_B_SIGNAL_RANGE_MIN >> 2))
         error_count++;
 
     return 0;

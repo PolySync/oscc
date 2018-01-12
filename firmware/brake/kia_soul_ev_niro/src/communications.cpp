@@ -133,8 +133,8 @@ static void process_brake_command(
                 (oscc_brake_command_s *) data;
 
         update_brake(
-            brake_command->spoof_value_high,
-            brake_command->spoof_value_low );
+            brake_command->spoof_value_A,
+            brake_command->spoof_value_B );
 
         g_brake_command_timeout = false;
     }
