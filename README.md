@@ -90,6 +90,12 @@ appropriate build flag:
 | Kia Soul Petrol | -DKIA_SOUL=ON    |
 | Kia Soul EV     | -DKIA_SOUL_EV=ON |
 
+For example, if you want to build firmware for the petrol Kia Soul:
+
+```
+cmake .. -DKIA_SOUL=ON
+```
+
 **Operator Overrides: While all OSCC modules have operator override detection enabled by default, attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button. To disable operator override for the steering module, pass an additional flag to the CMake build step.**
 
 ```
