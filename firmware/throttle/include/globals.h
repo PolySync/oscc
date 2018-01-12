@@ -42,25 +42,25 @@
  * @brief High signal pin of the accelerator position sensor.
  *
  */
-#define PIN_ACCELERATOR_POSITION_SENSOR_HIGH ( A0 )
+#define PIN_ACCELERATOR_POSITION_SENSOR_A ( A1 )
 
 /*
  * @brief Low signal pin of the accelerator position sensor.
  *
  */
-#define PIN_ACCELERATOR_POSITION_SENSOR_LOW ( A1 )
+#define PIN_ACCELERATOR_POSITION_SENSOR_B ( A0 )
 
 /*
  * @brief High signal pin of the accelerator position spoof output.
  *
  */
-#define PIN_ACCELERATOR_POSITION_SPOOF_HIGH ( A2 )
+#define PIN_ACCELERATOR_POSITION_SPOOF_A ( A2 )
 
 /*
  * @brief Low signal pin of the accelerator position spoof output.
  *
  */
-#define PIN_ACCELERATOR_POSITION_SPOOF_LOW ( A3 )
+#define PIN_ACCELERATOR_POSITION_SPOOF_B ( A3 )
 
 /*
  * @brief Relay enable pin for the spoof output.

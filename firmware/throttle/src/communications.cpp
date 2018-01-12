@@ -70,7 +70,7 @@ void publish_fault_report( void )
 void check_for_controller_command_timeout( void )
 {
 
-/*
+
     if( g_throttle_control_state.enabled == true )
     {
         if( g_throttle_command_timeout == true )
@@ -83,7 +83,7 @@ void check_for_controller_command_timeout( void )
         }
     }
 
-*/
+
 }
 
 
@@ -139,8 +139,8 @@ static void process_throttle_command(
                 (oscc_throttle_command_s *) data;
 
         update_throttle(
-            throttle_command->spoof_value_high,
-            throttle_command->spoof_value_low );
+            throttle_command->spoof_value_A,
+            throttle_command->spoof_value_B );
 
         g_throttle_command_timeout = false;
     }

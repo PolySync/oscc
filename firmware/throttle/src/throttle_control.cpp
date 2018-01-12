@@ -43,7 +43,7 @@ void check_for_operator_override( void )
         read_accelerator_position_sensor( &accelerator_position );
 
         uint32_t accelerator_position_average =
-            (accelerator_position.low + accelerator_position.high) / 2;
+            (accelerator_position.A + accelerator_position.B) / 2;
 
         if ( accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD )
         {
@@ -118,27 +118,27 @@ void check_for_sensor_faults( void )
 
 
 void update_throttle(
-    uint16_t spoof_command_high,
-    uint16_t spoof_command_low )
+    uint16_t spoof_command_A,
+    uint16_t spoof_command_B )
 {
     if ( g_throttle_control_state.enabled == true )
     {
         status_setGreenLed(0);
-        uint16_t spoof_high =
+        uint16_t spoof_A =
             constrain(
-                spoof_command_high,
-                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+                spoof_command_A,
+                THROTTLE_SPOOF_A_SIGNAL_RANGE_MIN,
+                THROTTLE_SPOOF_A_SIGNAL_RANGE_MAX );
 
-        uint16_t spoof_low =
+        uint16_t spoof_B =
             constrain(
-                spoof_command_low,
-                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
-                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
+                spoof_command_B,
+                THROTTLE_SPOOF_B_SIGNAL_RANGE_MIN,
+                THROTTLE_SPOOF_B_SIGNAL_RANGE_MAX );
 
         cli();
-        g_dac.outputA( spoof_high );
-        g_dac.outputB( spoof_low );
+        g_dac.outputA( spoof_A );
+        g_dac.outputB( spoof_B );
         sei();
 
         status_setGreenLed(1);
@@ -155,8 +155,8 @@ void enable_control( void )
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
-            PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
-            PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+            PIN_ACCELERATOR_POSITION_SENSOR_A,
+            PIN_ACCELERATOR_POSITION_SENSOR_B );
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
@@ -178,8 +178,8 @@ void disable_control( void )
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
-            PIN_ACCELERATOR_POSITION_SENSOR_HIGH,
-            PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+            PIN_ACCELERATOR_POSITION_SENSOR_A,
+            PIN_ACCELERATOR_POSITION_SENSOR_B );
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
@@ -197,8 +197,8 @@ static void read_accelerator_position_sensor(
     accelerator_position_s * const value )
 {
     cli();
-    value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
-    value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );
+    value->A = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_A );
+    value->B = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_B );
     sei();
 }
 
@@ -206,14 +206,14 @@ uint8_t check_accelerator_position_data(
     accelerator_position_s * const value )
 {
     uint8_t error_count = 0;
-    if( value->high > (THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX >> 2))
+    if( value->A > (THROTTLE_SPOOF_A_SIGNAL_RANGE_MAX >> 2))
         error_count++;
-    if( value-> high < (THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN >> 2))
+    if( value->A < (THROTTLE_SPOOF_A_SIGNAL_RANGE_MIN >> 2))
         error_count++;
 
-    if( value->low > (THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX >> 2))
+    if( value->B > (THROTTLE_SPOOF_B_SIGNAL_RANGE_MAX >> 2))
         error_count++;
-    if( value->low < (THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN >> 2))
+    if( value->B < (THROTTLE_SPOOF_B_SIGNAL_RANGE_MIN >> 2))
         error_count++;
 
     return 0;
