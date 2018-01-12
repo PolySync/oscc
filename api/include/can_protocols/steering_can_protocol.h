@@ -115,7 +115,7 @@ typedef struct
 
     uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
 
-    uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
+    uint16_t spoof_value_A; /*!< Value to be sent on the A spoof signal. */
 
     uint8_t reserved[2]; /*!< Reserved. */
 } oscc_steering_command_s;
