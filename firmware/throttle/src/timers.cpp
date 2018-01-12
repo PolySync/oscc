@@ -22,16 +22,9 @@ static void check_for_faults( void );
 
 void start_timers( void )
 {
-    uint16_t fault_check_frequency_in_hz =
-        oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ );
+    timer1_init( g_eeprom_config.fault_check_frequency_in_hz, check_for_faults );
 
-    timer1_init( fault_check_frequency_in_hz, check_for_faults );
-
-
-    uint16_t report_publish_frequency_in_hz =
-        oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_REPORT_PUBLISH_FREQ_IN_HZ );
-
-    timer2_init( report_publish_frequency_in_hz, publish_throttle_report );
+    timer2_init( g_eeprom_config.report_publish_frequency_in_hz, publish_throttle_report );
 }
 
 

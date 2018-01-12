@@ -43,10 +43,7 @@ void check_for_operator_override( void )
         uint32_t brake_pedal_position_average =
             (brake_pedal_position.low + brake_pedal_position.high) / 2;
 
-        uint16_t brake_pedal_override_threshold =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_PEDAL_OVERRIDE_THRESHOLD );
-
-        if ( brake_pedal_position_average >= brake_pedal_override_threshold )
+        if ( brake_pedal_position_average >= g_eeprom_config.pedal_override_threshold )
         {
             disable_control( );
 
@@ -120,40 +117,20 @@ void update_brake(
 {
     if ( g_brake_control_state.enabled == true )
     {
-        uint16_t brake_spoof_high_signal_range_min =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_SPOOF_HIGH_SIGNAL_RANGE_MIN );
-
-        uint16_t brake_spoof_high_signal_range_max =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_SPOOF_HIGH_SIGNAL_RANGE_MAX );
-
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
-                brake_spoof_high_signal_range_min,
-                brake_spoof_high_signal_range_max );
-
-
-        uint16_t brake_spoof_low_signal_range_min =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_SPOOF_LOW_SIGNAL_RANGE_MIN );
-
-        uint16_t brake_spoof_low_signal_range_max =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_SPOOF_LOW_SIGNAL_RANGE_MAX );
+                g_eeprom_config.spoof_high_signal_range_min,
+                g_eeprom_config.spoof_high_signal_range_max );
 
         uint16_t spoof_low =
             constrain(
                 spoof_command_low,
-                brake_spoof_low_signal_range_min,
-                brake_spoof_low_signal_range_max );
+                g_eeprom_config.spoof_low_signal_range_min,
+                g_eeprom_config.spoof_low_signal_range_max );
 
-
-        uint16_t brake_light_spoof_low_threshold =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_LIGHT_SPOOF_LOW_THRESHOLD );
-
-        uint16_t brake_light_spoof_high_threshold =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_LIGHT_SPOOF_HIGH_THRESHOLD );
-
-        if( (spoof_high > brake_light_spoof_high_threshold)
-            || (spoof_low > brake_light_spoof_low_threshold) )
+        if( (spoof_high > g_eeprom_config.brake_light_spoof_high_threshold)
+            || (spoof_low > g_eeprom_config.brake_light_spoof_low_threshold) )
         {
             cli();
             digitalWrite( PIN_BRAKE_LIGHT_ENABLE, HIGH );

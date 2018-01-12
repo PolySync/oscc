@@ -63,10 +63,7 @@ void check_for_operator_override( void )
             unfiltered_diff,
             filtered_diff);
 
-        uint16_t torque_difference_override_threshold =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD );
-
-        if( abs( filtered_diff ) > torque_difference_override_threshold )
+        if( abs( filtered_diff ) > g_eeprom_config.torque_difference_override_threshold )
         {
             disable_control( );
 
@@ -140,30 +137,17 @@ void update_steering(
 {
     if ( g_steering_control_state.enabled == true )
     {
-        uint16_t steering_spoof_high_signal_range_min =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN );
-
-        uint16_t steering_spoof_high_signal_range_max =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX );
-
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
-                steering_spoof_high_signal_range_min,
-                steering_spoof_high_signal_range_max );
-
-
-        uint16_t steering_spoof_low_signal_range_min =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN );
-
-        uint16_t steering_spoof_low_signal_range_max =
-            oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
+                g_eeprom_config.spoof_high_signal_range_min,
+                g_eeprom_config.spoof_high_signal_range_max );
 
         uint16_t spoof_low =
             constrain(
                 spoof_command_low,
-                steering_spoof_low_signal_range_min,
-                steering_spoof_low_signal_range_max );
+                g_eeprom_config.spoof_low_signal_range_min,
+                g_eeprom_config.spoof_low_signal_range_max );
 
         cli();
         g_dac.outputA( spoof_high );

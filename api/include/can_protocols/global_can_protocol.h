@@ -180,7 +180,7 @@ typedef enum
     OSCC_CONFIG_U16_BRAKE_EV_FAULT_CHECK_FREQUENCY_IN_HZ,
 
     /* Brake report message publishing frequency. [Hz] */
-    OSCC_CONFIG_U16_BRAKE_EV_REPORT_PUBLISH_FREQ_IN_HZ,
+    OSCC_CONFIG_U16_BRAKE_EV_REPORT_PUBLISH_FREQUENCY_IN_HZ,
 
     /* Minimum possible value expected to be read from the brake pressure
      * sensors when the pressure check pins (PCK1/PCK2) are asserted. */
@@ -194,7 +194,7 @@ typedef enum
     OSCC_CONFIG_U16_BRAKE_PETROL_FAULT_CHECK_FREQUENCY_IN_HZ,
 
     /* Brake report message publishing frequency. [Hz] */
-    OSCC_CONFIG_U16_BRAKE_PETROL_REPORT_PUBLISH_FREQ_IN_HZ,
+    OSCC_CONFIG_U16_BRAKE_PETROL_REPORT_PUBLISH_FREQUENCY_IN_HZ,
 
     /* Minimum allowed value for the low steering spoof signal value. [steps] */
     OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN,
@@ -215,7 +215,7 @@ typedef enum
     OSCC_CONFIG_U16_STEERING_FAULT_CHECK_FREQUENCY_IN_HZ,
 
     /* Steering report message publishing frequency. [Hz] */
-    OSCC_CONFIG_U16_STEERING_REPORT_PUBLISH_FREQ_IN_HZ,
+    OSCC_CONFIG_U16_STEERING_REPORT_PUBLISH_FREQUENCY_IN_HZ,
 
     /* Minimum allowed value for the low throttle spoof signal value. [steps] */
     OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
@@ -236,7 +236,7 @@ typedef enum
     OSCC_CONFIG_U16_THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ,
 
     /* Throttle report message publishing frequency. [Hz] */
-    OSCC_CONFIG_U16_THROTTLE_REPORT_PUBLISH_FREQ_IN_HZ,
+    OSCC_CONFIG_U16_THROTTLE_REPORT_PUBLISH_FREQUENCY_IN_HZ,
 
     /* Number of possible U16 configuration parameters. */
     OSCC_CONFIG_U16_COUNT

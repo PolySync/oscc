@@ -24,9 +24,7 @@ int main( void )
 
     init_communication_interfaces( );
 
-    #ifdef RESET_CONFIG
     init_config( );
-    #endif
 
     start_timers( );
 

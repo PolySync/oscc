@@ -57,6 +57,18 @@
 #define PIN_SPOOF_ENABLE ( 6 )
 
 
+typedef struct
+{
+    uint16_t spoof_low_signal_range_min;
+    uint16_t spoof_low_signal_range_max;
+    uint16_t spoof_high_signal_range_min;
+    uint16_t spoof_high_signal_range_max;
+    uint16_t pedal_override_threshold;
+    uint16_t fault_check_frequency_in_hz;
+    uint16_t report_publish_frequency_in_hz;
+} eeprom_config_s;
+
+
 #ifdef GLOBAL_DEFINED
     DAC_MCP49xx g_dac( DAC_MCP49xx::MCP4922, PIN_DAC_CHIP_SELECT );
     MCP_CAN g_control_can( PIN_CAN_CHIP_SELECT );
@@ -73,6 +85,8 @@
 EXTERN volatile bool g_throttle_command_timeout;
 
 EXTERN volatile throttle_control_state_s g_throttle_control_state;
+
+EXTERN eeprom_config_s g_eeprom_config;
 
 
 #endif /* _OSCC_THROTTLE_GLOBALS_H_ */

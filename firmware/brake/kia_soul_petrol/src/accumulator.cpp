@@ -53,20 +53,13 @@ float accumulator_read_pressure( void )
 
 void accumulator_maintain_pressure( void )
 {
-    float accumulator_pressure_min_in_decibars =
-            oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS );
-
-    float accumulator_pressure_max_in_decibars =
-            oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS );
-
-
     float pressure = accumulator_read_pressure( );
 
-    if ( pressure <= accumulator_pressure_min_in_decibars )
+    if ( pressure <= g_eeprom_config.accumulator_pressure_min_in_decibars )
     {
         accumulator_turn_pump_on( );
     }
-    else if ( pressure >= accumulator_pressure_max_in_decibars )
+    else if ( pressure >= g_eeprom_config.accumulator_pressure_max_in_decibars )
     {
         accumulator_turn_pump_off( );
     }

@@ -75,13 +75,13 @@ void init_communication_interfaces( void )
 
 void init_config( void )
 {
+    #ifdef RESET_CONFIG
     DEBUG_PRINT( "Resetting config to defaults");
 
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MIN, BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN);
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MAX, BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX );
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_PETROL_FAULT_CHECK_FREQUENCY_IN_HZ, BRAKE_FAULT_CHECK_FREQUENCY_IN_HZ );
-    oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_PETROL_REPORT_PUBLISH_FREQ_IN_HZ, OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ );
-
+    oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_PETROL_REPORT_PUBLISH_FREQUENCY_IN_HZ, OSCC_BRAKE_REPORT_PUBLISH_FREQUENCY_IN_HZ );
     oscc_eeprom_write_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS, BRAKE_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS );
     oscc_eeprom_write_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS, BRAKE_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS );
     oscc_eeprom_write_f32( OSCC_CONFIG_F32_BRAKE_PETROL_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS, BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS );
@@ -102,4 +102,30 @@ void init_config( void )
     oscc_eeprom_write_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX, BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX );
     oscc_eeprom_write_f32( OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MIN, BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MIN );
     oscc_eeprom_write_f32( OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MAX, BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MAX );
+    #endif
+
+    g_eeprom_config.brake_pressure_sensor_check_value_min = oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MIN );
+    g_eeprom_config.brake_pressure_sensor_check_value_max = oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MAX );
+    g_eeprom_config.fault_check_frequency_in_hz = oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_PETROL_FAULT_CHECK_FREQUENCY_IN_HZ );
+    g_eeprom_config.report_publish_frequency_in_hz = oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_PETROL_REPORT_PUBLISH_FREQUENCY_IN_HZ );
+    g_eeprom_config.accumulator_pressure_min_in_decibars = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS );
+    g_eeprom_config.accumulator_pressure_max_in_decibars = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS );
+    g_eeprom_config.override_pedal_threshold_in_decibars = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS );
+    g_eeprom_config.brake_light_pressure_threshold_in_decibars = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS );
+    g_eeprom_config.brake_pressure_min_in_decibars = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PRESSURE_MIN_IN_DECIBARS );
+    g_eeprom_config.brake_pressure_max_in_decibars = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PRESSURE_MAX_IN_DECIBARS );
+    g_eeprom_config.pid_proportional_gain = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_PROPORTIONAL_GAIN );
+    g_eeprom_config.pid_integral_gain = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_INTEGRAL_GAIN );
+    g_eeprom_config.pid_derivative_gain = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_DERIVATIVE_GAIN );
+    g_eeprom_config.pid_windup_guard = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_WINDUP_GUARD );
+    g_eeprom_config.pid_output_min = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_OUTPUT_MIN );
+    g_eeprom_config.pid_output_max = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_OUTPUT_MAX );
+    g_eeprom_config.pid_accumulator_solenoid_clamped_min = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_ACCUMULATOR_SOLENOID_CLAMPED_MIN );
+    g_eeprom_config.pid_accumulator_solenoid_clamped_max = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_ACCUMULATOR_SOLENOID_CLAMPED_MAX );
+    g_eeprom_config.pid_release_solenoid_clamped_min = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_RELEASE_SOLENOID_CLAMPED_MIN );
+    g_eeprom_config.pid_release_solenoid_clamped_max = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_PID_RELEASE_SOLENOID_CLAMPED_MAX );
+    g_eeprom_config.accumulator_solenoid_duty_cycle_min = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MIN );
+    g_eeprom_config.accumulator_solenoid_duty_cycle_max = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX );
+    g_eeprom_config.release_solenoid_duty_cycle_min = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MIN );
+    g_eeprom_config.release_solenoid_duty_cycle_max = oscc_eeprom_read_f32( OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MAX );
 }

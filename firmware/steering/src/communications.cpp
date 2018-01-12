@@ -173,14 +173,46 @@ static void process_config_u16(
         const oscc_config_u16_s * const config =
                 (oscc_config_u16_s *) data;
 
-        if ( (config->name == OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN)
-            || (config->name == OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX)
-            || (config->name == OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN)
-            || (config->name == OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX)
-            || (config->name == OSCC_CONFIG_U16_STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD)
-            || (config->name == OSCC_CONFIG_U16_STEERING_FAULT_CHECK_FREQUENCY_IN_HZ)
-            || (config->name == OSCC_CONFIG_U16_STEERING_REPORT_PUBLISH_FREQ_IN_HZ) )
+        if ( config->name == OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN )
         {
+            g_eeprom_config.spoof_low_signal_range_min = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX )
+        {
+            g_eeprom_config.spoof_low_signal_range_max = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN )
+        {
+            g_eeprom_config.spoof_high_signal_range_min = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX )
+        {
+            g_eeprom_config.spoof_high_signal_range_max = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD )
+        {
+            g_eeprom_config.torque_difference_override_threshold = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_STEERING_FAULT_CHECK_FREQUENCY_IN_HZ )
+        {
+            g_eeprom_config.fault_check_frequency_in_hz = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_STEERING_REPORT_PUBLISH_FREQUENCY_IN_HZ )
+        {
+            g_eeprom_config.report_publish_frequency_in_hz = config->value;
+
             oscc_eeprom_write_u16( config->name, config->value );
         }
     }

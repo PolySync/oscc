@@ -64,6 +64,7 @@ void init_communication_interfaces( void )
 
 void init_config( void )
 {
+    #ifdef RESET_CONFIG
     DEBUG_PRINT( "Resetting config to defaults");
 
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_EV_SPOOF_LOW_SIGNAL_RANGE_MIN, BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN );
@@ -75,4 +76,15 @@ void init_config( void )
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_EV_LIGHT_SPOOF_HIGH_THRESHOLD, BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD );
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_EV_FAULT_CHECK_FREQUENCY_IN_HZ, BRAKE_FAULT_CHECK_FREQUENCY_IN_HZ );
     oscc_eeprom_write_u16( OSCC_CONFIG_U16_BRAKE_EV_REPORT_PUBLISH_FREQ_IN_HZ, OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ );
+    #endif
+
+    g_eeprom_config.spoof_low_signal_range_min = oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN );
+    g_eeprom_config.spoof_low_signal_range_max = oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
+    g_eeprom_config.spoof_high_signal_range_min = oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN );
+    g_eeprom_config.spoof_high_signal_range_max = oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+    g_eeprom_config.pedal_override_threshold = oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_PEDAL_OVERRIDE_THRESHOLD );
+    g_eeprom_config.brake_light_spoof_low_threshold = oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_LIGHT_SPOOF_LOW_THRESHOLD );
+    g_eeprom_config.brake_light_spoof_high_threshold = oscc_eeprom_read_u16( OSCC_CONFIG_U16_BRAKE_EV_LIGHT_SPOOF_HIGH_THRESHOLD );
+    g_eeprom_config.fault_check_frequency_in_hz = oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ );
+    g_eeprom_config.report_publish_frequency_in_hz = oscc_eeprom_read_u16( OSCC_CONFIG_U16_THROTTLE_REPORT_PUBLISH_FREQUENCY_IN_HZ );
 }
