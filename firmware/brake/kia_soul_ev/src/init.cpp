@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 #include "can_protocols/brake_can_protocol.h"
-#include "can_protocols/global_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
 #include "globals.h"
@@ -57,7 +57,7 @@ void init_communication_interfaces( void )
     // Set buffer 0 to filter only brake module and global messages
     g_control_can.init_Mask( 0, 0, 0x7F0 ); // Filter for 0x0N0 to 0x0NF
     g_control_can.init_Filt( 0, 0, OSCC_BRAKE_CAN_ID_INDEX );
-    g_control_can.init_Filt( 1, 0, OSCC_GLOBAL_CAN_ID_INDEX );
+    g_control_can.init_Filt( 1, 0, OSCC_FAULT_CAN_ID_INDEX );
     // Accept only CAN Disable when buffer overflow occurs in buffer 0
     g_control_can.init_Mask( 1, 0, 0x7FF ); // Filter for one CAN ID
     g_control_can.init_Filt( 2, 1, OSCC_BRAKE_DISABLE_CAN_ID );
