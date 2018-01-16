@@ -38,13 +38,13 @@ Feature: Receiving commands
     And <low> should be sent to DAC B
 
     Examples:
-      | high   | low    |
-      |  1876  |  273  |
+      |  high  |  low  |
+      |  1876  |  272  |
       |  1800  |  300  |
       |  1500  |  500  |
       |  1000  |  750  |
       |  750   |  900  |
-      |  572   |  917  |
+      |  571   |  917  |
 
 
   Scenario Outline: Spoof value sent from application outside valid range
@@ -57,7 +57,7 @@ Feature: Receiving commands
 
     Examples:
       | high  | low   | high_clamped | low_clamped |
-      |  4000 |  0    | 1876         |  273        |
+      |  4000 |  0    | 1876         |  272        |
       |  3500 |  500  | 1876         |  500        |
-      |  500  |  3500 | 572          |  917        |
-      |  0    |  4000 | 572          |  917        |
+      |  500  |  3500 | 571          |  917        |
+      |  0    |  4000 | 571          |  917        |

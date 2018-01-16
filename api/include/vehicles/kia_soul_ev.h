@@ -147,7 +147,7 @@ typedef struct
  *
  * Equal to \ref BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 273 )
+#define BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN ( 272 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
@@ -161,7 +161,7 @@ typedef struct
  *
  * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 572 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 571 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
@@ -252,7 +252,7 @@ typedef struct
  *
  * Equal to \ref STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN ( 656 )
+#define STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN ( 655 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
@@ -266,7 +266,7 @@ typedef struct
  *
  * Equal to \ref STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN * \ref STEPS_PER_VOLT.
  */
-#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 738 )
+#define STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN ( 737 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
