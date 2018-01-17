@@ -58,6 +58,8 @@ fn main() {
         .whitelisted_var("BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX")
         .whitelisted_var("BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN")
         .whitelisted_var("BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX")
+        .whitelisted_var("MINIMUM_BRAKE_COMMAND")
+        .whitelisted_var("MAXIMUM_BRAKE_COMMAND")
         .whitelisted_type("oscc_brake_enable_s")
         .whitelisted_type("oscc_brake_disable_s")
         .whitelisted_type("oscc_brake_report_s")

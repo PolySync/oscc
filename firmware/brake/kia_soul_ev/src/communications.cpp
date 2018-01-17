@@ -14,6 +14,7 @@
 #include "globals.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
+#include "vehicles.h"
 
 
 static void process_rx_frame(
@@ -130,9 +131,29 @@ static void process_brake_command(
         const oscc_brake_command_s * const brake_command =
                 (oscc_brake_command_s *) data;
 
-        update_brake(
-            brake_command->spoof_value_high,
-            brake_command->spoof_value_low );
+        const float clamped_position = CONSTRAIN(
+            brake_command->pedal_command,
+            MINIMUM_BRAKE_COMMAND,
+            MAXIMUM_BRAKE_COMMAND);
+
+        float spoof_voltage_low = BRAKE_POSITION_TO_VOLTS_LOW( clamped_position );
+
+        spoof_voltage_low = CONSTRAIN(
+            spoof_voltage_low,
+            BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN,
+            BRAKE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX);
+
+        float spoof_voltage_high = BRAKE_POSITION_TO_VOLTS_HIGH( clamped_position );
+
+        spoof_voltage_high = CONSTRAIN(
+            spoof_voltage_high,
+            BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
+            BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX);
+
+        const uint16_t spoof_value_low = STEPS_PER_VOLT * spoof_voltage_low;
+        const uint16_t spoof_value_high = STEPS_PER_VOLT * spoof_voltage_high;
+
+        update_brake( spoof_value_high, spoof_value_low );
 
         g_brake_command_timeout = false;
     }

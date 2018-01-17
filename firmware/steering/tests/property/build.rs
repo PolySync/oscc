@@ -57,6 +57,8 @@ fn main() {
         .whitelisted_var("STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX")
         .whitelisted_var("STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN")
         .whitelisted_var("STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX")
+        .whitelisted_var("MINIMUM_TORQUE_COMMAND")
+        .whitelisted_var("MAXIMUM_TORQUE_COMMAND")
         .whitelisted_var("CAN_STANDARD")
         .whitelisted_var("CAN_MSGAVAIL")
         .whitelisted_type("oscc_steering_enable_s")
