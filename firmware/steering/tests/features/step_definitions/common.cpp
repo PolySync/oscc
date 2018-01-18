@@ -91,7 +91,7 @@ GIVEN("^the operator has applied (.*) to the steering wheel$")
     g_mock_arduino_analog_read_return[0] = steering_sensor_val;
     g_mock_arduino_analog_read_return[1] = steering_sensor_val;
 
-    check_for_operator_override();
+    check_for_faults();
 }
 
 

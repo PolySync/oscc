@@ -40,7 +40,7 @@ fn main() {
         .clang_arg("-I../../../../api/include")
         .whitelisted_function("publish_steering_report")
         .whitelisted_function("check_for_incoming_message")
-        .whitelisted_function("check_for_operator_override")
+        .whitelisted_function("check_for_faults")
         .whitelisted_var("OSCC_MAGIC_BYTE_0")
         .whitelisted_var("OSCC_MAGIC_BYTE_1")
         .whitelisted_var("OSCC_STEERING_ENABLE_CAN_ID")
