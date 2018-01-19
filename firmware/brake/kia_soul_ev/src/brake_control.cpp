@@ -158,8 +158,8 @@ void enable_control( void )
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
-            PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH,
-            PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW,
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH );
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
@@ -181,8 +181,8 @@ void disable_control( void )
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
-            PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH,
-            PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW );
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_LOW,
+            PIN_BRAKE_PEDAL_POSITION_SENSOR_HIGH );
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
