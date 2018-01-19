@@ -1,6 +1,6 @@
 /**
  * @file fault_can_protocol.h
- * @brief Global CAN Protocol.
+ * @brief Fault CAN Protocol.
  *
  */
 
