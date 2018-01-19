@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "can_protocols/global_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
@@ -68,22 +68,6 @@ void publish_fault_report( void )
 }
 
 
-void check_for_controller_command_timeout( void )
-{
-    if( g_throttle_control_state.enabled == true )
-    {
-        if( g_throttle_command_timeout == true )
-        {
-            disable_control( );
-
-            publish_fault_report( );
-
-            DEBUG_PRINTLN( "Timeout - controller command" );
-        }
-    }
-}
-
-
 void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;
@@ -140,8 +124,6 @@ static void process_throttle_command(
         update_throttle(
             throttle_command->spoof_value_high,
             throttle_command->spoof_value_low );
-
-        g_throttle_command_timeout = false;
     }
 }
 

@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "can_protocols/global_can_protocol.h"
+#include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
@@ -69,22 +69,6 @@ void publish_fault_report( void )
 }
 
 
-void check_for_controller_command_timeout( void )
-{
-    if( g_steering_control_state.enabled == true )
-    {
-        if( g_steering_command_timeout == true )
-        {
-            disable_control( );
-
-            publish_fault_report( );
-
-            DEBUG_PRINTLN( "Timeout - controller command" );
-        }
-    }
-}
-
-
 void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;
@@ -141,8 +125,6 @@ static void process_steering_command(
         update_steering(
             steering_command->spoof_value_high,
             steering_command->spoof_value_low );
-
-        g_steering_command_timeout = false;
     }
 }
 

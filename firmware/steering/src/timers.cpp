@@ -32,11 +32,7 @@ static void check_for_faults( void )
 {
     cli();
 
-    check_for_controller_command_timeout( );
-
     check_for_sensor_faults( );
-
-    g_steering_command_timeout = true;
 
     sei();
 }

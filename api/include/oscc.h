@@ -177,4 +177,3 @@ oscc_result_t oscc_subscribe_to_obd_messages( void( *callback )( struct can_fram
 
 
 #endif /* _OSCC_H */
-

@@ -82,8 +82,6 @@ typedef struct
 #endif
 
 
-EXTERN volatile bool g_throttle_command_timeout;
-
 EXTERN volatile throttle_control_state_s g_throttle_control_state;
 
 EXTERN eeprom_config_s g_eeprom_config;

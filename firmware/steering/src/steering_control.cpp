@@ -173,7 +173,6 @@ void enable_control( void )
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
         sei();
 
-        g_steering_command_timeout = false;
         g_steering_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
@@ -196,7 +195,6 @@ void disable_control( void )
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
         sei();
 
-        g_steering_command_timeout = false;
         g_steering_control_state.enabled = false;
 
         filtered_diff = 0;

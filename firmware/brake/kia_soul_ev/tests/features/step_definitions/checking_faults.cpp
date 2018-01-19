@@ -23,14 +23,6 @@ WHEN("^a sensor becomes permanently disconnected$")
 }
 
 
-WHEN("^the time since the last received controller command exceeds the timeout$")
-{
-    g_brake_command_timeout = true;
-
-    check_for_controller_command_timeout();
-}
-
-
 WHEN("^the operator applies (.*) to the accelerator$")
 {
     REGEX_PARAM(int, brake_sensor_val);
