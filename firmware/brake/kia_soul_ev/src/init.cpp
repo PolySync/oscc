@@ -21,8 +21,6 @@ void init_globals( void )
     g_brake_control_state.enabled = false;
     g_brake_control_state.operator_override = false;
     g_brake_control_state.dtcs = 0;
-
-    g_brake_command_timeout = false;
 }
 
 

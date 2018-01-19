@@ -22,15 +22,6 @@ Feature: Checking for faults
     And a fault report should be published
 
 
-  Scenario: Controller command timeout
-    Given brake control is enabled
-
-    When the time since the last received controller command exceeds the timeout
-
-    Then control should be disabled
-    And a fault report should be published
-
-
   Scenario Outline: Operator override
     Given brake control is enabled
 

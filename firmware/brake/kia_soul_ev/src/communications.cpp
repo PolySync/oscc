@@ -66,22 +66,6 @@ void publish_fault_report( void )
 }
 
 
-void check_for_controller_command_timeout( void )
-{
-    if( g_brake_control_state.enabled == true )
-    {
-        if( g_brake_command_timeout == true )
-        {
-            disable_control( );
-
-            publish_fault_report( );
-
-            DEBUG_PRINTLN( "Timeout waiting for controller command" );
-        }
-    }
-}
-
-
 void check_for_incoming_message( void )
 {
     can_frame_s rx_frame;

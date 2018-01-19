@@ -17,32 +17,32 @@
  * @brief CAN ID representing the range of steering messages.
  *
  */
-#define OSCC_STEERING_CAN_ID_INDEX (0x60)
+#define OSCC_STEERING_CAN_ID_INDEX (0x80)
 
 
 /*
  * @brief Steering enable message (CAN frame) ID.
  *
  */
-#define OSCC_STEERING_ENABLE_CAN_ID (0x60)
+#define OSCC_STEERING_ENABLE_CAN_ID (0x80)
 
 /*
  * @brief Steering disable message (CAN frame) ID.
  *
  */
-#define OSCC_STEERING_DISABLE_CAN_ID (0x61)
+#define OSCC_STEERING_DISABLE_CAN_ID (0x81)
 
 /*
  * @brief Steering command message (CAN frame) ID.
  *
  */
-#define OSCC_STEERING_COMMAND_CAN_ID (0x62)
+#define OSCC_STEERING_COMMAND_CAN_ID (0x82)
 
 /*
  * @brief Steering report message (CAN frame) ID.
  *
  */
-#define OSCC_STEERING_REPORT_CAN_ID (0x63)
+#define OSCC_STEERING_REPORT_CAN_ID (0x83)
 
 /*
  * @brief Steering report message (CAN frame) length.

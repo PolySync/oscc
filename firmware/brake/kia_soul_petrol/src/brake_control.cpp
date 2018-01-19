@@ -68,7 +68,6 @@ void enable_control( void )
 
         set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
-        g_brake_command_timeout = false;
         g_brake_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
@@ -92,7 +91,6 @@ void disable_control( void )
 
         set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
-        g_brake_command_timeout = false;
         g_brake_control_state.enabled = false;
 
         DEBUG_PRINTLN( "Control disabled" );

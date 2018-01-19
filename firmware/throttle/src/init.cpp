@@ -21,8 +21,6 @@ void init_globals( void )
     g_throttle_control_state.enabled = false;
     g_throttle_control_state.operator_override = false;
     g_throttle_control_state.dtcs = 0;
-
-    g_throttle_command_timeout = false;
 }
 
 
@@ -52,7 +50,7 @@ void init_communication_interfaces( void )
     init_can( g_control_can );
 
     // Filter CAN messages - accept if (CAN_ID & mask) == (filter & mask)
-    // Set buffer 0 to filter only brake module and global messages
+    // Set buffer 0 to filter only throttle module and global messages
     g_control_can.init_Mask( 0, 0, 0x7F0 ); // Filter for 0x0N0 to 0x0NF
     g_control_can.init_Filt( 0, 0, OSCC_THROTTLE_CAN_ID_INDEX );
     g_control_can.init_Filt( 1, 0, OSCC_FAULT_CAN_ID_INDEX );
