@@ -6,6 +6,7 @@
 
 #include <Arduino.h>
 
+#include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
@@ -47,4 +48,13 @@ void init_communication_interfaces( void )
 
     DEBUG_PRINT( "init Control CAN - " );
     init_can( g_control_can );
+
+    // Filter CAN messages - accept if (CAN_ID & mask) == (filter & mask)
+    // Set buffer 0 to filter only throttle module and global messages
+    g_control_can.init_Mask( 0, 0, 0x7F0 ); // Filter for 0x0N0 to 0x0NF
+    g_control_can.init_Filt( 0, 0, OSCC_THROTTLE_CAN_ID_INDEX );
+    g_control_can.init_Filt( 1, 0, OSCC_FAULT_CAN_ID_INDEX );
+    // Accept only CAN Disable when buffer overflow occurs in buffer 0
+    g_control_can.init_Mask( 1, 0, 0x7FF ); // Filter for one CAN ID
+    g_control_can.init_Filt( 2, 1, OSCC_THROTTLE_DISABLE_CAN_ID );
 }
