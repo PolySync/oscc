@@ -203,6 +203,9 @@ void timer2_init( float frequency, void (*isr)(void) )
 #elif DRIVEKIT
 void timer3_init( float frequency, void (*isr)(void) )
 {
+
+    PRR1 = PRR1 & (~_BV(PRTIM3));
+
     // disable interrupts temporarily
     cli();
 
