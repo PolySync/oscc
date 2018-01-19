@@ -140,8 +140,6 @@ static void process_steering_command(
         const uint16_t spoof_value_high = STEPS_PER_VOLT * spoof_voltage_high;
 
         update_steering( spoof_value_high, spoof_value_low );
-
-        g_steering_command_timeout = false;
     }
 }
 

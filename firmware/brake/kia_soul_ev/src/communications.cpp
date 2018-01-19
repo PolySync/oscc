@@ -138,8 +138,6 @@ static void process_brake_command(
         const uint16_t spoof_value_high = STEPS_PER_VOLT * spoof_voltage_high;
 
         update_brake( spoof_value_high, spoof_value_low );
-
-        g_brake_command_timeout = false;
     }
 }
 
