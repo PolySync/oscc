@@ -17,6 +17,8 @@
 #include "oscc_dac.h"
 #include "vehicles.h"
 
+static unsigned long TIME_LAST_SEEN = 0;
+const unsigned long DELAY = 100; //ms of delay to ensure override still requested
 
 /*
  * @brief Number of consecutive faults that can occur when reading the
@@ -46,23 +48,34 @@ void check_for_operator_override( void )
 
         if ( brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
         {
-            disable_control( );
+            unsigned long current_time = millis();
 
-            status_setGreenLed(0);
-            status_setRedLed(1);
+            if ( TIME_LAST_SEEN == 0 )
+            {
+              TIME_LAST_SEEN = millis();
+            }
+            else if ( current_time - TIME_LAST_SEEN > DELAY )
+            {
+                disable_control( );
 
-            DTC_SET(
-                g_brake_control_state.dtcs,
-                OSCC_BRAKE_DTC_OPERATOR_OVERRIDE );
+                status_setGreenLed(0);
+                status_setRedLed(1);
 
-            publish_fault_report( );
+                DTC_SET(
+                    g_brake_control_state.dtcs,
+                    OSCC_BRAKE_DTC_OPERATOR_OVERRIDE );
 
-            g_brake_control_state.operator_override = true;
+                publish_fault_report( );
 
-            DEBUG_PRINTLN( "Operator override" );
+                g_brake_control_state.operator_override = true;
+
+                DEBUG_PRINTLN( "Operator override" );
+            }
         }
         else
         {
+            TIME_LAST_SEEN = 0; //Start over no deviation
+
             DTC_CLEAR(
                 g_brake_control_state.dtcs,
                 OSCC_BRAKE_DTC_OPERATOR_OVERRIDE );

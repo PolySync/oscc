@@ -219,7 +219,7 @@ typedef struct
  * @brief Value of the accelerator position that indicates operator override. [steps]
  *
  */
-#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 300 )
+#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 180 )
 
 /*
  * @brief Minimum value of the A spoof signal that activates the brake lights. [steps]
@@ -442,7 +442,7 @@ typedef struct
  * @brief Value of the accelerator position that indicates operator override. [steps]
  *
  */
-#define ACCELERATOR_OVERRIDE_THRESHOLD ( 450 )
+#define ACCELERATOR_OVERRIDE_THRESHOLD ( 180 )
 
 
 
