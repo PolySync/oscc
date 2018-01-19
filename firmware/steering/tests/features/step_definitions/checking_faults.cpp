@@ -24,14 +24,6 @@ WHEN("^a sensor becomes permanently disconnected$")
 }
 
 
-WHEN("^the time since the last received controller command exceeds the timeout$")
-{
-    g_steering_command_timeout = true;
-
-    check_for_controller_command_timeout();
-}
-
-
 WHEN("^the operator applies (.*) to the steering wheel$")
 {
     REGEX_PARAM(int, steering_sensor_val);
