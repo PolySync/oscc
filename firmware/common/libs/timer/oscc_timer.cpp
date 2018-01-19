@@ -217,7 +217,7 @@ void timer3_init( float frequency, void (*isr)(void) )
     TCNT3  = 0;
 
 
-    unsigned long prescaler = F_CPU / ((TIMER2_SIZE+1) * frequency);
+    unsigned long prescaler = F_CPU / ((TIMER3_SIZE+1) * frequency);
 
     if ( prescaler > 256 )
     {
@@ -265,9 +265,9 @@ void timer3_init( float frequency, void (*isr)(void) )
 
     unsigned long compare_match_value = ((F_CPU) / (frequency * prescaler)) - 1;
 
-    if ( compare_match_value > TIMER2_SIZE )
+    if ( compare_match_value > TIMER3_SIZE )
     {
-        compare_match_value = TIMER2_SIZE;
+        compare_match_value = TIMER3_SIZE;
     }
     else if ( compare_match_value <  1 )
     {
