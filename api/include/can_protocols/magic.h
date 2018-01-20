@@ -23,5 +23,12 @@
  */
 #define OSCC_MAGIC_BYTE_1 ( 0xCC )
 
+/*
+ * @brief Magic number used in the EEPROM to indicate the EEPROM has been
+ *        initialized.
+ *
+ */
+#define OSCC_EEPROM_MAGIC ( 0x05CC )
+
 
 #endif /* _OSCC_MAGIC_H_ */

@@ -171,6 +171,30 @@ typedef struct
 #define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1876 )
 
 /*
+ * @brief Value of the accelerator position that indicates operator override. [steps]
+ *
+ */
+#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130 )
+
+/*
+ * @brief Frequency at which to check for faults. [Hz]
+ *
+ */
+#define BRAKE_FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
+
+/*
+ * @brief Minimum value of the low spoof signal that activates the brake lights. [steps]
+ *
+ */
+#define BRAKE_LIGHT_SPOOF_LOW_THRESHOLD ( 300 )
+
+/*
+ * @brief Minimum value of the high spoof signal that activates the brake lights. [steps]
+ *
+ */
+#define BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD ( 600 )
+
+/*
  * @brief Calculation to convert a brake position to a low spoof voltage.
  *
  */
@@ -185,24 +209,6 @@ typedef struct
 #define BRAKE_POSITION_TO_VOLTS_HIGH( position ) ( (position) *\
     (BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) +\
     BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN  )
-
-/*
- * @brief Value of the accelerator position that indicates operator override. [steps]
- *
- */
-#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130 )
-
-/*
- * @brief Minimum value of the low spoof signal that activates the brake lights. [steps]
- *
- */
-#define BRAKE_LIGHT_SPOOF_LOW_THRESHOLD ( 300 )
-
-/*
- * @brief Minimum value of the high spoof signal that activates the brake lights. [steps]
- *
- */
-#define BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD ( 600 )
 
 
 
@@ -300,6 +306,19 @@ typedef struct
 #define TORQUE_SPOOF_HIGH_SIGNAL_CALIBRATION_CURVE_OFFSET ( 2.42 )
 
 /*
+ * @brief Value of torque sensor difference that indicates likely operator
+ *        override.
+ *
+ */
+#define STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
+
+/*
+ * @brief Frequency at which to check for faults. [Hz]
+ *
+ */
+#define STEERING_FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
+
+/*
  * @brief Minimum allowed value for the high spoof signal value.
  *
  */
@@ -314,13 +333,6 @@ typedef struct
 #define STEERING_TORQUE_TO_VOLTS_LOW( torque ) (\
             ((TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_SCALE * (torque))\
             + TORQUE_SPOOF_LOW_SIGNAL_CALIBRATION_CURVE_OFFSET))
-
-/*
- * @brief Value of torque sensor difference that indicates likely operator
- *        override.
- *
- */
-#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
 
 
 
@@ -394,6 +406,18 @@ typedef struct
 #define THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 3358 )
 
 /*
+ * @brief Value of the accelerator position that indicates operator override. [steps]
+ *
+ */
+#define THROTTLE_PEDAL_OVERRIDE_THRESHOLD ( 185.0 )
+
+/*
+ * @brief Frequency at which to check for faults. [Hz]
+ *
+ */
+#define THROTTLE_FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
+
+/*
  * @brief Calculation to convert a throttle position to a low spoof voltage.
  *
  */
@@ -408,13 +432,6 @@ typedef struct
 #define THROTTLE_POSITION_TO_VOLTS_HIGH( position ) ( (position) *\
     (THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX - THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN) +\
     THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN  )
-
-/*
- * @brief Value of the accelerator position that indicates operator override. [steps]
- *
- */
-#define ACCELERATOR_OVERRIDE_THRESHOLD ( 185.0 )
-
 
 
 #endif

@@ -10,12 +10,14 @@
 #include "accumulator.h"
 #include "brake_control.h"
 #include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/global_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
 #include "dtc.h"
 #include "globals.h"
 #include "helper.h"
 #include "master_cylinder.h"
+#include "oscc_eeprom.h"
 #include "oscc_pid.h"
 #include "vehicles.h"
 
@@ -107,8 +109,8 @@ void check_for_operator_override( void )
 
         master_cylinder_read_pressure( &master_cylinder_pressure );
 
-        if ( ( master_cylinder_pressure.sensor_1_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
-            ( master_cylinder_pressure.sensor_2_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+        if ( ( master_cylinder_pressure.sensor_1_pressure >= g_eeprom_config.override_pedal_threshold_in_decibars ) ||
+            ( master_cylinder_pressure.sensor_2_pressure >= g_eeprom_config.override_pedal_threshold_in_decibars ) )
         {
             disable_control( );
 
@@ -241,7 +243,7 @@ void update_brake( void )
         time_between_loops /= 1000.0;
 
         static interpolate_range_s pressure_ranges =
-            { 0, UINT16_MAX, BRAKE_PRESSURE_MIN_IN_DECIBARS, BRAKE_PRESSURE_MAX_IN_DECIBARS };
+            { 0, UINT16_MAX, g_eeprom_config.brake_pressure_min_in_decibars, g_eeprom_config.brake_pressure_max_in_decibars };
 
         pressure_at_wheels_target = interpolate(
             g_brake_control_state.commanded_pedal_position,
@@ -260,13 +262,13 @@ void update_brake( void )
             float pid_output = g_pid.control;
 
             // pressure too high
-            if ( pid_output < BRAKE_PID_OUTPUT_MIN )
+            if ( pid_output < g_eeprom_config.pid_output_min )
             {
                 static interpolate_range_s slr_ranges = {
-                    BRAKE_PID_RELEASE_SOLENOID_CLAMPED_MIN,
-                    BRAKE_PID_RELEASE_SOLENOID_CLAMPED_MAX,
-                    BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MIN,
-                    BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MAX };
+                    g_eeprom_config.pid_release_solenoid_clamped_min,
+                    g_eeprom_config.pid_release_solenoid_clamped_max,
+                    g_eeprom_config.release_solenoid_duty_cycle_min,
+                    g_eeprom_config.release_solenoid_duty_cycle_max };
 
                 uint16_t slr_duty_cycle = 0;
 
@@ -275,27 +277,27 @@ void update_brake( void )
                 pid_output = -pid_output;
                 slr_duty_cycle = (uint16_t)interpolate( pid_output, &slr_ranges );
 
-                if ( slr_duty_cycle > ( uint16_t )BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MAX )
+                if ( slr_duty_cycle > ( uint16_t )g_eeprom_config.release_solenoid_duty_cycle_max )
                 {
-                    slr_duty_cycle = ( uint16_t )BRAKE_RELEASE_SOLENOID_DUTY_CYCLE_MAX;
+                    slr_duty_cycle = ( uint16_t )g_eeprom_config.release_solenoid_duty_cycle_max;
                 }
 
                 set_release_solenoid_duty_cycle( slr_duty_cycle );
 
-                if ( pressure_at_wheels_target < BRAKE_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
+                if ( pressure_at_wheels_target < g_eeprom_config.brake_light_pressure_threshold_in_decibars )
                 {
                     disable_brake_lights( );
                 }
             }
 
             // pressure too low
-            else if ( pid_output > BRAKE_PID_OUTPUT_MAX )
+            else if ( pid_output > g_eeprom_config.pid_output_max )
             {
                 static interpolate_range_s sla_ranges = {
-                    BRAKE_PID_ACCUMULATOR_SOLENOID_CLAMPED_MIN,
-                    BRAKE_PID_ACCUMULATOR_SOLENOID_CLAMPED_MAX,
-                    BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MIN,
-                    BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX };
+                    g_eeprom_config.pid_accumulator_solenoid_clamped_min,
+                    g_eeprom_config.pid_accumulator_solenoid_clamped_max,
+                    g_eeprom_config.accumulator_solenoid_duty_cycle_min,
+                    g_eeprom_config.accumulator_solenoid_duty_cycle_max };
 
                 uint16_t sla_duty_cycle = 0;
 
@@ -305,9 +307,9 @@ void update_brake( void )
 
                 sla_duty_cycle = (uint16_t)interpolate( pid_output, &sla_ranges );
 
-                if ( sla_duty_cycle > ( uint16_t )BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX )
+                if ( sla_duty_cycle > ( uint16_t )g_eeprom_config.accumulator_solenoid_duty_cycle_max )
                 {
-                    sla_duty_cycle = ( uint16_t )BRAKE_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX;
+                    sla_duty_cycle = ( uint16_t )g_eeprom_config.accumulator_solenoid_duty_cycle_max;
                 }
 
                 set_accumulator_solenoid_duty_cycle( sla_duty_cycle );
@@ -465,10 +467,11 @@ static void pressure_startup_check( void )
     int pressure_accumulator = analogRead( PIN_ACCUMULATOR_PRESSURE_SENSOR );
     sei();
 
-    if( (pressure_front_left < BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN)
-        || (pressure_front_left > BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX)
-        || (pressure_front_right < BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MIN)
-        || (pressure_front_right > BRAKE_PRESSURE_SENSOR_CHECK_VALUE_MAX) )
+
+    if( (pressure_front_left < g_eeprom_config.brake_pressure_sensor_check_value_min)
+        || (pressure_front_left > g_eeprom_config.brake_pressure_sensor_check_value_max)
+        || (pressure_front_right < g_eeprom_config.brake_pressure_sensor_check_value_min)
+        || (pressure_front_right > g_eeprom_config.brake_pressure_sensor_check_value_max) )
     {
         g_brake_control_state.startup_pressure_check_error = true;
 

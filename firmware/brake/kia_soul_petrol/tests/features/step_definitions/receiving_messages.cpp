@@ -77,6 +77,7 @@ WHEN("^the brake pedal command (.*) is received$")
 
     g_mock_mcp_can_read_msg_buf_id = OSCC_BRAKE_COMMAND_CAN_ID;
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
+    init_config();
 
     brake_command->magic[0] = OSCC_MAGIC_BYTE_0;
     brake_command->magic[1] = OSCC_MAGIC_BYTE_1;

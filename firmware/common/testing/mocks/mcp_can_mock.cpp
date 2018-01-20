@@ -57,3 +57,13 @@ uint8_t MCP_CAN::readMsgBufID(uint32_t *ID, uint8_t *len, uint8_t *buf)
 
     return CAN_OK;
 }
+
+uint8_t MCP_CAN::init_Mask(uint8_t num, uint8_t ext, unsigned long ulData)
+{
+    return CAN_OK;
+}
+
+uint8_t MCP_CAN::init_Filt(uint8_t num, uint8_t ext, unsigned long ulData)
+{
+    return CAN_OK;
+}

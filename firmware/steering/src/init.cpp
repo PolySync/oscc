@@ -13,7 +13,8 @@
 #include "globals.h"
 #include "init.h"
 #include "oscc_can.h"
-#include "oscc_serial.h"
+#include "oscc_eeprom.h"
+#include "vehicles.h"
 
 
 void init_globals( void )
@@ -57,4 +58,33 @@ void init_communication_interfaces( void )
     // Accept only CAN Disable when buffer overflow occurs in buffer 0
     g_control_can.init_Mask( 1, 0, 0x7FF ); // Filter for one CAN ID
     g_control_can.init_Filt( 2, 1, OSCC_STEERING_DISABLE_CAN_ID );
+}
+
+
+void init_config( void )
+{
+    uint16_t eeprom_magic = oscc_eeprom_read_u16( OSCC_CONFIG_U16_EEPROM_MAGIC );
+
+    if ( eeprom_magic != OSCC_EEPROM_MAGIC )
+    {
+        DEBUG_PRINT( "Writing config defaults to EEPROM");
+
+        oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN, STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN );
+        oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX, STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
+        oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN, STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN );
+        oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX, STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+        oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD, STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD );
+        oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_FAULT_CHECK_FREQUENCY_IN_HZ, STEERING_FAULT_CHECK_FREQUENCY_IN_HZ );
+        oscc_eeprom_write_u16( OSCC_CONFIG_U16_STEERING_REPORT_PUBLISH_FREQUENCY_IN_HZ, OSCC_STEERING_REPORT_PUBLISH_FREQUENCY_IN_HZ );
+
+        oscc_eeprom_write_u16( OSCC_CONFIG_U16_EEPROM_MAGIC, OSCC_EEPROM_MAGIC );
+    }
+
+    g_eeprom_config.spoof_low_signal_range_min = oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN );
+    g_eeprom_config.spoof_low_signal_range_max = oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX );
+    g_eeprom_config.spoof_high_signal_range_min = oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN );
+    g_eeprom_config.spoof_high_signal_range_max = oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+    g_eeprom_config.torque_difference_override_threshold = oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD );
+    g_eeprom_config.fault_check_frequency_in_hz = oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_FAULT_CHECK_FREQUENCY_IN_HZ );
+    g_eeprom_config.report_publish_frequency_in_hz = oscc_eeprom_read_u16( OSCC_CONFIG_U16_STEERING_REPORT_PUBLISH_FREQUENCY_IN_HZ );
 }

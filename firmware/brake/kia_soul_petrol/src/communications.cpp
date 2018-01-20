@@ -15,6 +15,7 @@
 #include "globals.h"
 #include "mcp_can.h"
 #include "oscc_can.h"
+#include "oscc_eeprom.h"
 
 
 static void process_rx_frame(
@@ -24,6 +25,12 @@ static void process_brake_command(
     const uint8_t * const data );
 
 static void process_fault_report(
+    const uint8_t * const data );
+
+static void process_config_u16(
+    const uint8_t * const data );
+
+static void process_config_f32(
     const uint8_t * const data );
 
 
@@ -102,6 +109,14 @@ static void process_rx_frame(
             {
                 process_fault_report( frame->data );
             }
+            else if ( frame->id == OSCC_CONFIG_U16_CAN_ID )
+            {
+                process_config_u16( frame->data );
+            }
+            else if ( frame->id == OSCC_CONFIG_F32_CAN_ID )
+            {
+                process_config_f32( frame->data );
+            }
         }
     }
 }
@@ -135,5 +150,173 @@ static void process_fault_report(
         DEBUG_PRINT( fault_report->fault_origin_id );
         DEBUG_PRINT( "  DTCs: ");
         DEBUG_PRINTLN( fault_report->dtcs );
+    }
+}
+
+
+static void process_config_u16(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        const oscc_config_u16_s * const config =
+                (oscc_config_u16_s *) data;
+
+        if ( config->name == OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MIN )
+        {
+            g_eeprom_config.brake_pressure_sensor_check_value_min = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_BRAKE_PETROL_PRESSURE_SENSOR_CHECK_VALUE_MAX )
+        {
+            g_eeprom_config.brake_pressure_sensor_check_value_max = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_BRAKE_PETROL_FAULT_CHECK_FREQUENCY_IN_HZ )
+        {
+            g_eeprom_config.fault_check_frequency_in_hz = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_U16_BRAKE_PETROL_REPORT_PUBLISH_FREQUENCY_IN_HZ )
+        {
+            g_eeprom_config.report_publish_frequency_in_hz = config->value;
+
+            oscc_eeprom_write_u16( config->name, config->value );
+        }
+    }
+}
+
+
+static void process_config_f32(
+    const uint8_t * const data )
+{
+    if ( data != NULL )
+    {
+        const oscc_config_f32_s * const config =
+                (oscc_config_f32_s *) data;
+
+        if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MIN_IN_DECIBARS )
+        {
+            g_eeprom_config.accumulator_pressure_min_in_decibars = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_PRESSURE_MAX_IN_DECIBARS )
+        {
+            g_eeprom_config.accumulator_pressure_max_in_decibars = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS )
+        {
+            g_eeprom_config.override_pedal_threshold_in_decibars = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_LIGHT_PRESSURE_THRESHOLD_IN_DECIBARS )
+        {
+            g_eeprom_config.brake_light_pressure_threshold_in_decibars = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PRESSURE_MIN_IN_DECIBARS )
+        {
+            g_eeprom_config.brake_pressure_min_in_decibars = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PRESSURE_MAX_IN_DECIBARS )
+        {
+            g_eeprom_config.brake_pressure_max_in_decibars = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_PROPORTIONAL_GAIN )
+        {
+            g_eeprom_config.pid_proportional_gain = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_INTEGRAL_GAIN )
+        {
+            g_eeprom_config.pid_integral_gain = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_DERIVATIVE_GAIN )
+        {
+            g_eeprom_config.pid_derivative_gain = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_WINDUP_GUARD )
+        {
+            g_eeprom_config.pid_windup_guard = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_OUTPUT_MIN )
+        {
+            g_eeprom_config.pid_output_min = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_OUTPUT_MAX )
+        {
+            g_eeprom_config.pid_output_max = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_ACCUMULATOR_SOLENOID_CLAMPED_MIN )
+        {
+            g_eeprom_config.pid_accumulator_solenoid_clamped_min = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_ACCUMULATOR_SOLENOID_CLAMPED_MAX )
+        {
+            g_eeprom_config.pid_accumulator_solenoid_clamped_max = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_RELEASE_SOLENOID_CLAMPED_MIN )
+        {
+            g_eeprom_config.pid_release_solenoid_clamped_min = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_PID_RELEASE_SOLENOID_CLAMPED_MAX )
+        {
+            g_eeprom_config.pid_release_solenoid_clamped_max = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MIN )
+        {
+            g_eeprom_config.accumulator_solenoid_duty_cycle_min = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_ACCUMULATOR_SOLENOID_DUTY_CYCLE_MAX )
+        {
+            g_eeprom_config.accumulator_solenoid_duty_cycle_max = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MIN )
+        {
+            g_eeprom_config.release_solenoid_duty_cycle_min = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
+        else if ( config->name == OSCC_CONFIG_F32_BRAKE_PETROL_RELEASE_SOLENOID_DUTY_CYCLE_MAX )
+        {
+            g_eeprom_config.release_solenoid_duty_cycle_max = config->value;
+
+            oscc_eeprom_write_f32( config->name, config->value );
+        }
     }
 }

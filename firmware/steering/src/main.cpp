@@ -8,6 +8,7 @@
 #include "communications.h"
 #include "debug.h"
 #include "init.h"
+#include "oscc_eeprom.h"
 #include "steering_control.h"
 #include "timers.h"
 
@@ -21,6 +22,8 @@ int main( void )
     init_devices( );
 
     init_communication_interfaces( );
+
+    init_config( );
 
     start_timers( );
 

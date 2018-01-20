@@ -48,4 +48,17 @@ void init_devices( void );
 void init_communication_interfaces( void );
 
 
+// ****************************************************************************
+// Function:    init_config
+//
+// Purpose:     Initialize the config values in the EEPROM with defaults.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void init_config( void );
+
+
 #endif /* _OSCC_THROTTLE_INIT_H_ */

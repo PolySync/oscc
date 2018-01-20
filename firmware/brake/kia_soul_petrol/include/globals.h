@@ -131,6 +131,35 @@
 #define SOLENOID_PWM_ON ( 255 )
 
 
+typedef struct
+{
+    uint16_t brake_pressure_sensor_check_value_min;
+    uint16_t brake_pressure_sensor_check_value_max;
+    uint16_t fault_check_frequency_in_hz;
+    uint16_t report_publish_frequency_in_hz;
+    float accumulator_pressure_min_in_decibars;
+    float accumulator_pressure_max_in_decibars;
+    float override_pedal_threshold_in_decibars;
+    float brake_light_pressure_threshold_in_decibars;
+    float brake_pressure_min_in_decibars;
+    float brake_pressure_max_in_decibars;
+    float pid_proportional_gain;
+    float pid_integral_gain;
+    float pid_derivative_gain;
+    float pid_windup_guard;
+    float pid_output_min;
+    float pid_output_max;
+    float pid_accumulator_solenoid_clamped_min;
+    float pid_accumulator_solenoid_clamped_max;
+    float pid_release_solenoid_clamped_min;
+    float pid_release_solenoid_clamped_max;
+    float accumulator_solenoid_duty_cycle_min;
+    float accumulator_solenoid_duty_cycle_max;
+    float release_solenoid_duty_cycle_min;
+    float release_solenoid_duty_cycle_max;
+} eeprom_config_s;
+
+
 #ifdef GLOBAL_DEFINED
     MCP_CAN g_control_can( PIN_CAN_CHIP_SELECT );
 
@@ -145,6 +174,8 @@
 EXTERN volatile brake_control_state_s g_brake_control_state;
 
 EXTERN pid_s g_pid;
+
+EXTERN eeprom_config_s g_eeprom_config;
 
 
 #endif /* _OSCC_BRAKE_GLOBALS_H_ */

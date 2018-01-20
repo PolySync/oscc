@@ -7,12 +7,14 @@
 #include <Arduino.h>
 #include <stdint.h>
 
+#include "can_protocols/global_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_eeprom.h"
 #include "throttle_control.h"
 #include "vehicles.h"
 
@@ -41,7 +43,7 @@ void check_for_operator_override( void )
         uint32_t accelerator_position_average =
             (accelerator_position.low + accelerator_position.high) / 2;
 
-        if ( accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD )
+        if ( accelerator_position_average >= g_eeprom_config.pedal_override_threshold )
         {
             disable_control( );
 
@@ -118,14 +120,15 @@ void update_throttle(
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
-                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+                g_eeprom_config.spoof_high_signal_range_min,
+                g_eeprom_config.spoof_high_signal_range_max );
 
         uint16_t spoof_low =
             constrain(
                 spoof_command_low,
-                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
-                THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
+                g_eeprom_config.spoof_low_signal_range_min,
+                g_eeprom_config.spoof_low_signal_range_max );
+
 
         cli();
         g_dac.outputA( spoof_high );

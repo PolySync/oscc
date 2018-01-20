@@ -8,12 +8,14 @@
 #include <stdint.h>
 
 #include "can_protocols/brake_can_protocol.h"
+#include "can_protocols/global_can_protocol.h"
 #include "brake_control.h"
 #include "communications.h"
 #include "debug.h"
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_eeprom.h"
 #include "vehicles.h"
 
 
@@ -41,7 +43,7 @@ void check_for_operator_override( void )
         uint32_t brake_pedal_position_average =
             (brake_pedal_position.low + brake_pedal_position.high) / 2;
 
-        if ( brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
+        if ( brake_pedal_position_average >= g_eeprom_config.pedal_override_threshold )
         {
             disable_control( );
 
@@ -118,26 +120,26 @@ void update_brake(
         uint16_t spoof_high =
             constrain(
                 spoof_command_high,
-                BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+                g_eeprom_config.spoof_high_signal_range_min,
+                g_eeprom_config.spoof_high_signal_range_max );
 
         uint16_t spoof_low =
             constrain(
                 spoof_command_low,
-                BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN,
-                BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX );
+                g_eeprom_config.spoof_low_signal_range_min,
+                g_eeprom_config.spoof_low_signal_range_max );
 
-        if( (spoof_high > BRAKE_LIGHT_SPOOF_HIGH_THRESHOLD)
-            || (spoof_low > BRAKE_LIGHT_SPOOF_LOW_THRESHOLD) )
+        if( (spoof_high > g_eeprom_config.brake_light_spoof_high_threshold)
+            || (spoof_low > g_eeprom_config.brake_light_spoof_low_threshold) )
         {
             cli();
-            digitalWrite(PIN_BRAKE_LIGHT_ENABLE, HIGH);
+            digitalWrite( PIN_BRAKE_LIGHT_ENABLE, HIGH );
             sei();
         }
         else
         {
             cli();
-            digitalWrite(PIN_BRAKE_LIGHT_ENABLE, LOW);
+            digitalWrite( PIN_BRAKE_LIGHT_ENABLE, LOW );
             sei();
         }
 

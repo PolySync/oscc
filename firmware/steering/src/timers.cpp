@@ -6,19 +6,15 @@
 
 #include <Arduino.h>
 
+#include "can_protocols/global_can_protocol.h"
 #include "can_protocols/steering_can_protocol.h"
+#include "vehicles.h"
 #include "communications.h"
 #include "globals.h"
+#include "oscc_eeprom.h"
 #include "oscc_timer.h"
 #include "steering_control.h"
 #include "timers.h"
-
-
-/*
- * @brief Fault checking frequency. [Hz]
- *
- */
-#define FAULT_CHECK_FREQUENCY_IN_HZ ( 5 )
 
 
 static void check_for_faults( void );
@@ -26,8 +22,9 @@ static void check_for_faults( void );
 
 void start_timers( void )
 {
-    timer1_init( FAULT_CHECK_FREQUENCY_IN_HZ, check_for_faults );
-    timer2_init( OSCC_REPORT_STEERING_PUBLISH_FREQ_IN_HZ, publish_steering_report );
+    timer1_init( g_eeprom_config.fault_check_frequency_in_hz, check_for_faults );
+
+    timer2_init( g_eeprom_config.report_publish_frequency_in_hz, publish_steering_report );
 }
 
 

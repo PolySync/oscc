@@ -6,6 +6,7 @@
 
 #include "Arduino.h"
 #include "communications.h"
+#include "init.h"
 #include "oscc_can.h"
 #include "mcp_can.h"
 #include "brake_control.h"
