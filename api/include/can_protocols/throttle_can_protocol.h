@@ -14,28 +14,35 @@
 
 
 /*
+ * @brief CAN ID representing the range of throttle messages.
+ *
+ */
+#define OSCC_THROTTLE_CAN_ID_INDEX (0x90)
+
+
+/*
  * @brief Throttle enable message (CAN frame) ID.
  *
  */
-#define OSCC_THROTTLE_ENABLE_CAN_ID (0x52)
+#define OSCC_THROTTLE_ENABLE_CAN_ID (0x90)
 
 /*
  * @brief Throttle disable message (CAN frame) ID.
  *
  */
-#define OSCC_THROTTLE_DISABLE_CAN_ID (0x53)
+#define OSCC_THROTTLE_DISABLE_CAN_ID (0x91)
 
 /*
  * @brief Throttle command message (CAN frame) ID.
  *
  */
-#define OSCC_THROTTLE_COMMAND_CAN_ID (0x62)
+#define OSCC_THROTTLE_COMMAND_CAN_ID (0x92)
 
 /*
  * @brief Throttle report message (CAN frame) ID.
  *
  */
-#define OSCC_THROTTLE_REPORT_CAN_ID (0x63)
+#define OSCC_THROTTLE_REPORT_CAN_ID (0x93)
 
 /*
  * @brief Throttle report message (CAN frame) length.

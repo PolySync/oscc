@@ -12,11 +12,18 @@
 #include <stdint.h>
 #include "magic.h"
 
+
+/*
+ * @brief CAN ID representing the range of global messages.
+ *
+ */
+#define OSCC_FAULT_CAN_ID_INDEX (0xA0)
+
 /*
  * @brief Fault report message (CAN frame) ID.
  *
  */
-#define OSCC_FAULT_REPORT_CAN_ID (0x99)
+#define OSCC_FAULT_REPORT_CAN_ID (0xAF)
 
 /*
  * @brief Fault report message (CAN frame) length.
