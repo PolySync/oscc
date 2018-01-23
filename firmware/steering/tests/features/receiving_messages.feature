@@ -38,8 +38,8 @@ Feature: Receiving commands
     And <low> should be sent to DAC B
 
     Examples:
-      | high  | low    |
-      |  3440 |  656  |
+      |  A    |  B     |
+      |  3440 |  656   |
       |  2500 |  1500  |
       |  2000 |  2000  |
       |  1500 |  2500  |
@@ -51,11 +51,11 @@ Feature: Receiving commands
 
     When a command is received with spoof values <high> and <low>
 
-    Then <high_clamped> should be sent to DAC A
-    And <low_clamped> should be sent to DAC B
+    Then <A_clamped> should be sent to DAC A
+    And <B_clamped> should be sent to DAC B
 
     Examples:
-      | high  | low   | high_clamped | low_clamped |
+      |  A    |  B    | A_clamped    |  B_clamped |
       |  4000 |  0    | 3440         |  656        |
       |  3500 |  500  | 3440         |  656        |
       |  500  |  3500 | 738          |  3358       |

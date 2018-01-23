@@ -1,6 +1,11 @@
 project(throttle)
 
-set(ARDUINO_DEFAULT_BOARD uno)
+if(DRIVEKIT)
+    set(ARDUINO_DEFAULT_BOARD leonardo)
+elseif(OSCC)
+    set(ARDUINO_DEFAULT_BOARD uno)
+endif()
+
 SET(ARDUINO_DEFAULT_PORT ${SERIAL_PORT_THROTTLE})
 set(ARDUINO_DEFAULT_BAUDRATE ${SERIAL_BAUD_THROTTLE})
 
@@ -28,6 +33,7 @@ generate_arduino_firmware(
     src/globals.cpp
     src/init.cpp
     src/communications.cpp
+    src/status.cpp
     src/throttle_control.cpp
     src/timers.cpp)
 

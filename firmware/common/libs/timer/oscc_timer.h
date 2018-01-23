@@ -93,6 +93,42 @@
  */
 #define TIMER2_PRESCALER_1024 ( (_BV(CS22) | _BV(CS21) | _BV(CS20)) )
 
+/*
+ * @brief Maximum value that timer3 counter can contain.
+ *
+ */
+#define TIMER3_SIZE ( 65535 )
+
+/*
+ * @brief Necessary bitshifts for a timer3 prescaler of 1.
+ *
+ */
+#define TIMER3_PRESCALER_1 ( (_BV(CS10)) )
+
+/*
+ * @brief Necessary bitshifts for a timer3 prescaler of 8.
+ *
+ */
+#define TIMER3_PRESCALER_8 ( (_BV(CS11)) )
+
+/*
+ * @brief Necessary bitshifts for a timer3 prescaler of 64.
+ *
+ */
+#define TIMER3_PRESCALER_64 ( (_BV(CS11) | _BV(CS10)) )
+
+/*
+ * @brief Necessary bitshifts for a timer3 prescaler of 256.
+ *
+ */
+#define TIMER3_PRESCALER_256 ( (_BV(CS12)) )
+
+/*
+ * @brief Necessary bitshifts for a timer3 prescaler of 1024.
+ *
+ */
+#define TIMER3_PRESCALER_1024 ( (_BV(CS12) | _BV(CS10)) )
+
 
 // ****************************************************************************
 // Function:    timer1_init
@@ -113,6 +149,7 @@ void timer1_init(
     float frequency,
     void (*isr)(void) );
 
+#ifdef OSCC
 // ****************************************************************************
 // Function:    timer2_init
 //
@@ -132,5 +169,25 @@ void timer2_init(
     float frequency,
     void (*isr)(void) );
 
+#elif DRIVEKIT
+// ****************************************************************************
+// Function:    timer3_init
+//
+// Purpose:     Initializes timer3 to interrupt at a set frequency and run
+//              an ISR at the time of that interrupt.
+//
+// Notes:       timer3 is an 16-bit timer with a minimum frequency of 61Hz.
+//
+// Returns:     void
+//
+// Parameters:  [in] frequency - frequency at which to generate an interrupt [hz]
+//              [in] isr - pointer to the interrupt service routine to call on
+//                         interrupt
+//
+// ****************************************************************************
+void timer3_init(
+    float frequency,
+    void (*isr)(void) );
+#endif
 
 #endif /* _OSCC_TIMER_H_ */

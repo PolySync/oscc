@@ -60,8 +60,8 @@ impl Arbitrary for oscc_steering_command_s {
     fn arbitrary<G: Gen>(g: &mut G) -> oscc_steering_command_s {
         oscc_steering_command_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
-            spoof_value_low: u16::arbitrary(g),
-            spoof_value_high: u16::arbitrary(g),
+            spoof_value_A: u16::arbitrary(g),
+            spoof_value_B: u16::arbitrary(g),
             reserved: [u8::arbitrary(g); 2],
         }
     }
@@ -171,8 +171,8 @@ fn check_process_disable_command() {
 /// the steering firmware should send requested spoof values
 /// upon recieving a steering command message
 fn prop_output_accurate_spoofs(mut steering_command_msg: oscc_steering_command_s) -> TestResult {
-    steering_command_msg.spoof_value_low = rand::thread_rng().gen_range(STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN as u16, STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX as u16);
-    steering_command_msg.spoof_value_high = rand::thread_rng().gen_range(STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16, STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16);
+    steering_command_msg.spoof_value_B = rand::thread_rng().gen_range(STEERING_SPOOF_B_SIGNAL_RANGE_MIN as u16, STEERING_SPOOF_B_SIGNAL_RANGE_MAX as u16);
+    steering_command_msg.spoof_value_A = rand::thread_rng().gen_range(STEERING_SPOOF_A_SIGNAL_RANGE_MIN as u16, STEERING_SPOOF_A_SIGNAL_RANGE_MAX as u16);
     unsafe {
         g_steering_control_state.enabled = true;
 
@@ -182,9 +182,9 @@ fn prop_output_accurate_spoofs(mut steering_command_msg: oscc_steering_command_s
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_mock_dac_output_b ==                                steering_command_msg.spoof_value_low &&
+        TestResult::from_bool(g_mock_dac_output_b == steering_command_msg.spoof_value_B &&
             g_mock_dac_output_a ==
-            steering_command_msg.spoof_value_high )
+            steering_command_msg.spoof_value_A )
     }
 }
 
@@ -200,14 +200,14 @@ fn check_output_accurate_spoofs() {
 /// upon recieving a steering command message
 fn prop_output_constrained_spoofs(steering_command_msg: oscc_steering_command_s) -> TestResult {
     unsafe {
-        if (steering_command_msg.spoof_value_low >=
-            STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-            steering_command_msg.spoof_value_low <=
-            STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX as u16) ||
-            (steering_command_msg.spoof_value_high >=
-            STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-            steering_command_msg.spoof_value_high <=
-            STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16)
+        if (steering_command_msg.spoof_value_B >=
+            STEERING_SPOOF_B_SIGNAL_RANGE_MIN as u16 &&
+            steering_command_msg.spoof_value_B <=
+            STEERING_SPOOF_B_SIGNAL_RANGE_MAX as u16) ||
+            (steering_command_msg.spoof_value_A >=
+            STEERING_SPOOF_A_SIGNAL_RANGE_MIN as u16 &&
+            steering_command_msg.spoof_value_A <=
+            STEERING_SPOOF_A_SIGNAL_RANGE_MAX as u16)
         {
             return TestResult::discard();
         }
@@ -221,10 +221,10 @@ fn prop_output_constrained_spoofs(steering_command_msg: oscc_steering_command_s)
         check_for_incoming_message();
 
         TestResult::from_bool(
-            g_mock_dac_output_a >= STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-            g_mock_dac_output_a <= STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16 &&
-            g_mock_dac_output_b >= STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-            g_mock_dac_output_b <= STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX as u16)
+            g_mock_dac_output_a >= STEERING_SPOOF_A_SIGNAL_RANGE_MIN as u16 &&
+            g_mock_dac_output_a <= STEERING_SPOOF_A_SIGNAL_RANGE_MAX as u16 &&
+            g_mock_dac_output_b >= STEERING_SPOOF_B_SIGNAL_RANGE_MIN as u16 &&
+            g_mock_dac_output_b <= STEERING_SPOOF_B_SIGNAL_RANGE_MAX as u16)
     }
 }
 
@@ -265,16 +265,16 @@ fn check_valid_can_frame() {
 
 // the steering firmware should be able to correctly and consistently
 // detect operator overrides, disable on reciept, and send a fault report
-fn prop_check_operator_override(analog_read_spoof_high: i16, analog_read_spoof_low: i16) -> TestResult {
+fn prop_check_operator_override(analog_read_spoof_A: i16, analog_read_spoof_B: i16) -> TestResult {
     unsafe {
         g_steering_control_state.enabled = true;
         g_steering_control_state.operator_override = false;
-        g_mock_arduino_analog_read_return[0] = analog_read_spoof_high as isize;
-        g_mock_arduino_analog_read_return[1] = analog_read_spoof_low as isize;
+        g_mock_arduino_analog_read_return[0] = analog_read_spoof_A as isize;
+        g_mock_arduino_analog_read_return[1] = analog_read_spoof_B as isize;
 
         check_for_operator_override();
 
-        if (analog_read_spoof_high - analog_read_spoof_low) >= (TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD as i16) {
+        if (analog_read_spoof_A - analog_read_spoof_B) >= (TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD as i16) {
             TestResult::from_bool(g_steering_control_state.operator_override == true && g_steering_control_state.enabled == false &&
             g_mock_mcp_can_send_msg_buf_id == OSCC_FAULT_REPORT_CAN_ID)
         } else {

@@ -16,12 +16,16 @@ if(TESTS)
         add_subdirectory(brake/kia_soul_petrol/tests)
     elseif(KIA_SOUL_EV)
         add_definitions(-DKIA_SOUL_EV)
-        add_subdirectory(brake/kia_soul_ev/tests)
+        add_subdirectory(brake/kia_soul_ev_niro/tests)
+    elseif(KIA_NIRO)
+        add_definitions(-DKIA_NIRO)
+        add_subdirectory(brake/kia_soul_ev_niro/tests)
     else()
         message(FATAL_ERROR "No platform selected - no firmware will be tested")
     endif()
 
     add_subdirectory(can_gateway/tests)
+    add_subdirectory(display/tests)
     add_subdirectory(steering/tests)
     add_subdirectory(throttle/tests)
     add_subdirectory(common/libs/pid/tests)
@@ -31,6 +35,7 @@ if(TESTS)
         DEPENDS
         run-brake-unit-tests
         run-can-gateway-unit-tests
+        run-display-unit-tests
         run-steering-unit-tests
         run-throttle-unit-tests)
 
@@ -64,6 +69,7 @@ else()
     option(DEBUG "Enable debug mode" OFF)
     option(KIA_SOUL "Build firmware for the petrol Kia Soul" OFF)
     option(KIA_SOUL_EV "Build firmware for the Kia Soul EV" OFF)
+    option(KIA_NIRO "Build firmware for the Kia Niro" OFF)
     option(BRAKE_STARTUP_TEST "Enable brake startup sensor tests" ON)
     option(STEERING_OVERRIDE "Enable steering override" ON)
 
@@ -87,8 +93,18 @@ else()
         add_definitions(-DKIA_SOUL)
     elseif(KIA_SOUL_EV)
         add_definitions(-DKIA_SOUL_EV)
+    elseif(KIA_NIRO)
+        add_definitions(-DKIA_NIRO)
     else()
         message(FATAL_ERROR "No platform selected - no firmware will be built")
+    endif()
+
+    if(DRIVEKIT)
+        add_definitions(-DDRIVEKIT)
+    elseif(OSCC)
+        add_definitions(-DOSCC)
+    else()
+        message(FATAL_ERROR "No board selected - no firmware will be built")
     endif()
 
     if(KIA_SOUL AND BRAKE_STARTUP_TEST)
@@ -104,6 +120,7 @@ else()
 
     add_subdirectory(brake)
     add_subdirectory(can_gateway)
+    add_subdirectory(display)
     add_subdirectory(steering)
     add_subdirectory(throttle)
 
@@ -112,6 +129,7 @@ else()
         DEPENDS
         brake-upload
         can-gateway-upload
+        display-upload
         steering-upload
         throttle-upload)
 endif()

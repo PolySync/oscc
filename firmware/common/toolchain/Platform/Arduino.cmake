@@ -1176,10 +1176,19 @@ function(setup_arduino_bootloader_upload TARGET_NAME BOARD_ID PORT AVRDUDE_FLAGS
 
     list(APPEND AVRDUDE_ARGS "-Uflash:w:${TARGET_PATH}.hex")
     list(APPEND AVRDUDE_ARGS "-Ueeprom:w:${TARGET_PATH}.eep:i")
+
+    if(${BOARD_ID} STREQUAL "leonardo")
+    add_custom_target(${UPLOAD_TARGET}
+                      ${CMAKE_MODULE_PATH}/reset.sh \;
+                     ${ARDUINO_AVRDUDE_PROGRAM} 
+                     ${AVRDUDE_ARGS}
+                     DEPENDS ${TARGET_NAME})
+    else()
     add_custom_target(${UPLOAD_TARGET}
                      ${ARDUINO_AVRDUDE_PROGRAM} 
                      ${AVRDUDE_ARGS}
                      DEPENDS ${TARGET_NAME})
+    endif()
 
     # Global upload target
     if(NOT TARGET upload)

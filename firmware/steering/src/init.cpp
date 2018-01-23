@@ -28,10 +28,10 @@ void init_globals( void )
 void init_devices( void )
 {
     pinMode( PIN_DAC_CHIP_SELECT, OUTPUT );
-    pinMode( PIN_TORQUE_SENSOR_HIGH, INPUT );
-    pinMode( PIN_TORQUE_SENSOR_LOW, INPUT );
-    pinMode( PIN_TORQUE_SPOOF_HIGH, INPUT );
-    pinMode( PIN_TORQUE_SPOOF_LOW, INPUT );
+    pinMode( PIN_TORQUE_SENSOR_A, INPUT );
+    pinMode( PIN_TORQUE_SENSOR_B, INPUT );
+    pinMode( PIN_TORQUE_SPOOF_A, INPUT );
+    pinMode( PIN_TORQUE_SPOOF_B, INPUT );
     pinMode( PIN_SPOOF_ENABLE, OUTPUT );
 
     cli();

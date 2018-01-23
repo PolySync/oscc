@@ -60,8 +60,8 @@ impl Arbitrary for oscc_throttle_command_s {
     fn arbitrary<G: Gen>(g: &mut G) -> oscc_throttle_command_s {
         oscc_throttle_command_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
-            spoof_value_low: u16::arbitrary(g),
-            spoof_value_high: u16::arbitrary(g),
+            spoof_value_A: u16::arbitrary(g),
+            spoof_value_B: u16::arbitrary(g),
             reserved: [u8::arbitrary(g); 2],
         }
     }
@@ -171,12 +171,12 @@ fn check_process_disable_command() {
 /// the throttle firmware should send requested spoof values
 /// upon recieving a throttle command message
 fn prop_output_accurate_spoofs(mut throttle_command_msg: oscc_throttle_command_s) -> TestResult {
-    throttle_command_msg.spoof_value_low =
-        rand::thread_rng().gen_range(THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16,
-                                     THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16);
+    throttle_command_msg.spoof_value_B =
+        rand::thread_rng().gen_range(THROTTLE_SPOOF_B_SIGNAL_RANGE_MIN as u16,
+                                     THROTTLE_SPOOF_B_SIGNAL_RANGE_MAX as u16);
     throttle_command_msg.spoof_value_high =
-        rand::thread_rng().gen_range(THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16,
-                                     THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16);
+        rand::thread_rng().gen_range(THROTTLE_SPOOF_A_SIGNAL_RANGE_MIN as u16,
+                                     THROTTLE_SPOOF_A_SIGNAL_RANGE_MAX as u16);
     unsafe {
         g_throttle_control_state.enabled = true;
 
@@ -186,8 +186,8 @@ fn prop_output_accurate_spoofs(mut throttle_command_msg: oscc_throttle_command_s
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_mock_dac_output_b == throttle_command_msg.spoof_value_low &&
-                              g_mock_dac_output_a == throttle_command_msg.spoof_value_high)
+        TestResult::from_bool(g_mock_dac_output_b == throttle_command_msg.spoof_value_B &&
+                              g_mock_dac_output_a == throttle_command_msg.spoof_value_A)
     }
 }
 
@@ -203,10 +203,10 @@ fn check_output_accurate_spoofs() {
 /// upon recieving a throttle command message
 fn prop_output_constrained_spoofs(throttle_command_msg: oscc_throttle_command_s) -> TestResult {
     unsafe {
-        if (throttle_command_msg.spoof_value_low >= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-            throttle_command_msg.spoof_value_low <= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16) ||
-           (throttle_command_msg.spoof_value_high >= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-            throttle_command_msg.spoof_value_high <= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16) {
+        if (throttle_command_msg.spoof_value_B >= THROTTLE_SPOOF_B_SIGNAL_RANGE_MIN as u16 &&
+            throttle_command_msg.spoof_value_B <= THROTTLE_SPOOF_B_SIGNAL_RANGE_MAX as u16) ||
+           (throttle_command_msg.spoof_value_A >= THROTTLE_SPOOF_A_SIGNAL_RANGE_MIN as u16 &&
+            throttle_command_msg.spoof_value_A <= THROTTLE_SPOOF_A_SIGNAL_RANGE_MAX as u16) {
             return TestResult::discard();
         }
 
@@ -218,10 +218,10 @@ fn prop_output_constrained_spoofs(throttle_command_msg: oscc_throttle_command_s)
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_mock_dac_output_a >= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-                              g_mock_dac_output_a <= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16 &&
-                              g_mock_dac_output_b >= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-                              g_mock_dac_output_b <= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16)
+        TestResult::from_bool(g_mock_dac_output_a >= THROTTLE_SPOOF_A_SIGNAL_RANGE_MIN as u16 &&
+                              g_mock_dac_output_a <= THROTTLE_SPOOF_A_SIGNAL_RANGE_MAX as u16 &&
+                              g_mock_dac_output_b >= THROTTLE_SPOOF_B_SIGNAL_RANGE_MIN as u16 &&
+                              g_mock_dac_output_b <= THROTTLE_SPOOF_B_SIGNAL_RANGE_MAX as u16)
     }
 }
 
