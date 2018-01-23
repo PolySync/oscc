@@ -14,6 +14,7 @@
 #include "mcp_can.h"
 #include "steering_control.h"
 #include "oscc_can.h"
+#include "vehicles.h"
 
 
 static void process_rx_frame(
@@ -114,9 +115,31 @@ static void process_steering_command(
         const oscc_steering_command_s * const steering_command =
                 (oscc_steering_command_s *) data;
 
-        update_steering(
-            steering_command->spoof_value_high,
-            steering_command->spoof_value_low );
+        const float clamped_torque = CONSTRAIN(
+            steering_command->torque_command * MAXIMUM_TORQUE_COMMAND,
+            MINIMUM_TORQUE_COMMAND,
+            MAXIMUM_TORQUE_COMMAND);
+
+        float spoof_voltage_low =
+            STEERING_TORQUE_TO_VOLTS_LOW( clamped_torque );
+
+        spoof_voltage_low = CONSTRAIN(
+            spoof_voltage_low,
+            STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MIN,
+            STEERING_SPOOF_LOW_SIGNAL_VOLTAGE_MAX);
+
+        float spoof_voltage_high =
+            STEERING_TORQUE_TO_VOLTS_HIGH( clamped_torque );
+
+        spoof_voltage_high = CONSTRAIN(
+            spoof_voltage_high,
+            STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
+            STEERING_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX);
+
+        const uint16_t spoof_value_low = STEPS_PER_VOLT * spoof_voltage_low;
+        const uint16_t spoof_value_high = STEPS_PER_VOLT * spoof_voltage_high;
+
+        update_steering( spoof_value_high, spoof_value_low );
     }
 }
 

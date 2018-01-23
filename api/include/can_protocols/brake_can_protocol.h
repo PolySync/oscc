@@ -120,17 +120,10 @@ typedef struct
                        *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                        *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-#if defined(KIA_SOUL)
-    uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
-
-    uint8_t reserved[4]; /*!< Reserved. */
-#elif defined(KIA_SOUL_EV)
-    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
-
-    uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
+    float pedal_command; /* Brake Request 0.0 to 1.0 where 1.0 is 100% */
 
     uint8_t reserved[2]; /*!< Reserved. */
-#endif
+
 } oscc_brake_command_s;
 
 

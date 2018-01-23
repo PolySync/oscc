@@ -43,10 +43,9 @@ WHEN("^a fault report is received$")
 }
 
 
-WHEN("^a command is received with spoof values (.*) and (.*)$")
+WHEN("^a command is received with request value (.*)$")
 {
-    REGEX_PARAM(uint16_t, high);
-    REGEX_PARAM(uint16_t, low);
+    REGEX_PARAM(float, request_value);
 
     g_mock_mcp_can_check_receive_return = CAN_MSGAVAIL;
     g_mock_mcp_can_read_msg_buf_id = OSCC_THROTTLE_COMMAND_CAN_ID;
@@ -56,12 +55,7 @@ WHEN("^a command is received with spoof values (.*) and (.*)$")
 
     throttle_command->magic[0] = OSCC_MAGIC_BYTE_0;
     throttle_command->magic[1] = OSCC_MAGIC_BYTE_1;
-    throttle_command->spoof_value_high = high;
-    throttle_command->spoof_value_low = low;
+    throttle_command->torque_request = request_value;
 
     check_for_incoming_message();
-
-    update_throttle(
-        throttle_command->spoof_value_high,
-        throttle_command->spoof_value_low);
 }

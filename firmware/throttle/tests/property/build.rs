@@ -54,6 +54,8 @@ fn main() {
         .whitelisted_var("OSCC_THROTTLE_REPORT_PUBLISH_INTERVAL_IN_MSEC")
         .whitelisted_var("CAN_MSGAVAIL")
         .whitelisted_var("CAN_STANDARD")
+        .whitelisted_var("MAXIMUM_THROTTLE_COMMAND")
+        .whitelisted_var("MINIMUM_THROTTLE_COMMAND")
         .whitelisted_var("THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN")
         .whitelisted_var("THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX")
         .whitelisted_var("THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN")

@@ -120,9 +120,7 @@ typedef struct
                        *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                        *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
-
-    uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
+    float torque_request; /* Torque request from 0.0 to 1.0 where 1.0 is 100% */
 
     uint8_t reserved[2]; /*!< Reserved. */
 } oscc_throttle_command_s;

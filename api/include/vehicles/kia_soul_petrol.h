@@ -108,13 +108,13 @@ typedef struct
  * @brief Minimum allowable brake value.
  *
  */
-#define MINIMUM_BRAKE_COMMAND ( 0 )
+#define MINIMUM_BRAKE_COMMAND ( 0.0 )
 
 /*
  * @brief Maximum allowable brake value.
  *
  */
-#define MAXIMUM_BRAKE_COMMAND ( 52428 )
+#define MAXIMUM_BRAKE_COMMAND ( 1.0 )
 
 /*
  * @brief Calculation to convert a brake position to a pedal position.
