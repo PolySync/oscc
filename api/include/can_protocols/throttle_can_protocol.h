@@ -142,14 +142,23 @@ typedef struct
                       * Zero value means disabled (commands are ignored).
                       * Non-zero value means enabled (commands are sent to the vehicle). */
 
-    uint8_t operator_override; /*!< Driver override state.
-                                * Zero value means there has been no operator override.
-                                * Non-zero value means an operator has physically overridden
-                                * the system. */
+    unsigned int operator_override : 1; /*!< Driver override state.
+                                        * Zero value means there has been no
+                                        * operator override. Non-zero value
+                                        * means an operator has physically
+                                        * overridden the system. */
+
+    unsigned int is_release_version : 1; /*!< For if the git describe is clean
+                                              or dirty denoting if the version
+                                              listed in the message is release */
+
+    unsigned int reserved : 6;
 
     uint8_t dtcs; /*!< Bitfield of DTCs present in the module. */
 
-    uint8_t reserved[3]; /*!< Reserved. */
+    uint8_t version[3]; /*!< git describe version major, minor, and patch
+                             see release_version bit for if it is a release
+                             verison or a modified git branch */
 } oscc_throttle_report_s;
 
 #pragma pack(pop)
