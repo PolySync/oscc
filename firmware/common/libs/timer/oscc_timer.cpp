@@ -231,23 +231,11 @@ void timer3_init( float frequency, void (*isr)(void) )
 
         TCCR3B |= TIMER3_PRESCALER_256;
     }
-    else if ( prescaler > 64 )
-    {
-        prescaler = 128;
-
-        TCCR3B |= TIMER3_PRESCALER_128;
-    }
     else if ( prescaler > 32 )
     {
         prescaler = 64;
 
         TCCR3B |= TIMER3_PRESCALER_64;
-    }
-    else if ( prescaler > 8 )
-    {
-        prescaler = 32;
-
-        TCCR3B |= TIMER3_PRESCALER_32;
     }
     else if ( prescaler > 1 )
     {
@@ -279,7 +267,7 @@ void timer3_init( float frequency, void (*isr)(void) )
     OCR3A = compare_match_value;
 
     // turn on compare mode
-    TCCR3B |= _BV(WGM31);
+    TCCR3B |= _BV(WGM32);
 
     // enable compare interrupt
     TIMSK3 |= _BV(OCIE3A);
