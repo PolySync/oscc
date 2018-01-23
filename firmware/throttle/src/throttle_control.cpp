@@ -109,7 +109,7 @@ void enable_control( void )
         && g_throttle_control_state.operator_override == false )
     {
         const uint16_t num_samples = 20;
-        //TODO: Should this be inside the cli()?!?
+
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
@@ -132,7 +132,7 @@ void disable_control( void )
     if( g_throttle_control_state.enabled == true )
     {
         const uint16_t num_samples = 20;
-        //TODO: Should this be inside the cli()?!?
+        
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
