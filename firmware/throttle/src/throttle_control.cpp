@@ -17,10 +17,11 @@
 #include "vehicles.h"
 
 
-
-
 static void read_accelerator_position_sensor(
     accelerator_position_s * const value );
+
+
+static bool check_voltage_grounded( uint16_t high, uint16_t low );
 
 
 void check_for_faults( void )
@@ -36,8 +37,8 @@ void check_for_faults( void )
             (accelerator_position.low + accelerator_position.high) / 2;
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (accelerator_position.high == 0)
-            || (accelerator_position.low == 0) )
+        if( check_voltage_grounded( accelerator_position.high,
+                                    accelerator_position.low ) )
         {
             disable_control( );
 
@@ -132,7 +133,7 @@ void disable_control( void )
     if( g_throttle_control_state.enabled == true )
     {
         const uint16_t num_samples = 20;
-        
+
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
@@ -157,4 +158,31 @@ static void read_accelerator_position_sensor(
     value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
     value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );
     sei();
+}
+
+
+static bool check_voltage_grounded( uint16_t high, uint16_t low ) {
+
+    static unsigned long elapsed_detection_time = 0;
+    unsigned long current_time = millis();
+
+    bool ret = false;
+    if( (high == 0) || (low == 0) )
+    {
+        if ( elapsed_detection_time == 0 )
+        {
+          elapsed_detection_time = millis();
+        }
+
+        if( (current_time - elapsed_detection_time) > FAULT_HYSTERESIS )
+        {
+          ret = true;
+        }
+    }
+    else
+    {
+      elapsed_detection_time = 0;
+    }
+
+    return ret;
 }

@@ -23,6 +23,10 @@
 static void read_torque_sensor(
     steering_torque_s * value );
 
+
+static bool check_voltage_grounded( uint16_t high, uint16_t low );
+
+
 static float exponential_moving_average(
     const float alpha,
     const float input,
@@ -58,8 +62,7 @@ void check_for_faults( void )
 #endif
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (torque.high == 0)
-            || (torque.low == 0) )
+        if( check_voltage_grounded( torque.high, torque.low ) )
         {
             disable_control( );
 
@@ -188,4 +191,28 @@ static void read_torque_sensor(
     value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
     value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
+}
+
+
+bool check_voltage_grounded( uint16_t high, uint16_t low ) {
+
+    static unsigned long elapsed_detection_time = 0;
+    unsigned long current_time = millis();
+
+    bool ret = false;
+    if( (high == 0) || (low == 0) )
+    {
+        if ( elapsed_detection_time == 0 )
+        {
+          elapsed_detection_time = millis();
+        }
+
+        ret = ( (current_time - elapsed_detection_time) > FAULT_HYSTERESIS );
+    }
+    else
+    {
+      elapsed_detection_time = 0;
+    }
+
+    return ret;
 }

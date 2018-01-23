@@ -34,7 +34,7 @@ extern unsigned short g_mock_dac_output_a;
 extern unsigned short g_mock_dac_output_b;
 
 extern volatile steering_control_state_s g_steering_control_state;
-
+extern volatile unsigned long g_mock_arduino_millis_return;
 
 // return to known state before every scenario
 BEFORE()
@@ -60,6 +60,9 @@ BEFORE()
     g_steering_control_state.enabled = false;
     g_steering_control_state.operator_override = false;
     g_steering_control_state.dtcs = 0;
+
+    // A small amount of time elapsed after boot
+    g_mock_arduino_millis_return = 1;
 }
 
 
