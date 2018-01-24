@@ -34,8 +34,17 @@ void publish_steering_report( void )
     steering_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
     steering_report.magic[1] = (uint8_t) OSCC_MAGIC_BYTE_1;
     steering_report.enabled = (uint8_t) g_steering_control_state.enabled;
-    steering_report.operator_override = (uint8_t) g_steering_control_state.operator_override;
+    steering_report.operator_override =
+      (uint8_t) g_steering_control_state.operator_override;
+#ifdef SHA
+    steering_report.is_release_version = 0;
+#else
+    steering_report.is_release_version = 1;
+#endif
     steering_report.dtcs = g_steering_control_state.dtcs;
+    steering_report.version[0] = MAJOR_VERSION;
+    steering_report.version[1] = MINOR_VERSION;
+    steering_report.version[2] = PATCH_VERSION;
 
     cli();
     g_control_can.sendMsgBuf(
