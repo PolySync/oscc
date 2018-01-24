@@ -14,6 +14,7 @@
 #include "mcp_can.h"
 #include "oscc_can.h"
 #include "throttle_control.h"
+#include "vehicles.h"
 
 
 static void process_rx_frame(
@@ -62,22 +63,6 @@ void publish_fault_report( void )
         OSCC_FAULT_REPORT_CAN_DLC,
         (uint8_t *) &fault_report );
     sei();
-}
-
-
-void check_for_controller_command_timeout( void )
-{
-    if( g_throttle_control_state.enabled == true )
-    {
-        if( g_throttle_command_timeout == true )
-        {
-            disable_control( );
-
-            publish_fault_report( );
-
-            DEBUG_PRINTLN( "Timeout - controller command" );
-        }
-    }
 }
 
 
@@ -130,11 +115,29 @@ static void process_throttle_command(
         const oscc_throttle_command_s * const throttle_command =
                 (oscc_throttle_command_s *) data;
 
-        update_throttle(
-            throttle_command->spoof_value_high,
-            throttle_command->spoof_value_low );
+        const float clamped_position = CONSTRAIN(
+            throttle_command->torque_request,
+            MINIMUM_THROTTLE_COMMAND,
+            MAXIMUM_THROTTLE_COMMAND);
 
-        g_throttle_command_timeout = false;
+        float spoof_voltage_low = THROTTLE_POSITION_TO_VOLTS_LOW( clamped_position );
+
+        spoof_voltage_low = CONSTRAIN(
+            spoof_voltage_low,
+            THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MIN,
+            THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX);
+
+        float spoof_voltage_high = THROTTLE_POSITION_TO_VOLTS_HIGH( clamped_position );
+
+        spoof_voltage_high = CONSTRAIN(
+            spoof_voltage_high,
+            THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN,
+            THROTTLE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX);
+
+        const uint16_t spoof_value_low = STEPS_PER_VOLT * spoof_voltage_low;
+        const uint16_t spoof_value_high = STEPS_PER_VOLT * spoof_voltage_high;
+
+        update_throttle( spoof_value_high, spoof_value_low );
     }
 }
 

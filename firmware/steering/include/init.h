@@ -48,4 +48,17 @@ void init_devices( void );
 void init_communication_interfaces( void );
 
 
+// ****************************************************************************
+// Function:    start_timers
+//
+// Purpose:     Start timers for report publishing and fault checking.
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
+void start_timers( void );
+
+
 #endif

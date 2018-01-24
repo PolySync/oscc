@@ -15,5 +15,7 @@
 #include "vehicles/kia_soul_ev.h"
 #endif
 
+#define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
+
 
 #endif /* _OSCC_VEHICLES_H_ */

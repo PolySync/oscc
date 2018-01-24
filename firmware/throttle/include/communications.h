@@ -36,20 +36,6 @@ void publish_fault_report( void );
 
 
 // ****************************************************************************
-// Function:    check_for_controller_command_timeout
-//
-// Purpose:     Check if the last command received from the controller exceeds
-//              the timeout and disable control if it does.
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// ****************************************************************************
-void check_for_controller_command_timeout( void );
-
-
-// ****************************************************************************
 // Function:    check_for_incoming_message
 //
 // Purpose:     Check CAN bus for incoming messages and process any present.
