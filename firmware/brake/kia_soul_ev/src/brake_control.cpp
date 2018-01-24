@@ -150,6 +150,7 @@ void disable_control( void )
 
         cli();
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
+        digitalWrite( PIN_BRAKE_LIGHT_ENABLE, LOW );
         sei();
 
         g_brake_control_state.enabled = false;
