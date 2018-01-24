@@ -3,11 +3,12 @@ WHEN("^a sensor becomes permanently disconnected$")
     g_mock_arduino_analog_read_return[0] = 0;
     g_mock_arduino_analog_read_return[1] = 0;
 
+    check_for_faults();
+
     // must call function enough times to exceed the fault limit
-    for( int i = 0; i < 100; ++i )
-    {
-        check_for_faults();
-    }
+    g_mock_arduino_millis_return = 105;
+
+    check_for_faults();
 }
 
 

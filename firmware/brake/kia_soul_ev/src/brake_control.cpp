@@ -14,6 +14,7 @@
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_check.h"
 #include "vehicles.h"
 
 
@@ -36,8 +37,8 @@ void check_for_faults( void )
             (brake_pedal_position.low + brake_pedal_position.high) / 2;
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (brake_pedal_position.high == 0)
-            || (brake_pedal_position.low == 0) )
+        if( check_voltage_grounded( brake_pedal_position.high,
+                                    brake_pedal_position.low ) )
         {
             disable_control( );
 

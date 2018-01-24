@@ -14,6 +14,7 @@
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_check.h"
 #include "steering_control.h"
 #include "vehicles.h"
 
@@ -22,6 +23,7 @@
 
 static void read_torque_sensor(
     steering_torque_s * value );
+
 
 static float exponential_moving_average(
     const float alpha,
@@ -58,8 +60,7 @@ void check_for_faults( void )
 #endif
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (torque.high == 0)
-            || (torque.low == 0) )
+        if( check_voltage_grounded( torque.high, torque.low ) )
         {
             disable_control( );
 

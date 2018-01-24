@@ -13,6 +13,7 @@ fn main() {
         .include("../../../../common/testing/mocks")
         .include("../../../../common/include")
         .include("../../../../common/libs/can")
+        .include("../../../../common/libs/fault_check")
         .include("../../../../common/libs/time")
         .include("../../../../common/libs/pid")
         .include("../../../../../api/include")
@@ -24,6 +25,7 @@ fn main() {
         .file("../../src/master_cylinder.cpp")
         .file("../../src/helper.cpp")
         .file("../../../../common/libs/can/oscc_can.cpp")
+        .file("../../../../common/libs/fault_check/oscc_check.cpp")
         .cpp(true)
         .compile("libbrake_test.a");
 
@@ -37,6 +39,7 @@ fn main() {
         .clang_arg("-I../../../../common/testing/mocks")
         .clang_arg("-I../../../../common/include")
         .clang_arg("-I../../../../common/libs/can")
+        .clang_arg("-I../../../../common/libs/fault_check")
         .clang_arg("-I../../../../common/libs/pid")
         .clang_arg("-I../../../../../api/include")
         .whitelisted_function("publish_brake_report")

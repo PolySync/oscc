@@ -13,10 +13,9 @@
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_check.h"
 #include "throttle_control.h"
 #include "vehicles.h"
-
-
 
 
 static void read_accelerator_position_sensor(
@@ -36,8 +35,8 @@ void check_for_faults( void )
             (accelerator_position.low + accelerator_position.high) / 2;
 
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (accelerator_position.high == 0)
-            || (accelerator_position.low == 0) )
+        if( check_voltage_grounded( accelerator_position.high,
+                                    accelerator_position.low ) )
         {
             disable_control( );
 
@@ -132,7 +131,7 @@ void disable_control( void )
     if( g_throttle_control_state.enabled == true )
     {
         const uint16_t num_samples = 20;
-        
+
         prevent_signal_discontinuity(
             g_dac,
             num_samples,
