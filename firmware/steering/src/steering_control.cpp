@@ -14,6 +14,7 @@
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_check.h"
 #include "steering_control.h"
 #include "vehicles.h"
 
@@ -22,9 +23,6 @@
 
 static void read_torque_sensor(
     steering_torque_s * value );
-
-
-static bool check_voltage_grounded( uint16_t high, uint16_t low );
 
 
 static float exponential_moving_average(
@@ -191,28 +189,4 @@ static void read_torque_sensor(
     value->high = analogRead( PIN_TORQUE_SENSOR_HIGH ) << 2;
     value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
-}
-
-
-bool check_voltage_grounded( uint16_t high, uint16_t low ) {
-
-    static unsigned long elapsed_detection_time = 0;
-    unsigned long current_time = millis();
-
-    bool ret = false;
-    if( (high == 0) || (low == 0) )
-    {
-        if ( elapsed_detection_time == 0 )
-        {
-          elapsed_detection_time = millis();
-        }
-
-        ret = ( (current_time - elapsed_detection_time) > FAULT_HYSTERESIS );
-    }
-    else
-    {
-      elapsed_detection_time = 0;
-    }
-
-    return ret;
 }
