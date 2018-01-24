@@ -28,8 +28,7 @@ generate_arduino_firmware(
     src/globals.cpp
     src/init.cpp
     src/communications.cpp
-    src/throttle_control.cpp
-    src/timers.cpp)
+    src/throttle_control.cpp)
 
 target_include_directories(
     throttle

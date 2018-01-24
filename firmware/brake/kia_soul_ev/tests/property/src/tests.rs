@@ -259,7 +259,7 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
         g_mock_arduino_analog_read_return[0] = analog_read_spoof as isize;
         g_mock_arduino_analog_read_return[1] = analog_read_spoof as isize;
 
-        check_for_operator_override();
+        check_for_faults();
 
         if analog_read_spoof >= (BRAKE_PEDAL_OVERRIDE_THRESHOLD as u16) {
             TestResult::from_bool(g_brake_control_state.operator_override == true &&

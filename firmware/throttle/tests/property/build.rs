@@ -40,7 +40,7 @@ fn main() {
         .clang_arg("-I../../../../api/include")
         .whitelisted_function("publish_throttle_report")
         .whitelisted_function("check_for_incoming_message")
-        .whitelisted_function("check_for_operator_override")
+        .whitelisted_function("check_for_faults")
         .whitelisted_var("OSCC_MAGIC_BYTE_0")
         .whitelisted_var("OSCC_MAGIC_BYTE_1")
         .whitelisted_var("OSCC_THROTTLE_ENABLE_CAN_ID")

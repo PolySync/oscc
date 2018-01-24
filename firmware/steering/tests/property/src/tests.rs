@@ -265,7 +265,7 @@ fn prop_check_operator_override(analog_read_spoof_high: i16, analog_read_spoof_l
         g_mock_arduino_analog_read_return[0] = analog_read_spoof_high as isize;
         g_mock_arduino_analog_read_return[1] = analog_read_spoof_low as isize;
 
-        check_for_operator_override();
+        check_for_faults();
 
         if (analog_read_spoof_high - analog_read_spoof_low) >= (TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD as i16) {
             TestResult::from_bool(g_steering_control_state.operator_override == true && g_steering_control_state.enabled == false &&

@@ -92,7 +92,7 @@ GIVEN("^the operator has applied (.*) to the accelerator$")
     g_mock_arduino_analog_read_return[0] = throttle_sensor_val;
     g_mock_arduino_analog_read_return[1] = throttle_sensor_val;
 
-    check_for_operator_override();
+    check_for_faults();
 }
 
 
