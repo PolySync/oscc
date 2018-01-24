@@ -5,6 +5,7 @@ generate_arduino_firmware(
     SRCS
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/DAC_MCP49xx/DAC_MCP49xx.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check/oscc_check.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
@@ -14,8 +15,7 @@ generate_arduino_firmware(
     src/globals.cpp
     src/brake_control.cpp
     src/communications.cpp
-    src/init.cpp
-    src/timers.cpp)
+    src/init.cpp)
 
 target_include_directories(
     brake
@@ -24,6 +24,7 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/arduino_init
     ${CMAKE_SOURCE_DIR}/common/libs/DAC_MCP49xx
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check
     ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
