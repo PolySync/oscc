@@ -82,6 +82,7 @@ class SSD1325 : public GFX {
         void enableRedLed(void);
         void enableYellowLed(void);
         void enableGreenLed(void);
+        void disableLeds(voids);
 
     private:
         int8_t cs;
