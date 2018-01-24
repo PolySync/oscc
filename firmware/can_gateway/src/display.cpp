@@ -151,7 +151,22 @@ void update_display( void )
     sei();
 }
 
-
+// ****************************************************************************
+// Function:    update_leds
+//
+// Purpose:     Updates the display status LEDs with the status of DriveKit.
+//              The following states are defined:
+//
+//                  * Red: One or more modules is in an error state, OR
+//                         One or more modules is in an unknown state
+//                  * Blinking yellow: All modules are disabled
+//                  * Green: All modules are enabled
+//
+// Returns:     void
+//
+// Parameters:  void
+//
+// ****************************************************************************
 static void update_leds( void )
 {
     static uint32_t lastToggle = 0;
@@ -167,23 +182,17 @@ static void update_leds( void )
         && (g_display_state.status_screen.steering == MODULE_STATUS_DISABLED)
         && (g_display_state.status_screen.throttle == MODULE_STATUS_DISABLED) )
     {
-	if(toggleState)
+	if(toggleState && ((millis() - lastToggle) > 500)
         {
-	    if((millis() - lastToggle) > 500)
-            {
-                g_display.enableYellowLed( );
-                lastToggle = millis();
-                toggleState = 0;
-            }
+            g_display.enableYellowLed( );
+            lastToggle = millis();
+            toggleState = 0;
         }
-        else
+        else if((millis() - lastToggle) > 1000)
         {
-	    if((millis() - lastToggle) > 1000)
-            {
-                g_display.disableLeds( );
-                lastToggle = millis();
-                toggleState = 1;
-            }
+            g_display.disableLeds( );
+            lastToggle = millis();
+            toggleState = 1;
         }
     }
     else if( (g_display_state.status_screen.brakes == MODULE_STATUS_ENABLED)
