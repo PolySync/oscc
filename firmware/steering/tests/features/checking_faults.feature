@@ -5,13 +5,6 @@ Feature: Checking for faults
   If the module encounters a fault condition, it should disable control and
   publish a fault report.
 
-  Scenario: A sensor becomes temporarily disconnected
-    Given steering control is enabled
-
-    When a sensor becomes temporarily disconnected
-
-    Then control should remain enabled
-
 
   Scenario: A sensor becomes permanently disconnected
     Given steering control is enabled

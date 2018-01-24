@@ -14,6 +14,7 @@
 #include "init.h"
 #include "oscc_can.h"
 #include "oscc_serial.h"
+#include "oscc_timer.h"
 
 
 void init_globals( void )
@@ -59,4 +60,9 @@ void init_communication_interfaces( void )
     // Accept only CAN Disable when buffer overflow occurs in buffer 0
     g_control_can.init_Mask( 1, 0, 0x7FF ); // Filter for one CAN ID
     g_control_can.init_Filt( 2, 1, OSCC_BRAKE_DISABLE_CAN_ID );
+}
+
+void start_timers( void )
+{
+    timer1_init( OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ, publish_brake_report );
 }

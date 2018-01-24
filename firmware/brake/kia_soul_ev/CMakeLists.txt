@@ -14,8 +14,7 @@ generate_arduino_firmware(
     src/globals.cpp
     src/brake_control.cpp
     src/communications.cpp
-    src/init.cpp
-    src/timers.cpp)
+    src/init.cpp)
 
 target_include_directories(
     brake

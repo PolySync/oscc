@@ -120,13 +120,13 @@ typedef struct
                        *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                        *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-    float torque_command; /* Steering torque request [-1, 1] where -1 is max
-                           * torque in the counterclockwise direction and 1 is
-                           * max torque in the clockwise direction.
+    float torque_command; /* Steering torque request [-1.0, 1.0] where -1.0 is
+                           * max torque in the counterclockwise direction and 1
+                           * is max torque in the clockwise direction.
                            * (Note: this is inverse to standard torque direction)
                            */
 
-    uint8_t reserved[2]; /*!< Reserved. */
+    uint8_t reserved[2]; /*!< Reserved. */  
 } oscc_steering_command_s;
 
 
