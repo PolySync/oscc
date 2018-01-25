@@ -34,8 +34,17 @@ void publish_brake_report( void )
     brake_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
     brake_report.magic[1] = (uint8_t) OSCC_MAGIC_BYTE_1;
     brake_report.enabled = (uint8_t) g_brake_control_state.enabled;
-    brake_report.operator_override = (uint8_t) g_brake_control_state.operator_override;
+    brake_report.operator_override =
+      (uint8_t) g_brake_control_state.operator_override;
+#ifdef SHA
+    brake_report.is_release_version = 0;
+#else
+    brake_report.is_release_version = 1;
+#endif
     brake_report.dtcs = g_brake_control_state.dtcs;
+    brake_report.version[0] = MAJOR_VERSION;
+    brake_report.version[1] = MINOR_VERSION;
+    brake_report.version[2] = PATCH_VERSION;
 
     cli();
     g_control_can.sendMsgBuf(

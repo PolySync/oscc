@@ -49,9 +49,13 @@ impl Arbitrary for oscc_throttle_report_s {
         oscc_throttle_report_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
             enabled: u8::arbitrary(g),
-            operator_override: u8::arbitrary(g),
+            _bitfield_1: oscc_throttle_report_s::new_bitfield_1(
+                u32::arbitrary(g),
+                u32::arbitrary(g),
+                u32::arbitrary(g),
+            ),
             dtcs: u8::arbitrary(g),
-            reserved: [u8::arbitrary(g); 3],
+            version: [u8::arbitrary(g); 3],
         }
     }
 }
@@ -240,7 +244,7 @@ fn prop_send_valid_can_fields(enabled: bool, operator_override: bool, dtcs: u8) 
         let throttle_report_msg = g_mock_mcp_can_send_msg_buf_buf as *mut oscc_throttle_report_s;
 
         TestResult::from_bool((*throttle_report_msg).enabled == enabled as u8 &&
-                              (*throttle_report_msg).operator_override == operator_override as u8 &&
+                              (*throttle_report_msg)._bitfield_1.get_bit(0) == operator_override as bool &&
                               (*throttle_report_msg).dtcs == dtcs)
     }
 }

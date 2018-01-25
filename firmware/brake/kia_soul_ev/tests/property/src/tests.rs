@@ -49,9 +49,11 @@ impl Arbitrary for oscc_brake_report_s {
         oscc_brake_report_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
             enabled: u8::arbitrary(g),
-            operator_override: u8::arbitrary(g),
+            operator_override: bool::arbitrary(g),
+            is_release_version: bool::arbitrary(g),
+            reserved: [bool::arbitrary(g); 6],
             dtcs: u8::arbitrary(g),
-            reserved: [u8::arbitrary(g); 3]
+            version: [u8::arbitrary(g); 3],
         }
     }
 }

@@ -1,3 +1,29 @@
+# Appends the cmake/modules path to MAKE_MODULE_PATH variable.
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/common/cmake/modules ${CMAKE_MODULE_PATH})
+
+include(GetGitRevisionDescription)
+git_describe(VERSION --tags --dirty=-dirty)
+
+#parse the version information into pieces.
+string(REGEX REPLACE "^v([0-9]+)\\..*" "\\1" VERSION_MAJOR "${VERSION}")
+string(REGEX REPLACE "^v[0-9]+\\.([0-9]+).*" "\\1" VERSION_MINOR "${VERSION}")
+string(REGEX REPLACE "^v[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" VERSION_PATCH "${VERSION}")
+string(REGEX REPLACE "^v[0-9]+\\.[0-9]+\\.[0-9]+(.*)" "\\1" VERSION_SHA1 "${VERSION}")
+set(VERSION_SHORT "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+
+add_custom_target(
+    get_version
+    COMMAND
+    echo "VERSION: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_SHA1}")
+
+add_definitions( -DMAJOR_VERSION=${VERSION_MAJOR} )
+add_definitions( -DMINOR_VERSION=${VERSION_MINOR} )
+add_definitions( -DPATCH_VERSION=${VERSION_PATCH} )
+
+if(${VERSION_SHA1})
+    add_definitions( -DSHA=${VERSION_SHA1} )
+endif()
+
 if(TESTS)
     cmake_minimum_required(VERSION 2.8)
 

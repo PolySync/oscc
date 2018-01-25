@@ -34,8 +34,17 @@ void publish_throttle_report( void )
     throttle_report.magic[0] = (uint8_t) OSCC_MAGIC_BYTE_0;
     throttle_report.magic[1] = (uint8_t) OSCC_MAGIC_BYTE_1;
     throttle_report.enabled = (uint8_t) g_throttle_control_state.enabled;
-    throttle_report.operator_override = (uint8_t) g_throttle_control_state.operator_override;
+    throttle_report.operator_override =
+      (uint8_t) g_throttle_control_state.operator_override;
+#ifdef SHA
+    throttle_report.is_release_version = 0;
+#else
+    throttle_report.is_release_version = 1;
+#endif
     throttle_report.dtcs = g_throttle_control_state.dtcs;
+    throttle_report.version[0] = MAJOR_VERSION;
+    throttle_report.version[1] = MINOR_VERSION;
+    throttle_report.version[2] = PATCH_VERSION;
 
     cli();
     g_control_can.sendMsgBuf(
