@@ -14,28 +14,35 @@
 
 
 /*
+ * @brief CAN ID representing the range of throttle messages.
+ *
+ */
+#define OSCC_THROTTLE_CAN_ID_INDEX (0x90)
+
+
+/*
  * @brief Throttle enable message (CAN frame) ID.
  *
  */
-#define OSCC_THROTTLE_ENABLE_CAN_ID (0x52)
+#define OSCC_THROTTLE_ENABLE_CAN_ID (0x90)
 
 /*
  * @brief Throttle disable message (CAN frame) ID.
  *
  */
-#define OSCC_THROTTLE_DISABLE_CAN_ID (0x53)
+#define OSCC_THROTTLE_DISABLE_CAN_ID (0x91)
 
 /*
  * @brief Throttle command message (CAN frame) ID.
  *
  */
-#define OSCC_THROTTLE_COMMAND_CAN_ID (0x62)
+#define OSCC_THROTTLE_COMMAND_CAN_ID (0x92)
 
 /*
  * @brief Throttle report message (CAN frame) ID.
  *
  */
-#define OSCC_THROTTLE_REPORT_CAN_ID (0x63)
+#define OSCC_THROTTLE_REPORT_CAN_ID (0x93)
 
 /*
  * @brief Throttle report message (CAN frame) length.
@@ -50,16 +57,20 @@
 #define OSCC_REPORT_THROTTLE_PUBLISH_FREQ_IN_HZ (50)
 
 /*
- * @brief Throttle DTC bitfield position indicating an invalid sensor value.
+ * @brief Enumeration of all possible throttle DTCs.
  *
  */
-#define OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL (0x0)
+enum
+{
+    /* DTC bitfield position indicating an invalid sensor value. */
+    OSCC_THROTTLE_DTC_INVALID_SENSOR_VAL = 0,
 
-/*
- * @brief Throttle DTC bitfield position indicating an operator override.
- *
- */
- #define OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE (0x1)
+    /* DTC bitfield position indicating an operator override. */
+    OSCC_THROTTLE_DTC_OPERATOR_OVERRIDE,
+
+    /* Number of possible throttle DTCs. */
+    OSCC_THROTTLE_DTC_COUNT
+};
 
 
 #pragma pack(push)
@@ -109,9 +120,7 @@ typedef struct
                        *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                        *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
-
-    uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
+    float torque_request; /* Torque request from 0.0 to 1.0 where 1.0 is 100% */
 
     uint8_t reserved[2]; /*!< Reserved. */
 } oscc_throttle_command_s;

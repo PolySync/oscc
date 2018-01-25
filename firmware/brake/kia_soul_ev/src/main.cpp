@@ -9,7 +9,6 @@
 #include "communications.h"
 #include "debug.h"
 #include "init.h"
-#include "timers.h"
 
 
 int main( void )
@@ -30,6 +29,6 @@ int main( void )
     {
         check_for_incoming_message( );
 
-        check_for_operator_override( );
+        check_for_faults( );
     }
 }

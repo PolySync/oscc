@@ -7,6 +7,7 @@ add_library(
     ../src/globals.cpp
     ../src/brake_control.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check/oscc_check.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
@@ -19,6 +20,7 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check
     ${CMAKE_SOURCE_DIR}/common/libs/dac
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
     ${CMAKE_SOURCE_DIR}/common/testing/mocks
@@ -41,6 +43,7 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check
     ${CMAKE_SOURCE_DIR}/common/testing/mocks
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/include
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include
@@ -56,5 +59,5 @@ add_custom_target(
 add_custom_target(
     run-brake-property-tests
     COMMAND
-    cargo test -- --test-threads=1
+    cargo +1.20.0 test -- --test-threads=1
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/property)

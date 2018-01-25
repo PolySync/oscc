@@ -14,28 +14,35 @@
 
 
 /*
+ * @brief CAN ID representing the range of brake messages.
+ *
+ */
+#define OSCC_BRAKE_CAN_ID_INDEX (0x70)
+
+
+/*
  * @brief Brake enable message (CAN frame) ID.
  *
  */
-#define OSCC_BRAKE_ENABLE_CAN_ID (0x50)
+#define OSCC_BRAKE_ENABLE_CAN_ID (0x70)
 
 /*
  * @brief Brake disable message (CAN frame) ID.
  *
  */
-#define OSCC_BRAKE_DISABLE_CAN_ID (0x51)
+#define OSCC_BRAKE_DISABLE_CAN_ID (0x71)
 
 /*
  * @brief Brake command message (CAN frame) ID.
  *
  */
-#define OSCC_BRAKE_COMMAND_CAN_ID (0x60)
+#define OSCC_BRAKE_COMMAND_CAN_ID (0x72)
 
 /*
  * @brief Brake report message (CAN frame) ID.
  *
  */
-#define OSCC_BRAKE_REPORT_CAN_ID (0x61)
+#define OSCC_BRAKE_REPORT_CAN_ID (0x73)
 
 /*
  * @brief Brake report message (CAN frame) length.
@@ -50,16 +57,20 @@
 #define OSCC_BRAKE_REPORT_PUBLISH_FREQ_IN_HZ (50)
 
 /*
- * @brief Brake DTC bitfield position indicating an invalid sensor value.
+ * @brief Enumeration of all possible brake DTCs.
  *
  */
-#define OSCC_BRAKE_DTC_INVALID_SENSOR_VAL (0x0)
+enum
+{
+    /* DTC bitfield position indicating an invalid sensor value. */
+    OSCC_BRAKE_DTC_INVALID_SENSOR_VAL = 0,
 
-/*
- * @brief Brake DTC bitfield position indicating an operator override.
- *
- */
-#define OSCC_BRAKE_DTC_OPERATOR_OVERRIDE (0x1)
+    /* DTC bitfield position indicating an operator override. */
+    OSCC_BRAKE_DTC_OPERATOR_OVERRIDE,
+
+    /* Number of possible brake DTCs. */
+    OSCC_BRAKE_DTC_COUNT
+};
 
 
 #pragma pack(push)
@@ -109,17 +120,10 @@ typedef struct
                        *   Byte 0 should be \ref OSCC_MAGIC_BYTE_0.
                        *   Byte 1 should be \ref OSCC_MAGIC_BYTE_1. */
 
-#if defined(KIA_SOUL)
-    uint16_t pedal_command; /*!< Pedal command. [65535 == 100%] */
-
-    uint8_t reserved[4]; /*!< Reserved. */
-#elif defined(KIA_SOUL_EV)
-    uint16_t spoof_value_low; /*!< Value to be sent on the low spoof signal. */
-
-    uint16_t spoof_value_high; /*!< Value to be sent on the high spoof signal. */
+    float pedal_command; /* Brake Request 0.0 to 1.0 where 1.0 is 100% */
 
     uint8_t reserved[2]; /*!< Reserved. */
-#endif
+
 } oscc_brake_command_s;
 
 

@@ -56,8 +56,8 @@ impl Arbitrary for oscc_brake_command_s {
     fn arbitrary<G: Gen>(g: &mut G) -> oscc_brake_command_s {
         oscc_brake_command_s {
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
-            pedal_command: u16::arbitrary(g),
-            reserved: [u8::arbitrary(g); 4],
+            pedal_command: f32::arbitrary(g),
+            reserved: [u8::arbitrary(g); 2usize],
         }
     }
 }

@@ -1,25 +1,25 @@
 /**
- * @file timers.h
+ * @file timer.h
  * @brief Timer functionality.
  *
  */
 
 
-#ifndef _OSCC_BRAKE_TIMERS_H_
-#define _OSCC_BRAKE_TIMERS_H_
+#ifndef _OSCC_CAN_GATEWAY_TIMER_H_
+#define _OSCC_CAN_GATEWAY_TIMER_H_
 
 
 // ****************************************************************************
-// Function:    start_timers
+// Function:    start_timer
 //
-// Purpose:     Start timers for report publishing and fault checking.
+// Purpose:     Start timer for updating the display.
 //
 // Returns:     void
 //
 // Parameters:  void
 //
 // ****************************************************************************
-void start_timers( void );
+void start_timer( void );
 
 
-#endif /* _OSCC_BRAKE_TIMERS_H_ */
+#endif /* _OSCC_CAN_GATEWAY_TIMER_H_ */

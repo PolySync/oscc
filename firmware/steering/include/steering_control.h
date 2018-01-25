@@ -44,30 +44,18 @@ typedef struct
 
 
 // ****************************************************************************
-// Function:    check_for_operator_override
-//
-// Purpose:     Checks to see if the vehicle's operator has manually pressed
-//              the accelerator and disables control if they have.
-//
-// Returns:     void
-//
-// Parameters:  void
-//
-// ****************************************************************************
-void check_for_operator_override( void );
-
-
-// ****************************************************************************
 // Function:    check_for_sensor_faults
 //
 // Purpose:     Checks to see if valid values are being read from the sensors.
+//              If operator override for steering is turned on detection of the
+//              steering wheel being manually turned is also detected.
 //
 // Returns:     void
 //
 // Parameters:  void
 //
 // ****************************************************************************
-void check_for_sensor_faults( void );
+void check_for_faults( void );
 
 
 // ****************************************************************************

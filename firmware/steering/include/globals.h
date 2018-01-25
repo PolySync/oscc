@@ -70,8 +70,6 @@
 #endif
 
 
-EXTERN volatile bool g_steering_command_timeout;
-
 EXTERN volatile steering_control_state_s g_steering_control_state;
 
 

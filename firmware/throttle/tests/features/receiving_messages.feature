@@ -32,34 +32,33 @@ Feature: Receiving commands
   Scenario Outline: Spoof value sent from application
     Given throttle control is enabled
 
-    When a command is received with spoof values <high> and <low>
+    When a command is received with request value <value>
 
     Then <high> should be sent to DAC A
     And <low> should be sent to DAC B
 
     Examples:
-      | high   | low    |
-      |  3358  |  328   |
-      |  3000  |  500   |
-      |  2500  |  1000  |
-      |  2000  |  1500  |
-      |  1500  |  1638  |
-      |  1000  |  1638  |
-      |  656   |  1638  |
-      |  573   |  1638  |
+      | value |  high  |  low   |
+      | 1     |  3358  |  1638  |
+      | 0.8   |  2801  |  1359  |
+      | 0.6   |  2244  |  1081  |
+      | 0.5   |  1966  |  942   |
+      | 0.4   |  1687  |  802   |
+      | 0.2   |  1130  |  524   |
+      | 0     |  573   |  245   |
 
 
   Scenario Outline: Spoof value sent from application outside valid range
     Given throttle control is enabled
 
-    When a command is received with spoof values <high> and <low>
+    When a command is received with request value <value>
 
     Then <high_clamped> should be sent to DAC A
     And <low_clamped> should be sent to DAC B
 
     Examples:
-      | high  | low   | high_clamped | low_clamped |
-      |  4000 |  0    | 3358         |  245        |
-      |  3500 |  500  | 3358         |  500        |
-      |  580  |  3500 | 580          |  1638       |
-      |  500  |  4000 | 573          |  1638       |
+      | value | high_clamped | low_clamped |
+      |  5    | 3358         |  1638       |
+      |  1.1  | 3358         |  1638       |
+      |  -0.1 | 573          |  245        |
+      |  -5   | 573          |  245        |

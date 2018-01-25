@@ -82,8 +82,16 @@ mkdir build
 cd build
 ```
 
-To generate Makefiles, tell `cmake` which platform to build firmware for. For example, if you want to build
-firmware for the Kia Soul:
+To generate Makefiles, tell `cmake` which vehicle to build for by supplying the
+appropriate build flag:
+
+| Vehicle         | Flag             |
+| --------------- | ---------------- |
+| Kia Soul Petrol | -DKIA_SOUL=ON    |
+| Kia Soul EV     | -DKIA_SOUL_EV=ON |
+
+
+For example, if you want to build firmware for the petrol Kia Soul:
 
 ```
 cmake .. -DKIA_SOUL=ON
@@ -95,7 +103,7 @@ cmake .. -DKIA_SOUL=ON
 cmake .. -DKIA_SOUL=ON -DSTEERING_OVERRIDE=OFF
 ```
 
-If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file. 
+If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file.
 
 * Lowering this value will make the steering module more sensitive to operator override, but will result in false positives around high-torque areas, such as the mechanical limits of the steering rack or when quickly and rapidly changing direction.
 * Increasing this value will result in fewer false positives, but will make it more difficult to manually override the wheel.
@@ -209,9 +217,14 @@ strange behavior while printing that does not occur otherwise.
 # Controlling Your Vehicle - an Example Application
 
 Now that all your Arduino modules are properly setup, it is time to start sending control commands.
+
 We've created an example application, joystick commander, that uses the OSCC API to interface with the firmware, allowing you to send commands using a game controller and receive reports from the on-board OBD-II CAN. These commands are converted into CAN messages, which the OSCC API sends to the respective Arduino modules and are used to actuate the vehicle.
 
 [OSCC Joystick Commander](https://github.com/PolySync/oscc-joystick-commander)
+
+We've also created a ROS node, that uses the OSCC API to interface with the firmware from ROS messages, allowing you to send commands and receive reports in ROS.
+
+[ROSCCO](https://github.com/PolySync/roscco)
 
 # OSCC API
 
@@ -272,6 +285,13 @@ oscc_result_t subscribe_to_obd_messages( void(*callback)(struct can_frame *frame
 In order to receive reports from the modules, your application will need to register a callback handler with the OSCC API.
 When the appropriate report for your callback function is received from the API's socket connection, it will then forward the
 report to your software.
+
+Each module's reports are described in their respective wiki sections:
+
+* [Brake (EV)](https://github.com/PolySync/oscc/wiki/Firmware-Brake-%28EV%29#brake-report)
+* [Brake (Petrol)](https://github.com/PolySync/oscc/wiki/Firmware-Brake-%28Petrol%29#brake-report)
+* [Steering](https://github.com/PolySync/oscc/wiki/Firmware-Steering#steering-report)
+* [Throttle](https://github.com/PolySync/oscc/wiki/Firmware-Throttle#throttle-report)
 
 In addition to OSCC specific reports, it will also forward any non-OSCC reports to any callback function registered with
 ```subscribe_to_obd_messages```. This can be used to view CAN frames received from the vehicle's OBD-II CAN channel. If you know
@@ -420,7 +440,7 @@ make run-all-tests
 
 # Additional Vehicles & Contributing
 
-OSCC currently has information regarding the Kia Soul PS (2014-2016), but we want to grow! The
+OSCC currently has information regarding the Kia Soul PS (2014-2018), but we want to grow! The
 repository is structured to facilitate including more vehicles as more is learned about them.
 
 In order to include information related to a new vehicle's specification, follow the format defined in ```api/include/vehicles/kia_soul.h``` and
