@@ -76,8 +76,6 @@
 #endif
 
 
-EXTERN volatile bool g_brake_command_timeout;
-
 EXTERN volatile brake_control_state_s g_brake_control_state;
 
 

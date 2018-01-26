@@ -17,5 +17,7 @@
 #include "vehicles/kia_niro.h"
 #endif
 
+#define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
+
 
 #endif /* _OSCC_VEHICLES_H_ */

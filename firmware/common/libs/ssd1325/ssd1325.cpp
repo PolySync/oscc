@@ -316,6 +316,20 @@ void SSD1325::enableGreenLed()
     digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
 }
 
+void SSD1325::disableLeds()
+{
+
+    shift_register_data =  (shift_register_data & ~0x70);
+
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+    delay(1);
+    SPI.transfer(shift_register_data);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, HIGH);
+    delay(1);
+    digitalWrite(SHIFT_REGISTER_CHIP_SELECT_1, LOW);
+}
+
 
 void SSD1325::setDC(uint8_t value){
     shift_register_data = ((value << 7) & 0x80) | (shift_register_data & ~0x80);

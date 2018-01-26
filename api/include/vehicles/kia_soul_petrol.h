@@ -93,11 +93,26 @@ typedef struct
 } kia_soul_obd_brake_pressure_data_s;
 
 
+
+
+// ****************************************************************************
+// VEHICLE AND BOARD PARAMETERS
+// ****************************************************************************
+
  /*
  * @brief Number of steps per volt corresponding to 4096 steps (2^12) across 5 volts.
  *
  */
 #define STEPS_PER_VOLT ( 819.2 )
+
+/*
+ * @brief Length of time in ms for delay of signal reads to ensure fault is
+ * outside the range of noise in the signal.
+ *
+ */
+#define FAULT_HYSTERESIS ( 100 )
+
+
 
 
 // ****************************************************************************
@@ -108,13 +123,13 @@ typedef struct
  * @brief Minimum allowable brake value.
  *
  */
-#define MINIMUM_BRAKE_COMMAND ( 0 )
+#define MINIMUM_BRAKE_COMMAND ( 0.0 )
 
 /*
  * @brief Maximum allowable brake value.
  *
  */
-#define MAXIMUM_BRAKE_COMMAND ( 52428 )
+#define MAXIMUM_BRAKE_COMMAND ( 1.0 )
 
 /*
  * @brief Calculation to convert a brake position to a pedal position.

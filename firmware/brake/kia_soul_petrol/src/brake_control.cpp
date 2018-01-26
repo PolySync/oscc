@@ -68,7 +68,6 @@ void enable_control( void )
 
         set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
-        g_brake_command_timeout = false;
         g_brake_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
@@ -92,7 +91,6 @@ void disable_control( void )
 
         set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
-        g_brake_command_timeout = false;
         g_brake_control_state.enabled = false;
 
         DEBUG_PRINTLN( "Control disabled" );
@@ -243,7 +241,7 @@ void update_brake( void )
         time_between_loops /= 1000.0;
 
         static interpolate_range_s pressure_ranges =
-            { 0, UINT16_MAX, BRAKE_PRESSURE_MIN_IN_DECIBARS, BRAKE_PRESSURE_MAX_IN_DECIBARS };
+            { 0.0, 1.0, BRAKE_PRESSURE_MIN_IN_DECIBARS, BRAKE_PRESSURE_MAX_IN_DECIBARS };
 
         pressure_at_wheels_target = interpolate(
             g_brake_control_state.commanded_pedal_position,
@@ -513,4 +511,3 @@ static void pump_startup_check( void )
 
     accumulator_turn_pump_off();
 }
-

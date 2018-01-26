@@ -287,6 +287,13 @@ In order to receive reports from the modules, your application will need to regi
 When the appropriate report for your callback function is received from the API's socket connection, it will then forward the
 report to your software.
 
+Each module's reports are described in their respective wiki sections:
+
+* [Brake (EV)](https://github.com/PolySync/oscc/wiki/Firmware-Brake-%28EV%29#brake-report)
+* [Brake (Petrol)](https://github.com/PolySync/oscc/wiki/Firmware-Brake-%28Petrol%29#brake-report)
+* [Steering](https://github.com/PolySync/oscc/wiki/Firmware-Steering#steering-report)
+* [Throttle](https://github.com/PolySync/oscc/wiki/Firmware-Throttle#throttle-report)
+
 In addition to OSCC specific reports, it will also forward any non-OSCC reports to any callback function registered with
 ```subscribe_to_obd_messages```. This can be used to view CAN frames received from the vehicle's OBD-II CAN channel. If you know
 the corresponding CAN frame's id, you can parse reports sent from the car.
