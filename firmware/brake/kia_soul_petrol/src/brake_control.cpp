@@ -490,6 +490,7 @@ static void pressure_startup_check( void )
 
 static void pump_startup_check( void )
 {
+    DEBUG_PRINTLN("[brake control] Running startup check\n");
     accumulator_turn_pump_on();
     delay(250);
 
@@ -502,7 +503,7 @@ static void pump_startup_check( void )
     {
         g_brake_control_state.startup_pump_motor_check_error = true;
 
-        DEBUG_PRINTLN( "Startup pump motor error" );
+        DEBUG_PRINTLN( "[brake control] Startup pump motor error" );
     }
     else
     {
