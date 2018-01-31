@@ -36,6 +36,8 @@ static uint16_t filtered_diff = 0;
 
 void check_for_faults( void )
 {
+    static fault_state_s grounded_fault_state = { .fault_active = false };
+
     steering_torque_s torque;
 
     if ( ( g_steering_control_state.enabled == true )
@@ -59,8 +61,14 @@ void check_for_faults( void )
             filtered_diff);
 #endif
 
+        bool inputs_grounded = check_voltage_grounded(
+                torque.high,
+                torque.low,
+                FAULT_HYSTERESIS,
+                &grounded_fault_state);
+
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( check_voltage_grounded( torque.high, torque.low ) )
+        if( inputs_grounded == true )
         {
             disable_control( );
 
