@@ -89,6 +89,7 @@ appropriate build flag:
 | --------------- | ---------------- |
 | Kia Soul Petrol | -DKIA_SOUL=ON    |
 | Kia Soul EV     | -DKIA_SOUL_EV=ON |
+| Kia Niro        | -DKIA_NIRO=ON    |
 
 
 For example, if you want to build firmware for the petrol Kia Soul:
