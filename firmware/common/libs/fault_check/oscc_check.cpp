@@ -43,7 +43,7 @@ bool condition_exceeded_duration(
 
         if( duration >= max_duration )
         {
-            /* The fault fault has been active for longer than the maximum
+            /* The fault condition has been active for longer than the maximum
              * acceptable duration.
              */
             faulted = true;
