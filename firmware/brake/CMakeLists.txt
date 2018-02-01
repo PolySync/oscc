@@ -15,6 +15,6 @@ add_custom_target(
 
 if(KIA_SOUL)
     add_subdirectory(kia_soul_petrol)
-elseif(KIA_SOUL_EV)
-    add_subdirectory(kia_soul_ev)
+elseif(KIA_SOUL_EV OR KIA_NIRO)
+    add_subdirectory(kia_soul_ev_niro)
 endif()
