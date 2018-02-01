@@ -27,6 +27,7 @@ static void read_brake_pedal_position_sensor(
 void check_for_faults( void )
 {
     static condition_state_s grounded_fault_state = CONDITION_STATE_INIT;
+    static condition_state_s operator_override_state = CONDITION_STATE_INIT;
 
     brake_pedal_position_s brake_pedal_position;
 
@@ -37,6 +38,11 @@ void check_for_faults( void )
 
         uint32_t brake_pedal_position_average =
             (brake_pedal_position.low + brake_pedal_position.high) / 2;
+
+        bool operator_overridden = condition_exceeded_duration(
+                brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD,
+                FAULT_HYSTERESIS,
+                &operator_override_state);
 
         bool inputs_grounded = check_voltage_grounded(
                 brake_pedal_position.high,
@@ -56,7 +62,7 @@ void check_for_faults( void )
 
             DEBUG_PRINTLN( "Bad value read from brake pedal position sensor" );
         }
-        else if ( brake_pedal_position_average >= BRAKE_PEDAL_OVERRIDE_THRESHOLD )
+        else if ( operator_overridden == true )
         {
             disable_control( );
 
