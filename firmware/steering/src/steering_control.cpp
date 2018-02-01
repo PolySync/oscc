@@ -36,7 +36,7 @@ static uint16_t filtered_diff = 0;
 
 void check_for_faults( void )
 {
-    static fault_state_s grounded_fault_state = { .fault_active = false };
+    static condition_state_s grounded_fault_state = { .condition_active = false };
 
     steering_torque_s torque;
 

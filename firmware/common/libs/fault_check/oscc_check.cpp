@@ -9,42 +9,41 @@
 #include "oscc_check.h"
 #include "vehicles.h"
 
-bool fault_exceeded_duration(
-        bool fault_active,
-        unsigned long max_fault_duration,
-        fault_state_s *state)
+bool condition_exceeded_duration(
+        bool condition_active,
+        unsigned long max_duration,
+        condition_state_s *state)
 {
     bool faulted = false;
 
-    if( fault_active == false )
+    if( condition_active == false )
     {
         /*
-         * If a fault is not active, update the state to clear the fault active
-         * flag and clear the last fault time.
+         * If a fault condition is not active, update the state to clear
+         * the condition active flag and reset the last detection time.
          */
-        state->fault_active = false;
-        state->fault_start_time = 0;
+        state->condition_active = false;
+        state->condition_start_time = 0;
     }
     else
     {
         unsigned long now = millis();
 
-        if( state->fault_active == false )
+        if( state->condition_active == false )
         {
-            /* We detected that a fault has just become active, update the state
-             * to indicate the fault is active and track the fault start time
-             * so we can determine if the fault has been active for longer than
-             * the maximum fault duration.
+            /* We just detected a condition that may lead to a fault. Update
+             * the state to track that the condition is active and store the
+             * first time of detection.
              */
-            state->fault_active = true;
-            state->fault_start_time = now;
+            state->condition_active = true;
+            state->condition_start_time = now;
         }
 
-        unsigned long fault_duration = now - state->fault_start_time;
+        unsigned long duration = now - state->condition_start_time;
 
-        if( fault_duration >= max_fault_duration )
+        if( duration >= max_duration )
         {
-            /* The fault has been active for longer than the maximum
+            /* The fault fault has been active for longer than the maximum
              * acceptable duration.
              */
             faulted = true;
@@ -57,9 +56,12 @@ bool fault_exceeded_duration(
 bool check_voltage_grounded(
         uint16_t high,
         uint16_t low,
-        unsigned long max_fault_duration,
-        fault_state_s *fault_state )
+        unsigned long max_duration,
+        condition_state_s *state )
 {
-    bool fault_active = (high == 0) || (low == 0);
-    return fault_exceeded_duration(fault_active, max_fault_duration, fault_state);
+    bool condition_active = (high == 0) || (low == 0);
+    return condition_exceeded_duration(
+            condition_active,
+            max_duration,
+            state );
 }
