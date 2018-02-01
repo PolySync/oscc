@@ -132,7 +132,7 @@ static void process_fault_report(
         disable_control( );
 
         DEBUG_PRINT( "Fault report received from: " );
-        DEBUG_PRINT( fault_report->fault_origin_id );
+        DEBUG_PRINT( FAULT_ORIGIN_ID_TO_STR( fault_report->fault_origin_id ) );
         DEBUG_PRINT( "  DTCs: ");
         DEBUG_PRINTLN( fault_report->dtcs );
     }

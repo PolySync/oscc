@@ -39,6 +39,12 @@ typedef enum
     FAULT_ORIGIN_THROTTLE
 } fault_origin_id_t;
 
+//! Convert a fault origin ID to the human readable module name
+#define FAULT_ORIGIN_ID_TO_STR( report_origin_id ) \
+    report_origin_id == FAULT_ORIGIN_BRAKE ? "brake" : \
+    report_origin_id == FAULT_ORIGIN_STEERING ? "steering" : \
+    report_origin_id == FAULT_ORIGIN_THROTTLE ? "throttle" : \
+    "unknown"
 
 #pragma pack(push)
 #pragma pack(1)
