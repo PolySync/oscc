@@ -25,7 +25,8 @@ static void read_accelerator_position_sensor(
 void check_for_faults( void )
 {
     static condition_state_s grounded_fault_state = {
-        .monitoring_active = false
+        .monitoring_active = false,
+        .condition_start_time = 0,
     };
 
     accelerator_position_s accelerator_position;
