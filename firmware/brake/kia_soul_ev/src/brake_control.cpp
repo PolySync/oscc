@@ -26,10 +26,7 @@ static void read_brake_pedal_position_sensor(
 
 void check_for_faults( void )
 {
-    static condition_state_s grounded_fault_state = {
-        .monitoring_active = false,
-        .condition_start_time = 0,
-    };
+    static condition_state_s grounded_fault_state = CONDITION_STATE_INIT;
 
     brake_pedal_position_s brake_pedal_position;
 

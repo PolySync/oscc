@@ -18,6 +18,8 @@ typedef struct {
     unsigned long condition_start_time;
 } condition_state_s;
 
+//! Initialize a condition state object to safe defaults.
+#define CONDITION_STATE_INIT { .monitoring_active = false, .condition_start_time = 0 }
 
 // ****************************************************************************
 // Function:    condition_exceeded_duration
