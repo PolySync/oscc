@@ -11,8 +11,11 @@
 #include <stdint.h>
 
 typedef struct {
-    bool condition_active;              //!< Fault condition active flag
-    unsigned long condition_start_time; //!< Fault condition first detection time
+    //! Flag set if a fault condition has been detected and is being monitored.
+    bool monitoring_active;
+
+    //! The time (in ms) when the fault condition was first detected.
+    unsigned long condition_start_time;
 } condition_state_s;
 
 
