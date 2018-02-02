@@ -11,6 +11,7 @@ add_library(
     ../src/helper.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check/oscc_check.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/Arduino_mock.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/mcp_can_mock.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/DAC_MCP49xx_mock.cpp)
@@ -22,6 +23,7 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/pid
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
     ${CMAKE_SOURCE_DIR}/common/testing/mocks
     ${CMAKE_SOURCE_DIR}/../api/include)
