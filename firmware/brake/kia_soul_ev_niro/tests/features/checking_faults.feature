@@ -9,10 +9,10 @@ Feature: Checking for faults
   Scenario: A sensor becomes permanently disconnected
     Given brake control is enabled
 
-    When a sensor becomes permanently disconnected
+    When a sensor is grounded for 200 ms
 
     Then control should be disabled
-    And a fault report should be published
+    And a fault report should be published with origin ID 0
 
 
   Scenario Outline: Operator override
@@ -21,7 +21,7 @@ Feature: Checking for faults
     When the operator applies <sensor_val> to the brake pedal for 200 ms
 
     Then control should be disabled
-    And a fault report should be published
+    And a fault report should be published with origin ID 0
 
     Examples:
       | sensor_val |

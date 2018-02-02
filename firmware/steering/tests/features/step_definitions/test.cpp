@@ -3,3 +3,5 @@
 #include "checking_faults.cpp"
 #include "receiving_messages.cpp"
 #include "sending_reports.cpp"
+
+#include "../../common/testing/step_definitions/fault_checking.cpp"
