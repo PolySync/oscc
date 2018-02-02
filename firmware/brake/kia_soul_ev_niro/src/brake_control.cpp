@@ -26,6 +26,8 @@ static void read_brake_pedal_position_sensor(
 
 void check_for_faults( void )
 {
+    static condition_state_s grounded_fault_state = CONDITION_STATE_INIT;
+
     brake_pedal_position_s brake_pedal_position;
 
     if ( (g_brake_control_state.enabled == true)
@@ -36,9 +38,13 @@ void check_for_faults( void )
         uint32_t brake_pedal_position_average =
             (brake_pedal_position.low + brake_pedal_position.high) / 2;
 
+        bool inputs_grounded = check_voltage_grounded(
+                brake_pedal_position.high,
+                brake_pedal_position.low,
+                FAULT_HYSTERESIS,
+                &grounded_fault_state);
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( check_voltage_grounded( brake_pedal_position.high,
-                                    brake_pedal_position.low ) )
+        if( inputs_grounded == true )
         {
             disable_control( );
 
