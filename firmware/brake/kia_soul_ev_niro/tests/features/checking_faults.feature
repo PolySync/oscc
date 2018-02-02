@@ -18,7 +18,7 @@ Feature: Checking for faults
   Scenario Outline: Operator override
     Given brake control is enabled
 
-    When the operator applies <sensor_val> to the accelerator
+    When the operator applies <sensor_val> to the brake pedal for 200 ms
 
     Then control should be disabled
     And a fault report should be published
