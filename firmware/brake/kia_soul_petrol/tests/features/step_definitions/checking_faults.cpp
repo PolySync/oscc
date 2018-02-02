@@ -3,10 +3,10 @@ WHEN("^a sensor becomes temporarily disconnected$")
     g_mock_arduino_analog_read_return[0] = 0;
     g_mock_arduino_analog_read_return[1] = 0;
 
+    g_mock_arduino_millis_return = 1;
     check_for_sensor_faults();
 
-    check_for_sensor_faults();
-
+    g_mock_arduino_millis_return += FAULT_HYSTERESIS / 2;
     check_for_sensor_faults();
 }
 
@@ -16,23 +16,27 @@ WHEN("^a sensor becomes permanently disconnected$")
     g_mock_arduino_analog_read_return[0] = 0;
     g_mock_arduino_analog_read_return[1] = 0;
 
-    // must call function enough times to exceed the fault limit
-    for( int i = 0; i < 100; ++i )
-    {
-        check_for_sensor_faults();
-    }
+    g_mock_arduino_millis_return = 1;
+    check_for_sensor_faults();
+
+    g_mock_arduino_millis_return += FAULT_HYSTERESIS * 2;
+    check_for_sensor_faults();
 }
 
 
-WHEN("^the operator applies (.*) to the brake pedal$")
+WHEN("^the operator applies (.*) to the brake pedal for (\\d+) ms$")
 {
     REGEX_PARAM(int, pedal_val);
+    REGEX_PARAM(int, duration);
 
     g_mock_arduino_analog_read_return[10] = pedal_val;
     g_mock_arduino_analog_read_return[11] = pedal_val;
 
+    g_mock_arduino_millis_return = 1;
     check_for_operator_override();
 
+    g_mock_arduino_millis_return += duration;
+    check_for_operator_override();
 }
 
 

@@ -18,7 +18,7 @@
 #include "master_cylinder.h"
 #include "oscc_pid.h"
 #include "vehicles.h"
-
+#include "oscc_check.h"
 
 /*
  * @brief Number of consecutive faults that can occur when reading the
@@ -100,6 +100,8 @@ void disable_control( void )
 
 void check_for_operator_override( void )
 {
+    static condition_state_s operator_override_state = CONDITION_STATE_INIT;
+
     if( g_brake_control_state.enabled == true
         || g_brake_control_state.operator_override == true )
     {
@@ -107,8 +109,16 @@ void check_for_operator_override( void )
 
         master_cylinder_read_pressure( &master_cylinder_pressure );
 
-        if ( ( master_cylinder_pressure.sensor_1_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
-            ( master_cylinder_pressure.sensor_2_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+        bool override_detected =
+            ( master_cylinder_pressure.sensor_1_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
+            ( master_cylinder_pressure.sensor_2_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS );
+
+        bool operator_overridden = condition_exceeded_duration(
+                override_detected,
+                FAULT_HYSTERESIS,
+                &operator_override_state);
+
+        if ( operator_overridden == true )
         {
             disable_control( );
 
