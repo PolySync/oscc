@@ -1,0 +1,33 @@
+Polysync Sensor BOM v1.1.0,,,,,,,,
+,,,,,,,,
+Quantity,Reference Designator,Description,Mfg,Mfg Part No.,Distributor,Distributor Part No.,Price,Total Price
+1,R8,RES SMD 0.3 OHM 1% 1/6W 0402,Panasonic Electronic Components,ERJ-2BQFR30X,Digikey,P.30AKCT-ND,0.59,0.59
+5,"R3, R15, R16, R19, R20",RES SMD 0.0OHM JUMPER 1/10W 0402,Panasonic Electronic Components,ERJ-2GE0R00X,Digikey,P0.0JCT-ND,0.1,0.5
+6,"R2, R9, R11, R17, R18, R23",RES SMD 10K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1002X,Digikey,P10.0KLCT-ND,0.1,0.6
+1,R13,RES SMD 120 OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1200X,Digikey,P120LCT-ND,0.1,0.1
+5,"R1, R4, R5, R6, R7",RES SMD 1K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1001X,Digikey,P1.00KLCT-ND,0.1,0.5
+1,R14,RES SMD 47K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF4702X,Digikey,P47.0KLCT-ND,0.1,0.1
+4,"C1, C2, C6, C8",0.10µF ±10% 16V Ceramic Capacitor X7R 0402 (1005 Metric),Murata Electronics North America,GRM155R71C104KA88J,Digikey,490-6328-1-ND,0.1,0.4
+3,"C5, C9, C19",10µF ±10% 10V Ceramic Capacitor X7R 0805 (2012 Metric),Taiyo Yuden,LMK212B7106KG-TD,Digikey,587-2668-1-ND,0.28,0.84
+2,"C4, C7","22pF ±5% 50V Ceramic Capacitor C0G, NP0 0402 (1005 Metric)",Murata Electronics North America,GRM1555C1H220JA01J,Digikey,490-11382-1-ND,0.1,0.2
+1,C3,33µF ±10% Molded Tantalum Capacitors 10V 1206 (3216 Metric) 1.7 Ohm,AVX Corporation,TAJA336K010RNJ,Digikey,478-8882-1-ND,0.6,0.6
+1,D5,Blue 470nm LED Indication - Discrete 3.2V 0603 (1608 Metric),Wurth Electronics Inc,150060BS75000,Digikey,732-4966-1-ND,0.26,0.26
+2,"D1, D4",LED RED CLEAR 0603 SMD,Wurth Electronics Inc,150060RS75000,Digikey,732-4978-1-ND,0.24,0.48
+2,"D2, D3",LED GREEN CLEAR 0603 SMD,Wurth Electronics Inc,150060GS75000,Digikey,732-4971-1-ND,0.24,0.48
+1,X1,16MHz ±30ppm Crystal 18pF 40 Ohm -40°C ~ 85°C Surface Mount HC49/US,Abracon LLC,ABLS-16.000MHZ-D-4-T,Digikey,535-13436-1-ND,0.24,0.24
+1,Q1,MOSFET N-CH 20V 0.2A EMT3,Rohm Semiconductor,RE1C002UNTCL,Digikey,RE1C002UNTCLCT-ND,0.2,0.2
+1,U2,CAN Controller CAN 2.0 SPI Interface 18-SOIC,Microchip Technology,MCP2515-I/SO,Digikey,MCP2515-I/SO-ND,1.82,1.82
+1,U1,1/1 Transceiver Half CAN 8-SOIC,Microchip Technology,MCP2551-I/SN,Digikey,MCP2551-I/SN-ND,1.02,1.02
+1,U5,12 Bit Digital to Analog Converter 2 14-TSSOP,Microchip Technology,MCP4922T-E/ST,Digikey,MCP4922T-E/STCT-ND,2.62,2.62
+1,U4,Linear Voltage Regulator IC Positive Fixed 1 Output 5V 750mA DDPAK/TO-263-3,Texas Instruments,TL750M05CKTTR,Digikey,296-20776-1-ND,1.47,1.47
+1,U6,IC SWITCH BUS DUAL FET 8-SOIC,Texas Instruments,SN74CBT3306CDR,Digikey,296-19215-1-ND,0.6,0.6
+1,RELAY1,General Purpose Relay DPDT (2 Form C) Surface Mount,Kemet,EE2-5NU-L,Digikey,399-11017-1-ND,1.91,1.91
+1,JP1,"10 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,68002-210HLF,Digikey,609-3301-ND,0.44,0.44
+2,"JP2, JP5","8 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,68000-208HLF,Digikey,609-3257-ND,0.43,0.86
+1,JP3,"6 Position Receptacle Connector 0.100"" (2.54mm) Through Hole Gold",Amphenol FCI,68683-303LF,Digikey,609-3582-ND,1.61,1.61
+1,JP4,"6 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,68000-206HLF,Digikey,609-3256-ND,0.32,0.32
+1,JP6,"2 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,77311-118-02LF,Digikey,609-4434-ND,0.18,0.18
+2,"CON1, CON2","2 Position Wire to Board Terminal Block 45° (135°) Angle with Board 0.138"" (3.50mm) Through Hole",Phoenix Contact,1988956,Digikey,277-1779-ND,0.41,0.82
+2,"CON3, CON4","4 Position Wire to Board Terminal Block 45° (135°) Angle with Board 0.138"" (3.50mm) Through Hole",Phoenix Contact,1988972,Digikey,277-1781-ND,0.82,1.64
+1,For JP6,"2 (1 x 2) Position Shunt Connector White Open Top 0.100"" (2.54mm) Gold or Gold, GXT™",Amphenol FCI,68786-102LF,Digikey,609-3121-ND,0.19,0.19
+Total,,,,,,,,$21.59
