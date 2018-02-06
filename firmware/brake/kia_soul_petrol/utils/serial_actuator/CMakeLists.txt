@@ -9,6 +9,7 @@ generate_arduino_firmware(
     ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/timer/oscc_timer.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check/oscc_check.cpp
     ../../src/globals.cpp
     ../../src/accumulator.cpp
     ../../src/helper.cpp
@@ -29,4 +30,5 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/libs/serial
     ${CMAKE_SOURCE_DIR}/common/libs/can
     ${CMAKE_SOURCE_DIR}/common/libs/timer
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check
     ${CMAKE_SOURCE_DIR}/../api/include)

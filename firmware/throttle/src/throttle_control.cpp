@@ -24,6 +24,9 @@ static void read_accelerator_position_sensor(
 
 void check_for_faults( void )
 {
+    static condition_state_s grounded_fault_state = CONDITION_STATE_INIT;
+    static condition_state_s operator_override_state = CONDITION_STATE_INIT;
+
     accelerator_position_s accelerator_position;
 
     if ( ( g_throttle_control_state.enabled == true )
@@ -34,9 +37,19 @@ void check_for_faults( void )
         uint32_t accelerator_position_average =
             (accelerator_position.low + accelerator_position.high) / 2;
 
+        bool operator_overridden = condition_exceeded_duration(
+                accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD,
+                FAULT_HYSTERESIS,
+                &operator_override_state);
+
+        bool inputs_grounded = check_voltage_grounded(
+                accelerator_position.high,
+                accelerator_position.low,
+                FAULT_HYSTERESIS,
+                &grounded_fault_state);
+
         // sensor pins tied to ground - a value of zero indicates disconnection
-        if( check_voltage_grounded( accelerator_position.high,
-                                    accelerator_position.low ) )
+        if( inputs_grounded == true )
         {
             disable_control( );
 
@@ -48,7 +61,7 @@ void check_for_faults( void )
 
             DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
         }
-        else if ( accelerator_position_average >= ACCELERATOR_OVERRIDE_THRESHOLD
+        else if ( operator_overridden == true
           && g_throttle_control_state.operator_override == false )
         {
             disable_control( );

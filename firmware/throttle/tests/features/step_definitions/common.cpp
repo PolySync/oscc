@@ -12,6 +12,7 @@
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "globals.h"
+#include "vehicles.h"
 
 using namespace cgreen;
 

@@ -17,7 +17,7 @@ Feature: Checking for faults
   Scenario Outline: Operator override
     Given throttle control is enabled
 
-    When the operator applies <sensor_val> to the accelerator
+    When the operator applies <sensor_val> to the accelerator for 200 ms
 
     Then control should be disabled
     And a fault report should be published
