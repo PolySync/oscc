@@ -1,0 +1,52 @@
+Polysync Actuator Board BOM V1.2.0,,,,,,,,
+,,,,,,,,
+Quantity,Reference Designator,Description,Mfg,Mfg Part No.,Distributor,Distributor Part No.,Price,Total Price
+8,"R7, R8, R11, R12, R25, R26, R27, R28",RES SMD 0.02 OHM 1% 1W 1206,Panasonic Electronic Components,ERJ-8CWFR020V,Digikey,P0.02BVCT-ND,0.69,5.52
+1,R101,RES SMD 0.3 OHM 1% 1/6W 0402,Panasonic Electronic Components,ERJ-2BQFR30X,Digikey,P.30AKCT-ND,0.59,0.59
+5,"R106, R107, R108, R109, R110",RES SMD 0.0OHM JUMPER 1/10W 0402,Panasonic Electronic Components,ERJ-2GE0R00X,Digikey,P0.0JCT-ND,0.1,0.5
+8,"R9, R10, R15, R16, R29, R30, R31, R32",RES SMD 0.0 OHM JUMPER 1/8W 0805,Panasonic Electronic Components,ERJ-6GEY0R00V,Digikey,P0.0ACT-ND,0.1,0.8
+8,"R3, R4, R5, R6, R21, R22, R23, R24",RES SMD 100 OHM 1% 1/8W 0805,Panasonic Electronic Components,ERJ-6ENF1000V,Digikey,P100CCT-ND,0.1,0.8
+24,"R33, R34, R35, R45, R46, R47, R48, R49, R50, R57, R61, R62, R65, R66, R67, R77, R78, R79, R80, R81, R82, R89, R93, R94",RES SMD 100K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1003X,Digikey,P100KLCT-ND,0.1,2.4
+10,"R1, R2, R13, R14, R17, R18, R19, R20, R104, R121",RES SMD 10K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1002X,Digikey,P10.0KLCT-ND,0.1,1
+1,R102,RES SMD 120 OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1200X,Digikey,P120LCT-ND,0.1,0.1
+48,"R36, R37, R38, R39, R40, R41, R42, R43, R44, R51, R52, R53, R54, R55, R56, R58, R59, R60, R63, R64, R68, R69, R70, R71, R72, R73, R74, R75, R76, R83, R84, R85, R86, R87, R88, R90, R91, R92, R95, R96, R97, R98, R99, R100, R103, R116, R117, R119",RES SMD 1K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1001X,Digikey,P1.00KLCT-ND,0.1,4.8
+2,"R105, R120",RES SMD 47K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF4702X,Digikey,P47.0KLCT-ND,0.1,0.2
+1,R118,RES SMD 5.1K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF5101X,Digikey,P5.10KLCT-ND,0.1,0.1
+18,"C26, C27, C29, C30, C32, C33, C35, C36, C38, C39, C41, C42, C44, C45, C47, C48, C49, C51",0.10µF ±10% 100V Ceramic Capacitor X5R 0402 (1005 Metric),Murata Electronics North America,GRM155R62A104KE14D,Digikey,490-10458-1-ND,0.1,1.8
+12,"C3, C4, C7, C8, C11, C12, C19, C20, C21, C22, C23, C24",0.10µF ±10% 100V Ceramic Capacitor X7R 0805 (2012 Metric),"Samsung Electro-Mechanics America, Inc.",CL21B104KCFNNNE,Digikey,1276-6840-1-ND,0.1,1.2
+8,"C25, C28, C31, C34, C37, C40, C43, C46","100pF ±5% 50V Ceramic Capacitor C0G, NP0 0402 (1005 Metric)",Yageo,CC0402JRNPO9BN101,Digikey,311-1024-1-ND,0.1,0.8
+12,"C1, C2, C5, C6, C9, C10, C13, C14, C15, C16, C17, C18",1µF ±10% 100V Ceramic Capacitor X7R 1206 (3216 Metric),"Samsung Electro-Mechanics America, Inc.",CL31B105KCHNNNE,Digikey,1276-1838-1-ND,0.29,3.48
+2,"C52, C53","22pF ±5% 50V Ceramic Capacitor C0G, NP0 0402 (1005 Metric)",Murata Electronics North America,GRM1555C1H220JA01J,Digikey,490-11382-1-ND,0.1,0.2
+1,C50,33µF ±10% Molded Tantalum Capacitors 10V 1206 (3216 Metric) 1.7 Ohm,AVX Corporation,TAJA336K010RNJ,Digikey,478-8882-1-ND,0.6,0.6
+3,"Q9, Q11, Q12",MOSFET N-CH 60V 6A,Toshiba Semiconductor and Storage,"SSM3K341R,LF",Digikey,SSM3K341RLFCT-ND,0.43,1.29
+8,"Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8",MOSFET N-CH 60V 50A 8SON,Texas Instruments,CSD18537NQ5A,Digikey,296-36455-1-ND,0.85,6.8
+1,Q10,MOSFET N-CH 20V 0.2A EMT3,Rohm Semiconductor,RE1C002UNTCL,Digikey,RE1C002UNTCLCT-ND,0.2,0.2
+1,D21,Blue 470nm LED Indication - Discrete 3.2V 0603 (1608 Metric),Wurth Electronics Inc,150060BS75000,Digikey,732-4966-1-ND,0.26,0.26
+2,"D17, D20",LED RED CLEAR 0603 SMD,Wurth Electronics Inc,150060RS75000,Digikey,732-4978-1-ND,0.24,0.48
+2,"D18, D19",LED GREEN CLEAR 0603 SMD,Wurth Electronics Inc,150060GS75000,Digikey,732-4971-1-ND,0.24,0.48
+8,"D1, D2, D3, D4, D5, D6, D7, D8",Diode Standard 100V 1A Surface Mount SMA,Diodes Incorporated,US1B-13-F,Digikey,US1B-FDICT-ND,0.42,3.36
+8,"D9, D10, D11, D12, D13, D14, D15, D16",Diode Schottky 20V 500mA Surface Mount SOD-123,Diodes Incorporated,B0520LW-7-F,Digikey,B0520LW-FDICT-ND,0.32,2.56
+8,"L1, L2, L3, L4, L5, L6, L7, L8",2.2µH Shielded Wirewound Inductor 10A 12 mOhm Max Nonstandard,Bourns Inc.,SRP7050TA-2R2M,Digikey,SRP7050TA-2R2MCT-ND,1.18,9.44
+1,X1,16MHz ±30ppm Crystal 18pF 40 Ohm -40°C ~ 85°C Surface Mount HC49/US,Abracon LLC,ABLS-16.000MHZ-D-4-T,Digikey,535-13436-1-ND,0.24,0.24
+1,U15,CAN Controller CAN 2.0 SPI Interface 18-SOIC,Microchip Technology,MCP2515-I/SO,Digikey,MCP2515-I/SO-ND,1.82,1.82
+1,U14,1/1 Transceiver Half CAN 8-SOIC,Microchip Technology,MCP2551-I/SN,Digikey,MCP2551-I/SN-ND,1.02,1.02
+8,"U5, U6, U7, U8, U9, U10, U11, U12",General Purpose Amplifier 1 Circuit Rail-to-Rail SOT-23-5,Texas Instruments,OPA170AIDBVT,Digikey,296-29496-1-ND,1.41,11.28
+1,U13,Linear Voltage Regulator IC Positive Fixed 1 Output 5V 750mA DDPAK/TO-263-3,Texas Instruments,TL750M05CKTTR,Digikey,296-20776-1-ND,1.47,1.47
+4,"U1, U2, U3, U4",Low-Side Gate Driver IC Non-Inverting 8-SOIC,Texas Instruments,UCC27524DR,Digikey,296-30129-1-ND,1.94,7.76
+1,RELAY1,General Purpose Relay DPDT (2 Form C) Surface Mount,Kemet,EE2-5NU-L,Digikey,399-11017-1-ND,1.91,1.91
+1,RELAY2,Automotive Relay SPDT (1 Form C) 12VDC Coil Through Hole,TE Connectivity Potter & Brumfield Relays,1432868-1,Digikey,PB1040-ND,3.46,3.46
+1,RELAY3,Relay Socket Through Hole,TE Connectivity Potter & Brumfield Relays,VCF4-1000,Digikey,PB232-ND,1.8,1.8
+1,JP2,"2 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,77311-118-02LF,Digikey,609-4434-ND,0.18,0.18
+1,JP1,"10 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold",Wurth Electronics Inc,61301011121,Digikey,732-2670-ND,1.01,1.01
+1,XIO,"36 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold",Wurth Electronics Inc,61303621121,Digikey,732-5309-ND,1.64,1.64
+5,"ADCH, ADCL, COMMUNICATION, POWER, PWML","8 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold",Wurth Electronics Inc,61300811121,Digikey,732-5321-ND,0.35,1.75
+2,"CON11, CON17","2 Position Wire to Board Terminal Block Horizontal with Board 0.400"" (10.16mm) Through Hole",Phoenix Contact,1773976,Digikey,277-5761-ND,8.66,17.32
+11,"CON1, CON2, CON3, CON4, CON5, CON6, CON7, CON8, CON12, CON14, CON16","2 Position Wire to Board Terminal Block 45° (135°) Angle with Board 0.138"" (3.50mm) Through Hole",Phoenix Contact,1988956,Digikey,277-1779-ND,0.41,4.51
+3,"CON9, CON10, CON13","3 Position Wire to Board Terminal Block 45° (135°) Angle with Board 0.138"" (3.50mm) Through Hole",Phoenix Contact,1988969,Digikey,277-1780-ND,0.61,1.83
+1,CON15,"5 Position Wire to Board Terminal Block 45° (135°) Angle with Board 0.138"" (3.50mm) Through Hole",Phoenix Contact,1988985,Digikey,277-1782-ND,0.97,0.97
+2,"F1, F3",Fuse Holder 80V 1 Circuit Blade PCB,Littelfuse Inc.,178.6165.0001,Digikey,F5197-ND,3.24,6.48
+,,,,,,,,
+1,For F3,FUSE AUTO 40A 32VDC BLADE,Littelfuse Inc.,0257040.PXAPC,Digikey,F5952-ND,0.47,0.47
+1,For F1,FUSE AUTOMOTIVE 20A 32VDC BLADE,Littelfuse Inc.,0287020.PXCN,Digikey,F4201-ND,0.28,0.28
+1,For JP2,"2 (1 x 2) Position Shunt Connector White Open Top 0.100"" (2.54mm) Gold or Gold, GXT™",Amphenol FCI,68786-102LF,Digikey,609-3121-ND,0.19,0.19
+Total,,,,,,,,$117.15
