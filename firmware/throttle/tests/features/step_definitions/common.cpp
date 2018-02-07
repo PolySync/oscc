@@ -12,6 +12,7 @@
 #include "can_protocols/fault_can_protocol.h"
 #include "can_protocols/throttle_can_protocol.h"
 #include "globals.h"
+#include "vehicles.h"
 
 using namespace cgreen;
 
@@ -34,6 +35,7 @@ extern unsigned short g_mock_dac_output_a;
 extern unsigned short g_mock_dac_output_b;
 
 extern volatile throttle_control_state_s g_throttle_control_state;
+extern volatile unsigned long g_mock_arduino_millis_return;
 
 
 // return to known state before every scenario
@@ -60,6 +62,9 @@ BEFORE()
     g_throttle_control_state.enabled = false;
     g_throttle_control_state.operator_override = false;
     g_throttle_control_state.dtcs = 0;
+
+    // A small amount of time elapsed after boot
+    g_mock_arduino_millis_return = 1;
 }
 
 
@@ -92,7 +97,7 @@ GIVEN("^the operator has applied (.*) to the accelerator$")
     g_mock_arduino_analog_read_return[0] = throttle_sensor_val;
     g_mock_arduino_analog_read_return[1] = throttle_sensor_val;
 
-    check_for_operator_override();
+    check_for_faults();
 }
 
 

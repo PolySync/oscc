@@ -5,10 +5,10 @@
 
 
 #include "arduino_init.h"
+#include "can_protocols/throttle_can_protocol.h"
 #include "communications.h"
 #include "debug.h"
 #include "init.h"
-#include "timers.h"
 #include "throttle_control.h"
 
 
@@ -30,6 +30,6 @@ int main( void )
     {
         check_for_incoming_message( );
 
-        check_for_operator_override( );
+        check_for_faults( );
     }
 }
