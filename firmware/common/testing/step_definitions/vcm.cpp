@@ -1,3 +1,5 @@
+#pragma once
+
 THEN("^control should be enabled$")
 {
     assert_that(

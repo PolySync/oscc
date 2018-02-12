@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cgreen/cgreen.h>
 #include <cgreen/mocks.h>
 #include <cucumber-cpp/autodetect.hpp>

@@ -1,3 +1,5 @@
+#pragma once
+
 // fault_checking.cpp
 
 WHEN("^a sensor is grounded for (\\d+) ms$")
