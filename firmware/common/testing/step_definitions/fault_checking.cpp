@@ -1,7 +1,5 @@
 #pragma once
 
-// fault_checking.cpp
-
 WHEN("^a sensor is grounded for (\\d+) ms$")
 {
     REGEX_PARAM(int, duration);
@@ -16,10 +14,8 @@ WHEN("^a sensor is grounded for (\\d+) ms$")
     check_for_faults();
 }
 
-THEN("^a fault report should be published with origin ID (\\d+)$")
+THEN("^a fault report should be published$")
 {
-    REGEX_PARAM(int, fault_origin_id);
-
     assert_that(g_mock_mcp_can_send_msg_buf_id, is_equal_to(OSCC_FAULT_REPORT_CAN_ID));
     assert_that(g_mock_mcp_can_send_msg_buf_ext, is_equal_to(CAN_STANDARD));
     assert_that(g_mock_mcp_can_send_msg_buf_len, is_equal_to(OSCC_FAULT_REPORT_CAN_DLC));
@@ -37,5 +33,5 @@ THEN("^a fault report should be published with origin ID (\\d+)$")
 
     assert_that(
         fault_report->fault_origin_id,
-        is_equal_to(fault_origin_id));
+        is_equal_to(MODULE_FAULT_ORIGIN_ID));
 }

@@ -11,7 +11,7 @@ Feature: Checking for faults
     When a sensor is grounded for 200 ms
 
     Then control should be disabled
-    And a fault report should be published with origin ID 2
+    And a fault report should be published
 
 
   Scenario Outline: Operator override
@@ -20,7 +20,7 @@ Feature: Checking for faults
     When the operator applies <sensor_val> to the accelerator for 200 ms
 
     Then control should be disabled
-    And a fault report should be published with origin ID 2
+    And a fault report should be published
 
     Examples:
       | sensor_val |

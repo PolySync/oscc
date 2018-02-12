@@ -21,7 +21,7 @@ Feature: Timeouts and overrides
     When a sensor is grounded for 200 ms
 
     Then control should be disabled
-    And a fault report should be published with origin ID 0
+    And a fault report should be published
 
 
   Scenario Outline: Operator override
@@ -30,7 +30,7 @@ Feature: Timeouts and overrides
     When the operator applies <sensor_val> to the brake pedal for 200 ms
 
     Then control should be disabled
-    And a fault report should be published with origin ID 0
+    And a fault report should be published
 
     Examples:
       | sensor_val |
