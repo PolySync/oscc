@@ -1,0 +1,17 @@
+[package]
+name = "throttle_firmware_pb_tests"
+version = "0.0.1"
+authors = ["Katie Cleary <kcleary@polysync.io>"]
+build = "build.rs"
+description = "The manifest file for the throttle module property-based tests. To run the tests, run the command 'cargo test -- --test-threads=1'"
+
+[dependencies]
+quickcheck = "0.4.1"
+rand = "0.3.15"
+
+[build-dependencies]
+bindgen = "0.32.1"
+gcc = "0.3.51"
+
+[lib]
+name = "tests"
