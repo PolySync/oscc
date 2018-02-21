@@ -47,7 +47,6 @@ oscc_result_t oscc_init()
         oscc_async_enable( vehicle_can_socket );
     }
 
-
     return result;
 }
 
@@ -70,19 +69,19 @@ oscc_result_t oscc_open( unsigned int channel )
 
     if( result != OSCC_ERROR && !channel_contents.has_vehicle )
     {
-      int vehicle_ret = OSCC_ERROR;
+        int vehicle_ret = OSCC_ERROR;
 
-      vehicle_ret = oscc_search_can( &auto_init_vehicle_can );
+        vehicle_ret = oscc_search_can( &auto_init_vehicle_can );
 
-      if( vehicle_ret != OSCC_OK )
-      {
-          printf( "Warning Vehicle CAN not found.\n" );
-      }
+        if( vehicle_ret != OSCC_OK )
+        {
+            printf( "Warning Vehicle CAN not found.\n" );
+        }
     }
 
     if( result != OSCC_ERROR)
     {
-      result = init_oscc_can( can_string_buffer );
+        result = init_oscc_can( can_string_buffer );
     }
 
     if ( result != OSCC_ERROR && oscc_can_socket >= 0 )
@@ -603,26 +602,26 @@ oscc_result_t oscc_async_enable( int socket )
 }
 
 
-oscc_result_t oscc_search_can( oscc_result_t(*search_callback)( const char * ))
+oscc_result_t oscc_search_can( oscc_result_t(*search_callback)( const char * ) )
 {
-  oscc_result_t result = OSCC_ERROR;
+    oscc_result_t result = OSCC_ERROR;
 
     static struct device_name *dev_list, *temp_ptr;
-    dev_list = malloc(sizeof(struct device_name));
+    dev_list = malloc( sizeof( struct device_name ) );
 
-    result = construct_interfaces_list(dev_list);
+    result = construct_interfaces_list( dev_list );
 
     temp_ptr = dev_list;
 
     do
     {
-      if (strstr(temp_ptr->name,"can") != NULL)
+      if ( strstr( temp_ptr->name,"can" ) != NULL )
       {
         search_callback( temp_ptr->name );
       }
 
       temp_ptr = temp_ptr->next;
-    }while(temp_ptr != dev_list);
+    }while( temp_ptr != dev_list );
 
     return result;
 }
@@ -714,13 +713,13 @@ int init_can_socket( const char *can_channel,
     int valid = -1;
     int sock = -1;
     struct ifreq ifr;
-    memset( &ifr, 0, sizeof(ifr) );
+    memset( &ifr, 0, sizeof( ifr ) );
 
     sock = socket( PF_CAN, SOCK_RAW, CAN_RAW );
 
     if ( sock < 0 )
     {
-        printf( "Opening CAN socket failed: %s\n", strerror(errno) );
+        printf( "Opening CAN socket failed: %s\n", strerror( errno ) );
     }
     else
     {
@@ -730,7 +729,7 @@ int init_can_socket( const char *can_channel,
 
         if ( valid < 0 )
         {
-            printf( "Finding CAN index failed: %s\n", strerror(errno) );
+            printf( "Finding CAN index failed: %s\n", strerror( errno ) );
         }
     }
 
@@ -738,24 +737,28 @@ int init_can_socket( const char *can_channel,
     {
         struct sockaddr_can can_address;
 
-        memset( &can_address, 0, sizeof(can_address) );
+        memset( &can_address, 0, sizeof( can_address ) );
         can_address.can_family = AF_CAN;
         can_address.can_ifindex = ifr.ifr_ifindex;
 
         valid = bind(
             sock,
             (struct sockaddr *) &can_address,
-            sizeof(can_address) );
+            sizeof( can_address ) );
 
         if ( valid < 0 )
         {
-            printf( "Socket binding failed: %s\n", strerror(errno) );
+            printf( "Socket binding failed: %s\n", strerror( errno ) );
         }
     }
 
     if( (valid >= 0) && (filter != NULL) )
     {
-        setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FILTER, &filter, sizeof(filter));
+        setsockopt( sock,
+                    SOL_CAN_RAW,
+                    CAN_RAW_FILTER,
+                    &filter,
+                    sizeof( filter ) );
     }
 
     // If it's invalid close the connection before bailing out...
@@ -771,7 +774,7 @@ int init_can_socket( const char *can_channel,
 
 struct can_contains can_detection( const char *can_channel )
 {
-    int sock = init_can_socket(can_channel, NULL );
+    int sock = init_can_socket( can_channel, NULL );
 
     int i = 0;
     struct can_contains detection =
@@ -783,131 +786,134 @@ struct can_contains can_detection( const char *can_channel )
     for(i=0; i < 10; i++)
     {
       struct can_frame rx_frame;
-      memset( &rx_frame, 0, sizeof(rx_frame) );
+      memset( &rx_frame, 0, sizeof( rx_frame ) );
       int recv_bytes = 0;
       fd_set read_set;
-      FD_ZERO(&read_set);
-      FD_SET(sock, &read_set);
+      FD_ZERO( &read_set );
+      FD_SET( sock, &read_set );
 
       // Set timeout to 1.0 seconds
       struct timeval timeout;
       timeout.tv_sec = 0;
       timeout.tv_usec = 500;
 
-      setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+      setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) );
 
-      recv_bytes = read(sock, &rx_frame, sizeof(rx_frame));
+      recv_bytes = read( sock, &rx_frame, sizeof( rx_frame ) );
 
       switch (recv_bytes) {
         case CAN_MTU:
         case CANFD_MTU:
-            if((rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID ||
-               rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID ||
-               rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID) &&
-               rx_frame.data[0] == OSCC_MAGIC_BYTE_0 &&
-               rx_frame.data[1] == OSCC_MAGIC_BYTE_1 )
-               {
-                   detection.is_oscc = true;
-               }
-            if(rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ||
-               rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ||
-               rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID )
-               {
-                   detection.has_vehicle = true;
-               }
+            if( ( rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID ||
+                  rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID ||
+                  rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID ) &&
+                  rx_frame.data[0] == OSCC_MAGIC_BYTE_0 &&
+                  rx_frame.data[1] == OSCC_MAGIC_BYTE_1 )
+            {
+                detection.is_oscc = true;
+            }
+            if( rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ||
+                rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ||
+                rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID )
+            {
+                detection.has_vehicle = true;
+            }
         case -1:
-            if (EINTR == errno)
+            if( EINTR == errno )
                 continue;
         default:
             continue;
       }
     }
 
-    close(sock);
+    close( sock );
 
     return detection;
 }
 
 
-oscc_result_t construct_interfaces_list(struct device_name * const list_ptr)
+oscc_result_t construct_interfaces_list( struct device_name * const list_ptr )
 {
-	FILE *fh;
-  char buffer[512];
-  oscc_result_t ret = OSCC_ERROR;
+    FILE *fh;
+    char buffer[512];
+    oscc_result_t ret = OSCC_ERROR;
 
-  fh = fopen("/proc/net/dev", "r");
-  if (!fh) {
-	  fprintf(stderr,
-			      "Cannot read: /proc/net/dev (%s).\n",
-						strerror(errno));
-	  return -2;
-	}
+    fh = fopen( "/proc/net/dev", "r" );
+    if (!fh) {
+        fprintf( stderr,
+                 "Cannot read: /proc/net/dev (%s).\n",
+                 strerror( errno ) );
 
-	//Consume the first two lines since they are headers
-  fgets(buffer, sizeof buffer, fh);
-  fgets(buffer, sizeof buffer, fh);
+        return -2;
+    }
 
-	while (fgets(buffer, sizeof buffer, fh)) {
-		char *socket_name;
-		socket_name = get_device_name(buffer);
-		ret = add_device_name(socket_name, list_ptr);
-	}
+    //Consume the first two lines since they are headers
+    fgets( buffer, sizeof buffer, fh );
+    fgets( buffer, sizeof buffer, fh );
 
-	return ret;
+    while ( fgets( buffer, sizeof buffer, fh ) ) {
+        char *socket_name;
+        socket_name = get_device_name( buffer );
+        ret = add_device_name( socket_name, list_ptr );
+    }
+
+    return ret;
 }
 
 
-char * get_device_name(char *string)
+char * get_device_name( char *string )
 {
-	size_t span = strcspn(string, ":");
-	static char temp_name[IFNAMSIZ];
-	strncpy(temp_name, string, span);
-  temp_name[span] = '\0';
-	size_t leading_spaces = strspn(temp_name, " ");
+    size_t span = strcspn(string, ":");
+    static char temp_name[IFNAMSIZ];
+    strncpy(temp_name, string, span);
+    temp_name[span] = '\0';
+    size_t leading_spaces = strspn(temp_name, " ");
 
-	if(leading_spaces == 0)
-	{
-		return temp_name;
-	}
+    if(leading_spaces == 0)
+    {
+        return temp_name;
+    }
 
-	static char new_name[IFNAMSIZ];
+    static char new_name[IFNAMSIZ];
 
-	strncpy(new_name, temp_name + leading_spaces, span - leading_spaces + 1);
+    strncpy(new_name, temp_name + leading_spaces, span - leading_spaces + 1);
 
-  new_name[span - leading_spaces] = '\0';
+    new_name[span - leading_spaces] = '\0';
 
-	return new_name;
+    return new_name;
 }
 
-oscc_result_t add_device_name(const char * const name, struct device_name * const list_ptr)
+oscc_result_t add_device_name( const char * const name,
+                               struct device_name * const list_ptr )
 {
-	if(list_ptr == NULL){
-		fprintf(stderr,
-						"dev list is uninitialized (%s)\n",
-						strerror(errno));
-		return -1;
-	}
+    if( list_ptr == NULL )
+    {
+        fprintf( stderr,
+                 "dev list is uninitialized (%s)\n",
+                 strerror( errno ) );
+        return -1;
+    }
 
-	if(strlen(list_ptr->name) != 0)
-	{
-		struct device_name * old_tail;
-		struct device_name * new_name = malloc(sizeof(struct device_name));
-		strncpy(new_name->name, name, IFNAMSIZ);
+    if(strlen(list_ptr->name) != 0)
+    {
+        struct device_name * old_tail;
+        struct device_name * new_name = malloc( sizeof( struct device_name ) );
+        strncpy( new_name->name, name, IFNAMSIZ );
 
-		if(list_ptr->next == list_ptr){
-			list_ptr->next = new_name;
-		}
-		old_tail = list_ptr->prev;
-		old_tail->next = new_name;
-		new_name->prev = old_tail;
-		new_name->next = list_ptr;
-		list_ptr->prev = new_name;
-	}
-	else{
-		strncpy(list_ptr->name, name, IFNAMSIZ);
-		list_ptr->prev = list_ptr;
-		list_ptr->next = list_ptr;
-	}
+        if( list_ptr->next == list_ptr ){
+            list_ptr->next = new_name;
+        }
+        old_tail = list_ptr->prev;
+        old_tail->next = new_name;
+        new_name->prev = old_tail;
+        new_name->next = list_ptr;
+        list_ptr->prev = new_name;
+    }
+    else{
+        strncpy( list_ptr->name, name, IFNAMSIZ );
+        list_ptr->prev = list_ptr;
+        list_ptr->next = list_ptr;
+    }
 
-	return OSCC_OK;
+    return OSCC_OK;
 }
