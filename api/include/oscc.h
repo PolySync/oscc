@@ -32,7 +32,7 @@ typedef enum
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_open();
+oscc_result_t oscc_init();
 
 /**
  * @brief Use provided CAN channel to open communications to CAN bus connected
@@ -46,18 +46,6 @@ oscc_result_t oscc_open();
  */
 oscc_result_t oscc_open( unsigned int channel );
 
-/**
- * @brief Initializes connection to the specified CAN channels for OSCC control
- *        and vehicle CAN for feedback.
- *
- * @param [in] oscc_channel - CAN channel connected to OSCC modules.
- * @param [in] vehicle_channel - CAN channel connected to OSCC modules.
- *
- * @return OSCC_ERROR or OSCC_OK
- *
- */
-oscc_result_t oscc_open( const char * const oscc_channel,
-                         const char * const vehicle_channel );
 
 /**
  * @brief Use provided CAN channel to close communications
