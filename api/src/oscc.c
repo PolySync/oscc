@@ -5,6 +5,7 @@
 #include <net/if.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -12,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <poll.h>
 
 #include "oscc.h"
 #include "internal/oscc.h"
@@ -25,11 +27,11 @@ oscc_result_t oscc_init()
 {
     oscc_result_t result = OSCC_ERROR;
 
-    result = register_can_signal();
+    result = oscc_search_can( &auto_init_all_can, true );
 
     if( result != OSCC_ERROR )
     {
-        result = oscc_search_can( &auto_init_all_can );
+        result = register_can_signal();
     }
 
     if ( oscc_can_socket > 0 )
@@ -54,28 +56,23 @@ oscc_result_t oscc_open( unsigned int channel )
 {
     oscc_result_t result = OSCC_ERROR;
 
-    result = register_can_signal();
-
     struct can_contains channel_contents;
 
     char can_string_buffer[16];
 
-    if( result != OSCC_ERROR )
-    {
-        snprintf( can_string_buffer, 16, "can%u", channel );
+    snprintf( can_string_buffer, 16, "can%u", channel );
 
-        channel_contents = can_detection( can_string_buffer );
-    }
+    channel_contents = can_detection( can_string_buffer );
 
     if( result != OSCC_ERROR && !channel_contents.has_vehicle )
     {
         int vehicle_ret = OSCC_ERROR;
 
-        vehicle_ret = oscc_search_can( &auto_init_vehicle_can );
+        vehicle_ret = oscc_search_can( &auto_init_vehicle_can, false );
 
-        if( vehicle_ret != OSCC_OK )
+        if( (vehicle_can_socket < 0) || (vehicle_ret != OSCC_OK) )
         {
-            printf( "Warning Vehicle CAN not found.\n" );
+            printf( "Warning Vehicle CAN was not found.\n" );
         }
     }
 
@@ -83,6 +80,8 @@ oscc_result_t oscc_open( unsigned int channel )
     {
         result = init_oscc_can( can_string_buffer );
     }
+
+    result = register_can_signal();
 
     if ( result != OSCC_ERROR && oscc_can_socket >= 0 )
     {
@@ -542,7 +541,7 @@ oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
         }
         else
         {
-            printf( "Could not write to socket: %s\n", strerror(errno) );
+            perror( "Could not write to socket:" );
         }
     }
 
@@ -577,7 +576,7 @@ oscc_result_t oscc_async_enable( int socket )
 
     if ( ret < 0 )
     {
-        printf( "Setting owner process of socket failed: %s\n", strerror(errno) );
+        perror( "Setting owner process of socket failed:" );
     }
     else
     {
@@ -591,7 +590,7 @@ oscc_result_t oscc_async_enable( int socket )
 
         if ( ret < 0 )
         {
-            printf( "Setting nonblocking asynchronous socket I/O failed: %s\n", strerror(errno) );
+            perror( "Setting nonblocking asynchronous socket I/O failed:" );
 
             result = OSCC_ERROR;
         }
@@ -602,7 +601,8 @@ oscc_result_t oscc_async_enable( int socket )
 }
 
 
-oscc_result_t oscc_search_can( oscc_result_t(*search_callback)( const char * ) )
+oscc_result_t oscc_search_can( struct can_contains(*search_callback)( const char * ),
+                               bool search_oscc )
 {
     oscc_result_t result = OSCC_ERROR;
 
@@ -611,56 +611,67 @@ oscc_result_t oscc_search_can( oscc_result_t(*search_callback)( const char * ) )
 
     result = construct_interfaces_list( dev_list );
 
+    //temp_contents is the temporary storage of the current CAN channel
+    //all_contents is the sum of all channels searched
+    struct can_contains temp_contents, all_contents;
+
+    //Set the all_contents based search_oscc boolean in function call
+    all_contents.is_oscc = !search_oscc;
+    all_contents.has_vehicle = false;
+
     temp_ptr = dev_list;
 
     do
     {
-      if ( strstr( temp_ptr->name,"can" ) != NULL )
-      {
-        search_callback( temp_ptr->name );
-      }
+        if ( strstr( temp_ptr->name, "can" ) != NULL )
+        {
+            temp_contents = search_callback( temp_ptr->name );
 
-      temp_ptr = temp_ptr->next;
+            all_contents.is_oscc |= temp_contents.is_oscc;
+
+            all_contents.has_vehicle |= temp_contents.has_vehicle;
+
+            //Leave the while loop if both requirements are met
+            if( all_contents.is_oscc && all_contents.has_vehicle )
+            {
+                break;
+            }
+        }
+
+        temp_ptr = temp_ptr->next;
     }while( temp_ptr != dev_list );
 
     return result;
 }
 
 
-oscc_result_t auto_init_all_can( const char *can_channel )
+struct can_contains auto_init_all_can( const char *can_channel )
 {
-  //Default to ok for the case of other CAN signals that are not OSCC related
-  int result = OSCC_OK;
+    struct can_contains contents = can_detection( can_channel );
 
-  struct can_contains contents = can_detection( can_channel );
+    if( contents.is_oscc )
+    {
+        init_oscc_can( can_channel );
+    }
+    else if( contents.has_vehicle )
+    {
+        init_vehicle_can( can_channel );
+    }
 
-  if( contents.is_oscc )
-  {
-    printf( "Found an OSCC CAN...\n" );
-    result = init_oscc_can( can_channel );
-  }
-  else if( contents.has_vehicle )
-  {
-    result = init_vehicle_can( can_channel );
-  }
-
-  return result;
+    return contents;
 }
 
 
-oscc_result_t auto_init_vehicle_can( const char *can_channel )
+struct can_contains auto_init_vehicle_can( const char *can_channel )
 {
-  //Default to ok for the case of other CAN signals that are not OSCC related
-  int result = OSCC_OK;
+    struct can_contains contents = can_detection( can_channel );
 
-  struct can_contains contents = can_detection( can_channel );
+    if( contents.has_vehicle )
+    {
+      init_vehicle_can( can_channel );
+    }
 
-  if( contents.has_vehicle )
-  {
-    result = init_vehicle_can( can_channel );
-  }
-
-  return result;
+    return contents;
 }
 
 
@@ -670,11 +681,11 @@ oscc_result_t init_oscc_can( const char *can_channel )
 
     printf( "Assigning OSCC CAN Channel to: %s\n", can_channel );
 
-    oscc_can_socket = init_can_socket( can_channel, NULL );
+    oscc_can_socket = init_can_socket( can_channel, NULL, NULL );
 
     if( oscc_can_socket >= 0 )
     {
-      result = OSCC_OK;
+        result = OSCC_OK;
     }
 
     return result;
@@ -696,7 +707,7 @@ oscc_result_t init_vehicle_can( const char *can_channel )
     rfilter[2].can_id   = KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID;
     rfilter[2].can_mask = CAN_SFF_MASK;
 
-    vehicle_can_socket = init_can_socket( can_channel, rfilter );
+    vehicle_can_socket = init_can_socket( can_channel, NULL, rfilter );
 
     if(vehicle_can_socket >= 0)
     {
@@ -708,6 +719,7 @@ oscc_result_t init_vehicle_can( const char *can_channel )
 
 
 int init_can_socket( const char *can_channel,
+                     struct timeval *tv,
                      struct can_filter *filter )
 {
     int valid = -1;
@@ -719,7 +731,7 @@ int init_can_socket( const char *can_channel,
 
     if ( sock < 0 )
     {
-        printf( "Opening CAN socket failed: %s\n", strerror( errno ) );
+        perror( "Opening CAN socket failed:" );
     }
     else
     {
@@ -729,7 +741,38 @@ int init_can_socket( const char *can_channel,
 
         if ( valid < 0 )
         {
-            printf( "Finding CAN index failed: %s\n", strerror( errno ) );
+            perror( "Finding CAN index failed:" );
+        }
+    }
+
+    //If a timeout has been specified set one here since it should be set before
+    //the bind call
+    if( valid >= 0 && tv != NULL )
+    {
+        valid = setsockopt( sock,
+                            SOL_SOCKET,
+                            SO_RCVTIMEO,
+                            tv,
+                            sizeof( struct timeval ) );
+
+        if ( valid < 0 )
+        {
+            perror( "Setting timeout failed:" );
+        }
+    }
+
+    //If a filter has been specified set one here
+    if( (valid >= 0) && (filter != NULL) )
+    {
+        int ret = setsockopt( sock,
+                    SOL_CAN_RAW,
+                    CAN_RAW_FILTER,
+                    &filter,
+                    sizeof( filter ) );
+
+        if ( valid < 0 )
+        {
+            perror( "Setting filter failed:" );
         }
     }
 
@@ -741,27 +784,17 @@ int init_can_socket( const char *can_channel,
         can_address.can_family = AF_CAN;
         can_address.can_ifindex = ifr.ifr_ifindex;
 
-        valid = bind(
-            sock,
-            (struct sockaddr *) &can_address,
-            sizeof( can_address ) );
+        valid = bind( sock,
+                      (struct sockaddr *) &can_address,
+                      sizeof( can_address ) );
 
         if ( valid < 0 )
         {
-            printf( "Socket binding failed: %s\n", strerror( errno ) );
+            perror( "Socket binding failed:" );
         }
     }
 
-    if( (valid >= 0) && (filter != NULL) )
-    {
-        setsockopt( sock,
-                    SOL_CAN_RAW,
-                    CAN_RAW_FILTER,
-                    &filter,
-                    sizeof( filter ) );
-    }
-
-    // If it's invalid close the connection before bailing out...
+    // Clean up resources and close the connection if it's invalid.
     if( valid < 0 )
     {
       close( sock );
@@ -774,59 +807,83 @@ int init_can_socket( const char *can_channel,
 
 struct can_contains can_detection( const char *can_channel )
 {
-    int sock = init_can_socket( can_channel, NULL );
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 75000;
+
+    int sock = init_can_socket( can_channel, &timeout, NULL );
 
     int i = 0;
-    struct can_contains detection =
+
+    struct vehicle_can_desc vehicle_detection =
     {
-      .is_oscc = false,
-      .has_vehicle = false
+      .has_steering_angle = false,
+      .has_brake_pressure = false,
+      .has_wheel_speed = false
     };
 
-    for(i=0; i < 10; i++)
+    struct oscc_can_desc oscc_detection =
     {
-      struct can_frame rx_frame;
-      memset( &rx_frame, 0, sizeof( rx_frame ) );
-      int recv_bytes = 0;
-      fd_set read_set;
-      FD_ZERO( &read_set );
-      FD_SET( sock, &read_set );
+      .has_torqe_report = false,
+      .has_steer_report = false,
+      .has_brake_report = false
+    };
 
-      // Set timeout to 1.0 seconds
-      struct timeval timeout;
-      timeout.tv_sec = 0;
-      timeout.tv_usec = 500;
+    for( i = 0; i < MAX_CAN_IDS; i++ )
+    {
+        struct can_frame rx_frame;
+        memset( &rx_frame, 0, sizeof( rx_frame ) );
+        int recv_bytes = 0;
 
-      setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) );
+        recv_bytes = read( sock, &rx_frame, sizeof( rx_frame ) );
 
-      recv_bytes = read( sock, &rx_frame, sizeof( rx_frame ) );
+        switch (recv_bytes) {
+          case CAN_MTU:
+          case CANFD_MTU:
+              oscc_detection.has_brake_report |=
+                  ( (rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID) &&
+                    (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
+                    (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) );
 
-      switch (recv_bytes) {
-        case CAN_MTU:
-        case CANFD_MTU:
-            if( ( rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID ||
-                  rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID ||
-                  rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID ) &&
-                  rx_frame.data[0] == OSCC_MAGIC_BYTE_0 &&
-                  rx_frame.data[1] == OSCC_MAGIC_BYTE_1 )
-            {
-                detection.is_oscc = true;
-            }
-            if( rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ||
-                rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ||
-                rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID )
-            {
-                detection.has_vehicle = true;
-            }
-        case -1:
-            if( EINTR == errno )
-                continue;
-        default:
-            continue;
-      }
+              oscc_detection.has_steer_report |=
+                  ( (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID) &&
+                    (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
+                    (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) );
+
+              oscc_detection.has_torqe_report |=
+                  ( (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID) &&
+                    (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
+                    (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) );
+
+              vehicle_detection.has_brake_pressure |=
+                  ( rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID );
+
+              vehicle_detection.has_steering_angle |=
+                  ( rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID );
+
+              vehicle_detection.has_wheel_speed |=
+                  ( rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID );
+          case -1:
+              if( EINTR == errno )
+              {
+                  continue;
+              }
+          default:
+              continue;
+        }
     }
 
     close( sock );
+
+    struct can_contains detection =
+    {
+      .is_oscc = oscc_detection.has_brake_report &&
+                 oscc_detection.has_steer_report &&
+                 oscc_detection.has_torqe_report,
+      .has_vehicle = vehicle_detection.has_brake_pressure &&
+                     vehicle_detection.has_steering_angle &&
+                     vehicle_detection.has_wheel_speed
+    };
 
     return detection;
 }
@@ -840,9 +897,7 @@ oscc_result_t construct_interfaces_list( struct device_name * const list_ptr )
 
     fh = fopen( "/proc/net/dev", "r" );
     if (!fh) {
-        fprintf( stderr,
-                 "Cannot read: /proc/net/dev (%s).\n",
-                 strerror( errno ) );
+        perror( "Cannot read: /proc/net/dev" );
 
         return -2;
     }
@@ -888,13 +943,11 @@ oscc_result_t add_device_name( const char * const name,
 {
     if( list_ptr == NULL )
     {
-        fprintf( stderr,
-                 "dev list is uninitialized (%s)\n",
-                 strerror( errno ) );
+        perror( "list is uninitialized" );
         return -1;
     }
 
-    if(strlen(list_ptr->name) != 0)
+    if( strlen( list_ptr->name ) != 0 )
     {
         struct device_name * old_tail;
         struct device_name * new_name = malloc( sizeof( struct device_name ) );
