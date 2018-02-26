@@ -19,14 +19,22 @@
 
 
 /*
- * @brief MAX_CAN_IDs is the maximum number unique CAN IDs on the CAN bus used
+ * @brief MAX_CAN_IDS is the maximum number unique CAN IDs on the CAN bus used
  * for auto detection of CAN channels. Increasing this number increases the wait
  * time for checking if a channel contains expected CAN IDs, reducing this
  * number below number of CAN IDs broadcast could yield a false negative in auto
  * detection.
  *
  */
-#define MAX_CAN_IDS ( 100 )
+#define MAX_CAN_IDS ( 50 )
+
+
+/*
+ * @brief CAN_MESSAGE_TIMEOUT is the time to wait for a CAN message in
+ * miliseconds used for auto detection of can channels.
+ *
+ */
+#define CAN_MESSAGE_TIMEOUT ( 100 )
 
 
 typedef enum

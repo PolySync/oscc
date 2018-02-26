@@ -809,7 +809,7 @@ struct can_contains can_detection( const char *can_channel )
 {
     struct timeval timeout;
     timeout.tv_sec = 0;
-    timeout.tv_usec = 75000;
+    timeout.tv_usec = CAN_MESSAGE_TIMEOUT;
 
     int sock = init_can_socket( can_channel, &timeout, NULL );
 
@@ -840,20 +840,19 @@ struct can_contains can_detection( const char *can_channel )
         switch (recv_bytes) {
           case CAN_MTU:
           case CANFD_MTU:
-              oscc_detection.has_brake_report |=
-                  ( (rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID) &&
-                    (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
-                    (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) );
+              if ( (rx_frame.can_id < 0x100) &&
+                   (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
+                   (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) )
+              {
+                oscc_detection.has_brake_report |=
+                    ( (rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID) );
 
-              oscc_detection.has_steer_report |=
-                  ( (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID) &&
-                    (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
-                    (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) );
+                oscc_detection.has_steer_report |=
+                    ( (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID) );
 
-              oscc_detection.has_torqe_report |=
-                  ( (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID) &&
-                    (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
-                    (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) );
+                oscc_detection.has_torqe_report |=
+                    ( (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID) );
+              }
 
               vehicle_detection.has_brake_pressure |=
                   ( rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID );
