@@ -26,12 +26,12 @@
  * detection.
  *
  */
-#define MAX_CAN_IDS ( 50 )
+#define MAX_CAN_IDS ( 70 )
 
 
 /*
  * @brief CAN_MESSAGE_TIMEOUT is the time to wait for a CAN message in
- * miliseconds used for auto detection of can channels.
+ * milliseconds used for auto detection of can channels.
  *
  */
 #define CAN_MESSAGE_TIMEOUT ( 100 )

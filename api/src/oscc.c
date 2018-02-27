@@ -29,12 +29,12 @@ oscc_result_t oscc_init()
 
     result = oscc_search_can( &auto_init_all_can, true );
 
-    if( result != OSCC_ERROR )
+    if( result == OSCC_OK )
     {
         result = register_can_signal();
     }
 
-    if ( oscc_can_socket > 0 )
+    if ( result == OSCC_OK && oscc_can_socket > 0 )
     {
         result = oscc_async_enable( oscc_can_socket );
     }
@@ -64,7 +64,7 @@ oscc_result_t oscc_open( unsigned int channel )
 
     channel_contents = can_detection( can_string_buffer );
 
-    if( result != OSCC_ERROR && !channel_contents.has_vehicle )
+    if( result == OSCC_OK && !channel_contents.has_vehicle )
     {
         int vehicle_ret = OSCC_ERROR;
 
@@ -76,14 +76,17 @@ oscc_result_t oscc_open( unsigned int channel )
         }
     }
 
-    if( result != OSCC_ERROR)
+    if( result == OSCC_OK)
     {
         result = init_oscc_can( can_string_buffer );
     }
 
-    result = register_can_signal();
+    if( result == OSCC_OK)
+    {
+        result = register_can_signal();
+    }
 
-    if ( result != OSCC_ERROR && oscc_can_socket >= 0 )
+    if ( result == OSCC_OK && oscc_can_socket >= 0 )
     {
         result = oscc_async_enable( oscc_can_socket );
     }
@@ -92,7 +95,7 @@ oscc_result_t oscc_open( unsigned int channel )
         printf( "Error could not find OSCC CAN signal.\n" );
     }
 
-    if ( result != OSCC_ERROR && vehicle_can_socket >= 0 )
+    if ( result == OSCC_OK && vehicle_can_socket >= 0 )
     {
         oscc_async_enable( vehicle_can_socket );
     }
