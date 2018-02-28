@@ -512,7 +512,10 @@ void oscc_update_status( int sig, siginfo_t *siginfo, void *context )
 
       while( vehicle_can_bytes > 0 )
       {
-          if ( obd_frame_callback != NULL )
+          if ( obd_frame_callback != NULL &&
+               ( rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ||
+                 rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ||
+                 rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ) )
           {
               obd_frame_callback( &rx_frame );
           }
@@ -687,7 +690,7 @@ oscc_result_t init_oscc_can( const char *can_channel )
 
     printf( "Assigning OSCC CAN Channel to: %s\n", can_channel );
 
-    oscc_can_socket = init_can_socket( can_channel, NULL, NULL );
+    oscc_can_socket = init_can_socket( can_channel, NULL );
 
     if( oscc_can_socket >= 0 )
     {
@@ -704,17 +707,7 @@ oscc_result_t init_vehicle_can( const char *can_channel )
 
     printf( "Assigning Vehicle CAN Channel to: %s\n", can_channel );
 
-    //TODO: Remove filters...
-    struct can_filter rfilter[3];
-
-    rfilter[0].can_id   = KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID;
-    rfilter[0].can_mask = CAN_SFF_MASK;
-    rfilter[1].can_id   = KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID;
-    rfilter[1].can_mask = CAN_SFF_MASK;
-    rfilter[2].can_id   = KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID;
-    rfilter[2].can_mask = CAN_SFF_MASK;
-
-    vehicle_can_socket = init_can_socket( can_channel, NULL, rfilter );
+    vehicle_can_socket = init_can_socket( can_channel, NULL );
 
     if(vehicle_can_socket >= 0)
     {
@@ -726,8 +719,7 @@ oscc_result_t init_vehicle_can( const char *can_channel )
 
 
 int init_can_socket( const char *can_channel,
-                     struct timeval *tv,
-                     struct can_filter *filter )
+                     struct timeval *tv )
 {
     int valid = UNINITIALIZED_SOCKET;
     int sock = UNINITIALIZED_SOCKET;
@@ -768,21 +760,6 @@ int init_can_socket( const char *can_channel,
         }
     }
 
-    //If a filter has been specified set one here
-    if( (valid >= 0) && (filter != NULL) )
-    {
-        int ret = setsockopt( sock,
-                    SOL_CAN_RAW,
-                    CAN_RAW_FILTER,
-                    &filter,
-                    sizeof( filter ) );
-
-        if ( valid < 0 )
-        {
-            perror( "Setting filter failed:" );
-        }
-    }
-
     if ( valid >= 0 )
     {
         struct sockaddr_can can_address;
@@ -818,7 +795,7 @@ can_contains can_detection( const char *can_channel )
     timeout.tv_sec = 0;
     timeout.tv_usec = CAN_MESSAGE_TIMEOUT;
 
-    int sock = init_can_socket( can_channel, &timeout, NULL );
+    int sock = init_can_socket( can_channel, &timeout );
 
     vehicle_can_desc vehicle_detection = vehicle_can_desc_default;
 
@@ -916,7 +893,7 @@ oscc_result_t construct_interfaces_list( struct device_names_s * const names_ptr
     while ( fgets( buffer, sizeof( buffer ), file_handler ) ) {
         char *socket_name;
 
-        socket_name = get_device_name( buffer );
+        get_device_name( buffer, socket_name );
 
         strncpy( names_ptr->name[size], socket_name, IFNAMSIZ );
 
@@ -925,7 +902,7 @@ oscc_result_t construct_interfaces_list( struct device_names_s * const names_ptr
 
     names_ptr->size = size;
 
-    close( file_handler );
+    fclose( file_handler );
 
     return OSCC_OK;
 }
@@ -943,7 +920,7 @@ void clear_device_names( struct device_names_s * const names_ptr )
 }
 
 
-char * get_device_name( char *string )
+void get_device_name( char *string, char *name )
 {
     size_t span = strcspn(string, ":");
 
@@ -958,16 +935,16 @@ char * get_device_name( char *string )
 
     size_t leading_spaces = strspn(temp_name, " ");
 
-    if(leading_spaces == 0)
+    if(leading_spaces != 0)
     {
-        return temp_name;
+        char new_name[IFNAMSIZ];
+
+        strncpy(name, temp_name + leading_spaces, span - leading_spaces + 1);
+
+        new_name[span - leading_spaces] = '\0';
     }
-
-    char new_name[IFNAMSIZ];
-
-    strncpy(new_name, temp_name + leading_spaces, span - leading_spaces + 1);
-
-    new_name[span - leading_spaces] = '\0';
-
-    return new_name;
+    else
+    {
+        strncpy(name, temp_name, span);
+    }
 }

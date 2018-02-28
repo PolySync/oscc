@@ -110,8 +110,7 @@ oscc_result_t init_vehicle_can( const char *can_channel );
 
 // Returns socket id after initiating a socketcan connection
 int init_can_socket( const char *can_channel,
-                     struct timeval *tv,
-                     struct can_filter *filter );
+                     struct timeval *tv );
 
 // Determines if the CAN channel contains OSCC data and/or Vehicle CAN IDs
 can_contains can_detection( const char *can_channel );
@@ -121,7 +120,7 @@ oscc_result_t construct_interfaces_list(
     struct device_names_s * const list_ptr );
 
 // Gets the device name from a line of /proc/net/dev data
-char * get_device_name( char *string );
+void get_device_name( char *string, char *name );
 
 void clear_device_names( struct device_names_s * const names_ptr );
 
