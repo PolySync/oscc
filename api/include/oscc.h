@@ -45,7 +45,7 @@ typedef enum
 } oscc_result_t;
 
 /**
- * @brief Looks for available CAN channels and automaticcaly detects which
+ * @brief Looks for available CAN channels and automatically detects which
  *        channel is OSCC control and which channel is vehicle CAN for feedback.
  *
  * @return OSCC_ERROR or OSCC_OK
