@@ -112,8 +112,8 @@ oscc_result_t construct_interfaces_list(
     device_names_s * const list_ptr );
 
 // Gets the device name from a line of /proc/net/dev data
-void get_device_name( char * string, char * const name );
+oscc_result_t get_device_name( char * string, char * const name );
 
-void clear_device_names( device_names_s * const names_ptr );
+oscc_result_t clear_device_names( device_names_s * const names_ptr );
 
 #endif /* _OSCC_INTERNAL_H */

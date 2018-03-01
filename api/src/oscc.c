@@ -586,7 +586,6 @@ oscc_result_t oscc_async_enable( int socket )
 {
     oscc_result_t result = OSCC_ERROR;
 
-
     int ret = fcntl( socket, F_SETOWN, getpid( ) );
 
     if ( ret < 0 )
@@ -619,7 +618,12 @@ oscc_result_t oscc_async_enable( int socket )
 oscc_result_t oscc_search_can( can_contains_s(*search_callback)( const char * ),
                                bool search_oscc )
 {
-    oscc_result_t result = OSCC_ERROR;
+    oscc_result_t result = OSCC_OK;
+
+    if( search_callback == NULL )
+    {
+        result = OSCC_ERROR;
+    }
 
     device_names_s dev_list =
     {
@@ -627,7 +631,11 @@ oscc_result_t oscc_search_can( can_contains_s(*search_callback)( const char * ),
         .size = 0
     };
 
-    result = construct_interfaces_list( &dev_list );
+    if( result == OSCC_OK )
+    {
+        result = construct_interfaces_list( &dev_list );
+    }
+
     //temp_contents is the temporary storage of the current CAN channel
     //all_contents is the sum of all channels searched
     can_contains_s temp_contents;
@@ -637,11 +645,11 @@ oscc_result_t oscc_search_can( can_contains_s(*search_callback)( const char * ),
         .has_vehicle = false
     };
 
-    int i = 0;
+    uint i;
 
     for( i = 0; i < dev_list.size; i++ )
     {
-        if ( strstr( dev_list.name[i], "can") != NULL )
+        if ( strstr( dev_list.name[i], "can") != NULL && result == OSCC_OK )
         {
             temp_contents = search_callback( dev_list.name[i] );
 
@@ -657,7 +665,10 @@ oscc_result_t oscc_search_can( can_contains_s(*search_callback)( const char * ),
         }
     }
 
-    clear_device_names( &dev_list );
+    if( dev_list.name != NULL )
+    {
+        result = clear_device_names( &dev_list );
+    }
 
     return result;
 }
@@ -665,6 +676,17 @@ oscc_result_t oscc_search_can( can_contains_s(*search_callback)( const char * ),
 
 can_contains_s auto_init_all_can( const char *can_channel )
 {
+    if ( can_channel == NULL )
+    {
+        can_contains_s contents =
+        {
+              .is_oscc = false,
+              .has_vehicle = false
+        };
+
+        return contents;
+    }
+
     can_contains_s contents = can_detection( can_channel );
 
     if( contents.is_oscc )
@@ -682,6 +704,17 @@ can_contains_s auto_init_all_can( const char *can_channel )
 
 can_contains_s auto_init_vehicle_can( const char *can_channel )
 {
+    if ( can_channel == NULL )
+    {
+        can_contains_s contents =
+        {
+              .is_oscc = false,
+              .has_vehicle = false
+        };
+
+        return contents;
+    }
+
     can_contains_s contents = can_detection( can_channel );
 
     if( contents.has_vehicle )
@@ -697,11 +730,14 @@ oscc_result_t init_oscc_can( const char *can_channel )
 {
     int result = OSCC_ERROR;
 
-    printf( "Assigning OSCC CAN Channel to: %s\n", can_channel );
+    if( can_channel != NULL )
+    {
+        printf( "Assigning OSCC CAN Channel to: %s\n", can_channel );
 
-    oscc_can_socket = init_can_socket( can_channel, NULL );
+        oscc_can_socket = init_can_socket( can_channel, NULL );
+    }
 
-    if( oscc_can_socket >= 0 )
+    if( can_channel != NULL && oscc_can_socket >= 0 )
     {
         result = OSCC_OK;
     }
@@ -714,11 +750,14 @@ oscc_result_t init_vehicle_can( const char *can_channel )
 {
     int result = OSCC_ERROR;
 
-    printf( "Assigning Vehicle CAN Channel to: %s\n", can_channel );
+    if( can_channel != NULL )
+    {
+          printf( "Assigning Vehicle CAN Channel to: %s\n", can_channel );
 
-    vehicle_can_socket = init_can_socket( can_channel, NULL );
+          vehicle_can_socket = init_can_socket( can_channel, NULL );
+    }
 
-    if(vehicle_can_socket >= 0)
+    if( can_channel != NULL && vehicle_can_socket >= 0 )
     {
         result = OSCC_OK;
     }
@@ -730,6 +769,11 @@ oscc_result_t init_vehicle_can( const char *can_channel )
 int init_can_socket( const char *can_channel,
                      struct timeval *tv )
 {
+    if( can_channel == NULL )
+    {
+        return UNINITIALIZED_SOCKET;
+    }
+
     int valid = UNINITIALIZED_SOCKET;
     int sock = UNINITIALIZED_SOCKET;
     struct ifreq ifr;
@@ -800,6 +844,17 @@ int init_can_socket( const char *can_channel,
 
 can_contains_s can_detection( const char *can_channel )
 {
+    if( can_channel == NULL )
+    {
+        can_contains_s detection =
+        {
+            .is_oscc = false,
+            .has_vehicle = false
+        };
+
+        return detection;
+    }
+
     struct timeval timeout;
     timeout.tv_sec = 0;
     timeout.tv_usec = CAN_MESSAGE_TIMEOUT;
@@ -820,7 +875,7 @@ can_contains_s can_detection( const char *can_channel )
         .has_brake_report = false
     };
 
-    int i = 0;
+    uint i = 0;
 
     for( i = 0; i < MAX_CAN_IDS; i++ )
     {
@@ -884,31 +939,37 @@ oscc_result_t construct_interfaces_list( device_names_s * const names_ptr )
     if (!file_handler) {
         perror( "Cannot read: /proc/net/dev" );
 
-        return OSCC_ERROR;
+        result = OSCC_ERROR;
+    }
+
+    if( result == OSCC_OK && names_ptr == NULL )
+    {
+        result = OSCC_ERROR;
     }
 
     int lines = 0;
 
-    while ( fgets( buffer, sizeof( buffer ), file_handler ) ) {
-        ++lines;
-    }
-
-    names_ptr->name = (char**) malloc(lines * sizeof(char*));
-
-    int i;
-
-    for ( i = 0; i < lines; i++ )
+    if( result == OSCC_OK )
     {
-        names_ptr->name[i] = (char*) malloc(IFNAMSIZ * sizeof(char));
+        while ( fgets( buffer, sizeof( buffer ), file_handler ) ) {
+            ++lines;
+        }
+
+        names_ptr->name = (char**) malloc(lines * sizeof(char*));
+
+        uint i;
+
+        for ( i = 0; i < lines; i++ )
+        {
+            names_ptr->name[i] = (char*) malloc(IFNAMSIZ * sizeof(char));
+        }
+
+        rewind( file_handler );
+
+        //Consume the first two lines since they are headers
+        fgets( buffer, sizeof( buffer ), file_handler );
+        fgets( buffer, sizeof( buffer ), file_handler );
     }
-
-    rewind( file_handler );
-
-    //Consume the first two lines since they are headers
-    fgets( buffer, sizeof( buffer ), file_handler );
-    fgets( buffer, sizeof( buffer ), file_handler );
-
-    int size = 0;
 
     char* socket_name = calloc( IFNAMSIZ, sizeof(char) );
 
@@ -916,15 +977,21 @@ oscc_result_t construct_interfaces_list( device_names_s * const names_ptr )
     {
         result = OSCC_ERROR;
     }
-    else
+
+    if( result == OSCC_OK )
     {
+        uint size = 0;
+
         while ( size < lines && fgets( buffer, sizeof( buffer ), file_handler ) ) {
 
-            get_device_name( buffer, socket_name );
+            result = get_device_name( buffer, socket_name );
 
-            strncpy( names_ptr->name[size], socket_name, IFNAMSIZ );
+            if( result == OSCC_OK )
+            {
+                strncpy( names_ptr->name[size], socket_name, IFNAMSIZ );
 
-            size++;
+                size++;
+            }
         }
 
         free( socket_name );
@@ -937,44 +1004,67 @@ oscc_result_t construct_interfaces_list( device_names_s * const names_ptr )
     return result;
 }
 
-void clear_device_names( device_names_s * const names_ptr )
+oscc_result_t clear_device_names( device_names_s * const names_ptr )
 {
-    int i;
+    oscc_result_t result = OSCC_OK;
 
-    for ( i = 0; i < names_ptr->size; i++ )
+    if( names_ptr == NULL )
     {
-        free( names_ptr->name[i] );
-    }
-
-    free( names_ptr->name );
-}
-
-
-void get_device_name( char * string, char * const name )
-{
-    size_t span = strcspn(string, ":");
-
-    char temp_name[IFNAMSIZ];
-
-    strncpy( temp_name, string, span );
-
-    if( span <= IFNAMSIZ )
-    {
-        temp_name[span] = '\0';
-    }
-
-    size_t leading_spaces = strspn( temp_name, " " );
-
-    if( leading_spaces != 0 )
-    {
-        char new_name[IFNAMSIZ];
-
-        strncpy( name, temp_name + leading_spaces, span - leading_spaces + 1 );
-
-        new_name[span - leading_spaces] = '\0';
+        result = OSCC_ERROR;
     }
     else
     {
-        strncpy( name, temp_name, span );
+        uint i;
+
+        for ( i = 0; i < names_ptr->size; i++ )
+        {
+            free( names_ptr->name[i] );
+        }
+
+        free( names_ptr->name );
     }
+
+    return result;
+}
+
+
+oscc_result_t get_device_name( char * string, char * const name )
+{
+    oscc_result_t result = OSCC_OK;
+
+    if( name == NULL || string == NULL )
+    {
+        result = OSCC_ERROR;
+    }
+
+    if( result == OSCC_OK )
+    {
+        size_t span = strcspn(string, ":");
+
+        char temp_name[IFNAMSIZ];
+
+        strncpy( temp_name, string, span );
+
+        if( span <= IFNAMSIZ )
+        {
+            temp_name[span] = '\0';
+        }
+
+        size_t leading_spaces = strspn( temp_name, " " );
+
+        if( leading_spaces != 0 )
+        {
+            char new_name[IFNAMSIZ];
+
+            strncpy( name, temp_name + leading_spaces, span - leading_spaces + 1 );
+
+            new_name[span - leading_spaces] = '\0';
+        }
+        else
+        {
+            strncpy( name, temp_name, span );
+        }
+    }
+
+    return result;
 }
