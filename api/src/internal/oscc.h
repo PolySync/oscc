@@ -14,35 +14,27 @@
 
 #define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
-struct can_contains_s {
+typedef struct {
     bool is_oscc;
     bool has_vehicle;
-} can_contains_default = { false, false };
+} can_contains_s;
 
-typedef struct can_contains_s can_contains;
-
-struct vehicle_can_desc_s {
+typedef struct {
     bool has_steering_angle;
     bool has_brake_pressure;
     bool has_wheel_speed;
-} vehicle_can_desc_default = { false, false, false };
+} vehicle_can_desc_s;
 
-typedef struct vehicle_can_desc_s vehicle_can_desc;
-
-struct oscc_can_desc_s {
-    bool has_torqe_report;
+typedef struct {
+    bool has_accel_report;
     bool has_steer_report;
     bool has_brake_report;
-} oscc_can_desc_default = { false, false, false };
+} oscc_can_desc_s;
 
-typedef struct oscc_can_desc_s oscc_can_desc;
-
-struct device_names_s{
+typedef struct {
     char **name;
     size_t size;
-} device_names_default = { NULL, 0 };
-
-typedef struct device_names_s device_names;
+} device_names_s;
 
 void (*brake_report_callback)(
     oscc_brake_report_s *report );
@@ -93,35 +85,35 @@ oscc_result_t oscc_async_enable(
 
 // Runs a calback function through all available socketcan signals
 oscc_result_t oscc_search_can(
-    can_contains(*search_callback)( const char * ),
+    can_contains_s(*search_callback)( const char * ),
     bool search_oscc );
 
 // Auto detects OSCC CAN and Vehicle CAN depending on OSCC CAN returned IDs
-can_contains auto_init_all_can( const char *can_channel );
+can_contains_s auto_init_all_can( const char * can_channel );
 
 // Auto detects Vehicle CAN based on vehicle header CAN IDs
-can_contains auto_init_vehicle_can( const char *can_channel );
+can_contains_s auto_init_vehicle_can( const char * can_channel );
 
 // Initializes the OSCC CAN
-oscc_result_t init_oscc_can( const char *can_channel );
+oscc_result_t init_oscc_can( const char * can_channel );
 
 // Initializes the vehicle can with vehicle header CAN IDs
-oscc_result_t init_vehicle_can( const char *can_channel );
+oscc_result_t init_vehicle_can( const char * can_channel );
 
 // Returns socket id after initiating a socketcan connection
-int init_can_socket( const char *can_channel,
-                     struct timeval *tv );
+int init_can_socket( const char * can_channel,
+                     struct timeval * tv );
 
 // Determines if the CAN channel contains OSCC data and/or Vehicle CAN IDs
-can_contains can_detection( const char *can_channel );
+can_contains_s can_detection( const char * can_channel );
 
 // Constructs a list of all can and vcan devices
 oscc_result_t construct_interfaces_list(
-    struct device_names_s * const list_ptr );
+    device_names_s * const list_ptr );
 
 // Gets the device name from a line of /proc/net/dev data
-void get_device_name( char *string, char *name );
+void get_device_name( char * string, char * const name );
 
-void clear_device_names( struct device_names_s * const names_ptr );
+void clear_device_names( device_names_s * const names_ptr );
 
 #endif /* _OSCC_INTERNAL_H */
