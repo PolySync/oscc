@@ -885,31 +885,30 @@ can_contains_s can_detection( const char *can_channel )
 
         recv_bytes = read( sock, &rx_frame, sizeof( rx_frame ) );
 
-        switch (recv_bytes) {
-          case CAN_MTU:
-          case CANFD_MTU:
-              if ( (rx_frame.can_id < 0x100) &&
-                   (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
-                   (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) )
-              {
-                oscc_detection.has_brake_report |=
-                    ( (rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID) );
+        if( recv_bytes == CAN_MTU || recv_bytes == CANFD_MTU )
+        {
+            if ( (rx_frame.can_id < 0x100) &&
+                 (rx_frame.data[0] == OSCC_MAGIC_BYTE_0) &&
+                 (rx_frame.data[1] == OSCC_MAGIC_BYTE_1) )
+            {
+              oscc_detection.has_brake_report |=
+                  ( (rx_frame.can_id == OSCC_BRAKE_REPORT_CAN_ID) );
 
-                oscc_detection.has_steer_report |=
-                    ( (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID) );
+              oscc_detection.has_steer_report |=
+                  ( (rx_frame.can_id == OSCC_STEERING_REPORT_CAN_ID) );
 
-                oscc_detection.has_accel_report |=
-                    ( (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID) );
-              }
+              oscc_detection.has_accel_report |=
+                  ( (rx_frame.can_id == OSCC_THROTTLE_REPORT_CAN_ID) );
+            }
 
-              vehicle_detection.has_brake_pressure |=
-                  ( rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID );
+            vehicle_detection.has_brake_pressure |=
+                ( rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID );
 
-              vehicle_detection.has_steering_angle |=
-                  ( rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID );
+            vehicle_detection.has_steering_angle |=
+                ( rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID );
 
-              vehicle_detection.has_wheel_speed |=
-                  ( rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID );
+            vehicle_detection.has_wheel_speed |=
+                ( rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID );
         }
     }
 
