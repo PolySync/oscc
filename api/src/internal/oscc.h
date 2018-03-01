@@ -10,7 +10,7 @@
 #include <net/if.h>
 #include <stdbool.h>
 
-#define UNINITIALIZED_SOCKET -1
+#define UNINITIALIZED_SOCKET (-1)
 
 #define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 

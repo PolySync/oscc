@@ -587,7 +587,7 @@ oscc_result_t oscc_async_enable( int socket )
     oscc_result_t result = OSCC_ERROR;
 
 
-    int ret = fcntl( socket, F_SETOWN, (pid_t) syscall (SYS_gettid) );
+    int ret = fcntl( socket, F_SETOWN, getpid( ) );
 
     if ( ret < 0 )
     {
