@@ -19,8 +19,8 @@
 #include "internal/oscc.h"
 
 
-static int oscc_can_socket = UNINITIALIZED_SOCKET;
-static int vehicle_can_socket = UNINITIALIZED_SOCKET;
+static int OSCC_CAN_SOCKET = UNINITIALIZED_SOCKET;
+static int VEHICLE_CAN_SOCKET = UNINITIALIZED_SOCKET;
 
 
 oscc_result_t oscc_init()
@@ -34,9 +34,9 @@ oscc_result_t oscc_init()
         result = register_can_signal();
     }
 
-    if ( result == OSCC_OK && oscc_can_socket > 0 )
+    if ( result == OSCC_OK && OSCC_CAN_SOCKET > 0 )
     {
-        result = oscc_async_enable( oscc_can_socket );
+        result = oscc_async_enable( OSCC_CAN_SOCKET );
     }
     else
     {
@@ -44,9 +44,9 @@ oscc_result_t oscc_init()
         result = OSCC_ERROR;
     }
 
-    if ( result == OSCC_OK && vehicle_can_socket > 0 )
+    if ( result == OSCC_OK && VEHICLE_CAN_SOCKET > 0 )
     {
-        oscc_async_enable( vehicle_can_socket );
+        oscc_async_enable( VEHICLE_CAN_SOCKET );
     }
 
     return result;
@@ -74,7 +74,7 @@ oscc_result_t oscc_open( unsigned int channel )
 
         vehicle_ret = oscc_search_can( &auto_init_vehicle_can, false );
 
-        if( (vehicle_can_socket < 0) || (vehicle_ret != OSCC_OK) )
+        if( (VEHICLE_CAN_SOCKET < 0) || (vehicle_ret != OSCC_OK) )
         {
             printf( "Warning: Vehicle CAN was not found.\n" );
         }
@@ -90,18 +90,18 @@ oscc_result_t oscc_open( unsigned int channel )
         result = register_can_signal();
     }
 
-    if ( result == OSCC_OK && oscc_can_socket >= 0 )
+    if ( result == OSCC_OK && OSCC_CAN_SOCKET >= 0 )
     {
-        result = oscc_async_enable( oscc_can_socket );
+        result = oscc_async_enable( OSCC_CAN_SOCKET );
     }
     else
     {
         printf( "Error: Could not find OSCC CAN signal.\n" );
     }
 
-    if ( result == OSCC_OK && vehicle_can_socket >= 0 )
+    if ( result == OSCC_OK && VEHICLE_CAN_SOCKET >= 0 )
     {
-        oscc_async_enable( vehicle_can_socket );
+        oscc_async_enable( VEHICLE_CAN_SOCKET );
     }
 
     return result;
@@ -112,9 +112,9 @@ oscc_result_t oscc_close( unsigned int channel )
 {
     oscc_result_t result = OSCC_ERROR;
 
-    if( oscc_can_socket < 0 )
+    if( OSCC_CAN_SOCKET < 0 )
     {
-        int result = close( oscc_can_socket );
+        int result = close( OSCC_CAN_SOCKET );
 
         if ( result > 0 )
         {
@@ -122,9 +122,9 @@ oscc_result_t oscc_close( unsigned int channel )
         }
     }
 
-    if( vehicle_can_socket < 0 )
+    if( VEHICLE_CAN_SOCKET < 0 )
     {
-        int result = close( vehicle_can_socket );
+        int result = close( VEHICLE_CAN_SOCKET );
 
         if ( result > 0 )
         {
@@ -448,9 +448,9 @@ void oscc_update_status( int sig, siginfo_t *siginfo, void *context )
     struct can_frame rx_frame;
     memset( &rx_frame, 0, sizeof(rx_frame) );
 
-    if ( oscc_can_socket >= 0 )
+    if ( OSCC_CAN_SOCKET >= 0 )
     {
-        int oscc_can_bytes = read( oscc_can_socket, &rx_frame, CAN_MTU );
+        int oscc_can_bytes = read( OSCC_CAN_SOCKET, &rx_frame, CAN_MTU );
 
         while ( oscc_can_bytes > 0 )
         {
@@ -500,19 +500,19 @@ void oscc_update_status( int sig, siginfo_t *siginfo, void *context )
             }
             else
             {
-                if ( obd_frame_callback != NULL && vehicle_can_socket < 0 )
+                if ( obd_frame_callback != NULL && VEHICLE_CAN_SOCKET < 0 )
                 {
                     obd_frame_callback( &rx_frame );
                 }
             }
 
-            oscc_can_bytes = read( oscc_can_socket, &rx_frame, CAN_MTU );
+            oscc_can_bytes = read( OSCC_CAN_SOCKET, &rx_frame, CAN_MTU );
         }
     }
 
-    if ( vehicle_can_socket >= 0 )
+    if ( VEHICLE_CAN_SOCKET >= 0 )
     {
-        int vehicle_can_bytes = read( vehicle_can_socket, &rx_frame, CAN_MTU );
+        int vehicle_can_bytes = read( VEHICLE_CAN_SOCKET, &rx_frame, CAN_MTU );
 
         while( vehicle_can_bytes > 0 )
         {
@@ -524,7 +524,7 @@ void oscc_update_status( int sig, siginfo_t *siginfo, void *context )
                 obd_frame_callback( &rx_frame );
             }
 
-            vehicle_can_bytes = read( vehicle_can_socket, &rx_frame, CAN_MTU );
+            vehicle_can_bytes = read( VEHICLE_CAN_SOCKET, &rx_frame, CAN_MTU );
         }
     }
 }
@@ -534,7 +534,7 @@ oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
     oscc_result_t result = OSCC_ERROR;
 
 
-    if ( oscc_can_socket >= 0 )
+    if ( OSCC_CAN_SOCKET >= 0 )
     {
         struct can_frame tx_frame;
 
@@ -543,7 +543,7 @@ oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
         tx_frame.can_dlc = dlc;
         memcpy( tx_frame.data, msg, dlc );
 
-        int ret = write( oscc_can_socket, &tx_frame, sizeof(tx_frame) );
+        int ret = write( OSCC_CAN_SOCKET, &tx_frame, sizeof(tx_frame) );
 
         if ( ret > 0 )
         {
@@ -734,10 +734,10 @@ oscc_result_t init_oscc_can( const char *can_channel )
     {
         printf( "Assigning OSCC CAN Channel to: %s\n", can_channel );
 
-        oscc_can_socket = init_can_socket( can_channel, NULL );
+        OSCC_CAN_SOCKET = init_can_socket( can_channel, NULL );
     }
 
-    if( can_channel != NULL && oscc_can_socket >= 0 )
+    if( can_channel != NULL && OSCC_CAN_SOCKET >= 0 )
     {
         result = OSCC_OK;
     }
@@ -754,10 +754,10 @@ oscc_result_t init_vehicle_can( const char *can_channel )
     {
           printf( "Assigning Vehicle CAN Channel to: %s\n", can_channel );
 
-          vehicle_can_socket = init_can_socket( can_channel, NULL );
+          VEHICLE_CAN_SOCKET = init_can_socket( can_channel, NULL );
     }
 
-    if( can_channel != NULL && vehicle_can_socket >= 0 )
+    if( can_channel != NULL && VEHICLE_CAN_SOCKET >= 0 )
     {
         result = OSCC_OK;
     }
