@@ -512,20 +512,20 @@ void oscc_update_status( int sig, siginfo_t *siginfo, void *context )
 
     if ( vehicle_can_socket >= 0 )
     {
-      int vehicle_can_bytes = read( vehicle_can_socket, &rx_frame, CAN_MTU );
+        int vehicle_can_bytes = read( vehicle_can_socket, &rx_frame, CAN_MTU );
 
-      while( vehicle_can_bytes > 0 )
-      {
-          if ( obd_frame_callback != NULL &&
-               ( rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ||
-                 rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ||
-                 rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ) )
-          {
-              obd_frame_callback( &rx_frame );
-          }
+        while( vehicle_can_bytes > 0 )
+        {
+            if ( obd_frame_callback != NULL &&
+                 ( rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ||
+                   rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ||
+                   rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ) )
+            {
+                obd_frame_callback( &rx_frame );
+            }
 
-          vehicle_can_bytes = read( vehicle_can_socket, &rx_frame, CAN_MTU );
-      }
+            vehicle_can_bytes = read( vehicle_can_socket, &rx_frame, CAN_MTU );
+        }
     }
 }
 
@@ -562,23 +562,23 @@ oscc_result_t oscc_can_write( long id, void *msg, unsigned int dlc )
 
 oscc_result_t register_can_signal( )
 {
-  oscc_result_t result = OSCC_ERROR;
+    oscc_result_t result = OSCC_ERROR;
 
-  struct sigaction sig;
-  memset( &sig, 0, sizeof(sig) );
+    struct sigaction sig;
+    memset( &sig, 0, sizeof(sig) );
 
-  sigemptyset( &sig.sa_mask );
+    sigemptyset( &sig.sa_mask );
 
-  sig.sa_sigaction = oscc_update_status;
+    sig.sa_sigaction = oscc_update_status;
 
-  sig.sa_flags = SA_SIGINFO | SA_RESTART;
+    sig.sa_flags = SA_SIGINFO | SA_RESTART;
 
-  if( sigaction( SIGIO, &sig, NULL ) == 0 )
-  {
-      result = OSCC_OK;
-  }
+    if( sigaction( SIGIO, &sig, NULL ) == 0 )
+    {
+        result = OSCC_OK;
+    }
 
-  return result;
+    return result;
 }
 
 
@@ -790,8 +790,8 @@ int init_can_socket( const char *can_channel,
     // Clean up resources and close the connection if it's invalid.
     if( valid < 0 )
     {
-      close( sock );
-      sock = UNINITIALIZED_SOCKET;
+        close( sock );
+        sock = UNINITIALIZED_SOCKET;
     }
 
     return sock;
@@ -862,12 +862,12 @@ can_contains_s can_detection( const char *can_channel )
 
     can_contains_s detection =
     {
-      .is_oscc = oscc_detection.has_brake_report &&
-                 oscc_detection.has_steer_report &&
-                 oscc_detection.has_accel_report,
-      .has_vehicle = vehicle_detection.has_brake_pressure &&
-                     vehicle_detection.has_steering_angle &&
-                     vehicle_detection.has_wheel_speed
+        .is_oscc = oscc_detection.has_brake_report &&
+                   oscc_detection.has_steer_report &&
+                   oscc_detection.has_accel_report,
+        .has_vehicle = vehicle_detection.has_brake_pressure &&
+                       vehicle_detection.has_steering_angle &&
+                       vehicle_detection.has_wheel_speed
     };
 
     return detection;
