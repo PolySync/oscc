@@ -1017,17 +1017,19 @@ oscc_result_t clear_device_names( device_names_s * const names_ptr )
             if( names_ptr->name[i] != NULL )
             {
                 free( names_ptr->name[i] );
+
+                names_ptr->name[i] = NULL;
             }
 
-            names_ptr->name[i] = NULL;
         }
 
         if( names_ptr->name != NULL )
         {
             free( names_ptr->name );
+
+            names_ptr->name = NULL;
         }
 
-        names_ptr->name = NULL;
     }
 
     return result;
