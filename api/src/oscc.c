@@ -68,7 +68,7 @@ oscc_result_t oscc_open( unsigned int channel )
 
     channel_contents = can_detection( can_string_buffer );
 
-    if( result == OSCC_OK && !channel_contents.has_vehicle )
+    if( !channel_contents.has_vehicle )
     {
         int vehicle_ret = OSCC_ERROR;
 
@@ -80,10 +80,7 @@ oscc_result_t oscc_open( unsigned int channel )
         }
     }
 
-    if( result == OSCC_OK)
-    {
-        result = init_oscc_can( can_string_buffer );
-    }
+    result = init_oscc_can( can_string_buffer );
 
     if( result == OSCC_OK)
     {
