@@ -1014,10 +1014,20 @@ oscc_result_t clear_device_names( device_names_s * const names_ptr )
 
         for ( i = 0; i < names_ptr->size; i++ )
         {
-            free( names_ptr->name[i] );
+            if( names_ptr->name[i] != NULL )
+            {
+                free( names_ptr->name[i] );
+            }
+
+            names_ptr->name[i] = NULL;
         }
 
-        free( names_ptr->name );
+        if( names_ptr->name != NULL )
+        {
+            free( names_ptr->name );
+        }
+
+        names_ptr->name = NULL;
     }
 
     return result;
