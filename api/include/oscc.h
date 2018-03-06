@@ -18,6 +18,25 @@
 #include "vehicles.h"
 
 
+/*
+ * @brief MAX_CAN_IDS is the maximum number unique CAN IDs on the CAN bus used
+ * for auto detection of CAN channels. Increasing this number increases the wait
+ * time for checking if a channel contains expected CAN IDs, reducing this
+ * number below number of CAN IDs broadcast could yield a false negative in auto
+ * detection.
+ *
+ */
+#define MAX_CAN_IDS ( 70 )
+
+
+/*
+ * @brief CAN_MESSAGE_TIMEOUT is the time to wait for a CAN message in
+ * milliseconds used for auto detection of can channels.
+ *
+ */
+#define CAN_MESSAGE_TIMEOUT ( 100 )
+
+
 typedef enum
 {
     OSCC_OK,
@@ -25,10 +44,19 @@ typedef enum
     OSCC_WARNING
 } oscc_result_t;
 
+/**
+ * @brief Looks for available CAN channels and automatically detects which
+ *        channel is OSCC control and which channel is vehicle CAN for feedback.
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_init();
 
 /**
- * @brief Use provided CAN channel to open communications
- *        to CAN bus connected to the OSCC modules.
+ * @brief Use provided CAN channel to open communications to CAN bus connected
+ *        to the OSCC modules. If CAN gateway does not forward Vehicle CAN
+ *        automatically detect if a CAN channel has Vehicle CAN available.
  *
  * @param [in] channel - CAN channel connected to OSCC modules.
  *
