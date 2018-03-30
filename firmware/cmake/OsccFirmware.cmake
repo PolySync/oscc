@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 
-include(OsccConfig.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/OsccConfig.cmake)
 set(OSCC_FIRMWARE_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 set(DEBUG OFF CACHE BOOL "Enable debug mode")
 set(KIA_SOUL OFF CACHE BOOL "Build firmware for the petrol Kia Soul")
 set(KIA_SOUL_EV OFF CACHE BOOL "Build firmware for the Kia Soul EV")
 set(KIA_NIRO OFF CACHE BOOL "Build firmware for the Kia Niro")
-set(BRAKE_STARTUP_TEST ON CACHE BOOL "Enable brake startup sensor tests)
-set(STEERING_OVERRIDE ON CACHE BOOL "Enable steering override)
+set(BRAKE_STARTUP_TEST ON CACHE BOOL "Enable brake startup sensor tests")
+set(STEERING_OVERRIDE ON CACHE BOOL "Enable steering override")
 
 set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
 set(SERIAL_BAUD_BRAKE "115200" CACHE STRING "Serial baud rate of the brake module")
