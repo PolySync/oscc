@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+set(ARDUINO_DEFAULT_BOARD uno)
+
 if(TESTS)
     project(tests)
 

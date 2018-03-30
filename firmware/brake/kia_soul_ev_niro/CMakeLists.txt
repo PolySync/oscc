@@ -1,5 +1,3 @@
-set(ARDUINO_DEFAULT_BOARD uno)
-
 generate_arduino_firmware(
     brake
     SRCS
