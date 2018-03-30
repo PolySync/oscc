@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
+include(OsccConfig.cmake)
 set(OSCC_FIRMWARE_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 #Required by Arduino?
@@ -29,16 +30,6 @@ set(SERIAL_BAUD_THROTTLE "115200" CACHE STRING "Serial baud rate of the throttle
 #target_compile_options (or something) for setting locally rather than globally
 if(DEBUG)
     add_definitions(-DDEBUG)
-endif()
-
-if(KIA_SOUL)
-    add_definitions(-DKIA_SOUL)
-elseif(KIA_SOUL_EV)
-    add_definitions(-DKIA_SOUL_EV)
-elseif(KIA_NIRO)
-    add_definitions(-DKIA_NIRO)
-else()
-    message(FATAL_ERROR "No platform selected - no firmware will be built")
 endif()
 
 if(KIA_SOUL AND BRAKE_STARTUP_TEST)
