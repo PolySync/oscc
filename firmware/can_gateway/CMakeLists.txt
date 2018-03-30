@@ -17,13 +17,13 @@ add_custom_target(
 generate_arduino_firmware(
     can-gateway
     SRCS
-    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init/arduino_init.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/mcp_can/mcp_can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/serial/oscc_serial.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/timer/oscc_timer.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/ssd1325/ssd1325.cpp
-    ${CMAKE_SOURCE_DIR}/common/libs/ssd1325/gfx/gfx.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/arduino_init/arduino_init.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/mcp_can/mcp_can.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/serial/oscc_serial.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/can/oscc_can.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/timer/oscc_timer.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/ssd1325/ssd1325.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/ssd1325/gfx/gfx.cpp
     src/main.cpp
     src/globals.cpp
     src/init.cpp
@@ -35,12 +35,12 @@ target_include_directories(
     can-gateway
     PRIVATE
     include
-    ${CMAKE_SOURCE_DIR}/common/include
-    ${CMAKE_SOURCE_DIR}/common/libs/arduino_init
-    ${CMAKE_SOURCE_DIR}/common/libs/mcp_can
-    ${CMAKE_SOURCE_DIR}/common/libs/serial
-    ${CMAKE_SOURCE_DIR}/common/libs/can
-    ${CMAKE_SOURCE_DIR}/common/libs/timer
-    ${CMAKE_SOURCE_DIR}/common/libs/ssd1325
-    ${CMAKE_SOURCE_DIR}/common/libs/ssd1325/gfx
-    ${CMAKE_SOURCE_DIR}/../api/include)
+    ${OSCC_FIRMWARE_ROOT}/common/include
+    ${OSCC_FIRMWARE_ROOT}/common/libs/arduino_init
+    ${OSCC_FIRMWARE_ROOT}/common/libs/mcp_can
+    ${OSCC_FIRMWARE_ROOT}/common/libs/serial
+    ${OSCC_FIRMWARE_ROOT}/common/libs/can
+    ${OSCC_FIRMWARE_ROOT}/common/libs/timer
+    ${OSCC_FIRMWARE_ROOT}/common/libs/ssd1325
+    ${OSCC_FIRMWARE_ROOT}/common/libs/ssd1325/gfx
+    ${OSCC_FIRMWARE_ROOT}/../api/include)
