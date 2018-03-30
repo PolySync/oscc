@@ -3,17 +3,12 @@ cmake_minimum_required(VERSION 2.8)
 include(OsccConfig.cmake)
 set(OSCC_FIRMWARE_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
-#Required by Arduino?
-#set(CMAKE_CFLAGS "-std=gnu11 -Os")
-#set(CMAKE_CXX_FLAGS "-std=gnu++11 -Os")
-
-#can use set instead of option like below?
-option(DEBUG "Enable debug mode" OFF)
-option(KIA_SOUL "Build firmware for the petrol Kia Soul" OFF)
-option(KIA_SOUL_EV "Build firmware for the Kia Soul EV" OFF)
-option(KIA_NIRO "Build firmware for the Kia Niro" OFF)
-option(BRAKE_STARTUP_TEST "Enable brake startup sensor tests" ON)
-option(STEERING_OVERRIDE "Enable steering override" ON)
+set(DEBUG OFF CACHE BOOL "Enable debug mode")
+set(KIA_SOUL OFF CACHE BOOL "Build firmware for the petrol Kia Soul")
+set(KIA_SOUL_EV OFF CACHE BOOL "Build firmware for the Kia Soul EV")
+set(KIA_NIRO OFF CACHE BOOL "Build firmware for the Kia Niro")
+set(BRAKE_STARTUP_TEST ON CACHE BOOL "Enable brake startup sensor tests)
+set(STEERING_OVERRIDE ON CACHE BOOL "Enable steering override)
 
 set(SERIAL_PORT_BRAKE "/dev/ttyACM0" CACHE STRING "Serial port of the brake module")
 set(SERIAL_BAUD_BRAKE "115200" CACHE STRING "Serial baud rate of the brake module")
@@ -27,7 +22,6 @@ set(SERIAL_BAUD_STEERING "115200" CACHE STRING "Serial baud rate of the steering
 set(SERIAL_PORT_THROTTLE "/dev/ttyACM0" CACHE STRING "Serial port of the throttle module")
 set(SERIAL_BAUD_THROTTLE "115200" CACHE STRING "Serial baud rate of the throttle module")
 
-#target_compile_options (or something) for setting locally rather than globally
 if(DEBUG)
     add_definitions(-DDEBUG)
 endif()
