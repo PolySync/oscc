@@ -29,5 +29,8 @@ for(int j=0; j<platforms.size(); j++) {
         }
       }
     }
+    finally {
+      deleteDir()
+    }
   }
 }
