@@ -25,15 +25,15 @@ node('worker'){
             cleanCheckout()
           }
           stage("Build ${platform}") {
-            sh("cd firmware && mkdir build_${platform} && cd build_${platform} && cmake -D${platform.toUpperCase()}=ON -DCMAKE_BUILD_TYPE=Release .. && make")
+            sh("cd firmware && mkdir build_${platform} && cd build_${platform} && cmake -DVEHICLE=${platform} -DCMAKE_BUILD_TYPE=Release .. && make")
             echo '${platform}: Build Complete!'
           }
           stage("Test ${platform} unit tests") {
-            sh("cd firmware && mkdir build_${platform}_unit_tests && cd build_${platform}_unit_tests && cmake -D${platform.toUpperCase()} -DCMAKE_BUILD_TYPE=Release .. && make run-unit-tests")
+            sh("cd firmware && mkdir build_${platform}_unit_tests && cd build_${platform}_unit_tests && cmake -DVEHICLE=${platform} -DCMAKE_BUILD_TYPE=Release .. && make run-unit-tests")
             echo '${platform}: Unit Tests Complete!'
           }
           stage("Test ${platform} property-based tests") {
-              sh("cd firmware && mkdir build_${platform}_property_tests && cd build_${platform}_property_tests && cmake -D${platform.toUpperCase()}=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release .. && make run-property-tests")
+              sh("cd firmware && mkdir build_${platform}_property_tests && cd build_${platform}_property_tests && cmake -DVEHICLE=${platform} -DTESTS=ON -DCMAKE_BUILD_TYPE=Release .. && make run-property-tests")
               echo '${platform}: Property-Based Tests Complete!'
           }
         }

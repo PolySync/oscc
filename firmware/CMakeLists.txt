@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 set(ARDUINO_DEFAULT_BOARD uno)
 
 if(TESTS)
+    include(cmake/OsccConfig.cmake)
+
     project(tests)
 
     if(TESTS)
@@ -13,17 +15,10 @@ if(TESTS)
         add_definitions(-DDEBUG)
     endif()
 
-    if(KIA_SOUL)
-        add_definitions(-DKIA_SOUL)
+    if(VEHICLE STREQUAL "kia_soul")
         add_subdirectory(brake/kia_soul_petrol/tests)
-    elseif(KIA_SOUL_EV)
-        add_definitions(-DKIA_SOUL_EV)
-        add_subdirectory(brake/kia_soul_ev_niro/tests)
-    elseif(KIA_NIRO)
-        add_definitions(-DKIA_NIRO)
-        add_subdirectory(brake/kia_soul_ev_niro/tests)
     else()
-        message(FATAL_ERROR "No platform selected - no firmware will be tested")
+        add_subdirectory(brake/kia_soul_ev_niro/tests)
     endif()
 
     add_subdirectory(can_gateway/tests)
