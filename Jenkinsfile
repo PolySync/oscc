@@ -12,7 +12,7 @@ def cleanCheckout() {
 node('worker'){
   def builds = [:]
   cleanCheckout()
-  def output = sh returnStdout: true, script: "cmake -LA .. |& grep 'VEHICLE_VALUES' | cut -d'=' -f 2"
+  def output = sh returnStdout: true, script: "cmake -LA ./firmware | grep 'VEHICLE_VALUES' | cut -d'=' -f 2"
   def platforms = output.tokenize(';')
 
   for(int j=0; j<platforms.size(); j++) {
