@@ -31,9 +31,9 @@ node('worker'){
               echo '${platform}: Property-Based Tests Complete!'
           }
         }
-      }
-      finally {
-        deleteDir()
+        finally {
+          deleteDir()
+        }
       }
     }
   }
