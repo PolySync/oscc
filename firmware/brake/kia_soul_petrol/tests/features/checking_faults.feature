@@ -10,7 +10,7 @@ Feature: Timeouts and overrides
   Scenario: A sensor becomes temporarily disconnected
     Given brake control is enabled
 
-    When a sensor becomes temporarily disconnected
+    When a sensor is grounded for 50 ms
 
     Then control should remain enabled
 
@@ -18,7 +18,7 @@ Feature: Timeouts and overrides
   Scenario: A sensor becomes permanently disconnected
     Given brake control is enabled
 
-    When a sensor becomes permanently disconnected
+    When a sensor is grounded for 200 ms
 
     Then control should be disabled
     And a fault report should be published
