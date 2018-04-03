@@ -13,7 +13,7 @@ node('worker'){
   def builds = [:]
   cleanCheckout()
   def output = sh returnStdout: true, script: "cmake -LA ./firmware | grep 'VEHICLE_VALUES' | cut -d'=' -f 2"
-  def platforms = output.tokenize(';')
+  def platforms = output.trim().tokenize(';')
 
   for(int j=0; j<platforms.size(); j++) {
     def platform_idx = j
