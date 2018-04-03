@@ -29,11 +29,11 @@ node('worker'){
             echo '${platform}: Build Complete!'
           }
           stage("Test ${platform} unit tests") {
-            sh "cd firmware && mkdir build_${platform}_tests && cd build_${platform}_tests && cmake -DVEHICLE=${platform} -DTESTS=ON -DCMAKE_BUILD_TYPE=Release .. && make run-unit-tests"
+            sh "cd firmware && mkdir build_${platform}_unit_tests && cd build_${platform}_unit_tests && cmake -DPORT_SUFFIX=${EXECUTOR_NUMBER}${platform_idx} -DVEHICLE=${platform} -DTESTS=ON -DCMAKE_BUILD_TYPE=Release .. && make run-unit-tests"
             echo '${platform}: Unit Tests Complete!'
           }
           stage("Test ${platform} property-based tests") {
-              sh "cd firmware/build_${platform}_tests && make run-property-tests"
+              sh "cd firmware && mkdir build_${platform}_property_tests && cd build_${platform}_property_tests && cmake -DVEHICLE=${platform} -DTESTS=ON -DCMAKE_BUILD_TYPE=Release .. && make run-property-tests"
               echo '${platform}: Property-Based Tests Complete!'
           }
         }

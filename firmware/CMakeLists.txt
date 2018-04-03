@@ -7,6 +7,8 @@ if(TESTS)
 
     project(tests)
 
+    set(PORT_SUFFIX "02" CACHE STRING "Local host server port to use for cucumber tests")
+
     if(TESTS)
         add_definitions(-DTESTS)
     endif()
