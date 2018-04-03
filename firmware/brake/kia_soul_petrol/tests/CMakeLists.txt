@@ -1,4 +1,4 @@
-project(brake-tests)
+project(brake-unit-tests)
 
 add_library(
     brake
