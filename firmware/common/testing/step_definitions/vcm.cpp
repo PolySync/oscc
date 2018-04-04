@@ -1,5 +1,6 @@
 #pragma once
 
+
 THEN("^control should be enabled$")
 {
     assert_that(
@@ -33,19 +34,19 @@ THEN("^control should be disabled$")
 
 THEN("^(.*) should be sent to DAC A$")
 {
-    REGEX_PARAM(int, dac_output_a);
+    REGEX_PARAM(std::string, dac_output_a);
 
     assert_that(
         g_mock_dac_output_a,
-        is_equal_to(dac_output_a));
+        is_equal_to(vehicle_defines[dac_output_a]));
 }
 
 
 THEN("^(.*) should be sent to DAC B$")
 {
-    REGEX_PARAM(int, dac_output_b);
+    REGEX_PARAM(std::string, dac_output_b);
 
     assert_that(
         g_mock_dac_output_b,
-        is_equal_to(dac_output_b));
+        is_equal_to(vehicle_defines[dac_output_b]));
 }

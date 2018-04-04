@@ -417,7 +417,7 @@ typedef struct
  *
  * Equal to \ref THROTTLE_SPOOF_LOW_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1724 )
+#define THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX ( 1723 )
 
 /*
  * @brief Minimum allowed value for the low spoof signal value. [steps]
