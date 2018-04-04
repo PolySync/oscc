@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+#include <string>
 #include <cgreen/cgreen.h>
 #include <cgreen/mocks.h>
 #include <cucumber-cpp/autodetect.hpp>
@@ -35,6 +37,10 @@ extern unsigned short g_mock_dac_output_b;
 extern volatile unsigned long g_mock_arduino_millis_return;
 extern volatile unsigned long g_mock_arduino_micros_return;
 
+std::map<std::string, int> vehicle_defines;
+const unsigned long Hysteresis_Time = FAULT_HYSTERESIS;
+
+
 // return to known state before every scenario
 BEFORE()
 {
@@ -65,6 +71,32 @@ BEFORE()
 
     // A small amount of time elapsed after boot
     g_mock_arduino_millis_return = 1;
+
+    //Make sure dictionary for looking up vehicle specific defines is correct
+    vehicle_defines["STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN"] =
+        STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN;
+    vehicle_defines["STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX"] =
+        STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX;
+    vehicle_defines["STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN"] =
+        STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN;
+    vehicle_defines["STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX"] =
+        STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX;
+    vehicle_defines["BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN"] =
+        BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN;
+    vehicle_defines["BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX"] =
+        BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX;
+    vehicle_defines["BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN"] =
+        BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN;
+    vehicle_defines["BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX"] =
+        BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX;
+    vehicle_defines["THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN"] =
+        THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN;
+    vehicle_defines["THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX"] =
+        THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX;
+    vehicle_defines["THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN"] =
+        THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN;
+    vehicle_defines["THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX"] =
+        THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX;
 }
 
 GIVEN("^(\\w+) control is enabled$")

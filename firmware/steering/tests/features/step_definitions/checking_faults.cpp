@@ -14,7 +14,7 @@ WHEN("^the operator applies (.*) to the steering wheel$")
 
 
     // set an elapsed time to account for hystoresis compensation
-    g_mock_arduino_millis_return = 105;
+    g_mock_arduino_millis_return = Hysteresis_Time + 5;
 
     check_for_faults();
 }
