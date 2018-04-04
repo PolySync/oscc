@@ -181,7 +181,7 @@ typedef struct
  *
  * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1876 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1875 )
 
 /*
  * @brief Calculation to convert a brake position to a low spoof voltage.
