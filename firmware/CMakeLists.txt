@@ -65,6 +65,7 @@ else()
 
     add_subdirectory(brake)
     add_subdirectory(can_gateway)
+    add_subdirectory(null)
     add_subdirectory(steering)
     add_subdirectory(throttle)
 
@@ -73,6 +74,7 @@ else()
         DEPENDS
         brake-upload
         can-gateway-upload
+        null
         steering-upload
         throttle-upload)
 endif()
