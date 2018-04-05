@@ -1,5 +1,7 @@
 project(throttle-unit-tests)
 
+set(CUCUMBER_PORT_THROTTLE "39${PORT_SUFFIX}")
+
 add_library(
     throttle
     SHARED
@@ -49,12 +51,15 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include
     ${CMAKE_SOURCE_DIR}/../api/include)
 
+file(WRITE ${CMAKE_CURRENT_LIST_DIR}/features/step_definitions/cucumber.wire "host: localhost\nport: ${CUCUMBER_PORT_THROTTLE}")
+
+
 add_custom_target(
     run-throttle-unit-tests
     DEPENDS
     throttle-unit-test
     COMMAND
-    throttle-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+    throttle-unit-test --port=${CUCUMBER_PORT_THROTTLE} >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
 
 add_custom_target(
     run-throttle-property-tests
