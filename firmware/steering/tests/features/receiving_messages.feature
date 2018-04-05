@@ -38,12 +38,9 @@ Feature: Receiving commands
     And <low> should be sent to DAC B
 
     Examples:
-      | value   | high  | low   |
-      | -1      | 3440  | 656   |
-      | -0.3435 | 2500  | 1475  |
-      | 0       | 1982  | 1957  |
-      | 0.3435  | 1464  | 2440  |
-      | 1       | 738   | 3358  |
+      | value | high                                 | low                                 |
+      | -1    | STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX | STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN |
+      | 1     | STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN | STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX |
 
 
   Scenario Outline: Spoof value sent from application outside valid range
@@ -55,8 +52,8 @@ Feature: Receiving commands
     And <low_clamped> should be sent to DAC B
 
     Examples:
-      | value | high_clamped | low_clamped |
-      | -15   | 3440         |  656        |
-      | -1.1  | 3440         |  656        |
-      | 1.1   | 738          |  3358       |
-      | 15    | 738          |  3358       |
+      | value | high_clamped                         | low_clamped                         |
+      | -15   | STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX | STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN |
+      | -1.1  | STEERING_SPOOF_HIGH_SIGNAL_RANGE_MAX | STEERING_SPOOF_LOW_SIGNAL_RANGE_MIN |
+      | 1.1   | STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN | STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX |
+      | 15    | STEERING_SPOOF_HIGH_SIGNAL_RANGE_MIN | STEERING_SPOOF_LOW_SIGNAL_RANGE_MAX |

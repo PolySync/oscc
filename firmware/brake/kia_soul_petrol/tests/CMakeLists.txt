@@ -1,4 +1,4 @@
-project(brake-tests)
+project(brake-unit-tests)
 
 set(CUCUMBER_PORT_BRAKE "39${PORT_SUFFIX}")
 

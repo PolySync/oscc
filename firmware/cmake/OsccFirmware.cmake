@@ -19,6 +19,9 @@ set(SERIAL_BAUD_STEERING "115200" CACHE STRING "Serial baud rate of the steering
 set(SERIAL_PORT_THROTTLE "/dev/ttyACM0" CACHE STRING "Serial port of the throttle module")
 set(SERIAL_BAUD_THROTTLE "115200" CACHE STRING "Serial baud rate of the throttle module")
 
+set(SERIAL_PORT_NULL "/dev/ttyACM0" CACHE STRING "Serial port of the NULL module")
+set(SERIAL_BAUD_NULL "115200" CACHE STRING "Serial baud rate of the NULL module")
+
 if(DEBUG)
     add_definitions(-DDEBUG)
 endif()
