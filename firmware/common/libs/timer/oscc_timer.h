@@ -113,6 +113,7 @@ void timer1_init(
     float frequency,
     void (*isr)(void) );
 
+#ifndef __AVR_ATmega32U4__
 // ****************************************************************************
 // Function:    timer2_init
 //
@@ -131,6 +132,7 @@ void timer1_init(
 void timer2_init(
     float frequency,
     void (*isr)(void) );
+#endif
 
 
 #endif /* _OSCC_TIMER_H_ */
