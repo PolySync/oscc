@@ -60,6 +60,8 @@ else()
 
     project(firmware)
 
+    set(ARDUINO_DEFAULT_BOARD leonardo)
+
     add_subdirectory(brake)
     add_subdirectory(can_gateway)
     add_subdirectory(null)
