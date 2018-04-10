@@ -71,7 +71,6 @@ else()
         DEPENDS
         brake-upload
         can-gateway-upload
-        null
         steering-upload
         throttle-upload)
 endif()
