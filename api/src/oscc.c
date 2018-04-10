@@ -107,29 +107,35 @@ oscc_result_t oscc_open( unsigned int channel )
 
 oscc_result_t oscc_close( unsigned int channel )
 {
-    oscc_result_t result = OSCC_ERROR;
+    oscc_result_t ret = OSCC_ERROR;
 
-    if( global_oscc_can_socket < 0 )
+    if( global_oscc_can_socket >= 0 )
     {
         int result = close( global_oscc_can_socket );
 
-        if ( result > 0 )
+        if ( result == 0 )
         {
-            result = OSCC_OK;
+            ret = OSCC_OK;
         }
     }
 
-    if( global_vehicle_can_socket < 0 )
+    if( global_vehicle_can_socket >= 0 )
     {
         int result = close( global_vehicle_can_socket );
 
-        if ( result > 0 )
+        if ( result == 0 && ret == OSCC_OK )
         {
-            result = OSCC_OK;
+            ret = OSCC_OK;
+        }
+        else
+        {
+            // If we were able to close the OSCC CAN socket but failed to close
+            // the OSCC socket, overwrite the return code with an error.
+            ret = OSCC_ERROR;
         }
     }
 
-    return result;
+    return ret;
 }
 
 oscc_result_t oscc_enable( void )
