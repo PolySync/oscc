@@ -1152,7 +1152,7 @@ oscc_result_t get_steering_wheel_angle(
     if((frame == NULL) || (steering_wheel_angle == NULL)) { return OSCC_ERROR; }
     if(frame->can_id != KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID) { return OSCC_ERROR; }
     int16_t raw = (frame->data[1] << 8) | frame->data[0];
-    *steering_wheel_angle = -((double)raw / 10.0);
+    *steering_wheel_angle = -((double)raw * KIA_SOUL_OBD_STEERING_ANGLE_SCALAR);
     return OSCC_OK;
 }
 
