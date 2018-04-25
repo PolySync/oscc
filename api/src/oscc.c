@@ -1097,11 +1097,21 @@ oscc_result_t get_wheel_speed_right_rear(
     struct can_frame const * const frame,
     double * wheel_speed_right_rear)
 {
-    if((frame == NULL) || (wheel_speed_right_rear == NULL)) { return OSCC_ERROR; }
-    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID) { return OSCC_ERROR; }
+    if((frame == NULL) || (wheel_speed_right_rear == NULL))
+    {
+        return OSCC_ERROR;
+    }
+
+    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+    {
+        return OSCC_ERROR;
+    }
+
     uint16_t raw = ((frame->data[7] & 0x0F) << 8) | frame->data[6];
+
     // 10^-1 precision, raw / 32.0
     *wheel_speed_right_rear = (double)((int)((double)raw / 3.2) / 10.0);
+
     return OSCC_OK;
 }
 
@@ -1110,11 +1120,21 @@ oscc_result_t get_wheel_speed_left_rear(
     struct can_frame const * const frame,
     double * wheel_speed_left_rear)
 {
-    if((frame == NULL) || (wheel_speed_left_rear == NULL)) { return OSCC_ERROR; }
-    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID) { return OSCC_ERROR; }
+    if((frame == NULL) || (wheel_speed_left_rear == NULL))
+    {
+        return OSCC_ERROR;
+    }
+
+    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+    {
+        return OSCC_ERROR;
+    }
+
     uint16_t raw = ((frame->data[5] & 0x0F) << 8) | frame->data[4];
+
     // 10^-1 precision, raw / 32.0
     *wheel_speed_left_rear = (double)((int)((double)raw / 3.2) / 10.0);
+
     return OSCC_OK;
 }
 
@@ -1123,11 +1143,21 @@ oscc_result_t get_wheel_speed_right_front(
     struct can_frame const * const frame,
     double * wheel_speed_right_front)
 {
-    if((frame == NULL) || (wheel_speed_right_front == NULL)) { return OSCC_ERROR; }
-    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID) { return OSCC_ERROR; }
+    if((frame == NULL) || (wheel_speed_right_front == NULL))
+    {
+        return OSCC_ERROR;
+    }
+
+    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+    {
+        return OSCC_ERROR;
+    }
+
     uint16_t raw = ((frame->data[3] & 0x0F) << 8) | frame->data[2];
+
     // 10^-1 precision, raw / 32.0
     *wheel_speed_right_front = (double)((int)((double)raw / 3.2) / 10.0);
+
     return OSCC_OK;
 }
 
@@ -1136,11 +1166,21 @@ oscc_result_t get_wheel_speed_left_front(
     struct can_frame const * const frame,
     double * wheel_speed_left_front)
 {
-    if((frame == NULL) || (wheel_speed_left_front == NULL)) { return OSCC_ERROR; }
-    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID) { return OSCC_ERROR; }
+    if((frame == NULL) || (wheel_speed_left_front == NULL))
+    {
+        return OSCC_ERROR;
+    }
+
+    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+    {
+        return OSCC_ERROR;
+    }
+
     uint16_t raw = ((frame->data[1] & 0x0F) << 8) | frame->data[0];
+
     // 10^-1 precision, raw / 32.0
     *wheel_speed_left_front = (double)((int)((double)raw / 3.2) / 10.0);
+
     return OSCC_OK;
 }
 
@@ -1149,10 +1189,20 @@ oscc_result_t get_steering_wheel_angle(
     struct can_frame const * const frame,
     double * steering_wheel_angle)
 {
-    if((frame == NULL) || (steering_wheel_angle == NULL)) { return OSCC_ERROR; }
-    if(frame->can_id != KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID) { return OSCC_ERROR; }
+    if((frame == NULL) || (steering_wheel_angle == NULL))
+    {
+        return OSCC_ERROR;
+    }
+
+    if(frame->can_id != KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID)
+    {
+        return OSCC_ERROR;
+    }
+
     int16_t raw = (frame->data[1] << 8) | frame->data[0];
+
     *steering_wheel_angle = -((double)raw * KIA_SOUL_OBD_STEERING_ANGLE_SCALAR);
+
     return OSCC_OK;
 }
 
@@ -1161,8 +1211,16 @@ oscc_result_t get_brake_pressure(
     struct can_frame const * const frame,
     double * brake_pressure)
 {
-    if((frame == NULL) || (brake_pressure == NULL)) { return OSCC_ERROR; }
-    if(frame->can_id != KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID) { return OSCC_ERROR; }
+    if((frame == NULL) || (brake_pressure == NULL))
+    {
+        return OSCC_ERROR;
+    }
+
+    if(frame->can_id != KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID)
+    {
+        return OSCC_ERROR;
+    }
+
 #ifdef KIA_NIRO
     double scale = 40.0;
     uint16_t raw = ((frame->data[4] & 0x0F) << 8) | frame->data[3];
@@ -1170,6 +1228,8 @@ oscc_result_t get_brake_pressure(
     double scale = 10.0;
     uint16_t raw = ((frame->data[5] & 0x0F) << 8) | frame->data[4];
 #endif
+
     *brake_pressure = (double)raw / scale;
+
     return OSCC_OK;
 }
