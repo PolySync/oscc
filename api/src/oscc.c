@@ -1093,11 +1093,12 @@ oscc_result_t get_device_name( char * string, char * const name )
     return result;
 }
 
-oscc_result_t get_wheel_speed_right_rear(
+static oscc_result_t get_wheel_speed(
     struct can_frame const * const frame,
-    double * wheel_speed_right_rear)
+    double * wheel_speed,
+    const size_t offset)
 {
-    if((frame == NULL) || (wheel_speed_right_rear == NULL))
+    if((frame == NULL) || (wheel_speed == NULL))
     {
         return OSCC_ERROR;
     }
@@ -1107,12 +1108,23 @@ oscc_result_t get_wheel_speed_right_rear(
         return OSCC_ERROR;
     }
 
-    uint16_t raw = ((frame->data[7] & 0x0F) << 8) | frame->data[6];
+    uint16_t raw = ((frame->data[offset + 1] & 0x0F) << 8) | frame->data[offset];
 
     // 10^-1 precision, raw / 32.0
-    *wheel_speed_right_rear = (double)((int)((double)raw / 3.2) / 10.0);
+    *wheel_speed = (double)((int)((double)raw / 3.2) / 10.0);
 
     return OSCC_OK;
+}
+
+oscc_result_t get_wheel_speed_right_rear(
+    struct can_frame const * const frame,
+    double * wheel_speed_right_rear)
+{
+    size_t offset = 6;
+
+    oscc_result_t ret = get_wheel_speed(frame, wheel_speed_right_rear, offset);
+
+    return ret;
 }
 
 
@@ -1120,22 +1132,11 @@ oscc_result_t get_wheel_speed_left_rear(
     struct can_frame const * const frame,
     double * wheel_speed_left_rear)
 {
-    if((frame == NULL) || (wheel_speed_left_rear == NULL))
-    {
-        return OSCC_ERROR;
-    }
+    size_t offset = 4;
 
-    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
-    {
-        return OSCC_ERROR;
-    }
+    oscc_result_t ret = get_wheel_speed(frame, wheel_speed_left_rear, offset);
 
-    uint16_t raw = ((frame->data[5] & 0x0F) << 8) | frame->data[4];
-
-    // 10^-1 precision, raw / 32.0
-    *wheel_speed_left_rear = (double)((int)((double)raw / 3.2) / 10.0);
-
-    return OSCC_OK;
+    return ret;
 }
 
 
@@ -1143,22 +1144,11 @@ oscc_result_t get_wheel_speed_right_front(
     struct can_frame const * const frame,
     double * wheel_speed_right_front)
 {
-    if((frame == NULL) || (wheel_speed_right_front == NULL))
-    {
-        return OSCC_ERROR;
-    }
+    size_t offset = 2;
 
-    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
-    {
-        return OSCC_ERROR;
-    }
+    oscc_result_t ret = get_wheel_speed(frame, wheel_speed_right_front, offset);
 
-    uint16_t raw = ((frame->data[3] & 0x0F) << 8) | frame->data[2];
-
-    // 10^-1 precision, raw / 32.0
-    *wheel_speed_right_front = (double)((int)((double)raw / 3.2) / 10.0);
-
-    return OSCC_OK;
+    return ret;
 }
 
 
@@ -1166,22 +1156,11 @@ oscc_result_t get_wheel_speed_left_front(
     struct can_frame const * const frame,
     double * wheel_speed_left_front)
 {
-    if((frame == NULL) || (wheel_speed_left_front == NULL))
-    {
-        return OSCC_ERROR;
-    }
+    size_t offset = 0;
 
-    if(frame->can_id != KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
-    {
-        return OSCC_ERROR;
-    }
+    oscc_result_t ret = get_wheel_speed(frame, wheel_speed_left_front, offset);
 
-    uint16_t raw = ((frame->data[1] & 0x0F) << 8) | frame->data[0];
-
-    // 10^-1 precision, raw / 32.0
-    *wheel_speed_left_front = (double)((int)((double)raw / 3.2) / 10.0);
-
-    return OSCC_OK;
+    return ret;
 }
 
 
