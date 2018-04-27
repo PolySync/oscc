@@ -47,6 +47,12 @@ class DebugModules(object):
         self.last_measurement = None
 
     def reading_sleep(self, duration=1.0):
+        """
+        Used in place of `time.sleep()`. Enables "waiting" for some interval while maintaining
+        confidence that once we start unpacking at the car's reports again that data hasn't gone
+        stale.
+        """
+
         end = time.time() + duration
 
         while time.time() < end:
