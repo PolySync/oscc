@@ -30,10 +30,12 @@ But what does it do?
 
 ## Dependencies
 
-- `python3`
-- `pip`
-- `python-can` (run `pip install python-can`)
-- `docopt` (run `pip install docopt`)
+- `python3` (`sudo apt install python3`)
+- `pip3` (`sudo apt install python3-pip`)
+- `python-can` (`pip3 install python-can`)
+- `colorama` (`pip3 install python-can`)
+- `docopt` (`pip3 install docopt`)
+- `python-can` (`pip3 install python-can`)
 
 ## Usage
 
