@@ -1,5 +1,5 @@
 """
-Import as 'canbus' from 'oscc'. Contains 'CanBus' class used for communicating on the OSCC CAN bus
+Import as 'canbus' from 'oscccan'. Contains 'CanBus' class used for communicating on the OSCC CAN bus
 as well as the 'Report' class that the CanBus class's command methods return.
 """
 
