@@ -1,1 +1,1 @@
-include(${CMAKE_SOURCE_DIR}/../firmware/cmake/OsccConfig.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../firmware/cmake/OsccConfig.cmake)
