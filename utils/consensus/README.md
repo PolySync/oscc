@@ -3,8 +3,8 @@
 The purpose of this Python 3 program is to provide basic validation that there is the vehicle and
 OSCC can reach a consensus. Ideally it's a method to quickly verify whether your vehicle is in a
 good state. By sending control commands on the CAN gateway then polling for an expected result
-there, we should be able to tell whether OSCC is functioning properly or diagnose
-any issues more readily.
+there, we should be able to tell whether OSCC is functioning properly or diagnose any issues more
+readily.
 
 While this program was designed to be run as a stand alone executable it may be imported as a module
 should a use-case arise.
@@ -44,4 +44,4 @@ sudo ip link set can0 type can bitrate 125000
 sudo ip link set up can0
 ```
 
-Run `diagnostics.py --help` for more info.
+Run `consensus.py --help` for more info.
