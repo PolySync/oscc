@@ -32,7 +32,6 @@ But what does it do?
 
 - `python3` (`sudo apt install python3`)
 - `pip3` (`sudo apt install python3-pip`)
-- `python-can` (`pip3 install python-can`)
 - `colorama` (`pip3 install colorama`)
 - `docopt` (`pip3 install docopt`)
 - `python-can` (`pip3 install python-can`)
