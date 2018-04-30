@@ -139,11 +139,11 @@ class DebugModules(object):
             module.module_name,
             'module')
 
-        # Attempt to enable the module parameter. Under the hood, this sends the enable brakes CAN
+        # Attempt to disable the module parameter. Under the hood, this sends the disable brakes CAN
         # frame to OSCC/DriveKit over its CAN gateway.
-        self.bus.enable_module(module)
+        self.bus.disable_module(module)
 
-        # Verify the module parameter is enabled by listening to the OSCC/DriveKit CAN gateway for
+        # Verify the module parameter is disabled by listening to the OSCC/DriveKit CAN gateway for
         # a status message that confirms it. Set the `success` flag so we can report and handle
         # failure
         success = self.bus.check_module_enabled_status(
@@ -160,6 +160,8 @@ class DebugModules(object):
                 module.module_name,
                 'module could not be disabled')
             return False
+
+        time.sleep(1)
 
     def command_brake_module(self, cmd_value, expect=None):
         """
