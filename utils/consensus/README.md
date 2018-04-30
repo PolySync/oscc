@@ -36,6 +36,10 @@ But what does it do?
 - `docopt` (`pip3 install docopt`)
 - `python-can` (`pip3 install python-can`)
 
+## Compatibility
+
+Works with OSCC `v1.2.1` and up.
+
 ## Usage
 
 Connect your computer to OSCC's CAN bus and bring up your socketcan interface
