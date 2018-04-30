@@ -405,10 +405,10 @@ def main(args):
         torque_cmd = 0.1
         modules.command_steering_module(torque_cmd, expect=None)
 
-        torque_cmd = 0.2
+        torque_cmd = 0.15
         modules.command_steering_module(torque_cmd, expect='increase')
 
-        torque_cmd = -0.2
+        torque_cmd = -0.15
         modules.command_steering_module(torque_cmd, expect='decrease')
 
         # Visually distinguish steering validation from the following throttle validation
