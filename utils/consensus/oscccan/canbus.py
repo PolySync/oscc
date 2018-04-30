@@ -115,13 +115,8 @@ class CanBus(object):
                     break
 
                 if byte_lst[2] == 0 and expect is False:
-                    status =  False
+                    status =  True
                     break
-
-                if byte_lst[2] != 0:
-                    status = True
-                else:
-                    status = False
 
         return status
 

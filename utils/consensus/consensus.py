@@ -143,6 +143,8 @@ class DebugModules(object):
         # frame to OSCC/DriveKit over its CAN gateway.
         self.bus.disable_module(module)
 
+        time.sleep(1)
+
         # Verify the module parameter is disabled by listening to the OSCC/DriveKit CAN gateway for
         # a status message that confirms it. Set the `success` flag so we can report and handle
         # failure
@@ -160,8 +162,6 @@ class DebugModules(object):
                 module.module_name,
                 'module could not be disabled')
             return False
-
-        time.sleep(1)
 
     def command_brake_module(self, cmd_value, expect=None):
         """
