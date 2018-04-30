@@ -6,4 +6,11 @@ set(ARDUINO_DEFAULT_BAUDRATE ${SERIAL_BAUD_NULL})
 generate_arduino_firmware(
     null
     SRCS
-    main.cpp)
+    main.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/arduino_init/arduino_init.cpp)
+
+target_include_directories(
+    null
+    PRIVATE
+    ${OSCC_FIRMWARE_ROOT}/common/libs/arduino_init
+)
