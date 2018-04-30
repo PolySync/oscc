@@ -1,6 +1,6 @@
 # Consensus
 
-The purpose of this Python 3 program is to provide basic validation that there is the vehicle and
+The purpose of this Python 3 program is to provide basic validation that the vehicle and
 OSCC can reach a consensus. Ideally it's a method to quickly verify whether your vehicle is in a
 good state. By sending control commands on the CAN gateway then polling for an expected result
 there, we should be able to tell whether OSCC is functioning properly or diagnose any issues more
