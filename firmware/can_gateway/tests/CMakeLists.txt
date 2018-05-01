@@ -42,6 +42,8 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include
     ${CMAKE_SOURCE_DIR}/../api/include)
 
+file(WRITE ${CMAKE_CURRENT_LIST_DIR}/features/step_definitions/cucumber.wire "host: localhost\nport: ${CUCUMBER_PORT_GATEWAY}")
+
 add_custom_target(
     run-can-gateway-unit-tests
     DEPENDS
