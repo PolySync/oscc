@@ -1,5 +1,7 @@
 project(can-gateway-unit-tests)
 
+set(CUCUMBER_PORT_GATEWAY "39${PORT_SUFFIX}")
+
 add_library(
     can-gateway
     SHARED
@@ -45,4 +47,4 @@ add_custom_target(
     DEPENDS
     can-gateway-unit-test
     COMMAND
-    can-gateway-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+    can-gateway-unit-test --port=${CUCUMBER_PORT_GATEWAY} >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
