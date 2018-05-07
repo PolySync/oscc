@@ -47,11 +47,10 @@ __*__ *Later versions of the Actuator Control Board utilize new pins to perform 
 # Boards
 
 The sensor interface and actuator control board schematics and design files are located in the
-`hardware/boards` directory. If you don't have the time or fabrication resources, the boards can be
-purchased as a kit from the [OSCC website](http://oscc.io).
+`hardware/boards` directory. 
 
-Thanks to [Trey German](https://www.polymorphiclabs.com) and [Macrofab](https://macrofab.com/) for
-help designing and manufacturing the custom boards.
+Thanks to [Trey German](https://www.polymorphiclabs.com) for
+help design the custom boards.
 
 # Building and Uploading Firmware
 
