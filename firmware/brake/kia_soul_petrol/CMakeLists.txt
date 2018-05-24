@@ -1,4 +1,3 @@
-set(ARDUINO_DEFAULT_BOARD mega2560)
 
 generate_arduino_firmware(
     brake
@@ -18,7 +17,9 @@ generate_arduino_firmware(
     src/brake_control.cpp
     src/communications.cpp
     src/init.cpp
-    src/timers.cpp)
+    src/timers.cpp
+    BOARD_CPU atmega2560
+    BOARD mega)
 
 target_include_directories(
     brake
