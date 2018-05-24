@@ -1,0 +1,11 @@
+set(FIRMWARE_SIZE_SCRIPT_PATH "${CMAKE_CURRENT_LIST_DIR}/../Extras/CalculateFirmwareSize.cmake")
+file(READ ${FIRMWARE_SIZE_SCRIPT_PATH} FIRMWARE_SIZE_SCRIPT)
+
+# Replace placeholders with matching arguments
+string(REGEX REPLACE "PLACEHOLDER_1" "${AVRSIZE_PROGRAM}" FIRMWARE_SIZE_SCRIPT "${FIRMWARE_SIZE_SCRIPT}")
+
+# Create the replaced file in the build's cache directory
+set(CACHED_FIRMWARE_SCRIPT_PATH ${CMAKE_BINARY_DIR}/CMakeFiles/FirmwareSize.cmake)
+file(WRITE ${CACHED_FIRMWARE_SCRIPT_PATH} "${FIRMWARE_SIZE_SCRIPT}")
+
+set(ARDUINO_SIZE_SCRIPT ${CACHED_FIRMWARE_SCRIPT_PATH} CACHE INTERNAL "Arduino Size Script")
