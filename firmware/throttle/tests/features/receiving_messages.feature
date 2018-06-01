@@ -38,14 +38,9 @@ Feature: Receiving commands
     And <low> should be sent to DAC B
 
     Examples:
-      | value |  high  |  low   |
-      | 1     |  3358  |  1638  |
-      | 0.8   |  2801  |  1359  |
-      | 0.6   |  2244  |  1081  |
-      | 0.5   |  1966  |  942   |
-      | 0.4   |  1687  |  802   |
-      | 0.2   |  1130  |  524   |
-      | 0     |  573   |  245   |
+      | value | high                                 | low                                 |
+      | 1     | THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX | THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX |
+      | 0     | THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN | THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN |
 
 
   Scenario Outline: Spoof value sent from application outside valid range
@@ -57,8 +52,8 @@ Feature: Receiving commands
     And <low_clamped> should be sent to DAC B
 
     Examples:
-      | value | high_clamped | low_clamped |
-      |  5    | 3358         |  1638       |
-      |  1.1  | 3358         |  1638       |
-      |  -0.1 | 573          |  245        |
-      |  -5   | 573          |  245        |
+      | value | high_clamped                         | low_clamped                         |
+      | 5     | THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX | THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX |
+      | 1.1   | THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX | THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX |
+      | -0.1  | THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN | THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN |
+      | -5    | THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN | THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN |

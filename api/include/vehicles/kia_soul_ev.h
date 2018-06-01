@@ -57,7 +57,7 @@
 
 /**
  * @brief Steering wheel angle message data.
- *
+ * @warn Deprecated. Use \ref get_steering_wheel_angle instead.
  */
 typedef struct
 {
@@ -68,7 +68,12 @@ typedef struct
 
 /**
  * @brief Wheel speed message data.
- *
+ * @warn Deprecated.
+ * @warn Does not reflect CAN message data. Use the following functions instead:
+ * \li \ref get_wheel_speed_right_rear
+ * \li \ref get_wheel_speed_left_rear
+ * \li \ref get_wheel_speed_right_front
+ * \li \ref get_wheel_speed_left_front
  */
 typedef struct
 {
@@ -83,7 +88,8 @@ typedef struct
 
 /**
  * @brief Brake pressure message data.
- *
+ * @warn Deprecated.
+ * @warn Does not reflect CAN message data. Use \ref get_wheel_brake_pressure instead.
  */
 typedef struct
 {
@@ -181,7 +187,7 @@ typedef struct
  *
  * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1876 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1875 )
 
 /*
  * @brief Calculation to convert a brake position to a low spoof voltage.

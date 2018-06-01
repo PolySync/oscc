@@ -1,4 +1,6 @@
-project(brake-tests)
+project(brake-unit-tests)
+
+set(CUCUMBER_PORT_BRAKE "39${PORT_SUFFIX}")
 
 add_library(
     brake
@@ -51,12 +53,14 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include
     ${CMAKE_SOURCE_DIR}/../api/include)
 
+file(WRITE ${CMAKE_CURRENT_LIST_DIR}/features/step_definitions/cucumber.wire "host: localhost\nport: ${CUCUMBER_PORT_BRAKE}")
+
 add_custom_target(
     run-brake-unit-tests
     DEPENDS
     brake-unit-test
     COMMAND
-    brake-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+    brake-unit-test --port=${CUCUMBER_PORT_BRAKE} >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
 
 add_custom_target(
     run-brake-property-tests

@@ -27,6 +27,9 @@ int main( void )
 
     while( true )
     {
+#ifdef __AVR_ATmega32U4__
+        RXLED1;
+#endif
         check_for_incoming_message( );
 
         check_for_faults( );

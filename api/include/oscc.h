@@ -18,6 +18,25 @@
 #include "vehicles.h"
 
 
+/*
+ * @brief MAX_CAN_IDS is the maximum number unique CAN IDs on the CAN bus used
+ * for auto detection of CAN channels. Increasing this number increases the wait
+ * time for checking if a channel contains expected CAN IDs, reducing this
+ * number below number of CAN IDs broadcast could yield a false negative in auto
+ * detection.
+ *
+ */
+#define MAX_CAN_IDS ( 70 )
+
+
+/*
+ * @brief CAN_MESSAGE_TIMEOUT is the time to wait for a CAN message in
+ * milliseconds used for auto detection of can channels.
+ *
+ */
+#define CAN_MESSAGE_TIMEOUT ( 100 )
+
+
 typedef enum
 {
     OSCC_OK,
@@ -25,10 +44,19 @@ typedef enum
     OSCC_WARNING
 } oscc_result_t;
 
+/**
+ * @brief Looks for available CAN channels and automatically detects which
+ *        channel is OSCC control and which channel is vehicle CAN for feedback.
+ *
+ * @return OSCC_ERROR or OSCC_OK
+ *
+ */
+oscc_result_t oscc_init();
 
 /**
- * @brief Use provided CAN channel to open communications
- *        to CAN bus connected to the OSCC modules.
+ * @brief Use provided CAN channel to open communications to CAN bus connected
+ *        to the OSCC modules. If CAN gateway does not forward Vehicle CAN
+ *        automatically detect if a CAN channel has Vehicle CAN available.
  *
  * @param [in] channel - CAN channel connected to OSCC modules.
  *
@@ -174,6 +202,119 @@ oscc_result_t oscc_subscribe_to_fault_reports( void( *callback )( oscc_fault_rep
  *
  */
 oscc_result_t oscc_subscribe_to_obd_messages( void( *callback )( struct can_frame *frame ) );
+
+
+/**
+ * @brief Set vehicle right rear wheel speed in kph from CAN frame. (kph)
+ *
+ * @param [in] frame - A pointer to \ref struct can_frame that contains the raw CAN data associated
+ * with wheel speed (CAN ID: \ref KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+ *
+ * @param [out] wheel_speed_right_rear - A pointer to double. Set to the unpacked and scaled rear
+ * right wheel speed reported by the vehicle (kph).
+ *
+ * @return:
+ * \li \ref OSCC_OK on successful unpacking.
+ * \li \ref OSCC_ERROR if a parameter is NULL or the CAN frame ID is not
+ * \ref KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID
+ */
+oscc_result_t get_wheel_speed_right_rear(
+    struct can_frame const * const frame,
+    double * wheel_speed_right_rear);
+
+/**
+ * @brief Get vehicle left rear wheel speed in kph from CAN frame. (kph)
+ *
+ * @param [in] frame - A pointer to \ref struct can_frame that contains the raw CAN data associated
+ * with wheel speed (CAN ID: \ref KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+ *
+ * @param [out] wheel_speed_left_rear - A pointer to double. Set to the unpacked and scaled front
+ * left wheel speed reported by the vehicle (kph).
+ *
+ * @return:
+ * \li \ref OSCC_OK on successful unpacking.
+ * \li \ref OSCC_ERROR if a parameter is NULL or the CAN frame ID is not
+ * \ref KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID
+ */
+oscc_result_t get_wheel_speed_left_rear(
+    struct can_frame const * const frame,
+    double * wheel_speed_left_rear);
+
+
+/**
+ * @brief Get vehicle right front wheel speed in kph from CAN frame. (kph)
+ *
+ * @param [in] frame - A pointer to \ref struct can_frame that contains the raw CAN data associated
+ * with wheel speed (CAN ID: \ref KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+ *
+ * @param [out] wheel_speed_right_front - A pointer to double. Set to the unpacked and scaled front
+ * right wheel speed reported by the vehicle (kph).
+ *
+ * @return:
+ * \li \ref OSCC_OK on successful unpacking.
+ * \li \ref OSCC_ERROR if a parameter is NULL or the CAN frame ID is not
+ * \ref KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID
+ */
+oscc_result_t get_wheel_speed_right_front(
+    struct can_frame const * const frame,
+    double * wheel_speed_right_front);
+
+
+/**
+ * @brief Get vehicle left front wheel speed in kph from CAN frame. (kph)
+ *
+ * @param [in] frame - A pointer to \ref struct can_frame that contains the raw CAN data associated
+ * with wheel speed (CAN ID: \ref KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
+ *
+ * @param [out] wheel_speed_left_front - A pointer to double. Set to the unpacked and scaled rear
+ * left wheel speed reported by the vehicle (kph).
+ *
+ * @return:
+ * \li \ref OSCC_OK on successful unpacking.
+ * \li \ref OSCC_ERROR if a parameter is NULL or the CAN frame ID is not
+ * \ref KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID
+ */
+oscc_result_t get_wheel_speed_left_front(
+    struct can_frame const * const frame,
+    double * wheel_speed_left_front);
+
+
+/**
+ * @brief Get vehicle steering wheel angle from CAN frame. (degrees)
+ *
+ * @param [in] frame - A pointer to \ref struct can_frame that contains the raw CAN data associated
+ * with steering wheel angle (CAN ID: \ref KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID)
+ *
+ * @param [out] steering_wheel_angle - A pointer to double. Value is set to the unpacked and scaled
+ * steering wheel angle reported by the vehicle (degrees).
+ *
+ * @return:
+ * \li \ref OSCC_OK on successful unpacking.
+ * \li \ref OSCC_ERROR if a parameter is NULL or the CAN frame ID is not
+ * \ref KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID
+ */
+oscc_result_t get_steering_wheel_angle(
+    struct can_frame const * const frame,
+    double * steering_wheel_angle);
+
+
+/**
+ * @brief Get vehicle brake pressure from CAN frame. (bar)
+ *
+ * @param [in] frame - A pointer to \ref struct can_frame that contains the raw CAN data associated
+ * with brake pressure (CAN ID: \ref KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID)
+ *
+ * @param [out] brake_pressure - A pointer to double. Set to the unpacked and scaled brake pressure
+ * reported by the vehicle (bar).
+ *
+ * @return:
+ * \li \ref OSCC_OK on successful unpacking.
+ * \li \ref OSCC_ERROR if a parameter is NULL or the CAN frame ID is not
+ * \ref KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID
+ */
+oscc_result_t get_brake_pressure(
+    struct can_frame const * const frame,
+    double * brake_pressure);
 
 
 #endif /* _OSCC_H */

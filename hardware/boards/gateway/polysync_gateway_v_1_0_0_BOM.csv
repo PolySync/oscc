@@ -1,0 +1,28 @@
+Polysync Gateway Board BOM V1.0.0,,,,,,,,
+,,,,,,,,
+Quantity,Reference Designator,Description,Mfg,Mfg Part No.,Distributor,Distributor Part No.,Price,Total Price
+1,R8,RES SMD 0.3 OHM 1% 1/6W 0402,Panasonic Electronic Components,ERJ-2BQFR30X,Digikey,P.30AKCT-ND,0.59,0.59
+10,"R2, R3, R9, R16, R17, R18, R19, R20, R21, R22",RES SMD 10K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1002X,Digikey,P10.0KLCT-ND,0.1,1
+2,"R13, R15",RES SMD 120 OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1200X,Digikey,P120LCT-ND,0.1,0.2
+7,"R4, R5, R6, R7, R10, R11, R12",RES SMD 1K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF1001X,Digikey,P1.00KLCT-ND,0.1,0.7
+2,"R1, R14",RES SMD 47K OHM 1% 1/10W 0402,Panasonic Electronic Components,ERJ-2RKF4702X,Digikey,P47.0KLCT-ND,0.1,0.2
+4,"C1, C2, C6, C9",0.10µF ±10% 16V Ceramic Capacitor X7R 0402 (1005 Metric),Murata Electronics North America,GRM155R71C104KA88J,Digikey,490-6328-1-ND,0.1,0.4
+4,"C4, C5, C7, C8","22pF ±5% 50V Ceramic Capacitor C0G, NP0 0402 (1005 Metric)",Murata Electronics North America,GRM1555C1H220JA01J,Digikey,490-11382-1-ND,0.1,0.4
+1,C3,33µF ±10% Molded Tantalum Capacitors 10V 1206 (3216 Metric) 1.7 Ohm,AVX Corporation,TAJA336K010RNJ,Digikey,478-8882-1-ND,0.6,0.6
+2,"D5, D8",Blue 470nm LED Indication - Discrete 3.2V 0603 (1608 Metric),Wurth Electronics Inc,150060BS75000,Digikey,732-4966-1-ND,0.26,0.52
+2,"D4, D7",LED RED CLEAR 0603 SMD,Wurth Electronics Inc,150060RS75000,Digikey,732-4978-1-ND,0.24,0.48
+3,"D2, D3, D6",LED GREEN CLEAR 0603 SMD,Wurth Electronics Inc,150060GS75000,Digikey,732-4971-1-ND,0.24,0.72
+2,"X1, X2",16MHz ±30ppm Crystal 18pF 40 Ohm -40°C ~ 85°C Surface Mount HC49/US,Abracon LLC,ABLS-16.000MHZ-D-4-T,Digikey,535-13436-1-ND,0.24,0.48
+2,"U2, U5",CAN Controller CAN 2.0 SPI Interface 18-SOIC,Microchip Technology,MCP2515-I/SO,Digikey,MCP2515-I/SO-ND,1.82,3.64
+2,"U1, U3",1/1 Transceiver Half CAN 8-SOIC,Microchip Technology,MCP2551-I/SN,Digikey,MCP2551-I/SN-ND,1.02,2.04
+1,U4,Linear Voltage Regulator IC Positive Fixed 1 Output 5V 750mA DDPAK/TO-263-3,Texas Instruments,TL750M05CKTTR,Digikey,296-20776-1-ND,1.47,1.47
+1,U6,IC BUFF/DVR TRI-ST DUAL 20TSSOP,Texas Instruments,SN74AC241PWR,Digikey,296-4309-1-ND,0.75,0.75
+1,JP1,"10 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,68002-210HLF,Digikey,609-3301-ND,0.44,0.44
+2,"JP2, JP5","8 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,68000-208HLF,Digikey,609-3257-ND,0.43,0.86
+1,JP3,"6 Position Receptacle Connector 0.100"" (2.54mm) Through Hole Gold",Amphenol FCI,68683-303LF,Digikey,609-3582-ND,1.61,1.61
+1,JP4,"6 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,68000-206HLF,Digikey,609-3256-ND,0.32,0.32
+2,"JP6, JP7","2 Positions Header, Unshrouded Connector 0.100"" (2.54mm) Through Hole Gold or Gold, GXT™",Amphenol FCI,77311-118-02LF,Digikey,609-4434-ND,0.18,0.36
+3,"CON1, CON2, CON3","2 Position Wire to Board Terminal Block 45° (135°) Angle with Board 0.138"" (3.50mm) Through Hole",Phoenix Contact,1988956,Digikey,277-1779-ND,0.41,1.23
+1,CON4 ,CONN HEADER PH SIDE 8POS 2MM SMD,JST Sales America Inc.,S8B-PH-SM4-TB(LF)(SN),Digikey,455-1755-1-ND,0.97,0.97
+2,"For JP6, JP7","2 (1 x 2) Position Shunt Connector White Open Top 0.100"" (2.54mm) Gold or Gold, GXT™",Amphenol FCI,68786-102LF,Digikey,609-3121-ND,0.19,0.38
+Total,,,,,,,,$20.36

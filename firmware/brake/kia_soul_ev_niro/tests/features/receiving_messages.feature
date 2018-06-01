@@ -38,13 +38,9 @@ Feature: Receiving commands
     And <low> should be sent to DAC B
 
     Examples:
-      | value | high   | low  |
-      | 1     | 1875   | 917  |
-      | 0.942 | 1800   | 880  |
-      | 0.712 | 1500   | 731  |
-      | 0.329 | 1000   | 484  |
-      | 0.137 | 750    | 361  |
-      | 0     | 572    | 273  |
+      | value | high                              | low                              |
+      | 1     | BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX | BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX |
+      | 0     | BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN | BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN |
 
 
   Scenario Outline: Spoof value sent from application outside valid range
@@ -56,8 +52,8 @@ Feature: Receiving commands
     And <low_clamped> should be sent to DAC B
 
     Examples:
-      | value | high_clamped | low_clamped |
-      | 5     | 1875         |  917        |
-      | 2     | 1875         |  917        |
-      | -1    | 572          |  273        |
-      | -2    | 572          |  273        |
+      | value | high_clamped                      | low_clamped                      |
+      | 5     | BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX | BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX |
+      | 1.1   | BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX | BRAKE_SPOOF_LOW_SIGNAL_RANGE_MAX |
+      | -0.1  | BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN | BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN |
+      | -5    | BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN | BRAKE_SPOOF_LOW_SIGNAL_RANGE_MIN |
