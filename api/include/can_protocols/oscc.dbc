@@ -44,7 +44,7 @@ BO_ 113 BRAKE_DISABLE: 8 BRAKE
 
 BO_ 114 BRAKE_COMMAND: 8 BRAKE
  SG_ brake_command_magic : 0|16@1+ (1,0) [0|0] "" BRAKE
- SG_ brake_command_pedal_request : 16|32@1+ (1,0) [0|1] "" BRAKE
+ SG_ brake_command_pedal_request : 16|32@1- (1,0) [0|1] "" BRAKE
  SG_ brake_command_reserved : 48|16@1+ (1,0) [0|0] "" BRAKE
 
 BO_ 115 BRAKE_REPORT: 8 BRAKE
