@@ -73,7 +73,7 @@ A manual Arduino install is required since the debian package is older than 1.8.
 wget http://arduino.cc/download.php?f=/arduino-1.8.5-linux64.tar.xz -O arduino-1.8.5.tar.xz
 tar -xf arduino-1.8.5-linux64.tar.xz
 cd arduino-1.8.5
-sudo mkdir /usr/share/arduino
+sudo mkdir -p /usr/share/arduino
 sudo cp -R * /usr/share/arduino
 ```
 
