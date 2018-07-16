@@ -71,7 +71,7 @@ sudo apt install build-essential cmake
 A manual Arduino install is required since the debian package is older than 1.8.5
 ```
 wget http://arduino.cc/download.php?f=/arduino-1.8.5-linux64.tar.xz -O arduino-1.8.5.tar.xz
-tar -xf arduino-1.8.5-linux64.tar.xz
+tar -xf arduino-1.8.5.tar.xz
 cd arduino-1.8.5
 sudo mkdir -p /usr/share/arduino
 sudo cp -R * /usr/share/arduino
@@ -97,21 +97,21 @@ appropriate build flag:
 
 | Vehicle         | Flag                   |
 | --------------- | ---------------------- |
-| Kia Soul Petrol | -DVEHICLES=kia_soul    |
-| Kia Soul EV     | -DVEHICLES=kia_soul_ev |
-| Kia Niro        | -DVEHICLES=kia_niro    |
+| Kia Soul Petrol | -DVEHICLE=kia_soul    |
+| Kia Soul EV     | -DVEHICLE=kia_soul_ev |
+| Kia Niro        | -DVEHICLE=kia_niro    |
 
 
 For example, if you want to build firmware for the petrol Kia Soul:
 
 ```
-cmake .. -DVEHICLES=kia_soul
+cmake .. -DVEHICLE=kia_soul
 ```
 
 **Operator Overrides: While all OSCC modules have operator override detection enabled by default, attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button. To disable operator override for the steering module, pass an additional flag to the CMake build step.**
 
 ```
-cmake .. -DVEHICLES=kia_soul -DSTEERING_OVERRIDE=OFF
+cmake .. -DVEHICLE=kia_soul -DSTEERING_OVERRIDE=OFF
 ```
 
 If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file.
@@ -124,7 +124,7 @@ the size of the firmware significantly. To compile without debug symbols and opt
 enabled, use the following instead:
 
 ```
-cmake .. -DVEHICLES=kia_soul -DCMAKE_BUILD_TYPE=Release
+cmake .. -DVEHICLE=kia_soul -DCMAKE_BUILD_TYPE=Release
 ```
 
 <a name="brake-startup-test"></a>
@@ -171,7 +171,7 @@ throttle) so that they are assigned `/dev/ttyACM0` through `/dev/ttyACM3` in
 a known order. You can then change the ports during the `cmake ..` step:
 
 ```
-cmake .. -DVEHICLES=kia_soul -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
+cmake .. -DVEHICLE=kia_soul -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
 ```
 
 Then you can flash all with one command:
@@ -204,7 +204,7 @@ the module you want to monitor is connected to
 ports for each module). The default baud rate is `115200` but you can change it:
 
 ```
-cmake .. -DVEHICLES=kia_soul -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
+cmake .. -DVEHICLE=kia_soul -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
 ```
 
 You can use a module's `monitor` target to automatically run `screen`, or a
@@ -337,13 +337,13 @@ Building and running the tests is similar to the firmware itself, but you must i
 the `-DCMAKE_BUILD_TYPE=Release` flag so that `cmake` will disable debug symbols and enable
 optimizations, good things to do when running tests to ensure nothing breaks with
 optimizations. Lastly, you must tell the tests which vehicle header to use for
-the tests (e.g., `-DVEHICLES=kia_soul`).
+the tests (e.g., `-DVEHICLE=kia_soul`).
 
 ```
 cd firmware
 mkdir build
 cd build
-cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release -DVEHICLES=kia_soul
+cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release -DVEHICLE=kia_soul
 ```
 
 ### Unit Tests
