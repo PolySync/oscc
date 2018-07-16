@@ -61,17 +61,26 @@ receive reports from the car and send spoofed commands.
 
 ## Pre-requisites
 
-You must have Arduino Core and CMake (version 2.8 or greater) installed on
+You must have Arduino Core (version 1.8.5 or greater) and CMake (version 2.8 or greater) installed on
 your machine.
 
 ```
-sudo apt install arduino-core build-essential cmake
+sudo apt install build-essential cmake
+```
+
+A manual Arduino install is required since the debian package is older than 1.8.5
+```
+wget http://arduino.cc/download.php?f=/arduino-1.8.5-linux64.tar.xz -O arduino-1.8.5.tar.xz
+tar -xf arduino-1.8.5-linux64.tar.xz
+cd arduino-1.8.5
+sudo mkdir /usr/share/arduino
+sudo cp -R * /usr/share/arduino
 ```
 
 OSCC uses CMake to avoid some of the limitations of the Arduino IDE. Using this method you can build
 and upload the firmware from the command-line.
 
-Check out [Arduino CMake](https://github.com/queezythegreat/arduino-cmake) for more information.
+Check out [Arduino CMake](https://github.com/arduino-cmake/arduino-cmake) for more information.
 
 ## Building the Firmware
 
@@ -86,23 +95,23 @@ cd build
 To generate Makefiles, tell `cmake` which vehicle to build for by supplying the
 appropriate build flag:
 
-| Vehicle         | Flag             |
-| --------------- | ---------------- |
-| Kia Soul Petrol | -DKIA_SOUL=ON    |
-| Kia Soul EV     | -DKIA_SOUL_EV=ON |
-| Kia Niro        | -DKIA_NIRO=ON    |
+| Vehicle         | Flag                   |
+| --------------- | ---------------------- |
+| Kia Soul Petrol | -DVEHICLES=kia_soul    |
+| Kia Soul EV     | -DVEHICLES=kia_soul_ev |
+| Kia Niro        | -DVEHICLES=kia_niro    |
 
 
 For example, if you want to build firmware for the petrol Kia Soul:
 
 ```
-cmake .. -DKIA_SOUL=ON
+cmake .. -DVEHICLES=kia_soul
 ```
 
 **Operator Overrides: While all OSCC modules have operator override detection enabled by default, attempting to grab the steering wheel while the system is active could result in serious injury. The preferred method of operator override for steering is to utilize the brake pedal or E-stop button. To disable operator override for the steering module, pass an additional flag to the CMake build step.**
 
 ```
-cmake .. -DKIA_SOUL=ON -DSTEERING_OVERRIDE=OFF
+cmake .. -DVEHICLES=kia_soul -DSTEERING_OVERRIDE=OFF
 ```
 
 If steering operator overrides remain enabled, the sensitivity can be adjusted by changing the value of the `TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD` in the corresponding vehicle's header file.
@@ -115,7 +124,7 @@ the size of the firmware significantly. To compile without debug symbols and opt
 enabled, use the following instead:
 
 ```
-cmake .. -DKIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release
+cmake .. -DVEHICLES=kia_soul -DCMAKE_BUILD_TYPE=Release
 ```
 
 <a name="brake-startup-test"></a>
@@ -162,7 +171,7 @@ throttle) so that they are assigned `/dev/ttyACM0` through `/dev/ttyACM3` in
 a known order. You can then change the ports during the `cmake ..` step:
 
 ```
-cmake .. -DKIA_SOUL=ON -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
+cmake .. -DVEHICLES=kia_soul -DSERIAL_PORT_BRAKE=/dev/ttyACM0 -DSERIAL_PORT_CAN_GATEWAY=/dev/ttyACM1 -DSERIAL_PORT_STEERING=/dev/ttyACM2 -DSERIAL_PORT_THROTTLE=/dev/ttyACM3
 ```
 
 Then you can flash all with one command:
@@ -195,7 +204,7 @@ the module you want to monitor is connected to
 ports for each module). The default baud rate is `115200` but you can change it:
 
 ```
-cmake .. -DKIA_SOUL=ON -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
+cmake .. -DVEHICLES=kia_soul -DDEBUG=ON -DSERIAL_PORT_THROTTLE=/dev/ttyACM0 -DSERIAL_BAUD_THROTTLE=19200
 ```
 
 You can use a module's `monitor` target to automatically run `screen`, or a
@@ -328,13 +337,13 @@ Building and running the tests is similar to the firmware itself, but you must i
 the `-DCMAKE_BUILD_TYPE=Release` flag so that `cmake` will disable debug symbols and enable
 optimizations, good things to do when running tests to ensure nothing breaks with
 optimizations. Lastly, you must tell the tests which vehicle header to use for
-the tests (e.g., `-DKIA_SOUL=ON`).
+the tests (e.g., `-DVEHICLES=kia_soul`).
 
 ```
 cd firmware
 mkdir build
 cd build
-cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release -DKIA_SOUL=ON
+cmake .. -DTESTS=ON -DCMAKE_BUILD_TYPE=Release -DVEHICLES=kia_soul
 ```
 
 ### Unit Tests
