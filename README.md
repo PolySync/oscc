@@ -70,6 +70,7 @@ sudo apt install build-essential cmake
 
 A manual Arduino install is required since the debian package is older than 1.8.5
 ```
+sudo apt-get purge arduino arduino-core
 wget http://arduino.cc/download.php?f=/arduino-1.8.5-linux64.tar.xz -O arduino-1.8.5.tar.xz
 tar -xf arduino-1.8.5.tar.xz
 cd arduino-1.8.5
