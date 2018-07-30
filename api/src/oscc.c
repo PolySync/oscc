@@ -529,10 +529,7 @@ void oscc_update_status( int sig, siginfo_t *siginfo, void *context )
 
         while( vehicle_can_bytes > 0 )
         {
-            if ( obd_frame_callback != NULL &&
-                 ( rx_frame.can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID ||
-                   rx_frame.can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ||
-                   rx_frame.can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID ) )
+            if ( obd_frame_callback != NULL )
             {
                 obd_frame_callback( &rx_frame );
             }
