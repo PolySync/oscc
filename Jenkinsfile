@@ -19,6 +19,8 @@ node {
             node {
                 checkout scm
 
+                image = docker.build("cmake-build:${env.BUILD_ID}")
+
                 stage("Build ${platform}") {
                     image.inside {
                         sh "cd firmware && \
