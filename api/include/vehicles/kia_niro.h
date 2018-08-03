@@ -50,6 +50,12 @@
 #define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x220 )
 
 /*
+ * @brief ID of the Kia Niro's OBD throttle pressure CAN frame.
+ *
+ */
+#define KIA_SOUL_OBD_THROTTLE_PRESSURE_CAN_ID ( 0x371 )
+
+/*
  * @brief ID of the Kia Niro's OBD speed CAN frame.
  *
  */
