@@ -17,9 +17,9 @@ node {
         def platform = platforms[platform_idx]
         builds[platform] = {
             node {
-                checkout scm
-
                 try {
+                    checkout scm
+                    
                     image = docker.build("cmake-build:${env.BUILD_ID}")
 
                     stage("Build ${platform}") {
