@@ -59,7 +59,7 @@
  * @brief ID of the Kia Niro's OBD speed CAN frame.
  *
  */
-#define KIA_SOUL_OBD_SPEED_CAN_ID ( 0x371 )
+#define KIA_SOUL_OBD_SPEED_CAN_ID ( 0x52A )
 
 /*
  * @brief Factor to scale OBD steering angle to degrees
