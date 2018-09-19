@@ -239,7 +239,7 @@ typedef struct
     BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN  )
 
 /*
- * @brief Value of the accelerator position that indicates operator override. [steps]
+ * @brief Value of the brake position that indicates operator override. [steps]
  *
  */
 #define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130 )
