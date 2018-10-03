@@ -312,10 +312,15 @@ sudo apt install ruby-dev libboost-dev
 sudo gem install cucumber -v 2.0.0
 ```
 
-For the property-based tests you must have **Rust**, its build manager **Cargo**, and **libclang**:
+For the property-based tests you must have **Rust**, its build manager **Cargo**, its toolchain manager **rustup**, and **libclang**:
+
+[Rust installation guide](https://www.rust-lang.org/en-US/install.html)
+
+The property-based tests for the API run against the 1.20.0 Rust toolchain, so it will need to be installed via **rustup** if it isn't already. 
+`rustup install 1.20.0`
 
 ```
-sudo apt install rustc cargo clang libclang-dev
+sudo apt install clang libclang-dev
 ```
 
 ## Running Tests
@@ -431,11 +436,24 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured
 
 ### All Tests
 
-Finally, as a convenience you can run all available tests:
+Finally, as a convenience you can run all available firmware tests:
 
 ```
 make run-all-tests
 ```
+
+#### API Property-Based tests
+
+Additionally, the api contains a set of property-based tests. To run these, run CMAKE from a directory within the `api/tests` directory, passing in a flag with the vehicle you want to run the tests for. For example: 
+
+```
+cd api/tests
+mkdir build
+cd build
+cmake .. -DKIA_SOUL=ON
+```
+
+The tests can then be run using `make run-api-property-tests`. For the tests to run, you must have a vcan interface initialized. The test folder contains a script `initialize_vcan.sh` which can be used to set it up automatically.
 
 # Additional Vehicles & Contributing
 

@@ -1,0 +1,22 @@
+[package]
+name = "oscc-api-pb-tests"
+version = "0.0.1"
+authors = ["Katie Cleary <kcleary@polysync.io>"]
+build = "build.rs"
+description = "The manifest file for the OSCC API property-based tests. To run the ev brake tests, run the command 'cargo test -- --test-threads=1 --skip \"petrol\"'. To run the petrol brake tests, run the command 'cargo test -- --test-threads=1 --skip \"ev\"'."
+
+[dependencies]
+quickcheck = "0.4.1"
+rand = "0.3.15"
+socketcan = "1.7.0"
+
+[build-dependencies]
+bindgen = "0.25.0"
+gcc = "0.3.51"
+
+[lib]
+name = "oscc_tests"
+
+[features]
+kia-soul = []
+kia-soul-ev = []
