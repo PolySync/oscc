@@ -61,8 +61,7 @@ void check_for_faults( void )
 
             DEBUG_PRINTLN( "Bad value read from accelerator position sensor" );
         }
-        else if ( operator_overridden == true
-          && g_throttle_control_state.operator_override == false )
+        else if ( operator_overridden == true )
         {
             disable_control( );
 

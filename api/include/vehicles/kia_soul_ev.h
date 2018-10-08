@@ -50,6 +50,18 @@
 #define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x220 )
 
 /*
+ * @brief ID of the Kia Soul's OBD throttle pressure CAN frame.
+ *
+ */
+#define KIA_SOUL_OBD_THROTTLE_PRESSURE_CAN_ID ( 0x200 )
+
+/*
+ * @brief ID of the Kia Niro's OBD speed CAN frame.
+ *
+ */
+#define KIA_SOUL_OBD_SPEED_CAN_ID ( 0x524 )
+
+/*
  * @brief Factor to scale OBD steering angle to degrees
  *
  */
@@ -339,7 +351,7 @@ typedef struct
  *        override.
  *
  */
-#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
+#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 2000 )
 
 
 

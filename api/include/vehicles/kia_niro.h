@@ -50,10 +50,16 @@
 #define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x220 )
 
 /*
+ * @brief ID of the Kia Niro's OBD throttle pressure CAN frame.
+ *
+ */
+#define KIA_SOUL_OBD_THROTTLE_PRESSURE_CAN_ID ( 0x371 )
+
+/*
  * @brief ID of the Kia Niro's OBD speed CAN frame.
  *
  */
-#define KIA_SOUL_OBD_SPEED_CAN_ID ( 0x371 )
+#define KIA_SOUL_OBD_SPEED_CAN_ID ( 0x52A )
 
 /*
  * @brief Factor to scale OBD steering angle to degrees
@@ -233,10 +239,10 @@ typedef struct
     BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MIN  )
 
 /*
- * @brief Value of the accelerator position that indicates operator override. [steps]
+ * @brief Value of the brake position that indicates operator override. [steps]
  *
  */
-#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 200 )
+#define BRAKE_PEDAL_OVERRIDE_THRESHOLD ( 130 )
 
 /*
  * @brief Minimum value of the high spoof signal that activates the brake lights. [steps]
@@ -366,7 +372,7 @@ typedef struct
  *        override.
  *
  */
-#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
+#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 2000 )
 
 
 
