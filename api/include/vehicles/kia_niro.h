@@ -56,6 +56,12 @@
 #define KIA_SOUL_OBD_THROTTLE_PRESSURE_CAN_ID ( 0x371 )
 
 /*
+ * @brief ID of the Kia Niro's gear shift CAN frame.
+ *
+ */
+#define KIA_NIRO_OBD_SHIFTER_CAN_ID ( 0x372 )
+
+/*
  * @brief ID of the Kia Niro's OBD speed CAN frame.
  *
  */
