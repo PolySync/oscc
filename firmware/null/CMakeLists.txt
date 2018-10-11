@@ -7,10 +7,12 @@ generate_arduino_firmware(
     null
     SRCS
     main.cpp
-    ${OSCC_FIRMWARE_ROOT}/common/libs/arduino_init/arduino_init.cpp)
-
+    ${OSCC_FIRMWARE_ROOT}/common/libs/arduino_init/arduino_init.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/Time/Time.cpp)
+    
 target_include_directories(
     null
     PRIVATE
+    ${OSCC_FIRMWARE_ROOT}/common/include
     ${OSCC_FIRMWARE_ROOT}/common/libs/arduino_init
-)
+    ${OSCC_FIRMWARE_ROOT}/common/libs/Time)
