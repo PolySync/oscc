@@ -16,6 +16,7 @@
 #include "oscc_check.h"
 #include "throttle_control.h"
 #include "vehicles.h"
+#include "Time.h"
 
 
 static void read_accelerator_position_sensor(
@@ -164,6 +165,9 @@ void disable_control( void )
 static void read_accelerator_position_sensor(
     accelerator_position_s * const value )
 {
+    DEBUG_PRINTLN( "Throttle system time" );
+    DEBUG_PRINTLN( now() );
+
     cli();
     value->high = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_HIGH );
     value->low = analogRead( PIN_ACCELERATOR_POSITION_SENSOR_LOW );

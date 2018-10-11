@@ -24,6 +24,7 @@ generate_arduino_firmware(
     ${OSCC_FIRMWARE_ROOT}/common/libs/can/oscc_can.cpp
     ${OSCC_FIRMWARE_ROOT}/common/libs/dac/oscc_dac.cpp
     ${OSCC_FIRMWARE_ROOT}/common/libs/timer/oscc_timer.cpp
+    ${OSCC_FIRMWARE_ROOT}/common/libs/Time/Time.cpp
     src/main.cpp
     src/globals.cpp
     src/init.cpp
@@ -43,4 +44,5 @@ target_include_directories(
     ${OSCC_FIRMWARE_ROOT}/common/libs/can
     ${OSCC_FIRMWARE_ROOT}/common/libs/dac
     ${OSCC_FIRMWARE_ROOT}/common/libs/timer
+    ${OSCC_FIRMWARE_ROOT}/common/libs/Time
     ${OSCC_FIRMWARE_ROOT}/../api/include)
