@@ -107,6 +107,10 @@ void update_throttle(
                 THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN,
                 THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX );
 
+        DEBUG_PRINT( spoof_high );
+        DEBUG_PRINT( ", " );
+        DEBUG_PRINTLN( spoof_low );
+
         cli();
         g_dac.outputA( spoof_high );
         g_dac.outputB( spoof_low );

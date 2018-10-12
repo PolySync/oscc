@@ -115,6 +115,9 @@ static void process_throttle_command(
         const oscc_throttle_command_s * const throttle_command =
                 (oscc_throttle_command_s *) data;
 
+        DEBUG_PRINT( throttle_command->torque_request );
+        DEBUG_PRINT( ", " );
+
         const float clamped_position = CONSTRAIN(
             throttle_command->torque_request,
             MINIMUM_THROTTLE_COMMAND,
