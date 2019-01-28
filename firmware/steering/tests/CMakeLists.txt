@@ -1,5 +1,7 @@
 project(steering-unit-tests)
 
+set(CUCUMBER_PORT_STEERING "39${PORT_SUFFIX}")
+
 add_library(
     steering
     SHARED
@@ -7,6 +9,7 @@ add_library(
     ../src/globals.cpp
     ../src/steering_control.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/can/oscc_can.cpp
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check/oscc_check.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/dac/oscc_dac.cpp
     ${CMAKE_SOURCE_DIR}/common/libs/pid/oscc_pid.cpp
     ${CMAKE_SOURCE_DIR}/common/testing/mocks/
@@ -20,6 +23,7 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check
     ${CMAKE_SOURCE_DIR}/common/libs/dac
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/libs/signal_smoothing
@@ -43,21 +47,24 @@ target_include_directories(
     ../include
     ${CMAKE_SOURCE_DIR}/common/include
     ${CMAKE_SOURCE_DIR}/common/libs/can
+    ${CMAKE_SOURCE_DIR}/common/libs/fault_check
     ${CMAKE_SOURCE_DIR}/common/libs/pid
     ${CMAKE_SOURCE_DIR}/common/testing/mocks
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cucumber-cpp/include
     ${CMAKE_SOURCE_DIR}/common/testing/framework/cgreen/include
     ${CMAKE_SOURCE_DIR}/../api/include)
 
+file(WRITE ${CMAKE_CURRENT_LIST_DIR}/features/step_definitions/cucumber.wire "host: localhost\nport: ${CUCUMBER_PORT_STEERING}")
+
 add_custom_target(
     run-steering-unit-tests
     DEPENDS
     steering-unit-test
     COMMAND
-    steering-unit-test --port=3902 >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
+    steering-unit-test --port=${CUCUMBER_PORT_STEERING} >/dev/null & cucumber _2.0.0_ ${CMAKE_CURRENT_SOURCE_DIR}/features )
 
 add_custom_target(
     run-steering-property-tests
     COMMAND
-    cargo test -- --test-threads=1
+    cargo +1.20.0 test -- --test-threads=1
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/property)

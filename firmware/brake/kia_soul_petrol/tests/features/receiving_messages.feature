@@ -41,11 +41,11 @@ Feature: Receiving commands
 
     Examples:
       | left_pressure | right_pressure | command | solenoid     | duty_cycle |
-      |  120          |  120           |  20000  |  ACCUMULATOR |  105       |
-      |  160          |  160           |  20000  |  ACCUMULATOR |  104       |
-      |  190          |  190           |  20000  |  ACCUMULATOR |  93        |
-      |  230          |  230           |  20000  |  NONE        |  0         |
-      |  200          |  200           |  20000  |  NONE        |  0         |
-      |  220          |  220           |  20000  |  NONE        |  0         |
-      |  205          |  205           |  20000  |  NONE        |  0         |
-      |  215          |  215           |  20000  |  NONE        |  0         |
+      |  120          |  120           |  0.305  |  ACCUMULATOR |  105       |
+      |  160          |  160           |  0.305  |  ACCUMULATOR |  104       |
+      |  190          |  190           |  0.305  |  ACCUMULATOR |  93        |
+      |  230          |  230           |  0.305  |  NONE        |  0         |
+      |  200          |  200           |  0.305  |  NONE        |  0         |
+      |  220          |  220           |  0.305  |  NONE        |  0         |
+      |  205          |  205           |  0.305  |  NONE        |  0         |
+      |  215          |  215           |  0.305  |  NONE        |  0         |

@@ -14,39 +14,38 @@
 #include "dtc.h"
 #include "globals.h"
 #include "oscc_dac.h"
+#include "oscc_check.h"
 #include "steering_control.h"
 #include "vehicles.h"
 
 
-/*
- * @brief Number of consecutive faults that can occur when reading the
- *        torque sensor before control is disabled.
- *
- */
-#define SENSOR_VALIDITY_CHECK_FAULT_COUNT ( 4 )
 
 
 static void read_torque_sensor(
     steering_torque_s * value );
+
 
 static float exponential_moving_average(
     const float alpha,
     const float input,
     const float average );
 
-
+#ifdef STEERING_OVERRIDE
 static uint16_t filtered_diff = 0;
+#endif
 
-
-void check_for_operator_override( void )
+void check_for_faults( void )
 {
-    if( g_steering_control_state.enabled == true
-        || g_steering_control_state.operator_override == true )
+    static condition_state_s grounded_fault_state = CONDITION_STATE_INIT;
+
+    steering_torque_s torque;
+
+    if ( ( g_steering_control_state.enabled == true )
+        || (g_steering_control_state.dtcs > 0) )
     {
-        steering_torque_s torque;
+        read_torque_sensor(&torque);
 
-        read_torque_sensor( &torque );
-
+#ifdef STEERING_OVERRIDE
         uint16_t unfiltered_diff = abs( ( int )torque.high - ( int )torque.low );
 
         const float filter_alpha = 0.01;
@@ -60,8 +59,29 @@ void check_for_operator_override( void )
             filter_alpha,
             unfiltered_diff,
             filtered_diff);
+#endif
 
-        if( abs( filtered_diff ) > TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD )
+        bool inputs_grounded = check_voltage_grounded(
+                torque.high,
+                torque.low,
+                FAULT_HYSTERESIS,
+                &grounded_fault_state);
+
+        // sensor pins tied to ground - a value of zero indicates disconnection
+        if( inputs_grounded == true )
+        {
+            disable_control( );
+
+            DTC_SET(
+                g_steering_control_state.dtcs,
+                OSCC_STEERING_DTC_INVALID_SENSOR_VAL );
+
+            publish_fault_report( );
+
+            DEBUG_PRINTLN( "Bad value read from torque sensor" );
+        }
+#ifdef STEERING_OVERRIDE
+        else if( abs( filtered_diff ) > TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD )
         {
             disable_control( );
 
@@ -75,55 +95,14 @@ void check_for_operator_override( void )
 
             DEBUG_PRINTLN( "Operator override" );
         }
+#endif
         else
         {
-            DTC_CLEAR(
-                g_steering_control_state.dtcs,
-                OSCC_STEERING_DTC_OPERATOR_OVERRIDE );
+            g_steering_control_state.dtcs = 0;
 
+#ifdef STEERING_OVERRIDE
             g_steering_control_state.operator_override = false;
-        }
-    }
-}
-
-
-void check_for_sensor_faults( void )
-{
-    if ( (g_steering_control_state.enabled == true)
-        || DTC_CHECK(g_steering_control_state.dtcs, OSCC_STEERING_DTC_INVALID_SENSOR_VAL) )
-    {
-        static int fault_count = 0;
-
-        steering_torque_s torque;
-
-        read_torque_sensor(&torque);
-
-        // sensor pins tied to ground - a value of zero indicates disconnection
-        if( (torque.high == 0)
-            || (torque.low == 0) )
-        {
-            ++fault_count;
-
-            if( fault_count >= SENSOR_VALIDITY_CHECK_FAULT_COUNT )
-            {
-                disable_control( );
-
-                DTC_SET(
-                    g_steering_control_state.dtcs,
-                    OSCC_STEERING_DTC_INVALID_SENSOR_VAL );
-
-                publish_fault_report( );
-
-                DEBUG_PRINTLN( "Bad value read from torque sensor" );
-            }
-        }
-        else
-        {
-            DTC_CLEAR(
-                    g_steering_control_state.dtcs,
-                    OSCC_STEERING_DTC_INVALID_SENSOR_VAL );
-
-            fault_count = 0;
+#endif
         }
     }
 }
@@ -171,7 +150,6 @@ void enable_control( void )
         digitalWrite( PIN_SPOOF_ENABLE, HIGH );
         sei();
 
-        g_steering_command_timeout = false;
         g_steering_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
@@ -194,10 +172,11 @@ void disable_control( void )
         digitalWrite( PIN_SPOOF_ENABLE, LOW );
         sei();
 
-        g_steering_command_timeout = false;
         g_steering_control_state.enabled = false;
 
+#ifdef STEERING_OVERRIDE
         filtered_diff = 0;
+#endif
 
         DEBUG_PRINTLN( "Control disabled" );
     }
@@ -219,4 +198,3 @@ static void read_torque_sensor(
     value->low = analogRead( PIN_TORQUE_SENSOR_LOW ) << 2;
     sei();
 }
-

@@ -57,7 +57,7 @@
 
 /**
  * @brief Steering wheel angle message data.
- *
+ * @warn Deprecated. Use \ref get_steering_wheel_angle instead.
  */
 typedef struct
 {
@@ -68,7 +68,12 @@ typedef struct
 
 /**
  * @brief Wheel speed message data.
- *
+ * @warn Deprecated.
+ * @warn Does not reflect CAN message data. Use the following functions instead:
+ * \li \ref get_wheel_speed_right_rear
+ * \li \ref get_wheel_speed_left_rear
+ * \li \ref get_wheel_speed_right_front
+ * \li \ref get_wheel_speed_left_front
  */
 typedef struct
 {
@@ -83,7 +88,8 @@ typedef struct
 
 /**
  * @brief Brake pressure message data.
- *
+ * @warn Deprecated.
+ * @warn Does not reflect CAN message data. Use \ref get_wheel_brake_pressure instead.
  */
 typedef struct
 {
@@ -93,11 +99,26 @@ typedef struct
 } kia_soul_obd_brake_pressure_data_s;
 
 
+
+
+// ****************************************************************************
+// VEHICLE AND BOARD PARAMETERS
+// ****************************************************************************
+
  /*
  * @brief Number of steps per volt corresponding to 4096 steps (2^12) across 5 volts.
  *
  */
 #define STEPS_PER_VOLT ( 819.2 )
+
+/*
+ * @brief Length of time in ms for delay of signal reads to ensure fault is
+ * outside the range of noise in the signal.
+ *
+ */
+#define FAULT_HYSTERESIS ( 100 )
+
+
 
 
 // ****************************************************************************
@@ -108,13 +129,13 @@ typedef struct
  * @brief Minimum allowable brake value.
  *
  */
-#define MINIMUM_BRAKE_COMMAND ( 0 )
+#define MINIMUM_BRAKE_COMMAND ( 0.0 )
 
 /*
  * @brief Maximum allowable brake value.
  *
  */
-#define MAXIMUM_BRAKE_COMMAND ( 52428 )
+#define MAXIMUM_BRAKE_COMMAND ( 1.0 )
 
 /*
  * @brief Calculation to convert a brake position to a pedal position.
@@ -386,7 +407,7 @@ typedef struct
  *        override.
  *
  */
-#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
+#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 2000 )
 
 
 

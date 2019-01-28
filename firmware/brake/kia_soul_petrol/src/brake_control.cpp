@@ -18,7 +18,7 @@
 #include "master_cylinder.h"
 #include "oscc_pid.h"
 #include "vehicles.h"
-
+#include "oscc_check.h"
 
 /*
  * @brief Number of consecutive faults that can occur when reading the
@@ -68,7 +68,6 @@ void enable_control( void )
 
         set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
-        g_brake_command_timeout = false;
         g_brake_control_state.enabled = true;
 
         DEBUG_PRINTLN( "Control enabled" );
@@ -92,7 +91,6 @@ void disable_control( void )
 
         set_release_solenoid_duty_cycle( SOLENOID_PWM_OFF );
 
-        g_brake_command_timeout = false;
         g_brake_control_state.enabled = false;
 
         DEBUG_PRINTLN( "Control disabled" );
@@ -102,6 +100,8 @@ void disable_control( void )
 
 void check_for_operator_override( void )
 {
+    static condition_state_s operator_override_state = CONDITION_STATE_INIT;
+
     if( g_brake_control_state.enabled == true
         || g_brake_control_state.operator_override == true )
     {
@@ -109,8 +109,16 @@ void check_for_operator_override( void )
 
         master_cylinder_read_pressure( &master_cylinder_pressure );
 
-        if ( ( master_cylinder_pressure.sensor_1_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
-            ( master_cylinder_pressure.sensor_2_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) )
+        bool override_detected =
+            ( master_cylinder_pressure.sensor_1_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS ) ||
+            ( master_cylinder_pressure.sensor_2_pressure >= BRAKE_OVERRIDE_PEDAL_THRESHOLD_IN_DECIBARS );
+
+        bool operator_overridden = condition_exceeded_duration(
+                override_detected,
+                FAULT_HYSTERESIS,
+                &operator_override_state);
+
+        if ( operator_overridden == true )
         {
             disable_control( );
 
@@ -243,7 +251,7 @@ void update_brake( void )
         time_between_loops /= 1000.0;
 
         static interpolate_range_s pressure_ranges =
-            { 0, UINT16_MAX, BRAKE_PRESSURE_MIN_IN_DECIBARS, BRAKE_PRESSURE_MAX_IN_DECIBARS };
+            { 0.0, 1.0, BRAKE_PRESSURE_MIN_IN_DECIBARS, BRAKE_PRESSURE_MAX_IN_DECIBARS };
 
         pressure_at_wheels_target = interpolate(
             g_brake_control_state.commanded_pedal_position,
@@ -513,4 +521,3 @@ static void pump_startup_check( void )
 
     accumulator_turn_pump_off();
 }
-

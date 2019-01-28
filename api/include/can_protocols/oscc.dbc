@@ -1,0 +1,109 @@
+VERSION ""
+
+NS_ :
+	BA_
+	BA_DEF_
+	BA_DEF_DEF_
+	BA_DEF_DEF_REL_
+	BA_DEF_REL_
+	BA_DEF_SGTYPE_
+	BA_REL_
+	BA_SGTYPE_
+	BO_TX_BU_
+	BU_BO_REL_
+	BU_EV_REL_
+	BU_SG_REL_
+	CAT_
+	CAT_DEF_
+	CM_
+	ENVVAR_DATA_
+	EV_DATA_
+	FILTER
+	NS_DESC_
+	SGTYPE_
+	SGTYPE_VAL_
+	SG_MUL_VAL_
+	SIGTYPE_VALTYPE_
+	SIG_GROUP_
+	SIG_TYPE_REF_
+	SIG_VALTYPE_
+	VAL_
+	VAL_TABLE_
+
+BS_:
+
+BU_: BRAKE STEERING THROTTLE FAULT
+
+BO_ 112 BRAKE_ENABLE: 8 BRAKE
+ SG_ brake_enable_magic : 0|16@1+ (1,0) [0|0] "" BRAKE
+ SG_ brake_enable_reserved : 16|48@1+ (1,0) [0|0] "" BRAKE
+
+BO_ 113 BRAKE_DISABLE: 8 BRAKE
+ SG_ brake_disable_magic : 0|16@1+ (1,0) [0|0] "" BRAKE
+ SG_ brake_disable_reserved : 16|48@1+ (1,0) [0|0] "" BRAKE
+
+BO_ 114 BRAKE_COMMAND: 8 BRAKE
+ SG_ brake_command_magic : 0|16@1+ (1,0) [0|0] "" BRAKE
+ SG_ brake_command_pedal_request : 16|32@1- (1,0) [0|1] "" BRAKE
+ SG_ brake_command_reserved : 48|16@1+ (1,0) [0|0] "" BRAKE
+
+BO_ 115 BRAKE_REPORT: 8 BRAKE
+ SG_ brake_report_magic : 0|16@1+ (1,0) [0|0] "" BRAKE
+ SG_ brake_report_enabled : 16|8@1+ (1,0) [0|0] "" BRAKE
+ SG_ brake_report_operator_override : 24|8@1+ (1,0) [0|0] "" BRAKE
+ SG_ brake_report_dtcs : 32|8@1+ (1,0) [0|0] "" BRAKE
+ SG_ brake_report_reserved : 40|24@1+ (1,0) [0|0] "" BRAKE
+
+BO_ 128 STEERING_ENABLE: 8 STEERING
+ SG_ steering_enable_magic : 0|16@1+ (1,0) [0|0] "" STEERING
+ SG_ steering_enable_reserved : 16|48@1+ (1,0) [0|0] "" STEERING
+
+BO_ 129 STEERING_DISABLE: 8 STEERING
+ SG_ steering_disable_magic : 0|16@1+ (1,0) [0|0] "" STEERING
+ SG_ steering_disable_reserved : 16|48@1+ (1,0) [0|0] "" STEERING
+
+BO_ 130 STEERING_COMMAND: 8 STEERING
+ SG_ steering_command_magic : 0|16@1+ (1,0) [0|0] "" STEERING
+ SG_ steering_command_torque_request : 16|32@1- (1,0) [-1|1] "" STEERING
+ SG_ steering_command_reserved : 48|16@1+ (1,0) [0|0] "" STEERING
+
+BO_ 131 STEERING_REPORT: 8 STEERING
+ SG_ steering_report_magic : 0|16@1+ (1,0) [0|0] "" STEERING
+ SG_ steering_report_enabled : 16|8@1+ (1,0) [0|0] "" STEERING
+ SG_ steering_report_operator_override : 24|8@1+ (1,0) [0|0] "" STEERING
+ SG_ steering_report_dtcs : 32|8@1+ (1,0) [0|0] "" STEERING
+ SG_ steering_report_reserved : 40|24@1+ (1,0) [0|0] "" STEERING
+
+BO_ 144 THROTTLE_ENABLE: 8 THROTTLE
+ SG_ throttle_enable_magic : 0|16@1+ (1,0) [0|0] "" THROTTLE
+ SG_ throttle_enable_reserved : 16|48@1+ (1,0) [0|0] "" THROTTLE
+
+BO_ 145 THROTTLE_DISABLE: 8 THROTTLE
+ SG_ throttle_disable_magic : 0|16@1+ (1,0) [0|0] "" THROTTLE
+ SG_ throttle_disable_reserved : 16|48@1+ (1,0) [0|0] "" THROTTLE
+
+BO_ 146 THROTTLE_COMMAND: 8 THROTTLE
+ SG_ throttle_command_magic : 0|16@1+ (1,0) [0|0] "" THROTTLE
+ SG_ throttle_command_pedal_request : 16|32@1- (1,0) [0|1] "" THROTTLE
+ SG_ throttle_command_reserved : 48|16@1+ (1,0) [0|0] "" THROTTLE
+
+BO_ 147 THROTTLE_REPORT: 8 THROTTLE
+ SG_ throttle_report_magic : 0|16@1+ (1,0) [0|0] "" THROTTLE
+ SG_ throttle_report_enabled : 16|8@1+ (1,0) [0|0] "" THROTTLE
+ SG_ throttle_report_operator_override : 24|8@1+ (1,0) [0|0] "" THROTTLE
+ SG_ throttle_report_dtcs : 32|8@1+ (1,0) [0|0] "" THROTTLE
+ SG_ throttle_report_reserved : 40|24@1+ (1,0) [0|0] "" THROTTLE
+
+BO_ 175 FAULT_REPORT: 8 FAULT
+ SG_ fault_report_magic : 0|16@1+ (1,0) [0|0] "" FAULT
+ SG_ fault_report_fault_origin_id : 16|32@1+ (1,0) [0|0] "" FAULT
+ SG_ fault_report_dtcs : 48|8@1+ (1,0) [0|0] "" FAULT
+ SG_ fault_report_reserved : 56|8@1+ (1,0) [0|0] "" FAULT
+
+CM_ BU_ BRAKE "The OSCC brake module";
+CM_ BU_ STEERING "The OSCC steering module";
+CM_ BU_ THROTTLE "The OSCC throttle module";
+CM_ BU_ FAULT "The OSCC fault report";
+SIG_VALTYPE_ 114 brake_command_pedal_request : 1;
+SIG_VALTYPE_ 130 steering_command_torque_request : 1;
+SIG_VALTYPE_ 146 throttle_command_pedal_request : 1;

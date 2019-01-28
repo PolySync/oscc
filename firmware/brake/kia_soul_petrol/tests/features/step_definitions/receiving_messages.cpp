@@ -70,7 +70,7 @@ WHEN("^a fault report is received$")
 
 WHEN("^the brake pedal command (.*) is received$")
 {
-    REGEX_PARAM(int, command);
+    REGEX_PARAM(float, command);
 
     oscc_brake_command_s * brake_command =
         (oscc_brake_command_s *) g_mock_mcp_can_read_msg_buf_buf;

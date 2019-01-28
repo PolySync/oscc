@@ -1,47 +1,70 @@
 #!groovy
-node('arduino') {
-  try {
-    stage('Checkout') {
-      checkout([
-        $class: 'GitSCM',
-        branches: scm.branches,
-        extensions: scm.extensions + [[$class: 'CleanBeforeCheckout']],
-        userRemoteConfigs: scm.userRemoteConfigs
-      ])
+
+node {
+    checkout scm
+
+    def image = docker.build("cmake-build:${env.BUILD_ID}")
+
+    def builds = [:]
+    def output = image.inside {
+        sh returnStdout: true, script: "cmake -LA ./firmware | grep 'VEHICLE_VALUES' | cut -d'=' -f 2"
     }
-    stage('Build') {
-      parallel 'kia soul petrol firmware': {
-        sh 'cd firmware && mkdir build_kia_soul_petrol && cd build_kia_soul_petrol && cmake .. -DKIA_SOUL=ON -DCMAKE_BUILD_TYPE=Release && make'
-      }, 'kia soul EV firmware': {
-        sh 'cd firmware && mkdir build_kia_soul_ev && cd build_kia_soul_ev && cmake .. -DKIA_SOUL_EV=ON -DCMAKE_BUILD_TYPE=Release && make'
-      }
-      echo 'Build Complete!'
+
+    def platforms = output.trim().tokenize(';')
+
+    for(int j=0; j<platforms.size(); j++) {
+        def platform_idx = j
+        def platform = platforms[platform_idx]
+        builds[platform] = {
+            node {
+                checkout scm
+
+                image = docker.build("cmake-build:${env.BUILD_ID}")
+
+                stage("Build ${platform}") {
+                    image.inside {
+                        sh "cd firmware && \
+                            rm -rf build_${platform} && \
+                            mkdir build_${platform} && \
+                            cd build_${platform} && \
+                            cmake -DVEHICLE=${platform} -DCMAKE_BUILD_TYPE=Release .. && \
+                            make"
+
+                        echo "${platform}: Build Complete!"
+                    }
+                }
+
+                stage("Test ${platform} unit tests") {
+                    image.inside {
+                        sh "cd firmware && \
+                            rm -rf build_${platform}_tests && \
+                            mkdir build_${platform}_tests && \
+                            cd build_${platform}_tests && \
+                            cmake -DVEHICLE=${platform} \
+                              -DTESTS=ON \
+                              -DPORT_SUFFIX=${EXECUTOR_NUMBER}${platform_idx} \
+                              -DCMAKE_BUILD_TYPE=Release \
+                              .. && \
+                            make run-unit-tests"
+                        echo "${platform}: Unit Tests Complete!"
+                    }
+                }
+
+                stage("Test ${platform} property-based tests") {
+                    image.inside("--user root:root") {
+                        sh "cd firmware/build_${platform}_tests && \
+                            make run-property-tests"
+                        echo "${platform}: Property-Based Tests Complete!"
+                    }
+                }
+            }
+        }
     }
-    stage('Kia Soul Petrol Tests') {
-      parallel 'kia soul petrol unit tests': {
-        sh 'cd firmware && mkdir build_kia_soul_petrol_unit_tests && cd build_kia_soul_petrol_unit_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-unit-tests'
-        echo 'Kia Soul Petrol Unit Tests Complete!'
-      }, 'kia soul petrol property-based tests': {
-        sh 'cd firmware && mkdir build_kia_soul_petrol_property_tests && cd build_kia_soul_petrol_property_tests && cmake .. -DKIA_SOUL=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
-        echo 'Kia Soul Petrol Property-Based Tests Complete!'
-      }
-      echo 'Kia Soul Petrol Tests Complete!'
+
+    try {
+        parallel builds
     }
-    stage('Kia Soul EV Tests') {
-      parallel 'kia soul ev unit tests': {
-        sh 'cd firmware && mkdir build_kia_soul_ev_unit_tests && cd build_kia_soul_ev_unit_tests && cmake .. -DKIA_SOUL_EV=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-unit-tests'
-        echo 'Kia Soul EV Unit Tests Complete!'
-      }, 'kia soul ev property-based tests': {
-        sh 'cd firmware && mkdir build_kia_soul_ev_property_tests && cd build_kia_soul_ev_property_tests && cmake .. -DKIA_SOUL_EV=ON -DTESTS=ON -DCMAKE_BUILD_TYPE=Release && make run-property-tests'
-        echo 'Kia Soul EV Property-Based Tests Complete!'
-      }
-      echo 'Kia Soul EV Tests Complete!'
+    finally {
+        deleteDir()
     }
-  }
-  catch(Exception e) {
-    throw e;
-  }
-  finally {
-    deleteDir()
-  }
 }

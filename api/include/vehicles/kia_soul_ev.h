@@ -50,6 +50,18 @@
 #define KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID ( 0x220 )
 
 /*
+ * @brief ID of the Kia Soul's OBD throttle pressure CAN frame.
+ *
+ */
+#define KIA_SOUL_OBD_THROTTLE_PRESSURE_CAN_ID ( 0x200 )
+
+/*
+ * @brief ID of the Kia Niro's OBD speed CAN frame.
+ *
+ */
+#define KIA_SOUL_OBD_SPEED_CAN_ID ( 0x524 )
+
+/*
  * @brief Factor to scale OBD steering angle to degrees
  *
  */
@@ -57,7 +69,7 @@
 
 /**
  * @brief Steering wheel angle message data.
- *
+ * @warn Deprecated. Use \ref get_steering_wheel_angle instead.
  */
 typedef struct
 {
@@ -68,7 +80,12 @@ typedef struct
 
 /**
  * @brief Wheel speed message data.
- *
+ * @warn Deprecated.
+ * @warn Does not reflect CAN message data. Use the following functions instead:
+ * \li \ref get_wheel_speed_right_rear
+ * \li \ref get_wheel_speed_left_rear
+ * \li \ref get_wheel_speed_right_front
+ * \li \ref get_wheel_speed_left_front
  */
 typedef struct
 {
@@ -83,7 +100,8 @@ typedef struct
 
 /**
  * @brief Brake pressure message data.
- *
+ * @warn Deprecated.
+ * @warn Does not reflect CAN message data. Use \ref get_wheel_brake_pressure instead.
  */
 typedef struct
 {
@@ -93,11 +111,24 @@ typedef struct
 } kia_soul_obd_brake_pressure_data_s;
 
 
+
+
+// ****************************************************************************
+// VEHICLE AND BOARD PARAMETERS
+// ****************************************************************************
+
  /*
  * @brief Number of steps per volt corresponding to 4096 steps (2^12) across 5 volts.
  *
  */
 #define STEPS_PER_VOLT ( 819.2 )
+
+/*
+ * @brief Length of time in ms for delay of signal reads to ensure fault is
+ * outside the range of noise in the signal.
+ *
+ */
+#define FAULT_HYSTERESIS ( 100 )
 
 
 
@@ -168,7 +199,7 @@ typedef struct
  *
  * Equal to \ref BRAKE_SPOOF_HIGH_SIGNAL_VOLTAGE_MAX * \ref STEPS_PER_VOLT.
  */
-#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1876 )
+#define BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX ( 1875 )
 
 /*
  * @brief Calculation to convert a brake position to a low spoof voltage.
@@ -320,7 +351,7 @@ typedef struct
  *        override.
  *
  */
-#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 1600 )
+#define TORQUE_DIFFERENCE_OVERRIDE_THRESHOLD ( 2000 )
 
 
 

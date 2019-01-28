@@ -58,11 +58,10 @@ impl Arbitrary for oscc_throttle_report_s {
 
 impl Arbitrary for oscc_throttle_command_s {
     fn arbitrary<G: Gen>(g: &mut G) -> oscc_throttle_command_s {
-        oscc_throttle_command_s {
+        oscc_throttle_command_s{
             magic: [OSCC_MAGIC_BYTE_0 as u8, OSCC_MAGIC_BYTE_1 as u8],
-            spoof_value_low: u16::arbitrary(g),
-            spoof_value_high: u16::arbitrary(g),
-            reserved: [u8::arbitrary(g); 2],
+            torque_request: f32::arbitrary(g),
+            reserved: [u8::arbitrary(g); 2usize],
         }
     }
 }
@@ -171,12 +170,8 @@ fn check_process_disable_command() {
 /// the throttle firmware should send requested spoof values
 /// upon recieving a throttle command message
 fn prop_output_accurate_spoofs(mut throttle_command_msg: oscc_throttle_command_s) -> TestResult {
-    throttle_command_msg.spoof_value_low =
-        rand::thread_rng().gen_range(THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16,
-                                     THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16);
-    throttle_command_msg.spoof_value_high =
-        rand::thread_rng().gen_range(THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16,
-                                     THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16);
+    throttle_command_msg.torque_request = rand::thread_rng().gen_range(0f32, 1f32);
+
     unsafe {
         g_throttle_control_state.enabled = true;
 
@@ -186,8 +181,10 @@ fn prop_output_accurate_spoofs(mut throttle_command_msg: oscc_throttle_command_s
 
         check_for_incoming_message();
 
-        TestResult::from_bool(g_mock_dac_output_b == throttle_command_msg.spoof_value_low &&
-                              g_mock_dac_output_a == throttle_command_msg.spoof_value_high)
+        TestResult::from_bool(g_mock_dac_output_a >= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
+                              g_mock_dac_output_a <= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16 &&
+                              g_mock_dac_output_b >= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
+                              g_mock_dac_output_b <= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16)
     }
 }
 
@@ -203,10 +200,8 @@ fn check_output_accurate_spoofs() {
 /// upon recieving a throttle command message
 fn prop_output_constrained_spoofs(throttle_command_msg: oscc_throttle_command_s) -> TestResult {
     unsafe {
-        if (throttle_command_msg.spoof_value_low >= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MIN as u16 &&
-            throttle_command_msg.spoof_value_low <= THROTTLE_SPOOF_LOW_SIGNAL_RANGE_MAX as u16) ||
-           (throttle_command_msg.spoof_value_high >= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MIN as u16 &&
-            throttle_command_msg.spoof_value_high <= THROTTLE_SPOOF_HIGH_SIGNAL_RANGE_MAX as u16) {
+        if  throttle_command_msg.torque_request >= MINIMUM_THROTTLE_COMMAND as f32 &&
+            throttle_command_msg.torque_request <= MAXIMUM_THROTTLE_COMMAND as f32 {
             return TestResult::discard();
         }
 
@@ -267,7 +262,7 @@ fn prop_check_operator_override(analog_read_spoof: u16) -> TestResult {
         g_mock_arduino_analog_read_return[0] = analog_read_spoof as isize;
         g_mock_arduino_analog_read_return[1] = analog_read_spoof as isize;
 
-        check_for_operator_override();
+        check_for_faults();
 
         if analog_read_spoof >= (ACCELERATOR_OVERRIDE_THRESHOLD as u16) {
             TestResult::from_bool(g_throttle_control_state.operator_override == true &&

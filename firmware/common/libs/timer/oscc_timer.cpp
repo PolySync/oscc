@@ -10,7 +10,9 @@
 
 
 static void (*timer_1_isr)(void);
+#ifndef __AVR_ATmega32U4__
 static void (*timer_2_isr)(void);
+#endif
 
 
 // timer1 interrupt service routine
@@ -19,11 +21,13 @@ ISR(TIMER1_COMPA_vect)
     timer_1_isr( );
 }
 
+#ifndef __AVR_ATmega32U4__
 // timer2 interrupt service routine
 ISR(TIMER2_COMPA_vect)
 {
     timer_2_isr( );
 }
+#endif
 
 
 void timer1_init( float frequency, void (*isr)(void) )
@@ -101,7 +105,7 @@ void timer1_init( float frequency, void (*isr)(void) )
     sei();
 }
 
-
+#ifndef __AVR_ATmega32U4__
 void timer2_init( float frequency, void (*isr)(void) )
 {
     // disable interrupts temporarily
@@ -188,3 +192,4 @@ void timer2_init( float frequency, void (*isr)(void) )
     // re-enable interrupts
     sei();
 }
+#endif
