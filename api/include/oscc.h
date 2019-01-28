@@ -80,8 +80,7 @@ oscc_result_t oscc_disable( void );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_enable_brakes(
-    void );
+oscc_result_t oscc_enable_brakes( void );
 
 
 /**
@@ -92,8 +91,7 @@ oscc_result_t oscc_enable_brakes(
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_enable_steering(
-    void );
+oscc_result_t oscc_enable_steering( void );
 
 
 /**
@@ -104,8 +102,7 @@ oscc_result_t oscc_enable_steering(
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_enable_throttle(
-    void );
+oscc_result_t oscc_enable_throttle( void );
 
 
 /**
@@ -116,8 +113,7 @@ oscc_result_t oscc_enable_throttle(
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_disable_brakes(
-    void );
+oscc_result_t oscc_disable_brakes( void );
 
 
 /**
@@ -128,8 +124,7 @@ oscc_result_t oscc_disable_brakes(
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_disable_steering(
-    void );
+oscc_result_t oscc_disable_steering( void );
 
 
 /**
@@ -140,8 +135,7 @@ oscc_result_t oscc_disable_steering(
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_disable_throttle(
-    void );
+oscc_result_t oscc_disable_throttle( void );
 
 
 /**
