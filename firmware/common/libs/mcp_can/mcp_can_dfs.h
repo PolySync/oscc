@@ -4,9 +4,9 @@
 
   Author:Loovee (loovee@seeed.cc)
   2014-1-16
-  
-  Contributor: 
-  
+
+  Contributor:
+
   Cory J. Fowler
   Latonita
   Woodward1
@@ -21,7 +21,8 @@
   Btetz
   Hurvajs
   xboxpro1
-  
+  ttlappalainen
+
   The MIT License (MIT)
 
   Copyright (c) 2013 Seeed Technology Inc.
@@ -53,7 +54,7 @@
 
 
 // if print debug information
-#define DEBUG_EN        0
+#define DEBUG_EN        1
 
 // Begin mt
 
@@ -85,10 +86,18 @@
 #define MCP_TXB_TXIE_M      0x04
 #define MCP_TXB_TXP10_M     0x03
 
-#define MCP_TXB_RTR_M       0x40                                        // In TXBnDLC                  
-#define MCP_RXB_IDE_M       0x08                                        // In RXBnSIDL                 
-#define MCP_RXB_RTR_M       0x40                                        // In RXBnDLC                   
+#define MCP_TXB_RTR_M       0x40                                        // In TXBnDLC
+#define MCP_RXB_IDE_M       0x08                                        // In RXBnSIDL
+#define MCP_RXB_RTR_M       0x40                                        // In RXBnDLC
 
+#define MCP_STAT_TX_PENDING_MASK (0x54)
+#define MCP_STAT_TX0_PENDING (0x04)
+#define MCP_STAT_TX1_PENDING (0x10)
+#define MCP_STAT_TX2_PENDING (0x40)
+#define MCP_STAT_TXIF_MASK   (0xA8)
+#define MCP_STAT_TX0IF       (0x08)
+#define MCP_STAT_TX1IF       (0x20)
+#define MCP_STAT_TX2IF       (0x80)
 #define MCP_STAT_RXIF_MASK   (0x03)
 #define MCP_STAT_RX0IF (1<<0)
 #define MCP_STAT_RX1IF (1<<1)
@@ -101,7 +110,7 @@
 #define MCP_EFLG_TXWAR  (1<<2)
 #define MCP_EFLG_RXWAR  (1<<1)
 #define MCP_EFLG_EWARN  (1<<0)
-#define MCP_EFLG_ERRORMASK  (0xF8)                                      // 5 MS-Bits                    
+#define MCP_EFLG_ERRORMASK  (0xF8)                                      // 5 MS-Bits
 
 // Define MCP2515 register addresses
 
@@ -148,12 +157,16 @@
 #define MCP_CANINTF     0x2C
 #define MCP_EFLG        0x2D
 #define MCP_TXB0CTRL    0x30
+#define MCP_TXB0SIDH    0x31
 #define MCP_TXB1CTRL    0x40
+#define MCP_TXB1SIDH    0x41
 #define MCP_TXB2CTRL    0x50
+#define MCP_TXB2SIDH    0x51
 #define MCP_RXB0CTRL    0x60
 #define MCP_RXB0SIDH    0x61
 #define MCP_RXB1CTRL    0x70
 #define MCP_RXB1SIDH    0x71
+
 #define MCP_TX_INT      0x1C                                    // Enable all transmit interrup ts
 #define MCP_TX01_INT    0x0C                                    // Enable TXB0 and TXB1 interru pts
 #define MCP_RX_INT      0x03                                    // Enable receive interrupts
@@ -236,6 +249,11 @@
 #define MCP_WAKIF       0x40
 #define MCP_MERRF       0x80
 
+// clock
+
+#define MCP_16MHz	1
+#define MCP_8MHz	2
+
 // speed 16M
 
 #define MCP_16MHz_1000kBPS_CFG1 (0x00)
@@ -311,6 +329,60 @@
 #define MCP_16MHz_666kBPS_CFG3 (0x04)
 
 
+// speed 8M
+
+#define MCP_8MHz_1000kBPS_CFG1 (0x00)
+#define MCP_8MHz_1000kBPS_CFG2 (0x80)
+#define MCP_8MHz_1000kBPS_CFG3 (0x00)
+
+#define MCP_8MHz_500kBPS_CFG1 (0x00)
+#define MCP_8MHz_500kBPS_CFG2 (0x90)
+#define MCP_8MHz_500kBPS_CFG3 (0x02)
+
+#define MCP_8MHz_250kBPS_CFG1 (0x00)
+#define MCP_8MHz_250kBPS_CFG2 (0xb1)
+#define MCP_8MHz_250kBPS_CFG3 (0x05)
+
+#define MCP_8MHz_200kBPS_CFG1 (0x00)
+#define MCP_8MHz_200kBPS_CFG2 (0xb4)
+#define MCP_8MHz_200kBPS_CFG3 (0x06)
+
+#define MCP_8MHz_125kBPS_CFG1 (0x01)
+#define MCP_8MHz_125kBPS_CFG2 (0xb1)
+#define MCP_8MHz_125kBPS_CFG3 (0x05)
+
+#define MCP_8MHz_100kBPS_CFG1 (0x01)
+#define MCP_8MHz_100kBPS_CFG2 (0xb4)
+#define MCP_8MHz_100kBPS_CFG3 (0x06)
+
+#define MCP_8MHz_80kBPS_CFG1 (0x01)
+#define MCP_8MHz_80kBPS_CFG2 (0xbf)
+#define MCP_8MHz_80kBPS_CFG3 (0x07)
+
+#define MCP_8MHz_50kBPS_CFG1 (0x03)
+#define MCP_8MHz_50kBPS_CFG2 (0xb4)
+#define MCP_8MHz_50kBPS_CFG3 (0x06)
+
+#define MCP_8MHz_40kBPS_CFG1 (0x03)
+#define MCP_8MHz_40kBPS_CFG2 (0xbf)
+#define MCP_8MHz_40kBPS_CFG3 (0x07)
+
+#define MCP_8MHz_31k25BPS_CFG1 (0x07)
+#define MCP_8MHz_31k25BPS_CFG2 (0xa4)
+#define MCP_8MHz_31k25BPS_CFG3 (0x04)
+
+#define MCP_8MHz_20kBPS_CFG1 (0x07)
+#define MCP_8MHz_20kBPS_CFG2 (0xbf)
+#define MCP_8MHz_20kBPS_CFG3 (0x07)
+
+#define MCP_8MHz_10kBPS_CFG1 (0x0f)
+#define MCP_8MHz_10kBPS_CFG2 (0xbf)
+#define MCP_8MHz_10kBPS_CFG3 (0x07)
+
+#define MCP_8MHz_5kBPS_CFG1 (0x1f)
+#define MCP_8MHz_5kBPS_CFG2 (0xbf)
+#define MCP_8MHz_5kBPS_CFG3 (0x07)
+
 #define MCPDEBUG        (0)
 #define MCPDEBUG_TXBUF  (0)
 #define MCP_N_TXBUFFERS (3)
@@ -329,7 +401,7 @@
 
 #define CANUSELOOP 0
 
-#define CANSENDTIMEOUT (200)                                            // milliseconds                 
+#define CANSENDTIMEOUT (200)                                            // milliseconds
 
 
 // initial value of gCANAutoProcess
@@ -345,7 +417,7 @@
 #define CAN_5KBPS           1
 #define CAN_10KBPS          2
 #define CAN_20KBPS          3
-#define CAN_25KBPS          4 
+#define CAN_25KBPS          4
 #define CAN_31K25BPS        5
 #define CAN_33KBPS          6
 #define CAN_40KBPS          7
