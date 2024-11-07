@@ -92,11 +92,11 @@ void update_brake(
 {
     if ( g_brake_control_state.enabled == true )
     {
-        uint16_t spoof_high =
+        uint16_t spoof_high = 
             constrain(
-                spoof_command_high,
-                BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN,
-                BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX );
+                spoof_command_high, 
+                BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MIN, 
+                (uint16_t) BRAKE_SPOOF_HIGH_SIGNAL_RANGE_MAX);
 
         uint16_t spoof_low =
             constrain(

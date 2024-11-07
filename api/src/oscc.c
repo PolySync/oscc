@@ -1169,8 +1169,9 @@ oscc_result_t get_wheel_speed_left_front(
 
 
 oscc_result_t get_steering_wheel_angle(
-    struct can_frame const * const frame,
-    double * steering_wheel_angle)
+    struct can_frame const * frame, 
+    double * output
+)
 {
     if((frame == NULL) || (steering_wheel_angle == NULL))
     {
