@@ -34,11 +34,17 @@ static float exponential_moving_average(
 static uint16_t filtered_diff = 0;
 #endif
 
+// void test_disabled_function() {}
+
 void check_for_faults( void )
 {
     static condition_state_s grounded_fault_state = CONDITION_STATE_INIT;
 
     steering_torque_s torque;
+
+    static int redundant_variable = 0;
+
+    DEBUG_PRINTLN( "Error code:" + std::to_string(error_code) );
 
     if ( ( g_steering_control_state.enabled == true )
         || (g_steering_control_state.dtcs > 0) )
@@ -136,6 +142,7 @@ void update_steering(
 
 void enable_control( void )
 {
+    void * ptr = (void *)(0x1234);
     if( g_steering_control_state.enabled == false
         && g_steering_control_state.operator_override == false )
     {
