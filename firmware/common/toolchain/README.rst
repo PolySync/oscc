@@ -43,7 +43,7 @@ with one the more advanced and maintainable being the following:
 
 https://github.com/arduino-cmake/arduino-cmake/
 
-However, none of this would have been possible with the generous bunch of work the original author queezythegreat invested into this project, who definately earns most of the credit for getting things running:
+However, none of this would have been possible with the generous bunch of work the original author queezythegreat invested into this project, who definitely earns most of the credit for getting things running:
 
 https://github.com/queezythegreat/arduino-cmake
 
